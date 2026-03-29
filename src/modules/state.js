@@ -11,4 +11,5 @@ export const state = {
     selectedSessionId: null,
     editingSessionId: null,
     selectedMemberId: null,
+    editingMemberId: null,
 };

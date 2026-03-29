@@ -6,6 +6,8 @@ import { renderSessionHistory } from "./views/sessionHistoryView.js";
 import "./styles/main.css";
 import { renderSessionDetail } from "./views/sessionDetailView.js";
 import { renderMemberDetail } from "./views/memberDetailView.js";
+import { renderMemberEdit } from "./views/memberEditView.js";
+import { importData } from "./utils/importData.js";
 
 function renderApp() {
     if (state.currentView === "roster") {
@@ -18,6 +20,8 @@ function renderApp() {
         renderSessionDetail();
     } else if (state.currentView === "memberDetail") {
         renderMemberDetail();
+    } else if (state.currentView === "memberEdit") {
+        renderMemberEdit();
     } else {
         renderDashboard ();
     }

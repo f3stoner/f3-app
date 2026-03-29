@@ -182,3 +182,15 @@ button:hover {
     gap: 12px;
     margin-bottom: 8px;
 }
+
+input,
+select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font: inherit;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+}

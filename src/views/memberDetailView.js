@@ -71,5 +71,13 @@ export function renderMemberDetail () {
         renderApp();
     });
 
-    app.append(title, nameSection, realNameSection, statusSection, invitedBySection, postsSection, qsSection, firstPostSection, lastPostSection, toggleStatusButton, backButton);
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit Member";
+    editButton.addEventListener("click", () => {
+        state.editingMemberId = member.id;
+        state.currentView = "memberEdit";
+        renderApp();
+    })
+
+    app.append(title, nameSection, realNameSection, statusSection, invitedBySection, postsSection, qsSection, firstPostSection, lastPostSection, toggleStatusButton, editButton, backButton);
 }
