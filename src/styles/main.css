@@ -194,3 +194,8 @@ select {
     margin-bottom: 14px;
     box-sizing: border-box;
 }
+
+.session-search {
+    margin-bottom: 12px;
+}
+

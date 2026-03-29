@@ -4,7 +4,7 @@ import { seedMembers } from "../data/seedMembers.js";
 const savedState = loadState();
 
 export const state = {
-    groupName: savedState?.groupName || "The Hub",
+    regionName: savedState?.regionName || "F3 Old 300",
     members: savedState?.members || [...seedMembers],
     sessions: savedState?.sessions || [],
     currentView: "dashboard",
@@ -12,4 +12,7 @@ export const state = {
     editingSessionId: null,
     selectedMemberId: null,
     editingMemberId: null,
+    sessionSearchTerm: "",
+    sessionShowAllOthers: false,
+    sessionShowAllRecent: false,
 };

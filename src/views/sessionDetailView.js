@@ -80,7 +80,7 @@ export function renderSessionDetail() {
                 const text = document.createElement("span");
                 text.textContent = rowText;
 
-                const alreadyOnRoster = state.members.some(m => m.realName === fng.realName);
+                const alreadyOnRoster = Boolean(fng.memberId) || state.members.some(m => m.realName === fng.realName);
 
                 const addButton = document.createElement("button");
                 addButton.textContent = alreadyOnRoster ? "On Roster" : "Add to Roster";
@@ -98,6 +98,7 @@ export function renderSessionDetail() {
                     };
 
                     state.members.push(newMember);
+                    fng.memberId = newMember.id;
                     saveState(state);
 
                     addButton.textContent = "On Roster";
