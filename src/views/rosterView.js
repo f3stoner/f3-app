@@ -22,6 +22,13 @@ export function renderRoster() {
     const memberStats = getMemberStats(member.id);
     const lastPost = memberStats.lastPostDate? formatDate(memberStats.lastPostDate): "-";
     statsLine.textContent = `Posts: ${memberStats.posts} - Qs: ${memberStats.qs} - Last: ${lastPost}`
+
+    memberCard.addEventListener("click", () => {
+        state.selectedMemberId = member.id;
+        state.currentView = "memberDetail";
+        renderApp();
+    })
+
     rosterContainer.appendChild(memberCard);
     memberCard.append(paxName, statsLine);
   });

@@ -10,4 +10,5 @@ export const state = {
     currentView: "dashboard",
     selectedSessionId: null,
     editingSessionId: null,
+    selectedMemberId: null,
 };
