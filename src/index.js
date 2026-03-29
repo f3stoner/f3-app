@@ -5,7 +5,7 @@ import { renderSession } from "./views/sessionView.js";
 import { renderSessionHistory } from "./views/sessionHistoryView.js";
 import "./styles/main.css";
 import { renderSessionDetail } from "./views/sessionDetailView.js";
-import { renderMemberView } from "./views/memberDetailView.js";
+import { renderMemberDetail } from "./views/memberDetailView.js";
 
 function renderApp() {
     if (state.currentView === "roster") {
@@ -17,7 +17,7 @@ function renderApp() {
     } else if (state.currentView === "sessionDetail") {
         renderSessionDetail();
     } else if (state.currentView === "memberDetail") {
-        renderMemberView();
+        renderMemberDetail();
     } else {
         renderDashboard ();
     }

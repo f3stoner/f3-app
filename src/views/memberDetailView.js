@@ -4,7 +4,7 @@ import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { saveState } from "../utils/storage.js";
 
-export function renderMemberView () {
+export function renderMemberDetail () {
     const app = document.getElementById("app");
     app.textContent = "";
 
