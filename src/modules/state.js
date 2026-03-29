@@ -1,7 +1,11 @@
+import { loadState } from "../utils/storage.js";
 import { seedMembers } from "../data/seedMembers.js";
 
+const savedState = loadState();
+
 export const state = {
-    members: [...seedMembers],
-    sessions: [],
+    groupName: savedState?.groupName || "The Hub",
+    members: savedState?.members || [...seedMembers],
+    sessions: savedState?.sessions || [],
     currentView: "dashboard",
 };
