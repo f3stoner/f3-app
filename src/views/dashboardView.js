@@ -21,15 +21,32 @@ export function renderDashboard() {
     if (state.sessions.length === 0) {
         recentSessionList.textContent = "No sessions saved yet";
     } else {
-        sortedSessions.forEach((session) => {
+        sortedSessions.slice(0, 3).forEach((session) => {
             const sessionDetail = document.createElement("div");
-            sessionDetail.textContent = `${formatDate(session.date)} - ${session.aoName} - ${session.attendeeIds.length} PAX`;
+            const qMember = state.members.find(m => m.id === session.qId);
+            const qName = qMember ? qMember.paxName : "-";
+            sessionDetail.textContent = `${formatDate(session.date)} - ${session.aoName} | Q: ${qName} | ${session.attendeeIds.length} PAX | ${session.fngs.length} FNGs`;
             sessionDetail.classList.add("section");
             sessionDetail.classList.add("member-card");
+            sessionDetail.addEventListener("click", () => {
+                state.selectedSessionId = session.id;
+                state.currentView = "sessionDetail";
+                renderApp();
+            })
             recentSessionList.appendChild(sessionDetail);
         })
     }
     recentSessionsSection.append(recentSessionList);
+
+    const viewSessionsButton = document.createElement("button");
+    viewSessionsButton.classList.add("section");
+    viewSessionsButton.textContent = "View All Sessions";
+    viewSessionsButton.addEventListener("click", () => {
+        state.currentView = "sessionHistory";
+        renderApp();
+    })
+
+    recentSessionsSection.append(viewSessionsButton);
 
     const rosterButton = document.createElement("button");
     rosterButton.textContent = "View Roster";

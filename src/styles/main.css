@@ -33,9 +33,14 @@ p {
 }
 
 .q-button.q-selected {
-    background: #222;
-    color: white;
-    border-color: #222;
+    background: #ffcc00;
+    color: #222;
+    border-color: #ffcc00;
+}
+
+.q-button.q-selected::after {
+    content: " ✓";
+    font-weight: 700;
 }
 
 .attendance-toggle {
@@ -81,6 +86,16 @@ button:hover {
     background: white;
     border: 1px solid #ddd;
     border-radius: 10px;
+    cursor: pointer;
+}
+
+.member-card:hover {
+    background: #f0f0f0;
+}
+
+.member-card.selected:hover {
+    background-color: #222;
+    color: white;
 }
 
 .member-name {
@@ -133,4 +148,29 @@ button:hover {
 .selected .attendance-toggle {
     background: rgba(255, 255, 255, 0.2);
     color: white;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal {
+    width: min(700px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal h2 {
+    margin-top: 0;
 }

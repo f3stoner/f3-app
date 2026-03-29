@@ -8,4 +8,6 @@ export const state = {
     members: savedState?.members || [...seedMembers],
     sessions: savedState?.sessions || [],
     currentView: "dashboard",
+    selectedSessionId: null,
+    editingSessionId: null,
 };

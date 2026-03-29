@@ -10,7 +10,15 @@ export function renderSession() {
 const app = document.getElementById("app");
 app.textContent = "";
 
-const draftSession = createSession(getTodayDate(), state.groupName);
+const isEditing = Boolean(state.editingSessionId);
+let draftSession;
+
+if (isEditing) {
+    const existingSession = state.sessions.find(s => s.id === state.editingSessionId);
+    draftSession = {...existingSession, attendeeIds: [...existingSession.attendeeIds], fngs: [...existingSession.fngs,]};
+} else {
+    draftSession = createSession(getTodayDate(), state.groupName);
+}
 
 const title = document.createElement("h1");
 title.textContent = state.groupName;
@@ -18,11 +26,18 @@ const date = document.createElement("p");
 date.textContent = draftSession.date;
 
 const backButton = document.createElement("button");
+if (isEditing) {
+    backButton.textContent = "Back to Session Details";
+    backButton.addEventListener("click", () => {
+        state.currentView = "sessionDetail";
+        renderApp();
+    })
+} else {
 backButton.textContent = "Back to Dashboard";
 backButton.addEventListener("click", () => {
     state.currentView = "dashboard";
     renderApp();
-});
+})};
 
 const memberList = document.createElement("div");
 const activeMembers = state.members.filter(m => m.status === "active");
@@ -37,12 +52,27 @@ activeMembers.forEach(member => {
     const toggle = document.createElement("div");
     toggle.classList.add("attendance-toggle");
     toggle.textContent = "Out";
+    if (draftSession.attendeeIds.includes(member.id)) {
+        card.classList.add("selected");
+        toggle.textContent = "Present";
+    }
+
     const qButton = document.createElement("button");
     qButton.classList.add("q-button");
     qButton.textContent = "Q";
+    if (draftSession.qId === member.id) {
+        qButton.classList.add("q-selected");
+    }
     qButton.addEventListener("click", (event) => {
         event.stopPropagation();
         draftSession.qId = member.id;
+
+        if (!draftSession.attendeeIds.includes(member.id)){
+            draftSession.attendeeIds.push(member.id);
+            card.classList.add("selected");
+            toggle.textContent = "Present";
+        }
+
         const allQButtons = document.querySelectorAll(".q-button");
         allQButtons.forEach(button => button.classList.remove("q-selected"));
         qButton.classList.add("q-selected");
@@ -73,7 +103,8 @@ fngHeading.textContent = "FNGs";
 const addFngButton = document.createElement("button");
 addFngButton.textContent = "Add FNG";
 const fngContainer = document.createElement("div");
-addFngButton.addEventListener("click", () => {
+
+function addFngRow(fng = null) {
     const fngRow = document.createElement("div");
     fngRow.classList.add("fng-row");
 
@@ -81,10 +112,13 @@ addFngButton.addEventListener("click", () => {
     realName.type = "text";
     realName.classList.add("fng-realname-input");
     realName.placeholder = "FNG Real Name";
+    realName.value = fng?.realName || "";
+
     const paxName = document.createElement("input");
     paxName.classList.add("fng-paxname-input");
     paxName.type = "text";
     paxName.placeholder = "FNG F3 Name";
+    paxName.value = fng?.paxName || "";
 
     const invitedBy = document.createElement("select");
     invitedBy.classList.add("fng-invited-by-select");
@@ -103,9 +137,19 @@ addFngButton.addEventListener("click", () => {
         invitedBy.appendChild(option);
     });
 
+    invitedBy.value = fng?.invitedById || "";
+
     fngRow.append(realName, paxName, invitedBy);
     fngContainer.appendChild(fngRow);
+}
+
+addFngButton.addEventListener("click", () => {
+    addFngRow();  
 });
+
+if (isEditing && draftSession.fngs.length > 0) {
+    draftSession.fngs.forEach(fng => addFngRow(fng));
+}
 
 const saveButton = document.createElement("button");
 saveButton.textContent = "Save";
@@ -131,15 +175,30 @@ saveButton.addEventListener("click", () => {
 
     draftSession.fngs = fngs;
     draftSession.notes = notes.value.trim();
+
+    if (isEditing) {
+        const sessionIndex = state.sessions.findIndex(s => s.id === state.editingSessionId);
+        state.sessions[sessionIndex] = draftSession;
+        state.editingSessionId = null;
+    } else {
     state.sessions.push(draftSession);
+    }
+    state.selectedSessionId = draftSession.id;
     saveState(state);
+
+    if (isEditing) {
+        state.currentView = "sessionDetail";
+        renderApp();
+    } else {
     const backblast = generateBackblast(draftSession, state.members);
     renderBackblastView(backblast);
+    }
 })
 
 const notes = document.createElement("textarea");
 notes.classList.add("notes");
 notes.placeholder = "Notes...";
+notes.value = draftSession.notes || "";
 
 app.append(title, date, memberList, fngHeading, addFngButton, fngContainer, notes, backButton, saveButton);
 
