@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { importData } from "../utils/importData.js";
+import { exportState } from "../utils/export.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -93,5 +94,13 @@ export function renderDashboard() {
         importInput.value = "";
     })
 
-    app.append(title, subtitle, rosterButton, sessionButton, importButton, importInput, recentSessionsSection);
+    const exportButton = document.createElement("button");
+    exportButton.textContent = "Export Data";
+
+    exportButton.addEventListener("click", () => {
+        exportState(state);
+        alert("Data exported!");
+    });
+
+    app.append(title, subtitle, rosterButton, sessionButton, importButton, exportButton, importInput, recentSessionsSection);
 }
