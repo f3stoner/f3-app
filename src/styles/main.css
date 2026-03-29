@@ -174,3 +174,11 @@ button:hover {
 .modal h2 {
     margin-top: 0;
 }
+
+.fng-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}

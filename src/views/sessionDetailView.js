@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { generateBackblast } from "../modules/backblast.js";
+import { saveState } from "../utils/storage.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -29,19 +30,6 @@ export function renderSessionDetail() {
         return member ? member.paxName : "Unknown";
     });
     const paxNames = paxNamesArray.join(", ");
-    const fngText = session.fngs.length === 0
-    ? "None"
-    : session.fngs.map(fng => {
-        const displayName = fng.paxName || fng.realName;
-
-        if (!fng.invitedById) return displayName;
-
-        const inviter = state.members.find(m => m.id === fng.invitedById);
-        const inviterName = inviter ? inviter.paxName : "Unknown";
-
-        return `${displayName} (Invited by ${inviterName})`;
-
-    }).join(", ");
 
     const notesText = session.notes ? session.notes : "-";
 
@@ -62,11 +50,73 @@ export function renderSessionDetail() {
         return section;
     }
 
+    function createFngSection() {
+        const section = document.createElement("div");
+        section.classList.add("section");
+
+        const label = document.createElement("div");
+        label.textContent = "FNGs";
+        label.classList.add("detail-label");
+
+        const value = document.createElement("div");
+        value.classList.add("detail-value");
+
+        if (session.fngs.length === 0) {
+            value.textContent = "None";
+        } else {
+            session.fngs.forEach((fng) => {
+                const row = document.createElement("div");
+                row.classList.add("fng-detail-row");
+
+                const displayName = fng.paxName || fng.realName;
+
+                let rowText = displayName;
+                if (fng.invitedById) {
+                    const inviter = state.members.find(m => m.id === fng.invitedById);
+                    const inviterName = inviter ? inviter.paxName : "Unknown";
+                    rowText += ` (Invited by ${inviterName})`;
+                }
+
+                const text = document.createElement("span");
+                text.textContent = rowText;
+
+                const alreadyOnRoster = state.members.some(m => m.realName === fng.realName);
+
+                const addButton = document.createElement("button");
+                addButton.textContent = alreadyOnRoster ? "On Roster" : "Add to Roster";
+                addButton.disabled = alreadyOnRoster;
+
+                addButton.addEventListener("click", () => {
+                    const newMember = {
+                        id: crypto.randomUUID(),
+                        paxName: fng.paxName || fng.realName,
+                        realName: fng.realName,
+                        homeAo: session.aoName,
+                        invitedById: fng.invitedById,
+                        firstPostDate: session.date,
+                        status: "active",
+                    };
+
+                    state.members.push(newMember);
+                    saveState(state);
+
+                    addButton.textContent = "On Roster";
+                    addButton.disabled = true;
+                });
+
+                row.append(text, addButton);
+                value.appendChild(row);
+            });   
+        }
+        section.append(label, value);
+        return section;
+    }
+
     const dateSection = createDetailSection("Date", formattedDate);
     const aoSection = createDetailSection("AO", session.aoName);
     const qSection = createDetailSection("Q", qName);
     const paxSection = createDetailSection("PAX", paxNames);
-    const fngSection = createDetailSection("FNGs", fngText);
+    const fngSection = createFngSection();
     const notesSection = createDetailSection("Notes", notesText);
 
     const backblastButton = document.createElement("button");
