@@ -8,7 +8,7 @@ body {
 #app {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px 20px 100px;
 }
 
 h1 {
@@ -199,3 +199,18 @@ select {
     margin-bottom: 12px;
 }
 
+.sticky-action-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    gap: 12px;
+    padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+    background: #f7f7f7;
+    border-top: 1px solid #ddd;
+    margin-top: 16px;
+}
+
+.sticky-action-bar button {
+    flex: 1;
+    margin: 0;
+}

@@ -395,6 +395,11 @@ notes.classList.add("notes");
 notes.placeholder = "Notes...";
 notes.value = draftSession.notes || "";
 
+const actionBar = document.createElement("div");
+actionBar.classList.add("sticky-action-bar");
+
+actionBar.append(backButton, saveButton);
+
 app.append(
     title, 
     date, 
@@ -406,8 +411,7 @@ app.append(
     addFngButton, 
     fngContainer, 
     notes, 
-    backButton, 
-    saveButton
+    actionBar,
 );
 
 }
