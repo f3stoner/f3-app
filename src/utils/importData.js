@@ -9,6 +9,7 @@ export function importData(importedData) {
     state.selectedSessionId = null;
     state.editingMemberId = null;
     state.editingSessionId = null;
+    state.currentView = "dashboard";
 
     saveState(state);
 }

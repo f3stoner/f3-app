@@ -1,6 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
+import { importData } from "../utils/importData.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -62,5 +63,35 @@ export function renderDashboard() {
         renderApp();
     });
 
-    app.append(title, subtitle, rosterButton, sessionButton, recentSessionsSection);
+    const importInput = document.createElement("input");
+    importInput.type = "file";
+    importInput.accept = ".json";
+    importInput.style.display = "none";
+
+    const importButton = document.createElement("button");
+    importButton.textContent = "Import Data";
+
+    importButton.addEventListener("click", () => {
+        importInput.click();
+    });
+
+    importInput.addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            importData(data);
+            renderApp();
+        } catch (error) {
+            console.error("Import failed:", error);
+            alert("Import failed. Please choosea valid JSON file.");
+        }
+
+        importInput.value = "";
+    })
+
+    app.append(title, subtitle, rosterButton, sessionButton, importButton, importInput, recentSessionsSection);
 }
