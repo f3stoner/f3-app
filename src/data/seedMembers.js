@@ -19,5 +19,19 @@ export const seedMembers = [
         invitedById: "p2",
         status: "active",
         firstPostDate: "2025-10-04",
+    },
+    {
+        id: "p4",
+        paxName: "Rawhide",
+        invitedById: null,
+        status: "active",
+        firstPostDate: null,
+    },
+    {
+        id: "p5",
+        paxName: "Mario",
+        invitedById: null,
+        status: "active",
+        firstPostDate: null,
     }
 ]
