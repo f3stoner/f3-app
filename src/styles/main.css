@@ -1,8 +1,34 @@
+:root {
+    --bg: #f7f7f7;
+    --surface: #ffffff;
+    --text: #222;
+    --muted: #666;
+    --border: #ddd;
+    --border-strong: #ccc;
+    --primary: #222;
+    --primary-hover: #333;
+    --accent: #ffcc00;
+
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+
+    --space-1: 8px;
+    --space-2: 12px;
+    --space-3: 16px;
+    --space-4: 20px;
+    --space-5: 24px;
+
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
-    background: #f7f7f7;
-    color: #222;
+    background: var(--bg);
+    color: var(--text);
 }
 
 #app {
@@ -22,20 +48,21 @@ p {
 }
 
 .member-card.selected {
-    background-color: #222;
-    color: white;
-    border-color: #222;
+    background-color: var(--primary);
+    color: var(--surface);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .selected .member-name,
 .selected .stats-line {
-    color: white;
+    color: var(--surface);
 }
 
 .q-button.q-selected {
-    background: #ffcc00;
-    color: #222;
-    border-color: #ffcc00;
+    background: var(--accent);
+    color: var(--text);
+    border-color: var(--accent);
 }
 
 .q-button.q-selected::after {
@@ -52,8 +79,8 @@ p {
 }
 
 pre {
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px;
     white-space: pre-wrap;
@@ -63,13 +90,15 @@ pre {
 
 button {
     padding: 10px 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background: white;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
     cursor: pointer;
     font-size: 14px;
     margin-right: 8px;
     margin-bottom: 10px;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
 button:hover {
@@ -83,8 +112,6 @@ button:hover {
     gap: 12px;
     padding: 12px 14px;
     margin-bottom: 10px;
-    background: white;
-    border: 1px solid #ddd;
     border-radius: 10px;
     cursor: pointer;
     transition: transform 0.1s ease, box-shadow 0.1s ease;
@@ -95,8 +122,8 @@ button:hover {
 }
 
 .member-card.selected:hover {
-    background-color: #222;
-    color: white;
+    background-color: var(--primary);
+    color: var(--surface);
 }
 
 .member-card:active {
@@ -104,13 +131,21 @@ button:hover {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
+.member-card,
+pre,
+.modal,
+.selected-summary-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
 .member-name {
     font-weight: 600;
 }
 
 .stats-line{
-    font-size: 13px;
-    color: #666;
+    font-size: 12px;
+    color: var(--muted);
 }
 
 .fng-heading {
@@ -129,7 +164,7 @@ button:hover {
 .fng-row input,
 .fng-row select {
     padding: 8px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
     font-size: 14px;
 }
@@ -138,7 +173,7 @@ button:hover {
     width: 100%;
     min-height: 120px;
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-strong);
     border-radius: 10px;
     font: inherit;
     margin-top: 12px;
@@ -148,12 +183,12 @@ button:hover {
 }
 
 .section {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .selected .attendance-toggle {
     background: rgba(255, 255, 255, 0.2);
-    color: white;
+    color: var(--surface);
 }
 
 .modal-overlay {
@@ -171,7 +206,7 @@ button:hover {
     width: min(700px, 100%);
     max-height: 90vh;
     overflow-y: auto;
-    background: white;
+    background: var(--surface);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -194,11 +229,25 @@ select {
     width: 100%;
     max-width: 400px;
     padding: 10px 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
     font: inherit;
     margin-bottom: 14px;
     box-sizing: border-box;
+}
+
+input,
+select,
+.notes {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+select:focus,
+.notes:focus {
+    outline: none;
+    border-color: #999;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
 }
 
 .sticky-action-bar {
@@ -211,8 +260,8 @@ select {
     display: flex;
     gap: 12px;
     padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
-    background: #f7f7f7;
-    border-top: 1px solid #ddd;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
     box-sizing: border-box;
     z-index: 1000;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
@@ -222,9 +271,9 @@ select {
     position: sticky;
     top: 0;
     z-index: 900;
-    background: #f7f7f7;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #ddd;
+    background: var(--bg);
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -242,6 +291,11 @@ select {
     margin: 0;
 }
 
+.sticky-action-bar,
+.global-nav {
+    backdrop-filter: blur(6px);
+}
+
 .global-nav {
     position: fixed;
     bottom: 0;
@@ -252,8 +306,8 @@ select {
     display: flex;
     gap: 8px;
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-    background: #fff;
-    border-top: 1px solid #ddd;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
     z-index: 1100;
 }
 
@@ -263,19 +317,19 @@ select {
 }
 
 .global-nav button:nth-child(2) {
-    background: #222;
-    color: white;
-    border-color: #222;
+    background: var(--primary);
+    color: var(--surface);
+    border-color: var(--primary);
     font-weight: 600;
 }
 
 .global-nav button:nth-child(2):hover {
-    background: #333;
+    background: var(--primary-hover);
 }
 
 .global-nav .active-nav {
-    font-weight: bold;
-    background: #eee;
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
 }
 
 .button-row {
@@ -292,6 +346,12 @@ select {
 
 .detail-label {
     margin-top: 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .selected-summary-list {
@@ -307,8 +367,8 @@ select {
     justify-content: space-between;
     gap: 12px;
     padding: 8px 10px;
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
     font-size: 14px;
 }
@@ -334,10 +394,10 @@ select {
     left: 0;
     right: 0;
     z-index: 1200;
-    background: white;
-    border: 1px solid #ccc;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0,08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
 }
 
@@ -347,7 +407,7 @@ select {
     border: 0;
     border-bottom: 1px solid #eee;
     border-radius: 0;
-    background: white;
+    background: var(--surface);
     margin: 0;
     padding: 10px 12px;
 }
