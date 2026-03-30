@@ -34,6 +34,7 @@ if (isEditing) {
         state.sessionSearchTerm = "";
         state.sessionShowAllOthers = false;
         state.sessionShowAllRecent = false;
+        state.sessionSelectedExpanded = false;
         renderApp();
     })
 } else {
@@ -43,6 +44,7 @@ backButton.addEventListener("click", () => {
     state.sessionSearchTerm = "";
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
+    state.sessionSelectedExpanded = false;
     renderApp();
 })};
 
@@ -186,6 +188,83 @@ function createMemberSection(titleText, members, options = {}) {
     return section;
 }
 
+function createSelectedSection(selectedMembers) {
+    const section = document.createElement("div");
+    section.classList.add("section");
+
+    const heading = document.createElement("div");
+    heading.classList.add("detail-label");
+    heading.textContent = `Selected PAX (${selectedMembers.length})`;
+    heading.style.cursor = "pointer";
+
+    section.appendChild(heading);
+
+    if (selectedMembers.length === 0) {
+        const empty = document.createElement("div");
+        empty.classList.add("detail-value");
+        empty.textContent = "None selected yet";
+        section.appendChild(empty);
+        return section;
+    }
+
+    const summary = document.createElement("div");
+    summary.classList.add("detail-value");
+
+    const summaryNames = selectedMembers.map(member => member.paxName);
+    if (summaryNames.length <= 3) {
+        summary.textContent = summaryNames.join(", ");
+    } else {
+        summary.textContent = `${summaryNames.slice(0, 3).join(", ")} +${summaryNames.length - 3}`;
+    }
+
+    section.appendChild(summary);
+
+    heading.addEventListener("click", () => {
+        state.sessionSelectedExpanded = !state.sessionSelectedExpanded;
+        renderMemberList();
+    });
+
+    summary.addEventListener("click", () => {
+        state.sessionSelectedExpanded = !state.sessionSelectedExpanded;
+        renderMemberList();
+    });
+
+    if (!state.sessionSelectedExpanded) {
+        return section;
+    }
+
+    const selectedList = document.createElement("div");
+    selectedList.classList.add("selected-summary-list");
+
+    selectedMembers.forEach(member => {
+        const row = document.createElement("div");
+        row.classList.add("selected-summary-row");
+
+        const name = document.createElement("span");
+        name.textContent = draftSession.qId === member.id
+        ? `${member.paxName} (Q)`
+        : member.paxName;
+
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Remove";
+        removeButton.addEventListener("click", () => {
+            draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
+
+            if (draftSession.qId === member.id) {
+                draftSession.qId = null;
+            }
+
+            renderMemberList();
+        });
+
+        row.append(name, removeButton);
+        selectedList.appendChild(row);
+    });
+
+    section.appendChild(selectedList);
+    return section;
+}
+
 function renderMemberList() {
     memberList.textContent = "";
 
@@ -239,11 +318,10 @@ function renderMemberList() {
         ? otherMembers
         : otherMembers.slice(0, 10);
     
-    memberList.appendChild(
-        createMemberSection("Selected PAX", selectedMembers, {
-            emptyText: "None selected yet",
-        })
-    );
+    const selectedSection = createSelectedSection(selectedMembers);
+    selectedSection.classList.add("sticky-selected");
+
+    memberList.appendChild(selectedSection);
 
         const recentSection = createMemberSection(`Recent at ${draftSession.aoName || "AO"}`, visibleRecentMembers, {
             emptyText: "No recent posters at this AO",
@@ -378,6 +456,7 @@ saveButton.addEventListener("click", () => {
     state.sessionSearchTerm = "";
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
+    state.sessionSelectedExpanded = false;
     saveState(state);
 
 

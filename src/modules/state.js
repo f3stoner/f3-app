@@ -15,4 +15,5 @@ export const state = {
     sessionSearchTerm: "",
     sessionShowAllOthers: false,
     sessionShowAllRecent: false,
+    sessionSelectedExpanded: false,
 };
