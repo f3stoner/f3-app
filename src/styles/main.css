@@ -8,7 +8,7 @@ body {
 #app {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px 20px 100px;
+    padding: 20px 20px 120px;
 }
 
 h1 {
@@ -87,6 +87,7 @@ button:hover {
     border: 1px solid #ddd;
     border-radius: 10px;
     cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .member-card:hover {
@@ -96,6 +97,11 @@ button:hover {
 .member-card.selected:hover {
     background-color: #222;
     color: white;
+}
+
+.member-card:active {
+    transform: scale(0.99);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .member-name {
@@ -195,10 +201,6 @@ select {
     box-sizing: border-box;
 }
 
-.session-search {
-    margin-bottom: 12px;
-}
-
 .sticky-action-bar {
     position: fixed;
     bottom: 0;
@@ -226,7 +228,7 @@ select {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.sticky-hader .detail-label {
+.sticky-header .detail-label {
     margin-bottom: 6px;
 }
 
@@ -257,9 +259,26 @@ select {
 
 .global-nav button {
     flex: 1;
+    margin: 0;
 }
 
 .global-nav .active-nav {
     font-weight: bold;
     background: #eee;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 8px 0 20px;
+}
+
+.button-row button {
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.detail-label {
+    margin-top: 12px;
 }

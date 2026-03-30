@@ -10,13 +10,10 @@ export function renderDashboard() {
     app.textContent = "";
 
     const title = document.createElement("h1");
-    title.textContent = state.groupName || "F3 App";
-
-    const subtitle = document.createElement("p");
-    subtitle.textContent = "Dashboard";
+    title.textContent = state.regionName || "F3 App";
 
     const recentSessionsSection = document.createElement("div");
-    const recentHeading = document.createElement("div");
+    const recentHeading = document.createElement("h2");
     const recentSessionList = document.createElement("div");
     recentHeading.textContent = "Recent Sessions";
     recentSessionsSection.append(recentHeading);
@@ -40,30 +37,6 @@ export function renderDashboard() {
         })
     }
     recentSessionsSection.append(recentSessionList);
-
-    const viewSessionsButton = document.createElement("button");
-    viewSessionsButton.classList.add("section");
-    viewSessionsButton.textContent = "View All Sessions";
-    viewSessionsButton.addEventListener("click", () => {
-        state.currentView = "sessionHistory";
-        renderApp();
-    })
-
-    recentSessionsSection.append(viewSessionsButton);
-
-    const rosterButton = document.createElement("button");
-    rosterButton.textContent = "View Roster";
-    rosterButton.addEventListener("click", () => {
-        state.currentView = "roster";
-        renderApp();
-    });
-
-    const sessionButton = document.createElement("button");
-    sessionButton.textContent = "Start Session";
-    sessionButton.addEventListener("click", () => {
-        state.currentView = "session";
-        renderApp();
-    });
 
     const importInput = document.createElement("input");
     importInput.type = "file";
@@ -89,7 +62,7 @@ export function renderDashboard() {
             renderApp();
         } catch (error) {
             console.error("Import failed:", error);
-            alert("Import failed. Please choosea valid JSON file.");
+            alert("Import failed. Please choose a valid JSON file.");
         }
 
         importInput.value = "";
@@ -103,7 +76,16 @@ export function renderDashboard() {
         alert("Data exported!");
     });
 
+    const dataToolsHeading = document.createElement("div");
+    dataToolsHeading.textContent = "Data Tools";
+    dataToolsHeading. classList.add("detail-label");
+
+    const dataToolsRow = document.createElement("div");
+    dataToolsRow.classList.add("button-row");
+
+    dataToolsRow.append(importButton, exportButton);
+
     const nav = createGlobalNav();
 
-    app.append(title, subtitle, rosterButton, sessionButton, importButton, exportButton, importInput, recentSessionsSection, nav);
+    app.append(title, dataToolsHeading, dataToolsRow, importInput, recentSessionsSection, nav);
 }
