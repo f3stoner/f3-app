@@ -6,6 +6,7 @@ import { saveState } from "../utils/storage.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { renderBackblastView } from "./backblastView.js";
 import { createInvitedByField } from "../components/invitedByField.js";
+import { getMemberDisplayName } from "../utils/memberDisplay.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -23,8 +24,18 @@ if (isEditing) {
 
 const title = document.createElement("h1");
 title.textContent = isEditing ? "Edit Session" : "Start Session";
-const date = document.createElement("p");
-date.textContent = draftSession.date;
+
+const dateLabel = document.createElement("div");
+dateLabel.textContent = isEditing ? "Edit Date" : "Date";
+dateLabel.classList.add("detail-label");
+
+const dateInput = document.createElement("input");
+dateInput.type = "date";
+dateInput.value = draftSession.date;
+
+dateInput.addEventListener("input", (event) => {
+    draftSession.date = event.target.value;
+});
 
 const backButton = document.createElement("button");
 if (isEditing) {
@@ -123,7 +134,7 @@ function createMemberCard(member) {
     card.dataset.memberId = member.id;
     const name = document.createElement("span");
     name.classList.add("member-name");
-    name.textContent = member.paxName;
+    name.textContent = getMemberDisplayName(member);
     const toggle = document.createElement("div");
     toggle.classList.add("attendance-toggle");
     toggle.textContent = "Out";
@@ -469,7 +480,8 @@ actionBar.append(backButton, saveButton);
 
 app.append(
     title, 
-    date, 
+    dateLabel,
+    dateInput, 
     stickyHeader, 
     memberList, 
     fngHeading, 

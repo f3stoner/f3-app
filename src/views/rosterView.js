@@ -3,6 +3,7 @@ import { state } from "../modules/state.js";
 import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { getMemberDisplayName } from "../utils/memberDisplay.js";
 
 export function renderRoster() {
   const app = document.getElementById("app");
@@ -13,11 +14,23 @@ export function renderRoster() {
 
   const rosterContainer = document.createElement("div");
 
-  state.members.forEach((member) => {
+  const sortedMembers = [...state.members].sort((a, b) => {
+    if (a.status !== b.status) {
+        if (a.status === "active") return -1;
+        if (b.status === "active") return 1;
+    }
+
+    const aName = getMemberDisplayName(a).toLowerCase();
+    const bName = getMemberDisplayName(b).toLowerCase();
+
+    return aName.localeCompare(bName);
+  });
+
+  sortedMembers.forEach((member) => {
     const memberCard = document.createElement("div");
     memberCard.classList.add("member-card");
     const paxName = document.createElement("div");
-    paxName.textContent = member.paxName;
+    paxName.textContent = getMemberDisplayName(member);
     const statsLine = document.createElement("div");
     statsLine.classList.add("stats-line");
     const memberStats = getMemberStats(member.id);

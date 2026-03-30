@@ -1,6 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { saveState } from "../utils/storage.js";
+import { createInvitedByField } from "../components/invitedByField.js";
 
 export function renderMemberEdit () {
     
@@ -8,9 +9,6 @@ export function renderMemberEdit () {
     app.textContent = "";
 
     const member = state.members.find(m => m.id === state.editingMemberId);
-    console.log("editingMemberID:", state.editingMemberId);
-    console.log("member found:", member);
-    console.log("paxName:", member?.paxName);
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "Cancel";
     cancelButton.addEventListener("click", () => {
@@ -48,22 +46,7 @@ export function renderMemberEdit () {
     invitedByLabel.textContent = "Invited By";
     invitedByLabel.classList.add("detail-label");
 
-    const invitedBySelect = document.createElement("select");
-
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = "None";
-    invitedBySelect.appendChild(defaultOption);
-
-    state.members
-        .filter(m => m.id !== member.id)
-        .forEach(m => {
-            const option = document.createElement("option");
-            option.value = m.id;
-            option.textContent = m.paxName;
-            invitedBySelect.appendChild(option);
-        });
-    invitedBySelect.value = member.invitedById || "";
+    const invitedByField = createInvitedByField(member.invitedById || "");
     
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save";
@@ -71,7 +54,8 @@ export function renderMemberEdit () {
     saveButton.addEventListener("click", () => {
         member.paxName = paxNameInput.value.trim() || member.paxName;
         member.realName = realNameInput.value.trim();
-        member.invitedById = invitedBySelect.value || null;
+        const invitedByInput = app.querySelector(".fng-invited-by-select");
+        member.invitedById = invitedByInput.value || null;
 
         saveState(state);
 
@@ -81,5 +65,15 @@ export function renderMemberEdit () {
         renderApp();
     });
 
-    app.append(title, paxNameLabel, paxNameInput, realNameLabel, realNameInput, invitedByLabel, invitedBySelect, saveButton, cancelButton);
+    app.append(
+        title, 
+        paxNameLabel, 
+        paxNameInput, 
+        realNameLabel, 
+        realNameInput, 
+        invitedByLabel, 
+        invitedByField.wrapper, 
+        saveButton, 
+        cancelButton
+    );
 }

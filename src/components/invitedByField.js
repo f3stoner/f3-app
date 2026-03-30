@@ -1,4 +1,5 @@
 import { state } from "../modules/state.js";
+import { getMemberDisplayName } from "../utils/memberDisplay.js";
 
 export function createInvitedByField (selectedId = "") {
     const wrapper = document.createElement("div");
@@ -47,12 +48,10 @@ export function createInvitedByField (selectedId = "") {
             const item = document.createElement("button");
             item.type = "button";
             item.classList.add("invited-by-item");
-            item.textContent = member.realName
-                ? `${member.paxName} - ${member.realName}`
-                : member.paxName;
+            item.textContent = getMemberDisplayName(member);
 
             item.addEventListener("click", () => {
-                input.value = member.paxName;
+                input.value = getMemberDisplayName(member);
                 hiddenInput.value = member.id;
                 results.textContent = "";
             });
