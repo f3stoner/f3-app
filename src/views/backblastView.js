@@ -14,6 +14,7 @@ export function renderBackblastView (backblast) {
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy Backblast";
     copyButton.addEventListener("click", () => {
+        console.log("COPYING:", backblast);
         navigator.clipboard.writeText(backblast);
         copyButton.textContent = "Copied";
         setTimeout(() => {
