@@ -1,6 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
+import { createGlobalNav } from "../components/globalNav.js";
 
 export function renderSessionHistory() {
     const app = document.getElementById("app");
@@ -34,5 +35,7 @@ export function renderSessionHistory() {
         renderApp();
     })
 
-    app.append(title, sessionList, backButton);
+    const nav = createGlobalNav();
+
+    app.append(title, sessionList, backButton, nav);
 }}

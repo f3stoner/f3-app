@@ -395,6 +395,11 @@ notes.classList.add("notes");
 notes.placeholder = "Notes...";
 notes.value = draftSession.notes || "";
 
+const stickyHeader = document.createElement("div");
+stickyHeader.classList.add("sticky-header");
+
+stickyHeader.append(aoLabel, aoSelect, searchInput);
+
 const actionBar = document.createElement("div");
 actionBar.classList.add("sticky-action-bar");
 
@@ -403,9 +408,7 @@ actionBar.append(backButton, saveButton);
 app.append(
     title, 
     date, 
-    aoLabel,
-    aoSelect,
-    searchInput, 
+    stickyHeader, 
     memberList, 
     fngHeading, 
     addFngButton, 

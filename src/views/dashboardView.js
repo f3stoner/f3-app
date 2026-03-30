@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
+import { createGlobalNav } from "../components/globalNav.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -102,5 +103,7 @@ export function renderDashboard() {
         alert("Data exported!");
     });
 
-    app.append(title, subtitle, rosterButton, sessionButton, importButton, exportButton, importInput, recentSessionsSection);
+    const nav = createGlobalNav();
+
+    app.append(title, subtitle, rosterButton, sessionButton, importButton, exportButton, importInput, recentSessionsSection, nav);
 }

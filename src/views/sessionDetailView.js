@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { saveState } from "../utils/storage.js";
+import { createGlobalNav } from "../components/globalNav.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -135,7 +136,9 @@ export function renderSessionDetail() {
         renderApp();
     })
 
-    app.append(title, dateSection, aoSection, qSection, paxSection, fngSection, notesSection, backblastButton, editButton, backButton);
+    const nav = createGlobalNav();
+
+    app.append(title, dateSection, aoSection, qSection, paxSection, fngSection, notesSection, backblastButton, editButton, backButton, nav);
 
     }
 }

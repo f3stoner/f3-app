@@ -2,6 +2,7 @@ import { renderApp } from "../index.js";
 import { state } from "../modules/state.js";
 import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
+import { createGlobalNav } from "../components/globalNav.js";
 
 export function renderRoster() {
   const app = document.getElementById("app");
@@ -40,7 +41,7 @@ export function renderRoster() {
     renderApp();
   });
 
-  app.appendChild(title);
-  app.appendChild(rosterContainer);
-  app.appendChild(backButton);
+  const nav = createGlobalNav();
+
+  app.append(title, rosterContainer, backButton, nav);
 }
