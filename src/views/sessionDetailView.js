@@ -26,7 +26,9 @@ export function renderSessionDetail() {
     const formattedDate = formatDate(session.date);
     const qMember = state.members.find(m => m.id === session.qId);
     const qName = qMember ? qMember.paxName : "-";
-    const paxNamesArray = session.attendeeIds.map(id => {
+    const paxNamesArray = session.attendeeIds
+        .filter(id => id !== session.qId)
+        .map(id => {
         const member = state.members.find(m => m.id === id);
         return member ? member.paxName : "Unknown";
     });

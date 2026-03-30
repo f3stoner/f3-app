@@ -5,6 +5,7 @@ import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { renderBackblastView } from "./backblastView.js";
+import { createInvitedByField } from "../components/invitedByField.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -49,8 +50,8 @@ backButton.addEventListener("click", () => {
 })};
 
 const aoOptions = [...new Set([
-    ...state.members.map(m => m.homeAo).filter(Boolean),
-    ...state.sessions.map(s => s.aoName).filter(Boolean),
+    ...state.members.map(m => m.homeAo).filter(ao => ao && ao !== "DR"),
+    ...state.sessions.map(s => s.aoName).filter(ao => ao && ao !== "DR"),
 ])].sort();
 
 const aoLabel = document.createElement("div");
@@ -273,7 +274,6 @@ stickyHeader.append(aoLabel, aoSelect, searchInput, selectedHeaderSlot)
 
 function renderMemberList() {
     memberList.textContent = "";
-    selectedHeaderSlot.textContent = "";
 
     const activeMembers = state.members
     .filter(m => m.status === "active")
@@ -392,26 +392,9 @@ function addFngRow(fng = null) {
     paxName.placeholder = "FNG F3 Name";
     paxName.value = fng?.paxName || "";
 
-    const invitedBy = document.createElement("select");
-    invitedBy.classList.add("fng-invited-by-select");
+    const invitedByField = createInvitedByField(fng?.invitedById || "");
 
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = "Invited by (optional)";
-    invitedBy.appendChild(defaultOption);
-
-    const activeMembers = state.members.filter(m => m.status === "active");
-
-    activeMembers.forEach(member => {
-        const option = document.createElement("option");
-        option.value = member.id;
-        option.textContent = member.paxName;
-        invitedBy.appendChild(option);
-    });
-
-    invitedBy.value = fng?.invitedById || "";
-
-    fngRow.append(realName, paxName, invitedBy);
+    fngRow.append(realName, paxName, invitedByField.wrapper);
     fngContainer.appendChild(fngRow);
 }
 

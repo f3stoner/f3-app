@@ -322,3 +322,40 @@ select {
 .selected-summary-row span {
     font-size: 13px;
 }
+
+.invited-by-field {
+    position: relative;
+    flex: 1 1 220px;
+}
+
+.invited-by-results {
+    position: absolute;
+    top: calc(100% - 8px);
+    left: 0;
+    right: 0;
+    z-index: 1200;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0,08);
+    overflow: hidden;
+}
+
+.invited-by-item {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    border-bottom: 1px solid #eee;
+    border-radius: 0;
+    background: white;
+    margin: 0;
+    padding: 10px 12px;
+}
+
+.invited-by-item:last-child {
+    border-bottom: 0;
+}
+
+.invited-by-item:hover {
+    background: #f5f5f5;
+}
