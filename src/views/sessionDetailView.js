@@ -116,11 +116,59 @@ export function renderSessionDetail() {
         return section;
     }
 
+    function createWorkoutSection() {
+        const section = document.createElement("div");
+        section.classList.add("section");
+
+        const label = document.createElement("div");
+        label.textContent = "Workout";
+        label.classList.add("detail-label");
+
+        const value = document.createElement("div");
+        value.classList.add("detail-value");
+
+        const workout = session.workout;
+
+        if (!workout) {
+            value.textContent = session.notes || "-";
+        } else {
+            const parts = [];
+
+        if (workout.title) {
+            parts.push(`Title: ${workout.title}`);
+        }
+
+        if (workout.warmorama) {
+            parts.push(`Warm-O-Rama:\n${workout.warmorama}`);
+        }
+
+        if (workout.thangs) {
+            parts.push(`Thangs:\n${workout.thangs}`);
+        }
+
+        if (workout.finisher) {
+            parts.push(`Mary / Finisher:\n${workout.finisher}`);
+        }
+
+        if (workout.notes) {
+            parts.push(`Planner Notes:\n${workout.notes}`);
+        }
+
+        value.textContent = parts.length > 0
+            ? parts.join("\n\n")
+            : "-";
+        }
+
+        section.append(label, value);
+        return section;
+    }
+
     const dateSection = createDetailSection("Date", formattedDate);
     const aoSection = createDetailSection("AO", session.aoName);
     const qSection = createDetailSection("Q", qName);
     const paxSection = createDetailSection("PAX", paxNames);
     const fngSection = createFngSection();
+    const workoutSection = createWorkoutSection();
     const notesSection = createDetailSection("Notes", notesText);
 
     const backblastButton = document.createElement("button");
@@ -140,7 +188,19 @@ export function renderSessionDetail() {
 
     const nav = createGlobalNav();
 
-    app.append(title, dateSection, aoSection, qSection, paxSection, fngSection, notesSection, backblastButton, editButton, backButton, nav);
+    app.append(
+        title,
+        dateSection, 
+        aoSection, 
+        qSection, 
+        paxSection, 
+        fngSection, 
+        workoutSection,
+        notesSection, 
+        backblastButton, 
+        editButton, 
+        backButton, 
+        nav);
 
     }
 }

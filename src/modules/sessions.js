@@ -9,6 +9,8 @@ export function createSession(date, aoName) {
         qId: null,
         fngs: [],
         notes: "",
+        workout: null,
+        sourcePlannedWorkoutId: null,
         createdAt: Date.now(),
     };
 }

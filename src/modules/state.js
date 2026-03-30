@@ -17,4 +17,7 @@ export const state = {
     sessionShowAllRecent: false,
     sessionSelectedExpanded: false,
     sessionHistorySearchTerm: "",
+    plannedWorkouts: savedState?.plannedWorkouts || [],
+    selectedPlannedWorkoutId: null,
+    editingPlannedWorkoutId: null,
 };

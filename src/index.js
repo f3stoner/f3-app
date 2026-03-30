@@ -8,6 +8,9 @@ import { renderSessionDetail } from "./views/sessionDetailView.js";
 import { renderMemberDetail } from "./views/memberDetailView.js";
 import { renderMemberEdit } from "./views/memberEditView.js";
 import { importData } from "./utils/importData.js";
+import { renderWorkoutPlanner } from "./views/workoutPlannerView.js";
+import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
+import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 
 function renderApp() {
     if (state.currentView === "roster") {
@@ -22,6 +25,12 @@ function renderApp() {
         renderMemberDetail();
     } else if (state.currentView === "memberEdit") {
         renderMemberEdit();
+    } else if (state.currentView === "workoutPlanner") {
+        renderWorkoutPlanner();
+    } else if (state.currentView === "plannedWorkoutList") {
+        renderPlannedWorkoutsList();
+    } else if (state.currentView === "plannedWorkoutDetail") {
+        renderPlannedWorkoutDetail();
     } else {
         renderDashboard ();
     }

@@ -12,15 +12,30 @@ export function renderSession() {
 const app = document.getElementById("app");
 app.textContent = "";
 
-const isEditing = Boolean(state.editingSessionId);
+const sessionId = state.editingSessionId || state.selectedSessionId;
+const isEditing = Boolean(sessionId);
 let draftSession;
 
+
+
 if (isEditing) {
-    const existingSession = state.sessions.find(s => s.id === state.editingSessionId);
-    draftSession = {...existingSession, attendeeIds: [...existingSession.attendeeIds], fngs: [...existingSession.fngs,]};
+    const existingSession = state.sessions.find(s => s.id === sessionId);
+
+    if (!existingSession) {
+        console.log("No existing session found for id:", sessionId);
+        draftSession = createSession(getTodayDate(), "");
+    } else {
+        draftSession = {
+            ...existingSession,
+            attendeeIds: [...existingSession.attendeeIds],
+            fngs: [...existingSession.fngs]
+        };
+    }
 } else {
     draftSession = createSession(getTodayDate(), "");
 }
+
+console.log("sessionView draftSession on open:", draftSession);
 
 const title = document.createElement("h1");
 title.textContent = isEditing ? "Edit Session" : "Start Session";
@@ -41,7 +56,7 @@ const minYear = minDate.getFullYear();
 const minMonth = String(minDate.getMonth() + 1).padStart(2, "0");
 const minDay = String(minDate.getDate()).padStart(2, "0");
 
-const min = `${minYear}-${minMonth}-${minDay}}`;
+const min = `${minYear}-${minMonth}-${minDay}`;
 
 dateInput.min = min;
 dateInput.max = today;
@@ -461,7 +476,7 @@ saveButton.addEventListener("click", () => {
     draftSession.notes = notes.value.trim();
 
     if (isEditing) {
-        const sessionIndex = state.sessions.findIndex(s => s.id === state.editingSessionId);
+        const sessionIndex = state.sessions.findIndex(s => s.id === sessionId);
         state.sessions[sessionIndex] = draftSession;
         state.editingSessionId = null;
     } else {
@@ -469,10 +484,13 @@ saveButton.addEventListener("click", () => {
         state.sessions.push(draftSession);
     }
     state.selectedSessionId = draftSession.id;
+    state.editingSessionId = null;
+    state.selectedPlannedWorkoutId = null;
     state.sessionSearchTerm = "";
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
+    console.log("sessionView draftSession on save:", draftSession);
     saveState(state);
 
 
