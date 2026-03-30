@@ -262,6 +262,17 @@ select {
     margin: 0;
 }
 
+.global-nav button:nth-child(2) {
+    background: #222;
+    color: white;
+    border-color: #222;
+    font-weight: 600;
+}
+
+.global-nav button:nth-child(2):hover {
+    background: #333;
+}
+
 .global-nav .active-nav {
     font-weight: bold;
     background: #eee;

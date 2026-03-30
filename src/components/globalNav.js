@@ -7,7 +7,7 @@ export function createGlobalNav () {
 
     const items = [
         { label: "Home", view: "dashboard" },
-        { label: "Session", view: "session" },
+        { label: "Log Session", view: "session" },
         { label: "Roster", view: "roster" },
         { label: "History", view: "sessionHistory" },
     ];
