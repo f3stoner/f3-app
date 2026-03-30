@@ -3,21 +3,34 @@ import { state } from "../modules/state.js";
 export function getMemberDisplayName(member) {
     if (!member) return "Unknown";
 
-    const samePaxNameCount = state.members.filter(
-        m => m.paxName && m.paxName === member.paxName
-    ).length;
+    const paxName = member.paxName || "";
+    const realName = member.realName || "";
+    const homeAo = member.homeAo || "";
+    const baseName = paxName || realName || "Unknown";
 
-    if (samePaxNameCount <= 1) {
-        return member.paxName || member.realName || "Unknown";
+    const samePaxNameMembers = state.members.filter(
+        m => (m.paxName || "") === paxName
+    );
+
+    if (samePaxNameMembers.length <= 1) {
+        return baseName;
     }
 
-    if (member.homeAo) {
-        return `${member.paxName} - ${member.homeAo}`;
+    const samePaxAndAoMembers = samePaxNameMembers.filter(
+        m => (m.homeAo || "") === (homeAo)
+    );
+
+    if (samePaxAndAoMembers.length <= 1 && homeAo) {
+        return `${baseName} - ${homeAo}`
     }
 
-    if (member.realName) {
-        return `${member.paxName} - ${member.realName}`;
+    if (realName) {
+        return `${baseName} - ${realName}`;
     }
 
-    return member.paxName || "Unknown";
+    if (homeAo) {
+        return `${baseName} - ${homeAo}`;
+    }
+
+    return baseName;
 }

@@ -17,7 +17,16 @@ export function renderDashboard() {
     const recentSessionList = document.createElement("div");
     recentHeading.textContent = "Recent Sessions";
     recentSessionsSection.append(recentHeading);
-    const sortedSessions = [...state.sessions].sort((a,b) => new Date(b.date) - new Date(a.date));
+    const sortedSessions = [...state.sessions].sort((a,b) => {
+        if (a.date !== b.date) {
+            return b.date.localeCompare(a.date);
+        }
+
+        const aCreatedAt = a.createdAt || 0;
+        const bCreatedAt = b.createdAt || 0;
+
+        return bCreatedAt - aCreatedAt;
+    })
     if (state.sessions.length === 0) {
         recentSessionList.textContent = "No sessions saved yet";
     } else {

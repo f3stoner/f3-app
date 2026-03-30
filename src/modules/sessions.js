@@ -9,5 +9,6 @@ export function createSession(date, aoName) {
         qId: null,
         fngs: [],
         notes: "",
+        createdAt: Date.now(),
     };
 }

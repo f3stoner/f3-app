@@ -33,9 +33,25 @@ const dateInput = document.createElement("input");
 dateInput.type = "date";
 dateInput.value = draftSession.date;
 
-dateInput.addEventListener("input", (event) => {
+const today = getTodayDate();
+const minDate = new Date();
+minDate.setDate(minDate.getDate() - 30);
+
+const minYear = minDate.getFullYear();
+const minMonth = String(minDate.getMonth() + 1).padStart(2, "0");
+const minDay = String(minDate.getDate()).padStart(2, "0");
+
+const min = `${minYear}-${minMonth}-${minDay}}`;
+
+dateInput.min = min;
+dateInput.max = today;
+
+function updateDraftDate(event) {
     draftSession.date = event.target.value;
-});
+}
+
+dateInput.addEventListener("change", updateDraftDate);
+dateInput.addEventListener("input", updateDraftDate);
 
 const backButton = document.createElement("button");
 if (isEditing) {
@@ -449,7 +465,8 @@ saveButton.addEventListener("click", () => {
         state.sessions[sessionIndex] = draftSession;
         state.editingSessionId = null;
     } else {
-    state.sessions.push(draftSession);
+        console.log("saving session", draftSession);
+        state.sessions.push(draftSession);
     }
     state.selectedSessionId = draftSession.id;
     state.sessionSearchTerm = "";
