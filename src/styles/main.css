@@ -322,11 +322,3 @@ select {
 .selected-summary-row span {
     font-size: 13px;
 }
-
-.sticky-selected {
-    position: sticky;
-    top: 110px;
-    z-index: 850;
-    background: #f7f7f7;
-    padding-bottom: 8px;
-}

@@ -265,8 +265,15 @@ function createSelectedSection(selectedMembers) {
     return section;
 }
 
+const stickyHeader = document.createElement("div");
+stickyHeader.classList.add("sticky-header");
+
+const selectedHeaderSlot = document.createElement("div");
+stickyHeader.append(aoLabel, aoSelect, searchInput, selectedHeaderSlot)
+
 function renderMemberList() {
     memberList.textContent = "";
+    selectedHeaderSlot.textContent = "";
 
     const activeMembers = state.members
     .filter(m => m.status === "active")
@@ -318,10 +325,8 @@ function renderMemberList() {
         ? otherMembers
         : otherMembers.slice(0, 10);
     
-    const selectedSection = createSelectedSection(selectedMembers);
-    selectedSection.classList.add("sticky-selected");
-
-    memberList.appendChild(selectedSection);
+    selectedHeaderSlot.textContent = "";
+    selectedHeaderSlot.appendChild(createSelectedSection(selectedMembers));
 
         const recentSection = createMemberSection(`Recent at ${draftSession.aoName || "AO"}`, visibleRecentMembers, {
             emptyText: "No recent posters at this AO",
@@ -473,11 +478,6 @@ const notes = document.createElement("textarea");
 notes.classList.add("notes");
 notes.placeholder = "Notes...";
 notes.value = draftSession.notes || "";
-
-const stickyHeader = document.createElement("div");
-stickyHeader.classList.add("sticky-header");
-
-stickyHeader.append(aoLabel, aoSelect, searchInput);
 
 const actionBar = document.createElement("div");
 actionBar.classList.add("sticky-action-bar");
