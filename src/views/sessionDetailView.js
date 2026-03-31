@@ -228,6 +228,22 @@ function renderBackblastModal(backblast) {
         }, 1500);
     });
 
+    const shareButton = document.createElement("button");
+    shareButton.textContent = "Share Backblast";
+
+    if (typeof navigator.share !== "function") {
+        shareButton.disabled = true;
+        shareButton.textContent = "Share Not Available";
+    } else {
+        shareButton.addEventListener("click", async () => {
+            try {
+                await navigator.share({ text: backblast });
+            } catch (error) {
+                console.error("Share failed: ", error);
+            }
+        });
+    }
+
     const closeButton = document.createElement("button");
     closeButton.textContent = "Close";
     closeButton.addEventListener("click", () => {
@@ -242,7 +258,7 @@ function renderBackblastModal(backblast) {
         event.stopPropagation();
     })
 
-    modal.append(title, preview, copyButton, closeButton);
+    modal.append(title, preview, copyButton, shareButton, closeButton);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 }

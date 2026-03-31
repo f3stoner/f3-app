@@ -22,6 +22,21 @@ export function renderBackblastView (backblast) {
         }, 1500);
     });
 
+    const shareButton = document.createElement("button");
+    shareButton.textContent = "Share Backblast";
+
+    if (typeof navigator.share !== "function") {
+        shareButton.disabled = true;
+        shareButton.textContent = "Share Not Available";
+    } else {
+        shareButton.addEventListener("click", async () => {
+            try {
+                await navigator.share({ text: backblast });
+            } catch (error) {
+                console.error("Share failed:", error);
+            }
+        });
+    }
     const doneButton = document.createElement("button");
     doneButton.textContent ="Done";
     doneButton.addEventListener("click", () => {
@@ -29,7 +44,7 @@ export function renderBackblastView (backblast) {
         renderApp();
     });
 
-    app.append(title, textBlock, copyButton);
+    app.append(title, textBlock, shareButton, copyButton);
 
     if (navigator.share) {
         const shareButton = document.createElement("button");

@@ -323,7 +323,7 @@ select:focus,
     font-weight: 600;
 }
 
-.global-nav button:nth-child(2):hover {
+.global-nav button:nth-child(3):hover {
     background: var(--primary-hover);
 }
 
