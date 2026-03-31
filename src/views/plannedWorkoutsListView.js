@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { formatDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 
 export function renderPlannedWorkoutsList () {
@@ -51,7 +51,17 @@ export function renderPlannedWorkoutsList () {
             titleLine.classList.add("stats-line");
             titleLine.textContent = workout.title || "(No Title)";
 
-            card.append(topLine, titleLine);
+            const previewLine = document.createElement("div");
+            previewLine.classList.add("stats-line");
+            previewLine.textContent = workout.thangs
+                ? workout.thangs.split("\n")[0]
+                : (workout.notes ? workout.notes.split("\n")[0] : "No workout details");
+
+            if (workout.date === getTodayDate()) {
+                card.classList.add("today-workout");
+            }
+
+            card.append(topLine, titleLine, previewLine);
 
             card.addEventListener("click", () => {
                 state.selectedPlannedWorkoutId = workout.id;

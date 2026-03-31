@@ -15,7 +15,9 @@ export function generateBackblast (session, members) {
     const fngText = session.fngs.length === 0
     ? "None"
     : session.fngs.map(fng => {
-        const displayName = fng.paxName || fng.realName;
+        const displayName = fng.paxName && fng.realName
+            ? `${fng.paxName} (${fng.realName})` 
+            : (fng.paxName || fng.realName || "Unknown");
 
         if (!fng.invitedById) return displayName;
 

@@ -4,6 +4,7 @@ import { formatDate } from "../utils/date.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { saveState } from "../utils/storage.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -71,9 +72,12 @@ export function renderSessionDetail() {
                 const row = document.createElement("div");
                 row.classList.add("fng-detail-row");
 
-                const displayName = fng.paxName || fng.realName;
+                const displayName = fng.paxName && fng.realName
+                    ? `${fng.paxName} (${fng.realName})`
+                    : (fng.paxName || fng.realName || "Unknown");
 
                 let rowText = displayName;
+
                 if (fng.invitedById) {
                     const inviter = state.members.find(m => m.id === fng.invitedById);
                     const inviterName = inviter ? inviter.paxName : "Unknown";
@@ -178,6 +182,32 @@ export function renderSessionDetail() {
         renderBackblastModal(backblast);
     })
 
+    const copyToPlanButton = document.createElement("button");
+    copyToPlanButton.textContent = "Copy to Plan";
+
+    copyToPlanButton.addEventListener("click", () => {
+        const newWorkout = createPlannedWorkout(session.date, session.aoName);
+
+        if (session.workout) {
+            newWorkout.title = session.workout.title || "";
+            newWorkout.warmorama = session.workout.warmorama || "";
+            newWorkout.thangs = session.workout.thangs || "";
+            newWorkout.finisher = session.workout.finisher || "";
+            newWorkout.notes = session.workout.notes || "";
+        } else {
+            newWorkout.notes = session.notes || "";
+        }
+
+        newWorkout.sourceSessionId = session.id;
+        newWorkout.lastModifiedAt = Date.now();
+
+        state.plannedWorkouts.push(newWorkout);
+        state.editingPlannedWorkoutId = newWorkout.id;
+        state.currentView = "workoutPlanner";
+        saveState(state);
+        renderApp();
+    });
+
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Session";
     editButton.addEventListener("click", () => {
@@ -197,7 +227,8 @@ export function renderSessionDetail() {
         fngSection, 
         workoutSection,
         notesSection, 
-        backblastButton, 
+        backblastButton,
+        copyToPlanButton,
         editButton, 
         backButton, 
         nav);

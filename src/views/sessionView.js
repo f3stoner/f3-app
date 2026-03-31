@@ -68,6 +68,19 @@ function updateDraftDate(event) {
 dateInput.addEventListener("change", updateDraftDate);
 dateInput.addEventListener("input", updateDraftDate);
 
+let loadedWorkoutBanner = null;
+
+if (draftSession.workout) {
+    loadedWorkoutBanner = document.createElement("div");
+    loadedWorkoutBanner.classList.add("loaded-workout-banner");
+
+    loadedWorkoutBanner.textContent = draftSession.sourcePlannedWorkoutId
+        ? "Workout loaded from planned workout"
+        :draftSession.sourceSessionId
+        ? "Workout copied from session"
+        : "Workout attached";
+}
+
 const backButton = document.createElement("button");
 if (isEditing) {
     backButton.textContent = "Back to Session Details";
@@ -517,6 +530,7 @@ app.append(
     title, 
     dateLabel,
     dateInput, 
+    ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []),
     stickyHeader, 
     memberList, 
     fngHeading, 

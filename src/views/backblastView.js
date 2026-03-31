@@ -46,19 +46,5 @@ export function renderBackblastView (backblast) {
 
     app.append(title, textBlock, shareButton, copyButton);
 
-    if (navigator.share) {
-        const shareButton = document.createElement("button");
-        shareButton.textContent = "Share Backblast";
-        shareButton.addEventListener("click", async () => {
-            try {
-                await navigator.share({ text: backblast });
-            } catch (error) {
-                console.error("Share failed:", error);
-            }
-        });
-
-        app.append(shareButton);
-    }
-
     app.append(doneButton);
 }

@@ -11,5 +11,7 @@ export function createPlannedWorkout(date, aoName) {
         notes: "",
         createdAt: Date.now(),
         lastModifiedAt: Date.now(),
+        sourceWorkoutId: null,
+        sourceSessionId: null,
     };
 }

@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { formatDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { createSession } from "../modules/sessions.js";
 
 export function renderPlannedWorkoutDetail() {
@@ -46,6 +46,31 @@ export function renderPlannedWorkoutDetail() {
 
     const dateSection = createDetailSection("Date", formatDate(workout.date));
     const aoSection = createDetailSection("AO", workout.aoName || "-");
+
+    let sourceSection = null;
+
+    if (workout.sourceWorkoutId) {
+        const sourceWorkout = state.plannedWorkouts.find(
+            w => w.id === workout.sourceWorkoutId
+        );
+
+        if (sourceWorkout) {
+            const sourceLabel = sourceWorkout.title || `${formatDate(sourceWorkout.date)} - ${sourceWorkout.aoName || "AO"}`;
+            sourceSection = createDetailSection("Copied From Workout", sourceLabel);
+        }
+    }
+
+    if (workout.sourceSessionID) {
+        const sourceSession = state.sessions.find(
+            s => s.id === workout.sourceSessionID
+        );
+
+        if (sourceSession) {
+            const sourceLabel = `${formatDate(sourceSession.date)} = ${sourceSession.aoName || "AO"}`;
+            sourceSection = createDetailSection("Copied From Session", sourceLabel);
+        }
+    }
+
     const warmoramaSection = createDetailSection("Warm-O-Rama", workout.warmorama || "-");
     const thangsSection = createDetailSection("Thangs", workout.thangs || "-");
     const finisherSection = createDetailSection("Mary / Finisher", workout.finisher || "-");
@@ -78,15 +103,38 @@ export function renderPlannedWorkoutDetail() {
         renderApp();
     });
 
+    const copyButton = document.createElement("button");
+    copyButton.textContent = "Copy to New Plan";
+
+    copyButton.addEventListener("click", () => {
+        const newWorkout = {
+            ...workout,
+            id: crypto.randomUUID(),
+            date: "",
+            createdAt: Date.now(),
+            lastModifiedAt: null,
+            sourceWorkoutId: workout.id,
+        };
+
+        state.plannedWorkouts.push(newWorkout);
+
+        state.editingPlannedWorkoutId = newWorkout.id;
+        state.currentView = "workoutPlanner";
+
+        renderApp();
+    })
+
     app.append(
         title,
         dateSection,
         aoSection,
+        ...(sourceSection ? [sourceSection] : []),
         warmoramaSection,
         thangsSection,
         finisherSection,
         notesSection,
         editButton,
+        copyButton,
         logButton,
         backButton,
     )

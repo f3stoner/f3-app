@@ -48,7 +48,6 @@ export function renderWorkoutPlanner() {
     const min = `${minYear}-${minMonth}-${minDay}`;
 
     dateInput.min = min;
-    dateInput.max = today;
 
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;

@@ -423,3 +423,22 @@ select:focus,
 .detail-value {
     white-space: pre-wrap;
 }
+
+.today-workout {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.18);
+}
+
+.loaded-workout-banner {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 204, 0, 0.08);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.member-card .stats-line + .stats-line {
+    margin-top: 4px;
+}
