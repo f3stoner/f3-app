@@ -22,6 +22,11 @@ export function createGlobalNav () {
         }
 
         button.addEventListener("click", () => {
+            if (item.view === "session") {
+                state.editingSessionId = null;
+                state.selectedSessionId = null;
+            }
+            
             state.currentView = item.view;
             renderApp();
         });

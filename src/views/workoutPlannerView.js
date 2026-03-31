@@ -1,8 +1,8 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { saveState } from "../utils/storage.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { getTodayDate } from "../utils/date.js";
+import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -148,23 +148,24 @@ export function renderWorkoutPlanner() {
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save Workout";
 
-    saveButton.addEventListener("click", () => {
-        draftWorkout.lastModifiedAt = Date.now();
+    saveButton.addEventListener("click", async () => {
+        try{
+            draftWorkout.lastModifiedAt = Date.now();
 
-        if (isEditing) {
-            const workoutIndex = state.plannedWorkouts.findIndex(
-                workout => workout.id === state.editingPlannedWorkoutId
-            );
-            state.plannedWorkouts[workoutIndex] = draftWorkout;
-            state.editingPlannedWorkoutId = null;
-        } else {
-            state.plannedWorkouts.push(draftWorkout);
+            if (isEditing) {
+                await updatePlannedWorkout(state.editingPlannedWorkoutId, draftWorkout);
+                state.editingPlannedWorkoutId = null;
+            } else {
+                await addPlannedWorkout(draftWorkout);
+            }
+
+            state.currentView = "plannedWorkoutList";
+            renderApp();
+        } catch (error) {
+            console.error("Failed to save workout:", error);
+            alert("Failed to save workout.")
         }
-
-        saveState(state);
-        state.currentView = "plannedWorkoutList";
-        renderApp();
-    });
+});
 
     app.append(
         title,

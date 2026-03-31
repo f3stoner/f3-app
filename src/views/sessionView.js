@@ -7,6 +7,7 @@ import { generateBackblast } from "../modules/backblast.js";
 import { renderBackblastView } from "./backblastView.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
+import { addSession, updateSession } from "../services/appData.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -463,7 +464,7 @@ if (isEditing && draftSession.fngs.length > 0) {
 
 const saveButton = document.createElement("button");
 saveButton.textContent = "Save";
-saveButton.addEventListener("click", () => {
+saveButton.addEventListener("click", async () => {
     const allFngRows = document.querySelectorAll(".fng-row");
     const fngs = [];
     allFngRows.forEach(row => {
@@ -487,14 +488,12 @@ saveButton.addEventListener("click", () => {
 
     draftSession.fngs = fngs;
     draftSession.notes = notes.value.trim();
-
+try {
     if (isEditing) {
-        const sessionIndex = state.sessions.findIndex(s => s.id === sessionId);
-        state.sessions[sessionIndex] = draftSession;
+        await updateSession(sessionId, draftSession);
         state.editingSessionId = null;
     } else {
-        console.log("saving session", draftSession);
-        state.sessions.push(draftSession);
+        await addSession(draftSession);
     }
     state.selectedSessionId = draftSession.id;
     state.editingSessionId = null;
@@ -503,8 +502,7 @@ saveButton.addEventListener("click", () => {
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
-    console.log("sessionView draftSession on save:", draftSession);
-    saveState(state);
+    
 
 
     if (isEditing) {
@@ -514,7 +512,12 @@ saveButton.addEventListener("click", () => {
     const backblast = generateBackblast(draftSession, state.members);
     renderBackblastView(backblast);
     }
-})
+} catch (error) {
+    console.error("Failed to save session:", error);
+    alert("Failed to save session.");
+}
+
+});
 
 const notes = document.createElement("textarea");
 notes.classList.add("notes");

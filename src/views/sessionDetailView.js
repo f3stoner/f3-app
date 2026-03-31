@@ -5,6 +5,7 @@ import { generateBackblast } from "../modules/backblast.js";
 import { saveState } from "../utils/storage.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
+import { addMember } from "../services/appData.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -93,7 +94,7 @@ export function renderSessionDetail() {
                 addButton.textContent = alreadyOnRoster ? "On Roster" : "Add to Roster";
                 addButton.disabled = alreadyOnRoster;
 
-                addButton.addEventListener("click", () => {
+                addButton.addEventListener("click", async () => {
                     const newMember = {
                         id: crypto.randomUUID(),
                         paxName: fng.paxName || fng.realName,
@@ -104,12 +105,16 @@ export function renderSessionDetail() {
                         status: "active",
                     };
 
-                    state.members.push(newMember);
-                    fng.memberId = newMember.id;
-                    saveState(state);
+                    try{
+                        const savedMember = await addMember(newMember);
+                        fng.memberId = newMember.id;
 
-                    addButton.textContent = "On Roster";
-                    addButton.disabled = true;
+                        addButton.textContent = "On Roster";
+                        addButton.disabled = true;
+                    } catch (error) {
+                        console.error("Failed to add member:". error);
+                        alert("Failed to add member to roster.");
+                    }
                 });
 
                 row.append(text, addButton);

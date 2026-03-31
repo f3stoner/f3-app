@@ -1,5 +1,6 @@
 import path from "node:path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import Dotenv from "dotenv-webpack";
 
 export default {
     mode: "development",
@@ -12,11 +13,13 @@ export default {
     devtool: "eval-source-map",
     devServer: {
         watchFiles: ["./index.html"],
+        static: "./public",
     },
     plugins: [
         new HtmlWebpackPlugin({
             template: "./index.html",
         }),
+        new Dotenv(),
     ],
     module: {
         rules: [

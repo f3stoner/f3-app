@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { saveState } from "../utils/storage.js";
 import { createInvitedByField } from "../components/invitedByField.js";
+import { updateMember } from "../services/appData.js";
 
 export function renderMemberEdit () {
     
@@ -51,18 +52,26 @@ export function renderMemberEdit () {
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save";
 
-    saveButton.addEventListener("click", () => {
-        member.paxName = paxNameInput.value.trim() || member.paxName;
-        member.realName = realNameInput.value.trim();
+    saveButton.addEventListener("click", async () => {
         const invitedByInput = app.querySelector(".fng-invited-by-select");
-        member.invitedById = invitedByInput.value || null;
 
-        saveState(state);
+        const updatedMember = {
+            ...member,
+            paxName: paxNameInput.value.trim() || member.paxName,
+            realName: realNameInput.value.trim(),
+            invitedById: invitedByInput.value || null,
+        };
 
-        state.selectedMemberId = member.id;
-        state.editingMemberId = null;
-        state.currentView = "memberDetail";
-        renderApp();
+        try {
+            await updateMember(member.id, updatedMember);
+            state.selectedMemberId = member.id;
+            state.editingMemberId = null;
+            state.currentView = "memberDetail";
+            renderApp();
+        } catch (error) {
+            console.error("Failed to update member:", error);
+            alert("Failed to save member");
+        }   
     });
 
     app.append(

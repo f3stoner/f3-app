@@ -11,8 +11,56 @@ import { importData } from "./utils/importData.js";
 import { renderWorkoutPlanner } from "./views/workoutPlannerView.js";
 import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
+import { replacePersistedData } from "./services/appData.js";
+import { loadRegionData } from "./services/cloudData.js";
+import { REGION_ID } from "./config.js";
+import { importPaxMasterCsv } from "./services/importAggieland.js";
+import { importAoLogCsv } from "./services/importAggieland.js";
+
+async function runPaxImport() {
+    const response = await fetch("/Pax_Master.csv");
+    const csvText = await response.text();
+    await importPaxMasterCsv(csvText);
+    console.log("Pax Master import complete");
+}
+
+async function runForestImport() {
+    const response = await fetch("/Forest_Log.csv");
+    const csvText = await response.text();
+    await importAoLogCsv(csvText, "Forest");
+    console.log("Forest Import complete");
+}
+
+async function runAggielandAoImports() {
+    const aoFiles = [
+        ["Forest", "/Forest_Log.csv"],
+        ["Cave", "Cave_Log.csv"],
+        ["Iron", "Iron_Log.csv"],
+        ["Keep", "Keep_Log.csv"],
+        ["Rock", "Rock_Log.csv"],
+        ["Mine", "Mine_Log.csv"],
+        ["Southie", "Southie_Log.csv"],
+        ["Watch", 'Watch_Log.csv'],
+        ["Dads", "Dads_Log.csv"],
+        ["BlackOps", "BlackOps_Log.csv"],
+        ["CSAUP", "CSAUP_Log.csv"],
+        ["Other", "Other_Log.csv"],
+    ];
+
+    for (const [aoName, path] of aoFiles) {
+        const response = await fetch(path);
+        const csvText = await response.text();
+        await importAoLogCsv(csvText, aoName);
+        console.log(`${aoName} import complete`);
+    }
+
+    console.log("All AO imports complete");
+}
 
 function renderApp() {
+    
+    console.log("SUPABASE URL:", process.env.SUPABASE_URL);
+
     if (state.currentView === "roster") {
         renderRoster();
     } else if (state.currentView === "session"){
@@ -35,7 +83,19 @@ function renderApp() {
         renderDashboard ();
     }
 }
+async function bootApp() {
+    try {
+        const cloudData = await loadRegionData(REGION_ID);
+        replacePersistedData(cloudData);
+        console.log("Loaded cloud data:", cloudData);
+    } catch (error) {
+        console.log("Failed to load cloud data:", error);
+    }
+    //runForestImport();
+    //await runAggielandAoImports();
+    renderApp();
+}
 
-renderApp();
+bootApp();
 
 export { renderApp };
