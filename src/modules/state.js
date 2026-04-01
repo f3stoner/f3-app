@@ -20,4 +20,6 @@ export const state = {
     plannedWorkouts: savedState?.plannedWorkouts || [],
     selectedPlannedWorkoutId: null,
     editingPlannedWorkoutId: null,
+    rosterSearchTerm: "",
+    draftSession: null,
 };

@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { saveState } from "../utils/storage.js";
+import { updateMember } from "../services/appData.js";
 
 export function renderMemberDetail () {
     const app = document.getElementById("app");
@@ -63,12 +64,32 @@ export function renderMemberDetail () {
     const lastPostSection = createDetailSection("Last Post", lastPost);
 
     const toggleStatusButton = document.createElement("button");
-    toggleStatusButton.textContent = member.status === "active" ? "Mark Inactive" : "Mark Active";
+    toggleStatusButton.textContent = member.status === "active" 
+    ? "Deactivate Member" 
+    : "Reactivate Member";
 
-    toggleStatusButton.addEventListener("click", () => {
-        member.status = member.status === "active" ? "inactive" : "active";
-        saveState(state);
-        renderApp();
+    toggleStatusButton.addEventListener("click", async () => {
+        const isInactive = member.status === "inactive";
+        const nextStatus = isInactive ? "active" : "inactive";
+        
+        const confirmed = isInactive
+            ? true
+            : confirm("Are you sure you want to deactive this member?");
+
+        if (!confirmed) return;
+
+        try {
+            const updatedMember = {
+                ...member,
+                status: nextStatus,
+            };
+
+            await updateMember(member.id, updatedMember);
+            renderApp();
+        } catch (error) {
+            console.error("Failed to update member status:", error);
+            alert("Failed to update member status.");
+        }
     });
 
     const editButton = document.createElement("button");
@@ -79,5 +100,21 @@ export function renderMemberDetail () {
         renderApp();
     })
 
-    app.append(title, nameSection, realNameSection, statusSection, invitedBySection, postsSection, qsSection, firstPostSection, lastPostSection, toggleStatusButton, editButton, backButton);
+    app.append(
+        title, 
+        nameSection, 
+        realNameSection, 
+        statusSection, 
+        invitedBySection, 
+        postsSection, 
+        qsSection, 
+        firstPostSection, 
+        lastPostSection
+    );
+    
+    if (state.currentUserRole === "admin") {
+        app.append(toggleStatusButton);
+    }
+
+    app.append(editButton, backButton);
 }

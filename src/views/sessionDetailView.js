@@ -5,7 +5,7 @@ import { generateBackblast } from "../modules/backblast.js";
 import { saveState } from "../utils/storage.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
-import { addMember } from "../services/appData.js";
+import { addMember, deleteSession } from "../services/appData.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -221,6 +221,8 @@ export function renderSessionDetail() {
         renderApp();
     })
 
+
+
     const nav = createGlobalNav();
 
     app.append(
@@ -234,12 +236,40 @@ export function renderSessionDetail() {
         notesSection, 
         backblastButton,
         copyToPlanButton,
-        editButton, 
+        editButton,
+    );
+
+    if (state.currentUserRole === "admin") {
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete Session";
+        deleteButton.classList.add("danger-button");
+
+        deleteButton.addEventListener("click", async () => {
+            const confirmed = confirm("Are you sure you want to delete this session?");
+            if (!confirmed) return;
+
+            try {
+                await deleteSession(session.id);
+
+                state.selectedSessionId = null;
+                state.currentView = "dashboard";
+
+                renderApp();
+            } catch (error) {
+                console.error("Failed to delete session:", error);
+                alert("Failed to delete session");
+            }
+        });
+
+        app.appendChild(deleteButton);
+    }
+    app.append(
         backButton, 
         nav);
-
     }
 }
+
+
 
 function renderBackblastModal(backblast) {
     const overlay = document.createElement("div");

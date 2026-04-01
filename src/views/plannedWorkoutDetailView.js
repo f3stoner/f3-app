@@ -96,9 +96,10 @@ export function renderPlannedWorkoutDetail() {
             notes: workout.notes,
         };
         session.sourcePlannedWorkoutId = workout.id;
-        state.sessions.push(session);
-        state.selectedSessionId = session.id;
-        state.editingSessionId = session.id;
+
+        state.draftSession = session;
+        state.selectedSessionId = null;
+        state.editingSessionId = null;
         state.currentView = "session";
         renderApp();
     });

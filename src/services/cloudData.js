@@ -265,3 +265,13 @@ export async function deleteSessionsByAo(regionId, aoName) {
 
     if (error) throw error;
 }
+
+export async function deleteSessionFromCloud(regionId, sessionId) {
+    const { error } = await supabase
+        .from("sessions")
+        .delete()
+        .eq("id", sessionId)
+        .eq("region_id", regionId)
+
+    if (error) throw error;
+}

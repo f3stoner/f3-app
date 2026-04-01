@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
 import { REGION_ID } from "../config.js";
 import { insertMember, updateMemberInCloud } from "./cloudData.js";
-import { insertSession, updateSessionInCloud } from "./cloudData.js";
+import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud } from "./cloudData.js";
 
 export function persistAppData() {
@@ -26,8 +26,13 @@ export async function updateSession(sessionId, updatedSession) {
     return true;
 }
 
-export function removeSession(sessionId) {
-    state.sessions = state.sessions.filter(session => session.id !== sessionId);
+export async function deleteSession(sessionId) {
+    await deleteSessionFromCloud(REGION_ID, sessionId);
+
+    state.sessions = state.sessions.filter(
+        session => session.id !== sessionId
+    );
+    
     persistAppData();
 }
 
@@ -48,7 +53,7 @@ export async function updatePlannedWorkout(workoutId, updatedWorkout) {
     return true;
 }
 
-export function removePlannedWorkout(workoutId) {
+export function removePlannedWorkoutFromState(workoutId) {
     state.plannedWorkouts = state.plannedWorkouts.filter(workout => workout.id !== workoutId);
     persistAppData();
 }
@@ -70,7 +75,7 @@ export async function updateMember(memberId, updatedMember) {
     return true;
 }
 
-export function removeMember(memberId) {
+export function removeMemberFromState(memberId) {
     state.members = state.members.filter(member => member.id !== memberId);
     persistAppData();
 }
@@ -82,3 +87,4 @@ export function replacePersistedData({ regionName, members, sessions, plannedWor
     state.plannedWorkouts = plannedWorkouts;
     persistAppData();
 }
+

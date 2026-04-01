@@ -16,6 +16,8 @@ import { loadRegionData } from "./services/cloudData.js";
 import { REGION_ID } from "./config.js";
 import { importPaxMasterCsv } from "./services/importAggieland.js";
 import { importAoLogCsv } from "./services/importAggieland.js";
+import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
+import { renderAuthView } from "./views/authView.js";
 
 async function runPaxImport() {
     const response = await fetch("/Pax_Master.csv");
@@ -85,17 +87,28 @@ function renderApp() {
 }
 async function bootApp() {
     try {
-        const cloudData = await loadRegionData(REGION_ID);
+        const session = await getCurrentSession();
+
+        if (!session) {
+            renderAuthView();
+            return;
+        }
+
+        const profile = await ensureMyProfile("96c9eef9-3b6e-4365-86cd-51dbeccf231a");
+
+        state.currentUserRole = profile.role || "user";
+    
+        const cloudData = await loadRegionData(profile.region_id);
         replacePersistedData(cloudData);
         console.log("Loaded cloud data:", cloudData);
+
+        renderApp();
     } catch (error) {
-        console.log("Failed to load cloud data:", error);
+        console.log("Failed to boot app:", error);
+        renderAuthView();
     }
-    //runForestImport();
-    //await runAggielandAoImports();
-    renderApp();
 }
 
 bootApp();
 
-export { renderApp };
+export { bootApp, renderApp };

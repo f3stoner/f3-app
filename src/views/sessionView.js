@@ -8,16 +8,15 @@ import { renderBackblastView } from "./backblastView.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { addSession, updateSession } from "../services/appData.js";
+import { REGION_ID, REGION_AOS } from "../config.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
 app.textContent = "";
 
 const sessionId = state.editingSessionId || state.selectedSessionId;
-const isEditing = Boolean(sessionId);
+const isEditing = Boolean(state.editingSessionId);
 let draftSession;
-
-
 
 if (isEditing) {
     const existingSession = state.sessions.find(s => s.id === sessionId);
@@ -32,9 +31,17 @@ if (isEditing) {
             fngs: [...existingSession.fngs]
         };
     }
-} else {
+    
+    } else if (state.draftSession) {
+        draftSession = {
+            ...state.draftSession,
+            attendeeIds: [...state.draftSession.attendeeIds],
+            fngs: [...state.draftSession.fngs]
+        };
+    } else {
     draftSession = createSession(getTodayDate(), "");
 }
+
 
 console.log("sessionView draftSession on open:", draftSession);
 
@@ -102,13 +109,21 @@ backButton.addEventListener("click", () => {
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
+    state.draftSession = null;
     renderApp();
 })};
 
-const aoOptions = [...new Set([
-    ...state.members.map(m => m.homeAo).filter(ao => ao && ao !== "DR"),
-    ...state.sessions.map(s => s.aoName).filter(ao => ao && ao !== "DR"),
+const configuredAoOptions = REGION_AOS[REGION_ID] || [];
+
+const inferredAoOptions = [...new Set([
+    ...state.members.map(m => m.homeAo).filter(Boolean),
+    ...state.sessions.map(s => s.aoName).filter(Boolean),
 ])].sort();
+
+const aoOptions = (configuredAoOptions.length > 0
+    ? configuredAoOptions
+    : inferredAoOptions
+).filter(ao => ao && ao !== "DR");
 
 const aoLabel = document.createElement("div");
 aoLabel.textContent = "AO";
@@ -502,6 +517,7 @@ try {
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
+    state.draftSession = null;
     
 
 

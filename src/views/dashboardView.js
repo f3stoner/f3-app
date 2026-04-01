@@ -12,6 +12,15 @@ export function renderDashboard() {
     const title = document.createElement("h1");
     title.textContent = state.regionName || "F3 App";
 
+    const isAdmin = state.currentUserRole === "admin";
+
+    if (isAdmin) {
+        const adminBadge = document.createElement("div");
+        adminBadge.textContent ="Admin";
+        adminBadge.classList.add("detail-label");
+        app.append(adminBadge);
+    }
+
     const recentSessionsSection = document.createElement("div");
     const recentHeading = document.createElement("h2");
     const recentSessionList = document.createElement("div");
@@ -92,9 +101,16 @@ export function renderDashboard() {
     const dataToolsRow = document.createElement("div");
     dataToolsRow.classList.add("button-row");
 
+    if(isAdmin){
     dataToolsRow.append(importButton, exportButton);
+    }
 
     const nav = createGlobalNav();
 
-    app.append(title, dataToolsHeading, dataToolsRow, importInput, recentSessionsSection, nav);
+    app.append(title);
+
+    if (isAdmin) {
+        app.append(dataToolsHeading, dataToolsRow, importInput);
+    }
+    app.append(recentSessionsSection, nav);
 }
