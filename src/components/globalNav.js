@@ -7,9 +7,7 @@ export function createGlobalNav () {
 
     const items = [
         { label: "Home", view: "dashboard" },
-        { label: "Plan", view: "plannedWorkoutList"},
-        { label: "Log Session", view: "session" },
-        { label: "Roster", view: "roster" },
+        { label: "Planner", view: "myPlanner"},
         { label: "History", view: "sessionHistory" },
     ];
 
@@ -26,12 +24,30 @@ export function createGlobalNav () {
                 state.editingSessionId = null;
                 state.selectedSessionId = null;
             }
-            
+
             state.currentView = item.view;
             renderApp();
         });
 
         nav.appendChild(button);
     });
+
+    const fabButton = document.createElement("button");
+    fabButton.classList.add("global-fab");
+    fabButton.textContent = "+ Log";
+
+    if (state.currentView === "session") {
+        fabButton.classList.add("active-fab");
+    }
+
+    fabButton.addEventListener("click", () => {
+        state.editingSessionId = null;
+        state.selectedSessionId = null;
+        state.currentView = "session";
+        renderApp();
+    });
+
+    nav.appendChild(fabButton);
+
     return nav;
 }

@@ -14,5 +14,6 @@ export function createPlannedWorkout(date, aoName) {
         sourceWorkoutId: null,
         sourceSessionId: null,
         createdByUserId: null,
+        isShared: false,
     };
 }

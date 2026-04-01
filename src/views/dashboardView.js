@@ -61,6 +61,31 @@ export function renderDashboard() {
 
     const isAdmin = state.currentUserRole === "admin";
 
+    const quickAccessHeading = document.createElement("div");
+    quickAccessHeading.textContent = "Quick Access";
+    quickAccessHeading.classList.add("detail-label");
+
+    const quickAccessRow = document.createElement("div");
+    quickAccessRow.classList.add("quick-access-row");
+
+    const workoutLibraryButton = document.createElement("button");
+    workoutLibraryButton.classList.add("quick-access-card");
+    workoutLibraryButton.textContent = "Workout Library";
+    workoutLibraryButton.addEventListener("click", () => {
+        state.currentView = "plannedWorkoutList";
+        renderApp();
+    });
+
+    const rosterButton = document.createElement("button");
+    rosterButton.classList.add("quick-access-card");
+    rosterButton.textContent = "Roster";
+    rosterButton.addEventListener("click", () => {
+        state.currentView = "roster";
+        renderApp()
+    });
+
+    quickAccessRow.append(workoutLibraryButton, rosterButton);
+
     const recentSessionsSection = document.createElement("div");
     const recentHeading = document.createElement("h2");
     const recentSessionList = document.createElement("div");
@@ -149,7 +174,7 @@ export function renderDashboard() {
 
     const nav = createGlobalNav();
 
-    app.append(title, userRow);
+    app.append(title, userRow, quickAccessHeading, quickAccessRow);
 
     if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput);

@@ -18,6 +18,7 @@ import { importPaxMasterCsv } from "./services/importAggieland.js";
 import { importAoLogCsv } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
+import { renderMyPlanner } from "./views/myPlannerView.js";
 
 async function runPaxImport() {
     const response = await fetch("/Pax_Master.csv");
@@ -81,6 +82,8 @@ function renderApp() {
         renderPlannedWorkoutsList();
     } else if (state.currentView === "plannedWorkoutDetail") {
         renderPlannedWorkoutDetail();
+    } else if (state.currentView === "myPlanner") {
+        renderMyPlanner();
     } else {
         renderDashboard ();
     }

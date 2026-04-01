@@ -84,6 +84,7 @@ function mapPlannedWorkoutFromDb(row) {
         createdAt: row.created_at,
         lastModifiedAt: row.last_modified_at,
         createdByUserId: row.created_by_user_id || null,
+        isShared: row.is_shared ?? true,
     };
 }
 
@@ -198,6 +199,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 created_at: workout.createdAt,
                 last_modified_at: workout.lastModifiedAt || null,
                 created_by_user_id: workout.createdByUserId || null,
+                is_shared: workout.isShared ?? false,
             },
         ])
         .select()
@@ -224,6 +226,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             created_at: workout.createdAt,
             last_modified_at: workout.lastModifiedAt || null,
             created_by_user_id: workout.createdByUserId || null,
+            is_shared: workout.isShared ?? false,
         })
         .eq("id", workout.id)
         .select()

@@ -13,6 +13,7 @@ export function renderPlannedWorkoutDetail() {
     );
 
     const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
     backButton.textContent = "Back to Plans";
     backButton.addEventListener("click", () => {
         state.currentView = "plannedWorkoutList";
@@ -76,10 +77,22 @@ export function renderPlannedWorkoutDetail() {
     const thangsSection = createDetailSection("Thangs", workout.thangs || "-");
     const finisherSection = createDetailSection("Mary / Finisher", workout.finisher || "-");
     const notesSection = createDetailSection("Planner Notes", workout.notes || "-");
+    const visibilitySection = createDetailSection(
+        "Visibility",
+        workout.isShared ? "Shared with Region" : "Private Draft"
+    );
 
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Workout";
     editButton.addEventListener("click", () => {
+        if (
+            state.currentUserRole !== "admin" &&
+            workout.createdByUserId !== state.currentUserId
+        ) {
+            alert("You do not have permission to edit this workout.");
+            return;
+        }
+
         state.editingPlannedWorkoutId = workout.id;
         state.currentView = "workoutPlanner";
         renderApp();
@@ -116,15 +129,20 @@ export function renderPlannedWorkoutDetail() {
             createdAt: Date.now(),
             lastModifiedAt: null,
             sourceWorkoutId: workout.id,
+            createdByUserId: state.currentUserId,
+            isShared: false,
         };
 
-        state.plannedWorkouts.push(newWorkout);
-
-        state.editingPlannedWorkoutId = newWorkout.id;
+        state.draftPlannedWorkout = newWorkout;
+        state.editingPlannedWorkoutId = null;
         state.currentView = "workoutPlanner";
 
         renderApp();
     })
+
+    const canEditWorkout = 
+        state.currentUserRole === "admin" ||
+        workout.createdByUserId === state.currentUserId;
 
     const canDeleteWorkout = 
         state.currentUserRole === "admin" ||
@@ -156,23 +174,40 @@ export function renderPlannedWorkoutDetail() {
         });
     }
 
+    const primaryActionsRow = document.createElement("div");
+    primaryActionsRow.classList.add("button-row", "primary-actions-row");
+
+    const secondaryActionsRow = document.createElement("div");
+    secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
+
+    const backRow = document.createElement("div");
+    backRow.classList.add("button-row", "back-actions-row");
+
+    if (canEditWorkout) {
+        primaryActionsRow.append(editButton);
+    }
+
+    primaryActionsRow.append(logButton);
+    secondaryActionsRow.append(copyButton);
+
+    if (canDeleteWorkout && deleteButton) {
+        secondaryActionsRow.append(deleteButton);
+    }
+
+    backRow.append(backButton);
+
     app.append(
         title,
         dateSection,
         aoSection,
+        visibilitySection,
         ...(sourceSection ? [sourceSection] : []),
         warmoramaSection,
         thangsSection,
         finisherSection,
         notesSection,
-        editButton,
-        copyButton,
-        logButton,
-    );
-    if (canDeleteWorkout) {
-        app.append(deleteButton);
-    }
-    app.append(
-        backButton,
+        primaryActionsRow,
+        secondaryActionsRow,
+        backRow,
     );
 }

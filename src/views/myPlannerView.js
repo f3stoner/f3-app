@@ -1,73 +1,53 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { formatDate, getTodayDate } from "../utils/date.js";
+import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 
-export function renderPlannedWorkoutsList () {
+export function renderMyPlanner() {
     const app = document.getElementById("app");
     app.textContent = "";
 
     const title = document.createElement("h1");
-    title.textContent = "Planned Workouts";
-
-    const myWorkoutsToggle = document.createElement("button");
-    myWorkoutsToggle.textContent = state.showMyPlannedWorkoutsOnly
-        ? "Show All Workouts"
-        : "Show My Workouts";
-
-    myWorkoutsToggle.addEventListener("click", () => {
-        state.showMyPlannedWorkoutsOnly = !state.showMyPlannedWorkoutsOnly;
-        renderApp();
-    })
+    title.textContent = "My Planner";
 
     const newWorkoutButton = document.createElement("button");
     newWorkoutButton.textContent = "Plan New Workout";
 
     newWorkoutButton.addEventListener("click", () => {
         state.editingPlannedWorkoutId = null;
+        state.draftPlannedWorkout = null;
         state.currentView = "workoutPlanner";
         renderApp();
     });
 
     const listContainer = document.createElement("div");
 
-    const sharedWorkouts = state.plannedWorkouts.filter(
-        workout => workout.isShared
-        )
+    const myDrafts = state.plannedWorkouts.filter(workout =>
+        workout.createdByUserId === state.currentUserId &&
+        !workout.isShared
+    );
 
-    const visibleWorkouts = state.showMyPlannedWorkoutsOnly
-        ? sharedWorkouts.filter(
-            workout => workout.createdByUserId === state.currentUserId
-        )
-        : sharedWorkouts;
-
-    const sortedWorkouts = [...visibleWorkouts].sort((a, b) => {
-        if (a.date !== b.date) {
-            return a.date.localeCompare(b.date);
-        }
-
-        const aModified = a.lastModifiedAt || a.createdAt || 0;
-        const bModified = b.lastModifiedAt || b.createdAt || 0;
-
-        return bModified - aModified;
+    const sortedDrafts = [...myDrafts].sort((a, b) => {
+        const aTime = a.lastModifiedAt || a.createdAt || 0;
+        const bTime = b.lastModifiedAt || b.createdAt || 0;
+        return bTime - aTime;
     });
 
-    if (sortedWorkouts.length === 0) {
+    if (sortedDrafts.length === 0) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
-        empty.textContent = state.showMyPlannedWorkoutsOnly
-            ? "You have not created any workouts yet"
-            : "No planned workouts yet";
-
+        empty.textContent = "You have no private drafts yet";
         listContainer.appendChild(empty);
     } else {
-        sortedWorkouts.forEach(workout => {
+        sortedDrafts.forEach(workout => {
             const card = document.createElement("div");
             card.classList.add("member-card");
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
-            topLine.textContent = `${formatDate(workout.date)} - ${workout.aoName || "AO"}`;
+
+            const dateText = workout.date ? formatDate(workout.date) : "No Date";
+            topLine.textContent = `${dateText} - ${workout.aoName || "AO"}`;
 
             const titleLine = document.createElement("div");
             titleLine.classList.add("stats-line");
@@ -79,11 +59,11 @@ export function renderPlannedWorkoutsList () {
                 ? workout.thangs.split("\n")[0]
                 : (workout.notes ? workout.notes.split("\n")[0] : "No workout details");
 
-            if (workout.date === getTodayDate()) {
-                card.classList.add("today-workout");
-            }
+            const privateBadge = document.createElement("div");
+            privateBadge.classList.add("detail-label");
+            privateBadge.textContent = "Private Draft";
 
-            card.append(topLine, titleLine, previewLine);
+            card.append(topLine, titleLine, previewLine, privateBadge);
 
             card.addEventListener("click", () => {
                 state.selectedPlannedWorkoutId = workout.id;
@@ -99,9 +79,8 @@ export function renderPlannedWorkoutsList () {
 
     app.append(
         title,
-        myWorkoutsToggle,
         newWorkoutButton,
         listContainer,
         nav
-    );
+    )
 }

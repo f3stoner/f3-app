@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
+import { REGION_ID, REGION_AOS } from "../config.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -14,6 +15,8 @@ export function renderWorkoutPlanner() {
     if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
+    } else if (state.draftPlannedWorkout) {
+        draftWorkout = { ...state.draftPlannedWorkout };
     } else {
         draftWorkout = createPlannedWorkout(getTodayDate(), "");
         draftWorkout.createdByUserId = state.currentUserId;
@@ -23,9 +26,11 @@ export function renderWorkoutPlanner() {
     title.textContent = isEditing ? "Edit Workout" : "Plan Workout";
 
     const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
     backButton.textContent = "Back to Dashboard";
     backButton.addEventListener("click", () => {
         state.editingPlannedWorkoutId = null;
+        state.draftPlannedWorkout = null;
         state.currentView = "dashboard";
         renderApp();
     })
@@ -57,11 +62,18 @@ export function renderWorkoutPlanner() {
     dateInput.addEventListener("change", updateDraftDate);
     dateInput.addEventListener("input", updateDraftDate);
 
-    const aoOptions = [...new Set([
-        ...state.members.map(m => m.homeAo).filter(ao => ao && ao !== "DR"),
-        ...state.sessions.map(s => s.aoName).filter(ao => ao && ao !== "DR"),
-        ...state.plannedWorkouts.map(w => w.aoName).filter(ao => ao && ao !== "DR"),
+    const configuredAoOptions = REGION_AOS[REGION_ID] || [];
+
+    const inferredAoOptions = [...new Set([
+        ...state.members.map(m => m.homeAo).filter(Boolean),
+        ...state.sessions.map(s => s.aoName).filter(Boolean),
+        ...state.plannedWorkouts.map(w => w.aoName).filter(Boolean),
     ])].sort();
+
+    const aoOptions = (configuredAoOptions.length > 0
+        ? configuredAoOptions
+        : inferredAoOptions
+    ).filter(ao => ao && ao !== "DR");
     
     const aoLabel = document.createElement("div");
     aoLabel.textContent = "AO";
@@ -145,6 +157,27 @@ export function renderWorkoutPlanner() {
     notesInput.addEventListener("input", (event) => {
         draftWorkout.notes = event.target.value;
     });
+
+    const shareLabel = document.createElement("div");
+    shareLabel.textContent = "Visibility";
+    shareLabel.classList.add("detail-label");
+
+    const shareSelect = document.createElement("select");
+
+    const privateOption = document.createElement("option");
+    privateOption.value = "private";
+    privateOption.textContent = "Private Draft";
+
+    const sharedOption = document.createElement("option");
+    sharedOption.value = "shared";
+    sharedOption.textContent = "Shared with Region";
+
+    shareSelect.append(privateOption, sharedOption);
+    shareSelect.value = draftWorkout.isShared ? "shared" : "private";
+
+    shareSelect.addEventListener("change", (event) => {
+        draftWorkout.isShared = event.target.value === "shared";
+    });
     
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save Workout";
@@ -159,14 +192,23 @@ export function renderWorkoutPlanner() {
             } else {
                 await addPlannedWorkout(draftWorkout);
             }
-
-            state.currentView = "plannedWorkoutList";
+            state.draftPlannedWorkout = null;
+            state.currentView = draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner";
             renderApp();
         } catch (error) {
             console.error("Failed to save workout:", error);
             alert("Failed to save workout.")
         }
 });
+
+    const primaryActionsRow = document.createElement("div");
+    primaryActionsRow.classList.add("button-row", "primary-actions-row");
+
+    const backRow = document.createElement("div");
+    backRow.classList.add("button-row", "back-actions-row");
+
+    primaryActionsRow.append(saveButton);
+    backRow.append(backButton);
 
     app.append(
         title,
@@ -184,7 +226,9 @@ export function renderWorkoutPlanner() {
         finisherInput,
         notesLabel,
         notesInput,
-        saveButton,
-        backButton
+        shareLabel,
+        shareSelect,
+        primaryActionsRow,
+        backRow
     );
 }

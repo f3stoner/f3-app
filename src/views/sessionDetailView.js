@@ -2,7 +2,6 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { generateBackblast } from "../modules/backblast.js";
-import { saveState } from "../utils/storage.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { addMember, deleteSession } from "../services/appData.js";
@@ -13,6 +12,7 @@ export function renderSessionDetail() {
 
     const session = state.sessions.find(s => s.id === state.selectedSessionId);
     const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
     backButton.textContent = "Back to Session History";
     backButton.addEventListener("click", () => {
         state.currentView = "sessionHistory";
@@ -112,7 +112,7 @@ export function renderSessionDetail() {
                         addButton.textContent = "On Roster";
                         addButton.disabled = true;
                     } catch (error) {
-                        console.error("Failed to add member:". error);
+                        console.error("Failed to add member:", error);
                         alert("Failed to add member to roster.");
                     }
                 });
@@ -206,10 +206,9 @@ export function renderSessionDetail() {
         newWorkout.sourceSessionId = session.id;
         newWorkout.lastModifiedAt = Date.now();
 
-        state.plannedWorkouts.push(newWorkout);
-        state.editingPlannedWorkoutId = newWorkout.id;
+        state.draftPlannedWorkout = newWorkout;
+        state.editingPlannedWorkoutId = null;
         state.currentView = "workoutPlanner";
-        saveState(state);
         renderApp();
     });
 
@@ -221,23 +220,20 @@ export function renderSessionDetail() {
         renderApp();
     })
 
+    const primaryActionsRow = document.createElement("div");
+    primaryActionsRow.classList.add("button-row", "primary-actions-row");
+
+    const secondaryActionsRow = document.createElement("div");
+    secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
+
+    const backRow = document.createElement("div");
+    backRow.classList.add("button-row", "back-actions-row");
 
 
     const nav = createGlobalNav();
 
-    app.append(
-        title,
-        dateSection, 
-        aoSection, 
-        qSection, 
-        paxSection, 
-        fngSection, 
-        workoutSection,
-        notesSection, 
-        backblastButton,
-        copyToPlanButton,
-        editButton,
-    );
+    primaryActionsRow.append(backblastButton, editButton);
+    secondaryActionsRow.append(copyToPlanButton);
 
     if (state.currentUserRole === "admin") {
         const deleteButton = document.createElement("button");
@@ -261,15 +257,27 @@ export function renderSessionDetail() {
             }
         });
 
-        app.appendChild(deleteButton);
+        secondaryActionsRow.appendChild(deleteButton);
     }
+
+    backRow.append(backButton);
+
     app.append(
-        backButton, 
-        nav);
+        title,
+        dateSection, 
+        aoSection, 
+        qSection, 
+        paxSection, 
+        fngSection, 
+        workoutSection,
+        notesSection, 
+        primaryActionsRow,
+        secondaryActionsRow,
+        backRow,
+        nav
+    );
     }
 }
-
-
 
 function renderBackblastModal(backblast) {
     const overlay = document.createElement("div");
