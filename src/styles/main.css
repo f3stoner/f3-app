@@ -624,3 +624,8 @@ select:focus,
     transform: scale(0.98);
     box-shadow: var(--shadow-sm);
 }
+
+.view-subtitle {
+    color: var(--muted);
+    margin-bottom: 16px;
+}

@@ -8,12 +8,18 @@ export function renderPlannedWorkoutsList () {
     app.textContent = "";
 
     const title = document.createElement("h1");
-    title.textContent = "Planned Workouts";
+    title.textContent = "Workout Library";
+
+    const subtitle = document.createElement("div");
+    subtitle.classList.add("view-subtitle");
+    subtitle.textContent = state.showMyPlannedWorkoutsOnly
+        ? "Your shared workouts in the library."
+        : "Shared workouts available to the region.";
 
     const myWorkoutsToggle = document.createElement("button");
     myWorkoutsToggle.textContent = state.showMyPlannedWorkoutsOnly
-        ? "Show All Workouts"
-        : "Show My Workouts";
+        ? "Show All Library Workouts"
+        : "Show My Shared Workouts";
 
     myWorkoutsToggle.addEventListener("click", () => {
         state.showMyPlannedWorkoutsOnly = !state.showMyPlannedWorkoutsOnly;
@@ -56,8 +62,8 @@ export function renderPlannedWorkoutsList () {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
         empty.textContent = state.showMyPlannedWorkoutsOnly
-            ? "You have not created any workouts yet"
-            : "No planned workouts yet";
+            ? "You have not shared any workouts yet"
+            : "No shared workouts in the library yet";
 
         listContainer.appendChild(empty);
     } else {
@@ -99,6 +105,7 @@ export function renderPlannedWorkoutsList () {
 
     app.append(
         title,
+        subtitle,
         myWorkoutsToggle,
         newWorkoutButton,
         listContainer,

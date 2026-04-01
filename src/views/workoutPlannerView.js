@@ -192,8 +192,15 @@ export function renderWorkoutPlanner() {
             } else {
                 await addPlannedWorkout(draftWorkout);
             }
+
+            const destinationView = draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner";
+            const successMessage = draftWorkout.isShared
+            ? "Workout shared to Workout Library."
+            : "Saved to My Planner.";
+
             state.draftPlannedWorkout = null;
-            state.currentView = draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner";
+            state.currentView = destinationView;
+            alert(successMessage);
             renderApp();
         } catch (error) {
             console.error("Failed to save workout:", error);

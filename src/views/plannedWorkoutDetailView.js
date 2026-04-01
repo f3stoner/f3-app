@@ -14,9 +14,11 @@ export function renderPlannedWorkoutDetail() {
 
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
-    backButton.textContent = "Back to Plans";
+    const backDestination = workout.isShared ? "plannedWorkoutList" : "myPlanner";
+    const backLabel = workout.isShared ? "Back to Workout Library" : "Back to My Planner";
+    backButton.textContent = backLabel;
     backButton.addEventListener("click", () => {
-        state.currentView = "plannedWorkoutList";
+        state.currentView = backDestination;
         renderApp();
     });
 
@@ -79,7 +81,7 @@ export function renderPlannedWorkoutDetail() {
     const notesSection = createDetailSection("Planner Notes", workout.notes || "-");
     const visibilitySection = createDetailSection(
         "Visibility",
-        workout.isShared ? "Shared with Region" : "Private Draft"
+        workout.isShared ? "Workout Library" : "My Planner"
     );
 
     const editButton = document.createElement("button");

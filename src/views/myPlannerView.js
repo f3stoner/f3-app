@@ -10,6 +10,10 @@ export function renderMyPlanner() {
     const title = document.createElement("h1");
     title.textContent = "My Planner";
 
+    const subtitle = document.createElement("div");
+    subtitle.classList.add("view-subtitle");
+    subtitle.textContent = "Private drafts and workouts you are still planning.";
+
     const newWorkoutButton = document.createElement("button");
     newWorkoutButton.textContent = "Plan New Workout";
 
@@ -36,7 +40,7 @@ export function renderMyPlanner() {
     if (sortedDrafts.length === 0) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
-        empty.textContent = "You have no private drafts yet";
+        empty.textContent = "You have no private workouts yet. Start planning your next BD.";
         listContainer.appendChild(empty);
     } else {
         sortedDrafts.forEach(workout => {
