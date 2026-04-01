@@ -3,7 +3,7 @@ import { saveState } from "../utils/storage.js";
 import { REGION_ID } from "../config.js";
 import { insertMember, updateMemberInCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
-import { insertPlannedWorkout, updatePlannedWorkoutInCloud } from "./cloudData.js";
+import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 
 export function persistAppData() {
     saveState(state);
@@ -32,7 +32,7 @@ export async function deleteSession(sessionId) {
     state.sessions = state.sessions.filter(
         session => session.id !== sessionId
     );
-    
+
     persistAppData();
 }
 
@@ -53,8 +53,13 @@ export async function updatePlannedWorkout(workoutId, updatedWorkout) {
     return true;
 }
 
-export function removePlannedWorkoutFromState(workoutId) {
-    state.plannedWorkouts = state.plannedWorkouts.filter(workout => workout.id !== workoutId);
+export async function deletePlannedWorkout(workoutId) {
+    await deletePlannedWorkoutFromCloud(REGION_ID, workoutId);
+
+    state.plannedWorkouts = state.plannedWorkouts.filter(
+        workout => workout.id !== workoutId
+    );
+
     persistAppData();
 }
 

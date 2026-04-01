@@ -22,4 +22,7 @@ export const state = {
     editingPlannedWorkoutId: null,
     rosterSearchTerm: "",
     draftSession: null,
+    currentUserId: null,
+    currentUserRole: null,
+    currentUserDisplayName: null,
 };

@@ -1,9 +1,10 @@
 import { state } from "../modules/state.js";
-import { renderApp } from "../index.js";
+import { bootApp, renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { signOut } from "../services/auth.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -12,14 +13,53 @@ export function renderDashboard() {
     const title = document.createElement("h1");
     title.textContent = state.regionName || "F3 App";
 
-    const isAdmin = state.currentUserRole === "admin";
+    const userRow = document.createElement("div");
+    userRow.classList.add("user-row");
 
-    if (isAdmin) {
-        const adminBadge = document.createElement("div");
-        adminBadge.textContent ="Admin";
-        adminBadge.classList.add("detail-label");
-        app.append(adminBadge);
-    }
+    const roleBadge = document.createElement("span");
+    roleBadge.classList.add("role-badge");
+    roleBadge.dataset.role = state.currentUserRole;
+    roleBadge.textContent = state.currentUserRole === "admin" ? "Admin" : "User";
+
+    const userName = document.createElement("span");
+    userName.classList.add("user-name");
+    userName.textContent = state.currentUserDisplayName || "User";
+
+    const userLeft = document.createElement("div");
+    userLeft.classList.add("user-left");
+    userLeft.append(roleBadge, userName);
+
+    const signOutButton = document.createElement("button");
+    signOutButton.textContent = "Sign Out";
+
+    signOutButton.addEventListener("click", async () => {
+        try{
+            await signOut();
+
+            state.regionName = "";
+            state.members = [];
+            state.sessions = [];
+            state.plannedWorkouts = [];
+            state.currentUserId = null;
+            state.currentUserRole = null;
+            state.currentUserDisplayName = null;
+            state.selectedMemberId = null;
+            state.selectedSessionId = null;
+            state.selectedPlannedWorkoutId = null;
+            state.editingMemberId = null;
+            state.editingSessionId = null;
+            state.editingPlannedWorkoutId = null;
+            state.draftSession = null;
+            state.currentView = "dashboard";
+
+            await bootApp();
+        } catch (error) {
+            console.error("Failed to sign out:", error);
+            alert("Failed to sign out.");
+        }
+    });
+
+    const isAdmin = state.currentUserRole === "admin";
 
     const recentSessionsSection = document.createElement("div");
     const recentHeading = document.createElement("h2");
@@ -101,13 +141,15 @@ export function renderDashboard() {
     const dataToolsRow = document.createElement("div");
     dataToolsRow.classList.add("button-row");
 
+    userRow.append(userLeft, signOutButton);
+
     if(isAdmin){
     dataToolsRow.append(importButton, exportButton);
     }
 
     const nav = createGlobalNav();
 
-    app.append(title);
+    app.append(title, userRow);
 
     if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput);

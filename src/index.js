@@ -96,7 +96,9 @@ async function bootApp() {
 
         const profile = await ensureMyProfile("96c9eef9-3b6e-4365-86cd-51dbeccf231a");
 
+        state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
+        state.currentUserDisplayName = profile.display_name || "User";
     
         const cloudData = await loadRegionData(profile.region_id);
         replacePersistedData(cloudData);

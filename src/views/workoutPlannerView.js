@@ -16,6 +16,7 @@ export function renderWorkoutPlanner() {
         draftWorkout = { ...existingWorkout };
     } else {
         draftWorkout = createPlannedWorkout(getTodayDate(), "");
+        draftWorkout.createdByUserId = state.currentUserId;
     }
 
     const title = document.createElement("h1");

@@ -13,5 +13,6 @@ export function createPlannedWorkout(date, aoName) {
         lastModifiedAt: Date.now(),
         sourceWorkoutId: null,
         sourceSessionId: null,
+        createdByUserId: null,
     };
 }

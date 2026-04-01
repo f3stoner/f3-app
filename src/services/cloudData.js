@@ -62,7 +62,7 @@ function mapSessionFromDb(row) {
         attendeeIds: row.attendee_ids || [],
         qId: row.q_id,
         fngs: row.fngs || [],
-        notes: row.notes || [],
+        notes: row.notes || "",
         workout: row.workout || null,
         sourcePlannedWorkoutId: row.source_planned_workout_id,
         createdAt: row.created_at,
@@ -83,6 +83,7 @@ function mapPlannedWorkoutFromDb(row) {
         sourceSessionId: row.source_session_id,
         createdAt: row.created_at,
         lastModifiedAt: row.last_modified_at,
+        createdByUserId: row.created_by_user_id || null,
     };
 }
 
@@ -196,6 +197,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 source_session_id: workout.sourceSessionId || null,
                 created_at: workout.createdAt,
                 last_modified_at: workout.lastModifiedAt || null,
+                created_by_user_id: workout.createdByUserId || null,
             },
         ])
         .select()
@@ -221,6 +223,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             source_session_id: workout.sourceSessionId || null,
             created_at: workout.createdAt,
             last_modified_at: workout.lastModifiedAt || null,
+            created_by_user_id: workout.createdByUserId || null,
         })
         .eq("id", workout.id)
         .select()
@@ -271,6 +274,16 @@ export async function deleteSessionFromCloud(regionId, sessionId) {
         .from("sessions")
         .delete()
         .eq("id", sessionId)
+        .eq("region_id", regionId)
+
+    if (error) throw error;
+}
+
+export async function deletePlannedWorkoutFromCloud(regionId, workoutId) {
+    const { error } = await supabase
+        .from("planned_workouts")
+        .delete()
+        .eq("id", workoutId)
         .eq("region_id", regionId)
 
     if (error) throw error;

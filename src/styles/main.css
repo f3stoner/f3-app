@@ -347,11 +347,11 @@ select:focus,
 .detail-label {
     margin-top: 12px;
     margin-bottom: 6px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.06em;
 }
 
 .selected-summary-list {
@@ -487,4 +487,55 @@ select:focus,
 
 .danger-button:hover {
     background-color: #b71c1c;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.user-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: #111;
+    color: #fff;
+    line-height: 1;
+}
+
+.user-name {
+    font-size: 18px;
+    color: #222;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.user-row button {
+    font-size: 14px;
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    background: #fafafa;
+}
+
+.user-row button:hover {
+    background: #f0f0f0;
+}
+
+.role-badge[data-role="admin"] {
+    background: #7c3aed;
 }

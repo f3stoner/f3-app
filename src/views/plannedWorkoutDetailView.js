@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createSession } from "../modules/sessions.js";
+import { deletePlannedWorkout } from "../services/appData.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -14,7 +15,7 @@ export function renderPlannedWorkoutDetail() {
     const backButton = document.createElement("button");
     backButton.textContent = "Back to Plans";
     backButton.addEventListener("click", () => {
-        state.currentView = "plannedWorkoutsList";
+        state.currentView = "plannedWorkoutList";
         renderApp();
     });
 
@@ -60,9 +61,9 @@ export function renderPlannedWorkoutDetail() {
         }
     }
 
-    if (workout.sourceSessionID) {
+    if (workout.sourceSessionId) {
         const sourceSession = state.sessions.find(
-            s => s.id === workout.sourceSessionID
+            s => s.id === workout.sourceSessionId
         );
 
         if (sourceSession) {
@@ -125,6 +126,36 @@ export function renderPlannedWorkoutDetail() {
         renderApp();
     })
 
+    const canDeleteWorkout = 
+        state.currentUserRole === "admin" ||
+        workout.createdByUserId === state.currentUserId;
+
+    let deleteButton = null;
+
+    if (canDeleteWorkout) {
+        deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete Workout";
+        deleteButton.classList.add("danger-button");
+
+        deleteButton.addEventListener("click", async () => {
+            const confirmed = confirm("Are you sure you want to delete this workout?");
+            if(!confirmed) return;
+
+            try {
+                await deletePlannedWorkout(workout.id);
+
+                state.selectedPlannedWorkoutId = null;
+                state.editingPlannedWorkoutId = null;
+                state.currentView = "plannedWorkoutList";
+
+                renderApp();
+            } catch (error) {
+                console.error("Failed to delete workout:", error);
+                alert("Failed to delete workout.")
+            }
+        });
+    }
+
     app.append(
         title,
         dateSection,
@@ -137,6 +168,11 @@ export function renderPlannedWorkoutDetail() {
         editButton,
         copyButton,
         logButton,
+    );
+    if (canDeleteWorkout) {
+        app.append(deleteButton);
+    }
+    app.append(
         backButton,
-    )
+    );
 }
