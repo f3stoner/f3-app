@@ -629,3 +629,15 @@ select:focus,
     color: var(--muted);
     margin-bottom: 16px;
 }
+
+.quick-start-button {
+    font-size: 16px;
+    padding: 12px;
+    font-weight: bold;
+}
+
+.execution-text {
+    font-size: 18px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}

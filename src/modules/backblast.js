@@ -79,14 +79,11 @@ export function generateBackblast (session, members) {
     }
 
     return `AO: ${session.aoName}
-    Date: ${formattedDate}
+Date: ${formattedDate}
     
-    Q: ${qLabel}
+Q: ${qLabel}
+PAX: ${paxNames}
+FNGs: ${fngText}
     
-    PAX: ${paxNames}
-    
-    FNGs: ${fngText}
-    
-    Workout:
-    ${workoutText}`;
+${workoutText}`;
 }

@@ -101,6 +101,7 @@ export function renderDashboard() {
 
         const startButton = document.createElement("button");
         startButton.textContent = "Start Today's Workout";
+        startButton.classList.add("quick-start-button");
         startButton.addEventListener("click", (event) => {
             event.stopPropagation();
             state.selectedPlannedWorkoutId = todaysWorkout.id;

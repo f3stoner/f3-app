@@ -33,6 +33,11 @@ export function renderPlannedWorkoutDetail() {
 
     backButton.textContent = backLabel;
     backButton.addEventListener("click", () => {
+        if (isExecutionMode) {
+            const confirmed = confirm("Exit workout view?");
+            if(!confirmed) return;
+        }
+
         state.plannedWorkoutLaunchMode = null;
         state.currentView = backDestination;
         renderApp();
@@ -60,6 +65,7 @@ export function renderPlannedWorkoutDetail() {
         const value = document.createElement("div");
         value.textContent = valueText;
         value.classList.add("detail-value");
+        value.classList.add(isExecutionMode ? "execution-text" : "");
 
         section.append(label, value);
 
@@ -113,6 +119,7 @@ export function renderPlannedWorkoutDetail() {
             return;
         }
 
+        state.plannedWorkoutLaunchMode = null;
         state.editingPlannedWorkoutId = workout.id;
         state.currentView = "workoutPlanner";
         renderApp();
@@ -122,7 +129,13 @@ export function renderPlannedWorkoutDetail() {
     logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
         const session = createSession(workout.date, workout.aoName);
-        session.qIds = state.currentUserId ? [state.currentUserId] : [];
+
+        const currentMember = state.members.find(
+            member => member.paxName === state.currentUserDisplayName
+        );
+
+        session.qIds = currentMember ? [currentMember.id] : [];
+        session.attendeeIds = currentMember ? [currentMember.id] : [];
         session.workout = {
             title: workout.title,
             warmorama: workout.warmorama,
@@ -206,6 +219,11 @@ export function renderPlannedWorkoutDetail() {
     backRow.classList.add("button-row", "back-actions-row");
 
     if (isExecutionMode) {
+        logButton.textContent = "Finish & Log Session";
+        logButton.classList.add("primary-button");
+
+        editButton.textContent = "Edit Workout";
+        editButton.classList.add("secondary-button");
         primaryActionsRow.append(logButton);
 
         if (canEditWorkout) {
@@ -231,8 +249,8 @@ export function renderPlannedWorkoutDetail() {
         ...(executionBanner ? [executionBanner] : []),
         dateSection,
         aoSection,
-        visibilitySection,
-        ...(sourceSection ? [sourceSection] : []),
+        ...(!isExecutionMode ? [visibilitySection] : []),
+        ...(!isExecutionMode && sourceSection ? [sourceSection] : []),
         warmoramaSection,
         thangsSection,
         finisherSection,

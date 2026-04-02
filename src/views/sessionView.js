@@ -45,6 +45,11 @@ if (isEditing) {
 
 draftSession.qIds = [...(draftSession.qIds || (draftSession.qId ? [draftSession.qId] : []))];
 
+draftSession.qIds.forEach(qId => {
+    if (!draftSession.attendeeIds.includes(qId)) {
+        draftSession.attendeeIds.push(qId);
+    }
+})
 
 console.log("sessionView draftSession on open:", draftSession);
 
@@ -216,8 +221,11 @@ function createMemberCard(member) {
         event.stopPropagation();
 
         const isSelectedQ = (draftSession.qIds || []).includes(member.id);
-
-        draftSession.qIds = isSelectedQ ? [] : [member.id];
+        if (isSelectedQ) {
+            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
+        } else {
+            draftSession.qIds = [...(draftSession.qIds || []), member.id];
+        }
 
         if (!draftSession.attendeeIds.includes(member.id)) {
             draftSession.attendeeIds.push(member.id);
@@ -261,6 +269,45 @@ function createMemberSection(titleText, members, options = {}) {
 
     members.forEach(member => {
         section.appendChild(createMemberCard(member));
+    });
+
+    return section;
+}
+
+function createQSection(qMembers) {
+    const section = document.createElement("div");
+    section.classList.add("section");
+
+    const heading = document.createElement("div");
+    heading.classList.add("detail-label");
+    heading.textContent = "Q";
+
+    section.appendChild(heading);
+
+    if (qMembers.length === 0) {
+        const empty = document.createElement("div");
+        empty.classList.add("detail-value");
+        empty.textContent = "No Q selected";
+        section.appendChild(empty);
+        return section;
+    }
+
+    qMembers.forEach(member => {
+        const row = document.createElement("div");
+        row.classList.add("selected-summary-row");
+
+        const name = document.createElement("span");
+        name.textContent = member.paxName;
+
+        const clearButton = document.createElement("button");
+        clearButton.textContent = "Clear";
+        clearButton.addEventListener("click", () => {
+            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
+            renderMemberList();
+        });
+
+        row.append(name, clearButton);
+        section.appendChild(row);
     });
 
     return section;
@@ -319,19 +366,12 @@ function createSelectedSection(selectedMembers) {
         row.classList.add("selected-summary-row");
 
         const name = document.createElement("span");
-        name.textContent = (draftSession.qIds || []).includes(member.id)
-        ? `${member.paxName} (Q)`
-        : member.paxName;
+        name.textContent = member.paxName;
 
         const removeButton = document.createElement("button");
         removeButton.textContent = "Remove";
         removeButton.addEventListener("click", () => {
             draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
-
-            if ((draftSession.qIds || []).includes(member.id)) {
-                draftSession.qIds = [];
-            }
-
             renderMemberList();
         });
 
@@ -376,9 +416,13 @@ function renderMemberList() {
 
     return paxName.includes(searchTerm) || realName.includes(searchTerm);
     });
+    const qMembers = activeMembers.filter(member => 
+        (draftSession.qIds || []).includes(member.id)
+    );
 
-   const selectedMembers = filteredMembers.filter(member =>
-    draftSession.attendeeIds.includes(member.id)
+    const selectedMembers = filteredMembers.filter(member =>
+    draftSession.attendeeIds.includes(member.id) &&
+    !(draftSession.qIds || []).includes(member.id)
    );
 
    const recentMembers = filteredMembers.filter(member => {
@@ -403,6 +447,7 @@ function renderMemberList() {
         : otherMembers.slice(0, 10);
     
     selectedHeaderSlot.textContent = "";
+    selectedHeaderSlot.appendChild(createQSection(qMembers));
     selectedHeaderSlot.appendChild(createSelectedSection(selectedMembers));
 
         const recentSection = createMemberSection(`Recent at ${draftSession.aoName || "AO"}`, visibleRecentMembers, {
