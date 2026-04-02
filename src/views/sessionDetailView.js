@@ -41,7 +41,7 @@ export function renderSessionDetail() {
             const member = state.members.find(m => m.id === id);
             return member ? member.paxName : "Unknown";
         });
-    const paxNames = paxNamesArray.join(", ");
+    const paxNames = paxNamesArray.length > 0? paxNamesArray.join(", ") : "-";
 
     const notesText = session.notes ? session.notes : "-";
 

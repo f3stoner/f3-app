@@ -2,7 +2,6 @@ import { renderApp } from "../index.js";
 import { createSession } from "../modules/sessions.js";
 import { getTodayDate } from "../utils/date.js";
 import { state } from "../modules/state.js";
-import { saveState } from "../utils/storage.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { renderBackblastView } from "./backblastView.js";
 import { createInvitedByField } from "../components/invitedByField.js";
@@ -28,6 +27,7 @@ if (isEditing) {
         draftSession = {
             ...existingSession,
             attendeeIds: [...existingSession.attendeeIds],
+            qIds: [...(existingSession.qIds || (existingSession.qId ? [existingSession.qId] : []))],
             fngs: [...existingSession.fngs]
         };
     }
@@ -36,11 +36,14 @@ if (isEditing) {
         draftSession = {
             ...state.draftSession,
             attendeeIds: [...state.draftSession.attendeeIds],
+            qIds: [...(state.draftSession.qIds || (state.draftSession.qId ? [state.draftSession.qId] : []))],
             fngs: [...state.draftSession.fngs]
         };
     } else {
     draftSession = createSession(getTodayDate(), "");
 }
+
+draftSession.qIds = [...(draftSession.qIds || (draftSession.qId ? [draftSession.qId] : []))];
 
 
 console.log("sessionView draftSession on open:", draftSession);
@@ -206,13 +209,15 @@ function createMemberCard(member) {
     const qButton = document.createElement("button");
     qButton.classList.add("q-button");
     qButton.textContent = "Q";
-    if (draftSession.qId === member.id) {
+    if ((draftSession.qIds || []).includes(member.id)) {
         qButton.classList.add("q-selected");
     }
     qButton.addEventListener("click", (event) => {
         event.stopPropagation();
 
-        draftSession.qId = member.id;
+        const isSelectedQ = (draftSession.qIds || []).includes(member.id);
+
+        draftSession.qIds = isSelectedQ ? [] : [member.id];
 
         if (!draftSession.attendeeIds.includes(member.id)) {
             draftSession.attendeeIds.push(member.id);
@@ -229,6 +234,7 @@ card.addEventListener("click", () => {
         draftSession.attendeeIds.push(member.id);
     } else {
         draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
+        draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
     }
     renderMemberList();
     });
@@ -313,7 +319,7 @@ function createSelectedSection(selectedMembers) {
         row.classList.add("selected-summary-row");
 
         const name = document.createElement("span");
-        name.textContent = draftSession.qId === member.id
+        name.textContent = (draftSession.qIds || []).includes(member.id)
         ? `${member.paxName} (Q)`
         : member.paxName;
 
@@ -322,8 +328,8 @@ function createSelectedSection(selectedMembers) {
         removeButton.addEventListener("click", () => {
             draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
 
-            if (draftSession.qId === member.id) {
-                draftSession.qId = null;
+            if ((draftSession.qIds || []).includes(member.id)) {
+                draftSession.qIds = [];
             }
 
             renderMemberList();
@@ -503,6 +509,7 @@ saveButton.addEventListener("click", async () => {
 
     draftSession.fngs = fngs;
     draftSession.notes = notes.value.trim();
+    draftSession.qIds = [...(draftSession.qIds || [])];
 try {
     if (isEditing) {
         await updateSession(sessionId, draftSession);
