@@ -641,3 +641,32 @@ select:focus,
     line-height: 1.6;
     white-space: pre-wrap;
 }
+
+.session-history-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 14px;
+}
+
+.session-preview-line {
+    margin-top: 6px;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.q-line {
+    font-weight: 500;
+}
+
+.session-date-divider {
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    opacity: 0.6;
+}

@@ -13,9 +13,58 @@ export function renderSessionHistory() {
     const searchInput = document.createElement("input");
     searchInput.type = "text";
     searchInput.placeholder = "Search sessions...";
+    searchInput.classList.add("session-search");
     searchInput.value = state.sessionHistorySearchTerm || "";
 
     const sessionList = document.createElement("div");
+
+    function createSessionCard(session) {
+        const card = document.createElement("div");
+    card.classList.add("member-card", "session-history-card");
+
+    const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+    const qNames = effectiveQIds
+        .map(qId => state.members.find(m => m.id === qId))
+        .filter(Boolean)
+        .map(member => member.paxName);
+
+    const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+
+    const titleLine = document.createElement("div");
+    titleLine.classList.add("member-name");
+    titleLine.textContent = session.aoName;
+
+    const dateLine = document.createElement("div");
+    dateLine.classList.add("stats-line");
+    dateLine.textContent = formatDate(session.date);
+
+    const qLine = document.createElement("div");
+    qLine.classList.add("stats-line", "q-line");
+    qLine.textContent = `Q: ${qLabel}`;
+
+    const statsLine = document.createElement("div");
+    statsLine.classList.add("stats-line");
+    statsLine.textContent = `${session.attendeeIds.length} PAX • ${session.fngs.length} FNGs`;
+
+    const previewLine = document.createElement("div");
+    previewLine.classList.add("stats-line", "session-preview-line");
+    previewLine.textContent =
+        session.workout?.title ||
+        session.workout?.thangs?.split("\n")[0] ||
+        session.notes?.split("\n")[0] ||
+        "No workout logged";
+
+    card.append(titleLine, dateLine, qLine, statsLine, previewLine);
+
+    card.addEventListener("click", () => {
+        state.selectedSessionId = session.id;
+        state.currentView = "sessionDetail";
+        renderApp();
+    });
+
+    return card;
+}
 
     function renderSessionList() {
 
@@ -42,6 +91,8 @@ export function renderSessionHistory() {
 
             const aoName = (session.aoName || "").toLowerCase();
             const notes = (session.notes || "").toLowerCase();
+            const workoutTitle = (session.workout?.title || "").toLowerCase();
+            const workoutPreview = (session.workout?.thangs?.split("\n")[0]  || "").toLowerCase();
             const formattedDate = formatDate(session.date).toLowerCase();
             const rawDate = (session.date || "").toLowerCase();
 
@@ -50,6 +101,8 @@ export function renderSessionHistory() {
                 qNames.includes(searchTerm) ||
                 paxNames.includes(searchTerm) ||
                 notes.includes(searchTerm) ||
+                workoutTitle.includes(searchTerm) ||
+                workoutPreview.includes(searchTerm) ||
                 formattedDate.includes(searchTerm) ||
                 rawDate.includes(searchTerm)
             );
@@ -71,28 +124,19 @@ export function renderSessionHistory() {
                 : "No sessions saved yet";
             return;
         } 
+
+        let lastDate = null;
+
         sortedSessions.forEach((session) => {
-            const sessionDetail = document.createElement("div");
-            const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+            if (session.date !== lastDate) {
+                const dateHeader = document.createElement("div");
+                dateHeader.classList.add("detail-label", "session-date-divider");
+                dateHeader.textContent = formatDate(session.date);
 
-            const qNames = effectiveQIds
-                .map(qId => state.members.find(m => m.id === qId))
-                .filter(Boolean)
-                .map(member => member.paxName);
-
-            const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
-
-            sessionDetail.textContent = `${formatDate(session.date)} - ${session.aoName} | Q: ${qLabel} | ${session.attendeeIds.length} PAX | ${session.fngs.length} FNGs`;
-            sessionDetail.classList.add("section");
-            sessionDetail.classList.add("member-card");
-
-            sessionDetail.addEventListener("click", () => {
-                    state.selectedSessionId = session.id;
-                    state.currentView = "sessionDetail";
-                    renderApp();
-                });
-
-                sessionList.appendChild(sessionDetail);
+                sessionList.appendChild(dateHeader);
+                lastDate = session.date;
+            }
+            sessionList.appendChild(createSessionCard(session));
             });
         }
     searchInput.addEventListener("input", (event) => {
