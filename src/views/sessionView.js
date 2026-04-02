@@ -511,13 +511,16 @@ saveButton.addEventListener("click", async () => {
     draftSession.notes = notes.value.trim();
     draftSession.qIds = [...(draftSession.qIds || [])];
 try {
+
+    let savedSession;
+
     if (isEditing) {
         await updateSession(sessionId, draftSession);
-        state.editingSessionId = null;
+        savedSession = state.sessions.find(session => session.id === sessionId);
     } else {
-        await addSession(draftSession);
+        savedSession = await addSession(draftSession);
     }
-    state.selectedSessionId = draftSession.id;
+    state.selectedSessionId = savedSession?.id || draftSession.id;
     state.editingSessionId = null;
     state.selectedPlannedWorkoutId = null;
     state.sessionSearchTerm = "";
@@ -532,7 +535,7 @@ try {
         state.currentView = "sessionDetail";
         renderApp();
     } else {
-    const backblast = generateBackblast(draftSession, state.members);
+    const backblast = generateBackblast(savedSession || draftSession, state.members);
     renderBackblastView(backblast);
     }
 } catch (error) {

@@ -3,15 +3,36 @@ import { formatDate } from "../utils/date.js";
 
 export function generateBackblast (session, members) {
     const formattedDate = formatDate(session.date);
-    const qMember = members.find(m => m.id === session.qId);
-    const qName = qMember ? qMember.paxName : "-";
+
+    const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+    const qNames = effectiveQIds
+        .map(qId => {
+            const matchedMember = members.find(m => m.id === qId)
+
+            if (!matchedMember) {
+                console.warn("Backblast Q not found in members:", {
+                    qId,
+                    attendeeIds: session.attendeeIds,
+                    memberCount: members.length,
+                });
+                return null;
+            }
+            return matchedMember.paxName;
+        })
+        .filter(Boolean)
+
+    const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+
+    const qIdSet = new Set(effectiveQIds);
+    
     const paxNamesArray = session.attendeeIds
-        .filter(id => id !== session.qId)
+        .filter(id => !qIdSet.has(id))
         .map(id => {
         const member = members.find(m => m.id === id);
         return member ? member.paxName : "Unknown";
     });
-    const paxNames = paxNamesArray.join(", ");
+    const paxNames = paxNamesArray.length > 0 ? paxNamesArray.join(", ") : "-";
     const fngText = session.fngs.length === 0
     ? "None"
     : session.fngs.map(fng => {
@@ -57,13 +78,10 @@ export function generateBackblast (session, members) {
         workoutText = parts.length > 0 ? parts.join("\n\n") : "-";
     }
 
-    console.log("generateBackblast session:", session);
-    console.log("generateBackblast workout:", session.workout);
-
     return `AO: ${session.aoName}
     Date: ${formattedDate}
     
-    Q: ${qName}
+    Q: ${qLabel}
     
     PAX: ${paxNames}
     

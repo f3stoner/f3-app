@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { bootApp, renderApp } from "../index.js";
-import { formatDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
@@ -60,6 +60,65 @@ export function renderDashboard() {
     });
 
     const isAdmin = state.currentUserRole === "admin";
+
+    const today = getTodayDate();
+
+    const todaysWorkout = state.plannedWorkouts.find(workout => 
+        workout.date === today &&
+        workout.createdByUserId === state.currentUserId
+    );
+
+    let todaySection = null;
+
+    if (todaysWorkout) {
+        todaySection = document.createElement("div");
+        todaySection.classList.add("section");
+
+        const todayHeading = document.createElement("div");
+        todayHeading.classList.add("detail-label");
+        todayHeading.textContent = "Today";
+
+        const todayCard = document.createElement("div");
+        todayCard.classList.add("member-card");
+
+        const todayCardContent = document.createElement("div");
+
+        const todayTitle = document.createElement("div");
+        todayTitle.classList.add("member-name");
+        todayTitle.textContent = `You are Qing today at ${todaysWorkout.aoName}`;
+
+        const todaySubtitle = document.createElement("div");
+        todaySubtitle.classList.add("stats-line");
+        todaySubtitle.textContent = todaysWorkout.title || "Workout planned";
+
+        const todayPreview = document.createElement("div");
+        todayPreview.classList.add("stats-line");
+        todayPreview.textContent = todaysWorkout.thangs
+            ? todaysWorkout.thangs.split("\n")[0]
+            : (todaysWorkout.notes ? todaysWorkout.notes.split("\n")[0] : "Ready to run");
+        
+        todayCardContent.append(todayTitle, todaySubtitle, todayPreview);
+
+        const startButton = document.createElement("button");
+        startButton.textContent = "Start Today's Workout";
+        startButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            state.selectedPlannedWorkoutId = todaysWorkout.id;
+            state.plannedWorkoutLaunchMode = "execution";
+            state.currentView = "plannedWorkoutDetail";
+            renderApp();
+        });
+
+        todayCard.addEventListener("click", () => {
+            state.selectedPlannedWorkoutId = todaysWorkout.id;
+            state.plannedWorkoutLaunchMode = "execution";
+            state.currentView = "plannedWorkoutDetail";
+            renderApp();
+        });
+
+        todayCard.append(todayCardContent, startButton);
+        todaySection.append(todayHeading, todayCard);
+    }
 
     const quickAccessHeading = document.createElement("div");
     quickAccessHeading.textContent = "Quick Access";
@@ -180,7 +239,7 @@ export function renderDashboard() {
 
     const nav = createGlobalNav();
 
-    app.append(title, userRow, quickAccessHeading, quickAccessRow);
+    app.append(title, userRow, ...(todaySection ? [todaySection] : []), quickAccessHeading, quickAccessRow);
 
     if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput);

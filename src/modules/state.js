@@ -31,6 +31,7 @@ export const state = {
     currentUserDisplayName: null,
     _historicImport: null,
     runHistoricImport: null,
+    plannedWorkoutLaunchMode: null,
 };
 
 state.runHistoricImport = async function () {

@@ -21,10 +21,6 @@ import { renderAuthView } from "./views/authView.js";
 import { renderMyPlanner } from "./views/myPlannerView.js";
 import { groupHistoricRowsIntoSessions, parseHistoricCsvToPreview, mapGroupedSessionsToAppFormat } from "./utils/historicImport.js";
 import { renderHistoricImportPreview } from "./views/historicImportPreviewView.js";
-window.parseHistoricCsvToPreview = parseHistoricCsvToPreview;
-window.groupHistoricRowsIntoSessions = groupHistoricRowsIntoSessions;
-window.mapGroupedSessionsToAppFormat = mapGroupedSessionsToAppFormat;
-window.state = state;
 
 async function runHistoricPreview() {
     const response = await fetch("/Historic_Log.csv");
@@ -41,9 +37,6 @@ async function runHistoricPreview() {
 
     renderHistoricImportPreview(preview, converted);
 }
-
-window.runHistoricPreview = runHistoricPreview;
-window.runAggielandAoImports = runAggielandAoImports;
 
 async function runPaxImport() {
     const response = await fetch("/Pax_Master.csv");

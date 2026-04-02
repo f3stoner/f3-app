@@ -12,24 +12,42 @@ export function renderPlannedWorkoutDetail() {
         w => w.id === state.selectedPlannedWorkoutId
     );
 
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
-    const backDestination = workout.isShared ? "plannedWorkoutList" : "myPlanner";
-    const backLabel = workout.isShared ? "Back to Workout Library" : "Back to My Planner";
-    backButton.textContent = backLabel;
-    backButton.addEventListener("click", () => {
-        state.currentView = backDestination;
-        renderApp();
-    });
+    const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";
+    const isTodayWorkout = workout?.date === getTodayDate();
 
     if (!workout) {
         app.textContent = "No Planned Workout Found";
-        app.append(backButton);
         return;
     }
 
+    const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
+
+    const backDestination = isExecutionMode
+        ? "dashboard"
+        : (workout.isShared ? "plannedWorkoutList" : "myPlanner");
+
+    const backLabel = isExecutionMode
+        ? "Back to Dashboard"
+        : (workout.isShared ? "Back to Workout Library" : "Back to My Planner");
+
+    backButton.textContent = backLabel;
+    backButton.addEventListener("click", () => {
+        state.plannedWorkoutLaunchMode = null;
+        state.currentView = backDestination;
+        renderApp();
+});
+
     const title = document.createElement("h1");
     title.textContent = workout.title || "Planned Workout";
+
+    let executionBanner = null;
+
+    if (isExecutionMode) {
+        executionBanner = document.createElement("div");
+        executionBanner.classList.add("loaded-workout-banner");
+        executionBanner.textContent = `You are Qing ${isTodayWorkout ? "today" : "this workout"} at ${workout.aoName}`;
+    }
 
     function createDetailSection (labelText, valueText) {
         const section = document.createElement("div");
@@ -101,9 +119,10 @@ export function renderPlannedWorkoutDetail() {
     });
 
     const logButton = document.createElement("button");
-    logButton.textContent = "Log This Workout";
+    logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
         const session = createSession(workout.date, workout.aoName);
+        session.qIds = state.currentUserId ? [state.currentUserId] : [];
         session.workout = {
             title: workout.title,
             warmorama: workout.warmorama,
@@ -116,6 +135,7 @@ export function renderPlannedWorkoutDetail() {
         state.draftSession = session;
         state.selectedSessionId = null;
         state.editingSessionId = null;
+        state.plannedWorkoutLaunchMode = null;
         state.currentView = "session";
         renderApp();
     });
@@ -185,21 +205,30 @@ export function renderPlannedWorkoutDetail() {
     const backRow = document.createElement("div");
     backRow.classList.add("button-row", "back-actions-row");
 
-    if (canEditWorkout) {
-        primaryActionsRow.append(editButton);
-    }
+    if (isExecutionMode) {
+        primaryActionsRow.append(logButton);
 
-    primaryActionsRow.append(logButton);
-    secondaryActionsRow.append(copyButton);
+        if (canEditWorkout) {
+            secondaryActionsRow.append(editButton);
+        }
+    } else {
+        if (canEditWorkout) {
+            primaryActionsRow.append(editButton);
+        }
 
-    if (canDeleteWorkout && deleteButton) {
-        secondaryActionsRow.append(deleteButton);
+        primaryActionsRow.append(logButton);
+        secondaryActionsRow.append(copyButton);
+
+        if (canDeleteWorkout && deleteButton) {
+            secondaryActionsRow.append(deleteButton);
+        }
     }
 
     backRow.append(backButton);
 
     app.append(
         title,
+        ...(executionBanner ? [executionBanner] : []),
         dateSection,
         aoSection,
         visibilitySection,
@@ -209,7 +238,7 @@ export function renderPlannedWorkoutDetail() {
         finisherSection,
         notesSection,
         primaryActionsRow,
-        secondaryActionsRow,
+        ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
         backRow,
     );
 }
