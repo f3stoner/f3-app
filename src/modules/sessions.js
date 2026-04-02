@@ -1,12 +1,10 @@
-import { state } from "./state.js";
-
 export function createSession(date, aoName) {
     return {
         id: crypto.randomUUID(),
         date,
         aoName,
         attendeeIds: [],
-        qId: null,
+        qIds: [],
         fngs: [],
         notes: "",
         workout: null,

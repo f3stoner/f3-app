@@ -1,10 +1,11 @@
-import { insertMember, updateMemberInCloud, insertSessionsBatch, deleteSessionsByAo } from "./cloudData.js"
+import { insertMember, updateMemberInCloud, insertSessionsBatch, deleteSessionsByAo,loadAllMembers } from "./cloudData.js"
 import { REGION_ID } from "../config.js"
 import Papa from "papaparse";
-import { insertSession } from "./cloudData.js";
 import { supabase } from "./supabaseClient.js";
+import { normalizePaxName } from "../utils/historicImport.js";
 
 export async function importPaxMasterCsv(csvText) {
+
     const { data: rows, errors } = Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
@@ -34,7 +35,7 @@ export async function importPaxMasterCsv(csvText) {
         };
 
         const saved = await insertMember(REGION_ID, member);
-        memberMap[paxName] = saved;
+        memberMap[normalizePaxName(paxName)] = saved;
     }
 
     console.log("Pass 1 complete:", Object.keys(memberMap).length);
@@ -45,8 +46,8 @@ export async function importPaxMasterCsv(csvText) {
 
         if (!paxName || !invitedByName) continue;
 
-        const member = memberMap[paxName];
-        const inviter = memberMap[invitedByName];
+        const member = memberMap[normalizePaxName(paxName)];
+        const inviter = memberMap[normalizePaxName(invitedByName)];
 
         if (!member || !inviter) continue;
 
@@ -111,7 +112,7 @@ export async function importAoLogCsv(csvText, aoName) {
         const normalizedDate = normalizeDate(rawDate);
         if (!normalizedDate) continue;
 
-        const memberId = memberMap[paxName];
+        const memberId = memberMap[normalizePaxName(paxName)];
         if (!memberId) {
             console.warn(`Skipping unmatched pax in ${aoName}:`, paxName);
             continue;
@@ -125,7 +126,7 @@ export async function importAoLogCsv(csvText, aoName) {
                 date: normalizedDate,
                 aoName,
                 attendeeIds: [],
-                qId: null,
+                qIds: [],
                 fngs: [],
                 notes: "",
                 workout: null,
@@ -139,31 +140,53 @@ export async function importAoLogCsv(csvText, aoName) {
         }
 
         if (["Q", "QDD", "VQ"].includes(code)) {
-            grouped[key].qId = memberId;
+            if (!grouped[key].qIds.includes(memberId)) {
+            grouped[key].qIds.push(memberId);
+            }
+        }
+
+        if (code === "FNG") {
+            grouped[key].fngs.push({
+                paxName,
+                memberId
+            });
         }
     }
 
     const sessions = Object.values(grouped).sort((a, b) => a.date.localeCompare(b.date));
     console.log(`${aoName} sessions grouped:`, sessions.length);
 
-    await deleteSessionsByAo(REGION_ID, sessions);
+    //await deleteSessionsByAo(REGION_ID, aoName);
     await insertSessionsBatch(REGION_ID, sessions);
 
     console.log(`${aoName} session import complete`);
 }
 
 async function buildMemberNameToIdMap() {
-    const { data, error } = await supabase
-        .from("members")
-        .select("id, pax_name")
-        .eq("region_id", REGION_ID);
+    const pageSize = 1000;
+    let from = 0;
+    let allMembers = [];
 
-    if (error) throw error;
+    while (true) {
+        const { data, error } = await supabase
+            .from("members")
+            .select("id, pax_name")
+            .eq("region_id", REGION_ID)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allMembers = allMembers.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
 
     const map = {};
 
-    for (const row of data) {
-        map[row.pax_name] = row.id;
+    for (const row of allMembers) {
+        map[normalizePaxName(row.pax_name)] = row.id;
     }
 
     return map;

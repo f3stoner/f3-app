@@ -1,5 +1,56 @@
 import { supabase } from "./supabaseClient.js";
 
+export async function loadAllSessions(regionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let allSessions = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("sessions")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allSessions = allSessions.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return allSessions;
+}
+
+export async function loadAllMembers(regionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let allMembers = [];
+
+    while(true) {
+        const { data, error } = await supabase
+            .from("members")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+
+        if (!data) break;
+
+        allMembers = allMembers.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return allMembers;
+}
+
 export async function loadRegionData(regionId) {
     const [
         regionResult,
@@ -13,15 +64,9 @@ export async function loadRegionData(regionId) {
             .eq("id", regionId)
             .single(),
 
-        supabase
-            .from("members")
-            .select("*")
-            .eq("region_id", regionId),
+        loadAllMembers(regionId),
 
-        supabase
-            .from("sessions")
-            .select("*")
-            .eq("region_id", regionId),
+        loadAllSessions(regionId),
 
         supabase
             .from("planned_workouts")
@@ -30,14 +75,15 @@ export async function loadRegionData(regionId) {
     ]);
 
     if (regionResult.error) throw regionResult.error;
-    if (memberResult.error) throw memberResult.error;
     if (sessionResult.error) throw sessionResult.error;
     if (plannedWorkoutResult.error) throw plannedWorkoutResult.error;
-
+    
+    console.log("Loaded members count:", memberResult.length);
+    
     return {
         regionName: regionResult.data.name,
-        members: memberResult.data.map(mapMemberFromDb),
-        sessions: sessionResult.data.map(mapSessionFromDb),
+        members: memberResult.map(mapMemberFromDb),
+        sessions: sessionResult.map(mapSessionFromDb),
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
     };
 }
@@ -60,7 +106,7 @@ function mapSessionFromDb(row) {
         date: row.date,
         aoName: row.ao_name,
         attendeeIds: row.attendee_ids || [],
-        qId: row.q_id,
+        qIds: row.q_ids || (row.q_id ? [row.q_id] : []),
         fngs: row.fngs || [],
         notes: row.notes || "",
         workout: row.workout || null,
@@ -141,7 +187,8 @@ export async function insertSession(regionId, session) {
                 region_id: regionId,
                 date: session.date,
                 ao_name: session.aoName,
-                q_id: session.qId || null,
+                q_ids: session.qIds || [],
+                q_id: session.qIds?.[0] || null,
                 attendee_ids: session.attendeeIds || [],
                 fngs: session.fngs || [],
                 notes: session.notes || "",
@@ -164,7 +211,8 @@ export async function updateSessionInCloud(regionId, session) {
             region_id: regionId,
             date: session.date,
             ao_name: session.aoName,
-            q_id: session.qId || null,
+            q_ids: session.qIds || [],
+            q_id: session.qIds?.[0] || null,
             attendee_ids: session.attendeeIds || [],
             fngs: session.fngs || [],
             notes: session.notes || "",
@@ -238,24 +286,42 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
 }
 
 export async function insertSessionsBatch(regionId, sessions) {
-    const payload = sessions.map(session => ({
-        id: session.id,
-        region_id: regionId,
-        date: session.date,
-        ao_name: session.aoName,
-        q_id: session.qId || null,
-        attendee_ids: session.attendeeIds || [],
-        fngs: session.fngs || [],
-        notes: session.notes || "",
-        workout: session.workout || null,
-        source_planned_workout_id: session.sourcePlannedWorkoutId || null,
-        created_at: session.createdAt,
-    }));
+    const payload = sessions.map(session => {
+        const cleanQIds = Array.isArray(session.qIds)
+            ? session.qIds.filter(Boolean)
+            : [];
+
+        return {
+            id: session.id,
+            region_id: regionId,
+            date: session.date,
+            ao_name: session.aoName,
+            q_ids: cleanQIds,
+            q_id: cleanQIds[0] || null,
+            attendee_ids: session.attendeeIds || [],
+            fngs: session.fngs || [],
+            notes: session.notes || "",
+            workout: session.workout || null,
+            source_planned_workout_id: session.sourcePlannedWorkoutId || null,
+            created_at: session.createdAt,
+        };
+    });
+
+    const idCounts = new Map();
+    for (const row of payload) {
+        idCounts.set(row.id, (idCounts.get(row.id) || 0) + 1);
+    }
+
+    const duplicateIds = [...idCounts.entries()].filter(([, count]) => count > 1);
+
+    console.log("Payload size:", payload.length);
+    console.log("Duplicate ID count:", duplicateIds.length);
+    console.log("First few duplicate IDs:", duplicateIds.slice(0, 10));
 
     const { data, error } = await supabase
         .from("sessions")
         .insert(payload)
-        .select()
+        .select();
 
     if (error) throw error;
 

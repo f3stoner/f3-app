@@ -19,6 +19,31 @@ import { importAoLogCsv } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
 import { renderMyPlanner } from "./views/myPlannerView.js";
+import { groupHistoricRowsIntoSessions, parseHistoricCsvToPreview, mapGroupedSessionsToAppFormat } from "./utils/historicImport.js";
+import { renderHistoricImportPreview } from "./views/historicImportPreviewView.js";
+window.parseHistoricCsvToPreview = parseHistoricCsvToPreview;
+window.groupHistoricRowsIntoSessions = groupHistoricRowsIntoSessions;
+window.mapGroupedSessionsToAppFormat = mapGroupedSessionsToAppFormat;
+window.state = state;
+
+async function runHistoricPreview() {
+    const response = await fetch("/Historic_Log.csv");
+    const csvText = await response.text();
+
+    const preview = parseHistoricCsvToPreview(csvText);
+    const grouped = groupHistoricRowsIntoSessions(preview.parsedRows);
+    const converted = mapGroupedSessionsToAppFormat(grouped, state.members);
+
+    console.log("Converted Sessions:", converted.sessions.length);
+    console.log("Missing Pax:", converted.missingPax);
+
+    state._historicImport = converted;
+
+    renderHistoricImportPreview(preview, converted);
+}
+
+window.runHistoricPreview = runHistoricPreview;
+window.runAggielandAoImports = runAggielandAoImports;
 
 async function runPaxImport() {
     const response = await fetch("/Pax_Master.csv");
@@ -37,17 +62,17 @@ async function runForestImport() {
 async function runAggielandAoImports() {
     const aoFiles = [
         ["Forest", "/Forest_Log.csv"],
-        ["Cave", "Cave_Log.csv"],
-        ["Iron", "Iron_Log.csv"],
-        ["Keep", "Keep_Log.csv"],
-        ["Rock", "Rock_Log.csv"],
-        ["Mine", "Mine_Log.csv"],
-        ["Southie", "Southie_Log.csv"],
-        ["Watch", 'Watch_Log.csv'],
-        ["Dads", "Dads_Log.csv"],
-        ["BlackOps", "BlackOps_Log.csv"],
-        ["CSAUP", "CSAUP_Log.csv"],
-        ["Other", "Other_Log.csv"],
+        ["Cave", "/Cave_Log.csv"],
+        ["Iron", "/Iron_Log.csv"],
+        ["Keep", "/Keep_Log.csv"],
+        ["Rock", "/Rock_Log.csv"],
+        ["Mine", "/Mine_Log.csv"],
+        ["Southie", "/Southie_Log.csv"],
+        ["Watch", '/Watch_Log.csv'],
+        ["Dads", "/Dads_Log.csv"],
+        ["BlackOps", "/BlackOps_Log.csv"],
+        ["CSAUP", "/CSAUP_Log.csv"],
+        ["Other", "/Other_Log.csv"],
     ];
 
     for (const [aoName, path] of aoFiles) {
@@ -105,6 +130,8 @@ async function bootApp() {
     
         const cloudData = await loadRegionData(profile.region_id);
         replacePersistedData(cloudData);
+
+        
         console.log("Loaded cloud data:", cloudData);
 
         renderApp();

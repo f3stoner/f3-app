@@ -106,9 +106,15 @@ export function renderDashboard() {
     } else {
         sortedSessions.slice(0, 3).forEach((session) => {
             const sessionDetail = document.createElement("div");
-            const qMember = state.members.find(m => m.id === session.qId);
-            const qName = qMember ? qMember.paxName : "-";
-            sessionDetail.textContent = `${formatDate(session.date)} - ${session.aoName} | Q: ${qName} | ${session.attendeeIds.length} PAX | ${session.fngs.length} FNGs`;
+            const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+            const qNames = effectiveQIds
+                .map(qId => state.members.find(m => m.id === qId))
+                .filter(Boolean)
+                .map(member => member.paxName);
+            
+            const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+            sessionDetail.textContent = `${formatDate(session.date)} - ${session.aoName} | Q: ${qLabel} | ${session.attendeeIds.length} PAX | ${session.fngs.length} FNGs`;
             sessionDetail.classList.add("section");
             sessionDetail.classList.add("member-card");
             sessionDetail.addEventListener("click", () => {

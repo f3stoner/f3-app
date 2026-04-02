@@ -6,7 +6,7 @@ export function getMemberStats(memberId) {
     const attendedSessions = sessions.filter(s => s.attendeeIds.includes(memberId) || s.fngs?.some(fng => fng.memberId === memberId));
     const dates = attendedSessions.map(s => s.date);
     const posts = attendedSessions.length;
-    const qs = sessions.filter(s => s.qId === memberId).length;
+    const qs = sessions.filter(s => Array.isArray(s.qIds) && s.qIds.includes(memberId)).length;
 
     if (dates.length === 0) {
         return {

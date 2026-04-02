@@ -26,14 +26,21 @@ export function renderSessionDetail() {
     const title = document.createElement("h1");
     title.textContent = "Session Detail";
     const formattedDate = formatDate(session.date);
-    const qMember = state.members.find(m => m.id === session.qId);
-    const qName = qMember ? qMember.paxName : "-";
+    const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+    const qNames = effectiveQIds
+        .map(qId => state.members.find(m => m.id === qId))
+        .filter(Boolean)
+        .map(member => member.paxName);
+    const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+    const qIdSet = new Set(effectiveQIds);
+
     const paxNamesArray = session.attendeeIds
-        .filter(id => id !== session.qId)
+        .filter(id => !qIdSet.has(id))
         .map(id => {
-        const member = state.members.find(m => m.id === id);
-        return member ? member.paxName : "Unknown";
-    });
+            const member = state.members.find(m => m.id === id);
+            return member ? member.paxName : "Unknown";
+        });
     const paxNames = paxNamesArray.join(", ");
 
     const notesText = session.notes ? session.notes : "-";
@@ -174,7 +181,7 @@ export function renderSessionDetail() {
 
     const dateSection = createDetailSection("Date", formattedDate);
     const aoSection = createDetailSection("AO", session.aoName);
-    const qSection = createDetailSection("Q", qName);
+    const qSection = createDetailSection("Q", qLabel);
     const paxSection = createDetailSection("PAX", paxNames);
     const fngSection = createFngSection();
     const workoutSection = createWorkoutSection();
