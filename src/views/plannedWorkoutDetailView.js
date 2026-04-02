@@ -65,7 +65,9 @@ export function renderPlannedWorkoutDetail() {
         const value = document.createElement("div");
         value.textContent = valueText;
         value.classList.add("detail-value");
-        value.classList.add(isExecutionMode ? "execution-text" : "");
+        if (isExecutionMode) {
+            value.classList.add("execution-text");
+        }
 
         section.append(label, value);
 

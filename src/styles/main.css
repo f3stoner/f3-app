@@ -670,3 +670,13 @@ select:focus,
     text-transform: uppercase;
     opacity: 0.6;
 }
+
+.session-detail-value {
+    white-space: pre-wrap;
+}
+
+.session-detail-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}

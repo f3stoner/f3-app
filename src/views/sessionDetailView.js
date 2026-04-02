@@ -24,7 +24,7 @@ export function renderSessionDetail() {
         app.append(backButton);
     } else {
     const title = document.createElement("h1");
-    title.textContent = "Session Detail";
+    title.textContent = "Session";
     const formattedDate = formatDate(session.date);
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
@@ -41,9 +41,30 @@ export function renderSessionDetail() {
             const member = state.members.find(m => m.id === id);
             return member ? member.paxName : "Unknown";
         });
-    const paxNames = paxNamesArray.length > 0? paxNamesArray.join(", ") : "-";
+    const paxNames = paxNamesArray.length > 0 
+        ? paxNamesArray.join(",\n") 
+        : "-";
 
-    const notesText = session.notes ? session.notes : "-";
+    const notesText = session.notes && session.notes !== session.workout?.thangs
+        ? session.notes 
+        : "-";
+
+    const summaryCard = document.createElement("div");
+    summaryCard.classList.add("section", "session-detail-summary");
+
+    const summaryTitle = document.createElement("div");
+    summaryTitle.classList.add("member-name");
+    summaryTitle.textContent = session.aoName;
+
+    const summaryMeta = document.createElement("div");
+    summaryMeta.classList.add("stats-line");
+    summaryMeta.textContent = `${formattedDate} • ${session.attendeeIds.length} PAX • ${session.fngs.length} FNGs`;
+
+    const summaryQ = document.createElement("div");
+    summaryQ.classList.add("stats-line", "q-line");
+    summaryQ.textContent = `Q: ${qLabel}`;
+
+    summaryCard.append(summaryTitle, summaryMeta, summaryQ);
 
     function createDetailSection (labelText, valueText) {
         const section = document.createElement("div");
@@ -55,7 +76,7 @@ export function renderSessionDetail() {
 
         const value = document.createElement("div");
         value.textContent = valueText;
-        value.classList.add("detail-value");
+        value.classList.add("detail-value", "session-detail-value");
 
         section.append(label, value);
 
@@ -74,7 +95,7 @@ export function renderSessionDetail() {
         value.classList.add("detail-value");
 
         if (session.fngs.length === 0) {
-            value.textContent = "None";
+            value.textContent = "No FNGs";
         } else {
             session.fngs.forEach((fng) => {
                 const row = document.createElement("div");
@@ -182,7 +203,7 @@ export function renderSessionDetail() {
     const dateSection = createDetailSection("Date", formattedDate);
     const aoSection = createDetailSection("AO", session.aoName);
     const qSection = createDetailSection("Q", qLabel);
-    const paxSection = createDetailSection("PAX", paxNames);
+    const paxSection = createDetailSection(`PAX (${paxNamesArray.length})`, paxNames);
     const fngSection = createFngSection();
     const workoutSection = createWorkoutSection();
     const notesSection = createDetailSection("Notes", notesText);
@@ -270,10 +291,8 @@ export function renderSessionDetail() {
     backRow.append(backButton);
 
     app.append(
-        title,
-        dateSection, 
-        aoSection, 
-        qSection, 
+        title, 
+        summaryCard,
         paxSection, 
         fngSection, 
         workoutSection,
