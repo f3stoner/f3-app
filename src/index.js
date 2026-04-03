@@ -108,28 +108,37 @@ function renderApp() {
 }
 async function bootApp() {
     try {
-        const session = await getCurrentSession();
+        console.log("bootApp starting");
+
+        let session = await getCurrentSession();
+        console.log("bootApp session 1:", session);
 
         if (!session) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            session = await getCurrentSession();
+            console.log("bootApp session 2:", session);
+        }
+
+        if (!session) {
+            console.log("No session found, rendering auth");
             renderAuthView();
             return;
         }
 
         const profile = await ensureMyProfile("96c9eef9-3b6e-4365-86cd-51dbeccf231a");
+        console.log("bootApp profile:", profile);
 
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
         state.currentUserDisplayName = profile.display_name || "User";
-    
+
         const cloudData = await loadRegionData(profile.region_id);
+        console.log("bootApp cloudData:", cloudData);
+
         replacePersistedData(cloudData);
-
-        
-        console.log("Loaded cloud data:", cloudData);
-
         renderApp();
     } catch (error) {
-        console.log("Failed to boot app:", error);
+        console.error("Failed to boot app:", error);
         renderAuthView();
     }
 }

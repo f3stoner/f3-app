@@ -6,7 +6,22 @@ import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./c
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 
 export function persistAppData() {
-    saveState(state);
+    saveState({
+        currentUserId: state.currentUserId,
+        currentUserRole: state.currentUserRole,
+        currentUserDisplayName: state.currentUserDisplayName,
+        currentView: state.currentView,
+        selectedMemberId: state.selectedMemberId,
+        selectedSessionId: state.selectedSessionId,
+        selectedPlannedWorkoutId: state.selectedPlannedWorkoutId,
+        editingMemberId: state.editingMemberId,
+        editingSessionId: state.editingSessionId,
+        editingPlannedWorkoutId: state.editingPlannedWorkoutId,
+        sessionSearchTerm: state.sessionSearchTerm,
+        sessionHistorySearchTerm: state.sessionHistorySearchTerm,
+        rosterSearchTerm: state.rosterSearchTerm,
+        showMyPlannedWorkoutsOnly: state.showMyPlannedWorkoutsOnly,
+    });
 }
 
 export async function addSession(session) {
@@ -92,6 +107,5 @@ export function replacePersistedData({ regionName, members, sessions, plannedWor
     state.members = members;
     state.sessions = sessions;
     state.plannedWorkouts = plannedWorkouts;
-    persistAppData();
 }
 
