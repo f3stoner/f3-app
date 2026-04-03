@@ -44,6 +44,8 @@ export async function addPlannedWorkout(workout) {
 }
 
 export async function updatePlannedWorkout(workoutId, updatedWorkout) {
+    console.log("updatePlannedWorkout workoutId:", workoutId);
+    console.log("updatePlannedWorkout updatedWorkout:", updatedWorkout);
     const savedWorkout = await updatePlannedWorkoutInCloud(REGION_ID, updatedWorkout);
     const index = state.plannedWorkouts.findIndex(workout => workout.id === workoutId);
     if (index === -1) return false;

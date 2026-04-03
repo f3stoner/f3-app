@@ -64,11 +64,6 @@ const dateInput = document.createElement("input");
 dateInput.type = "date";
 dateInput.value = draftSession.date;
 
-if (!dateInput.value) {
-    draftWorkout.date = getTodayDate();
-    dateInput.value = draftWorkout.date;
-}
-
 const today = getTodayDate();
 const minDate = new Date();
 minDate.setDate(minDate.getDate() - 30);
@@ -155,12 +150,7 @@ if (!draftSession.aoName && aoOptions.length > 0) {
     draftSession.aoName = aoOptions[0];
 }
 
-if (draftWorkout.aoName && aoOptions.includes(draftWorkout.aoName)) {
-    aoSelect.value = draftWorkout.aoName;
-} else {
-    draftWorkout.aoName = aoOptions[0];
-    aoSelect.value = aoOptions[0];
-}
+aoSelect.value = draftSession.aoName || "";
 
 aoSelect.addEventListener("change", (event) => {
     draftSession.aoName = event.target.value;
@@ -536,16 +526,6 @@ addFngButton.addEventListener("click", () => {
 
 if (isEditing && draftSession.fngs.length > 0) {
     draftSession.fngs.forEach(fng => addFngRow(fng));
-}
-
-if (!draftWorkout.date) {
-    alert("Please select a date");
-    return;
-}
-
-if (!draftWorkout.aoName) {
-    alert("Please select an AO");
-    return;
 }
 
 const saveButton = document.createElement("button");

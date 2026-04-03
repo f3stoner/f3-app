@@ -259,6 +259,9 @@ export async function insertPlannedWorkout(regionId, workout) {
 }
 
 export async function updatePlannedWorkoutInCloud(regionId, workout) {
+    console.log("updatePlannedWorkoutInCloud regionId:", regionId);
+    console.log("updatePlannedWorkoutInCloud workout:", workout);
+
     const { data, error } = await supabase
         .from("planned_workouts")
         .update({
@@ -279,7 +282,10 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
         .eq("id", workout.id)
         .select()
         .single();
-    
+
+    console.log("updatePlannedWorkoutInCloud data:", data);
+    console.log("updatePlannedWorkoutInCloud error:", error);
+
     if (error) throw error;
 
     return mapPlannedWorkoutFromDb(data);

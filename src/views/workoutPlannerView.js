@@ -183,6 +183,9 @@ export function renderWorkoutPlanner() {
     saveButton.textContent = "Save Workout";
 
     saveButton.addEventListener("click", async () => {
+        console.log("isEditing:", isEditing);
+        console.log("editingPLannedWorkoutId:", state.editingPlannedWorkoutId);
+        console.log("draftWorkout before save:", draftWorkout)
         try{
             draftWorkout.lastModifiedAt = Date.now();
 
