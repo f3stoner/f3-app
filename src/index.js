@@ -111,6 +111,15 @@ function renderApp() {
         renderDashboard ();
     }
 }
+
+function hideBootSplash() {
+    const splash = document.getElementById("boot-splash");
+    if (!splash) return;
+
+    splash.classList.add("fade-out");
+    setTimeout(() => splash.remove(), 250);
+}
+
 async function bootApp() {
     try {
         console.log("bootApp starting");
@@ -127,6 +136,7 @@ async function bootApp() {
         if (!session) {
             console.log("No session found, rendering auth");
             renderAuthView();
+            hideBootSplash();
             return;
         }
 
@@ -142,9 +152,11 @@ async function bootApp() {
 
         replacePersistedData(cloudData);
         renderApp();
+        hideBootSplash();
     } catch (error) {
         console.error("Failed to boot app:", error);
         renderAuthView();
+        hideBootSplash();
     }
 }
 

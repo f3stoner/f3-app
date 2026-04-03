@@ -1,6 +1,7 @@
 import path from "node:path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import Dotenv from "dotenv-webpack";
+import CopyPlugin from "copy-webpack-plugin";
 
 export default {
     mode: "development",
@@ -17,6 +18,11 @@ export default {
     plugins: [
         new HtmlWebpackPlugin({
             template: "./index.html",
+        }),
+        new CopyPlugin({
+            patterns: [
+                { from: "public", to: "" },
+            ],
         }),
         new Dotenv(),
     ],
