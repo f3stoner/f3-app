@@ -117,7 +117,7 @@ function hideBootSplash() {
     if (!splash) return;
 
     splash.classList.add("fade-out");
-    setTimeout(() => splash.remove(), 250);
+    setTimeout(() => splash.remove(), 220);
 }
 
 async function bootApp() {

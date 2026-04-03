@@ -5,6 +5,9 @@ export function renderAuthView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("auth-view");
+
     const title = document.createElement("h1");
     title.textContent = "Welcome";
 
@@ -109,7 +112,7 @@ export function renderAuthView() {
         regionSelect.style.display = isSignUpMode ? "block" : "none";
     });
 
-    app.append(
+    wrapper.append(
         title, 
         emailInput, 
         passwordInput,
@@ -118,4 +121,6 @@ export function renderAuthView() {
         signInButton,
         toggleModeButton
     );
+
+    app.appendChild(wrapper);
 }

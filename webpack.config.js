@@ -14,7 +14,15 @@ export default {
     },
     devtool: "eval-source-map",
     devServer: {
-        static: "./public",
+        static: [
+            {
+                directory: path.resolve(import.meta.dirname, "public"),
+            },
+            {
+                directory: path.resolve(import.meta.dirname, "."),
+            },
+        ],
+        historyApiFallback: true,
     },
     plugins: [
         new HtmlWebpackPlugin({
