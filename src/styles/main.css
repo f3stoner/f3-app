@@ -700,7 +700,7 @@ select:focus,
 }
 
 .auth-card {
-    width: min(100%, 100px);
+    width: min(100%, 400px);
     display: flex;
     flex-direction: column;
     gap: 12px;

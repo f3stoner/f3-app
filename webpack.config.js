@@ -14,14 +14,7 @@ export default {
     },
     devtool: "eval-source-map",
     devServer: {
-        static: [
-            {
-                directory: path.resolve(import.meta.dirname, "public"),
-            },
-            {
-                directory: path.resolve(import.meta.dirname, "."),
-            },
-        ],
+        static: "./public",
         historyApiFallback: true,
     },
     plugins: [
