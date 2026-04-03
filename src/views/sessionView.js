@@ -163,9 +163,16 @@ searchInput.placeholder = "Search PAX...";
 searchInput.classList.add("session-search");
 searchInput.value = state.sessionSearchTerm || "";
 
+let searchTimeoutId = null;
+
 searchInput.addEventListener("input", (event) => {
-    state.sessionSearchTerm = event.target.value;
-    renderMemberList();
+    const nextValue = event.target.value;
+
+    clearTimeout(searchTimeoutId);
+    searchTimeoutId = setTimeout(() => {
+        state.sessionSearchTerm = nextValue;
+        renderMemberList();
+    }, 120);
 });
 
 const memberList = document.createElement("div");
@@ -389,24 +396,54 @@ stickyHeader.classList.add("sticky-header");
 const selectedHeaderSlot = document.createElement("div");
 stickyHeader.append(aoLabel, aoSelect, searchInput, selectedHeaderSlot)
 
+function getSortedActiveMembers(lastPostMap) {
+    return state.members
+        .filter(m => m.status === "active")
+        .sort((a, b) => {
+            const aLastAoPost = lastPostMap.get(a.id) || null;
+            const bLastAoPost = lastPostMap.get(b.id) || null;
+
+            if (aLastAoPost && !bLastAoPost) return -1;
+            if (!aLastAoPost && bLastAoPost) return 1;
+
+            if (aLastAoPost && bLastAoPost && aLastAoPost !== bLastAoPost) {
+                return bLastAoPost.localeCompare(aLastAoPost);
+            }
+
+            return a.paxName.localeCompare(b.paxName);
+        });
+}
+
+function buildLastPostMapForAo(aoName) {
+    const lastPostMap = new Map();
+
+    state.sessions.forEach(session => {
+        if (session.aoName !== aoName) return;
+
+        session.attendeeIds.forEach(memberId => {
+            const existingDate = lastPostMap.get(memberId);
+            if (!existingDate || session.date > existingDate) {
+                lastPostMap.set(memberId, session.date);
+            }
+        });
+
+        session.fngs?.forEach(fng => {
+            if (!fng.memberId) return;
+            const existingDate = lastPostMap.get(fng.memberId);
+            if (!existingDate || session.date > existingDate) {
+                lastPostMap.set(fng.memberId, session.date);
+            }
+        });
+    });
+
+    return lastPostMap;
+}
+
 function renderMemberList() {
     memberList.textContent = "";
 
-    const activeMembers = state.members
-    .filter(m => m.status === "active")
-    .sort((a, b) => {
-        const aLastAoPost = getLastPostAtAo(a.id, draftSession.aoName);
-        const bLastAoPost = getLastPostAtAo(b.id, draftSession.aoName);
-
-        if (aLastAoPost && !bLastAoPost) return -1;
-        if (!aLastAoPost && bLastAoPost) return 1;
-
-        if (aLastAoPost && bLastAoPost && aLastAoPost !== bLastAoPost) {
-            return bLastAoPost.localeCompare(aLastAoPost);
-        }
-
-        return a.paxName.localeCompare(b.paxName);
-    });
+    const lastPostMap = buildLastPostMapForAo(draftSession.aoName);
+    const activeMembers = getSortedActiveMembers(lastPostMap);
 
     const searchTerm = (state.sessionSearchTerm || "").trim().toLowerCase();
 
@@ -427,7 +464,7 @@ function renderMemberList() {
 
    const recentMembers = filteredMembers.filter(member => {
     if (draftSession.attendeeIds.includes(member.id)) return false;
-    const lastAoPost = getLastPostAtAo(member.id, draftSession.aoName);
+    const lastAoPost = lastPostMap.get(member.id) || null;
     return isRecentDate(lastAoPost, 45);
    });
 
@@ -438,7 +475,7 @@ function renderMemberList() {
    const otherMembers = filteredMembers.filter(member => {
     if (draftSession.attendeeIds.includes(member.id)) return false;
     
-    const lastAoPost = getLastPostAtAo(member.id, draftSession.aoName);
+    const lastAoPost = lastPostMap.get(member.id) || null;
     return !isRecentDate(lastAoPost, 45);
    });
 
