@@ -225,6 +225,13 @@ export function renderDashboard() {
         alert("Data exported!");
     });
 
+    const stalePaxButton = document.createElement("button");
+    stalePaxButton.textContent = "Review Stale PAX";
+    stalePaxButton.addEventListener("click", () => {
+        state.currentView = "stalePax";
+        renderApp();
+    });
+
     const dataToolsHeading = document.createElement("div");
     dataToolsHeading.textContent = "Data Tools";
     dataToolsHeading. classList.add("detail-label");
@@ -235,7 +242,7 @@ export function renderDashboard() {
     userRow.append(userLeft, signOutButton);
 
     if(isAdmin){
-    dataToolsRow.append(importButton, exportButton);
+    dataToolsRow.append(importButton, exportButton, stalePaxButton);
     }
 
     const nav = createGlobalNav();

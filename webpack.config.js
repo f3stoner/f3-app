@@ -6,13 +6,12 @@ export default {
     mode: "development",
     entry: "./src/index.js",
     output: {
-        filename: "main.js",
+        filename: "[name].[contenthash].js",
         path: path.resolve(import.meta.dirname, "dist"),
         clean: true,
     },
     devtool: "eval-source-map",
     devServer: {
-        watchFiles: ["./index.html"],
         static: "./public",
     },
     plugins: [

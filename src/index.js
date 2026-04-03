@@ -21,6 +21,9 @@ import { renderAuthView } from "./views/authView.js";
 import { renderMyPlanner } from "./views/myPlannerView.js";
 import { groupHistoricRowsIntoSessions, parseHistoricCsvToPreview, mapGroupedSessionsToAppFormat } from "./utils/historicImport.js";
 import { renderHistoricImportPreview } from "./views/historicImportPreviewView.js";
+import { renderStalePaxView } from "./views/stalePaxView.js";
+
+window.state = state;
 
 async function runHistoricPreview() {
     const response = await fetch("/Historic_Log.csv");
@@ -102,6 +105,8 @@ function renderApp() {
         renderPlannedWorkoutDetail();
     } else if (state.currentView === "myPlanner") {
         renderMyPlanner();
+    } else if (state.currentView === "stalePax") {
+        renderStalePaxView();
     } else {
         renderDashboard ();
     }

@@ -32,6 +32,8 @@ export const state = {
     _historicImport: null,
     runHistoricImport: null,
     plannedWorkoutLaunchMode: null,
+    stalePaxThresholdDays: 180,
+    stalePaxSearchTerm: "",
 };
 
 state.runHistoricImport = async function () {
