@@ -672,11 +672,18 @@ select:focus,
 }
 
 .session-detail-value {
-    white-space: pre-wrap;
+    white-space: normal;
+    line-height: 1.5;
+
 }
 
 .session-detail-summary {
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+.session-detail-label {
+    opacity: 0.6;
+    letter-spacing: 0.5px;
 }

@@ -75,7 +75,13 @@ export function generateBackblast (session, members) {
             parts.push(`Planner Notes:\n${workout.notes}`);
         }
 
+        if (session.notes) {
+            parts.push(`Session Notes:\n${session.notes}`);
+        }
+
         workoutText = parts.length > 0 ? parts.join("\n\n") : "-";
+    } else if (session.notes) {
+        workoutText = `Notes:\n${session.notes}`;
     }
 
     return `AO: ${session.aoName}

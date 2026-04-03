@@ -555,6 +555,10 @@ saveButton.addEventListener("click", async () => {
     draftSession.fngs = fngs;
     draftSession.notes = notes.value.trim();
     draftSession.qIds = [...(draftSession.qIds || [])];
+    if (!draftSession.date) {
+        alert("Please select a date.");
+        return;
+    }
 try {
 
     let savedSession;

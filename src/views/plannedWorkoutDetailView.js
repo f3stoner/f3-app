@@ -130,7 +130,7 @@ export function renderPlannedWorkoutDetail() {
     const logButton = document.createElement("button");
     logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
-        const session = createSession(workout.date, workout.aoName);
+        const session = createSession(workout.date || getTodayDate(), workout.aoName);
 
         const currentMember = state.members.find(
             member => member.paxName === state.currentUserDisplayName

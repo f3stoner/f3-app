@@ -42,12 +42,13 @@ export function renderSessionDetail() {
             return member ? member.paxName : "Unknown";
         });
     const paxNames = paxNamesArray.length > 0 
-        ? paxNamesArray.join(",\n") 
+        ? paxNamesArray.join(", ") 
         : "-";
 
-    const notesText = session.notes && session.notes !== session.workout?.thangs
-        ? session.notes 
-        : "-";
+    const hasStructuredWorkout = Boolean(session.workout);
+    const notesText = session.notes ? session.notes : "-";
+    const shouldShowNotesSection = 
+        hasStructuredWorkout && Boolean(session.notes && session.notes.trim());
 
     const summaryCard = document.createElement("div");
     summaryCard.classList.add("section", "session-detail-summary");
@@ -72,7 +73,7 @@ export function renderSessionDetail() {
 
         const label = document.createElement("div");
         label.textContent = labelText;
-        label.classList.add("detail-label");
+        label.classList.add("detail-label", "session-detail-label");
 
         const value = document.createElement("div");
         value.textContent = valueText;
@@ -89,7 +90,7 @@ export function renderSessionDetail() {
 
         const label = document.createElement("div");
         label.textContent = "FNGs";
-        label.classList.add("detail-label");
+        label.classList.add("detail-label", "session-detail-label");
 
         const value = document.createElement("div");
         value.classList.add("detail-value");
@@ -159,7 +160,7 @@ export function renderSessionDetail() {
 
         const label = document.createElement("div");
         label.textContent = "Workout";
-        label.classList.add("detail-label");
+        label.classList.add("detail-label", "session-detail-label");
 
         const value = document.createElement("div");
         value.classList.add("detail-value");
@@ -167,7 +168,7 @@ export function renderSessionDetail() {
         const workout = session.workout;
 
         if (!workout) {
-            value.textContent = session.notes || "-";
+            value.textContent = session.notes || "No workout logged";
         } else {
             const parts = [];
 
@@ -296,7 +297,7 @@ export function renderSessionDetail() {
         paxSection, 
         fngSection, 
         workoutSection,
-        notesSection, 
+        ...(shouldShowNotesSection ? [notesSection] : []), 
         primaryActionsRow,
         secondaryActionsRow,
         backRow,
