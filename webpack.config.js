@@ -10,6 +10,7 @@ export default {
         filename: "[name].[contenthash].js",
         path: path.resolve(import.meta.dirname, "dist"),
         clean: true,
+        publicPath: "/f3-app/",
     },
     devtool: "eval-source-map",
     devServer: {
