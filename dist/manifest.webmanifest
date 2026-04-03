@@ -1,7 +1,8 @@
 {
     "name": "The Q",
     "short_name": "The Q",
-    "start_url": "/",
+    "start_url": "/f3-app",
+    "scope": "/f3-app/",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
