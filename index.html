@@ -5,36 +5,40 @@
         }
       
         #boot-splash {
-          position: fixed;
-          inset: 0;
-          z-index: 9999;
-          background: #000;
-          overflow: hidden;
-
-          opacity: 0;
-          animation: splashFadeIn 180ms ease forwards;
+          display: none;
         }
-
-        @keyframes splashFadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-
-        #boot-splash img {
+      
+        @media (max-width: 768px) {
+          #boot-splash {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            overflow: hidden;
+            opacity: 0;
+            animation: splashFadeIn 180ms ease forwards;
+          }
+      
+          #boot-splash img {
             position: absolute;
             top: 50%;
             left: 50%;
-
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-
             transform: translate(-50%, -50%) translateY(6%);
+          }
+      
+          #boot-splash.fade-out {
+            opacity: 0;
+            transition: opacity 220ms ease;
+            pointer-events: none;
+          }
         }
       
-        #boot-splash.fade-out {
-          opacity: 0;
-          transition: opacity 220ms ease;
-          pointer-events: none;
-        }</style><title>F3 App</title><script defer="defer" src="/f3-app/main.55919bc855f9ed3083c4.js"></script></head><body><div id="boot-splash" aria-hidden="true"><img src="/f3-app/splash/splash-1290x2796.png" alt=""></div><div id="app"></div></body></html>
+        @keyframes splashFadeIn {
+          to {
+            opacity: 1;
+          }
+        }</style><title>F3 App</title><script defer="defer" src="/f3-app/main.b060d56d06759387d4b4.js"></script></head><body><div id="boot-splash" aria-hidden="true"><img src="/f3-app/splash/splash-1290x2796.png" alt=""></div><div id="app"></div></body></html>
