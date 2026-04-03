@@ -172,7 +172,7 @@ searchInput.addEventListener("input", (event) => {
     searchTimeoutId = setTimeout(() => {
         state.sessionSearchTerm = nextValue;
         renderMemberList();
-    }, 120);
+    }, 220);
 });
 
 const memberList = document.createElement("div");
@@ -465,23 +465,23 @@ function renderMemberList() {
    const recentMembers = filteredMembers.filter(member => {
     if (draftSession.attendeeIds.includes(member.id)) return false;
     const lastAoPost = lastPostMap.get(member.id) || null;
-    return isRecentDate(lastAoPost, 45);
+    return isRecentDate(lastAoPost, 20);
    });
 
    const visibleRecentMembers = state.sessionShowAllRecent
         ? recentMembers
-        : recentMembers.slice(0, 12);
+        : recentMembers.slice(0, 8);
 
    const otherMembers = filteredMembers.filter(member => {
     if (draftSession.attendeeIds.includes(member.id)) return false;
     
     const lastAoPost = lastPostMap.get(member.id) || null;
-    return !isRecentDate(lastAoPost, 45);
+    return !isRecentDate(lastAoPost, 20);
    });
 
    const visibleOtherMembers = state.sessionShowAllOthers
         ? otherMembers
-        : otherMembers.slice(0, 10);
+        : otherMembers.slice(0, 6);
     
     selectedHeaderSlot.textContent = "";
     selectedHeaderSlot.appendChild(createQSection(qMembers));
