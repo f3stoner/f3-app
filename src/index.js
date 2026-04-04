@@ -22,6 +22,7 @@ import { renderMyPlanner } from "./views/myPlannerView.js";
 import { groupHistoricRowsIntoSessions, parseHistoricCsvToPreview, mapGroupedSessionsToAppFormat } from "./utils/historicImport.js";
 import { renderHistoricImportPreview } from "./views/historicImportPreviewView.js";
 import { renderStalePaxView } from "./views/stalePaxView.js";
+import { renderQSignupView } from "./views/qSignupView.js";
 
 window.state = state;
 
@@ -107,6 +108,8 @@ function renderApp() {
         renderMyPlanner();
     } else if (state.currentView === "stalePax") {
         renderStalePaxView();
+    } else if (state.currentView === "qSignup") {
+        renderQSignupView();
     } else {
         renderDashboard ();
     }

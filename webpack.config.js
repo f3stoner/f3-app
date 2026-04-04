@@ -3,18 +3,22 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import CopyPlugin from "copy-webpack-plugin";
 
-export default {
-    mode: "development",
+export default (env, argv) => {
+    const isProd = argv.mode === "production";
+    return {
+    mode: argv.mode || "development",
     entry: "./src/index.js",
     output: {
         filename: "[name].[contenthash].js",
         path: path.resolve(import.meta.dirname, "dist"),
         clean: true,
-        publicPath: "/f3-app/",
+        publicPath: isProd ? "/f3-app/" : "/",
     },
     devtool: "eval-source-map",
     devServer: {
-        static: "./public",
+        static:  {
+            directory: path.resolve(import.meta.dirname, "public"),
+        },
         historyApiFallback: true,
     },
     plugins: [
@@ -37,3 +41,4 @@ export default {
         ],
     },
 };
+}

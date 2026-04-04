@@ -102,10 +102,12 @@ export function removeMemberFromState(memberId) {
     persistAppData();
 }
 
-export function replacePersistedData({ regionName, members, sessions, plannedWorkouts }) {
+export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots }) {
     state.regionName = regionName;
     state.members = members;
     state.sessions = sessions;
     state.plannedWorkouts = plannedWorkouts;
+    state.aos = aos || [];
+    state.qSlots = qSlots || [];
 }
 

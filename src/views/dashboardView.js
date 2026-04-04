@@ -144,7 +144,56 @@ export function renderDashboard() {
         renderApp()
     });
 
-    quickAccessRow.append(workoutLibraryButton, rosterButton);
+    const qSignupButton = document.createElement("button");
+    qSignupButton.classList.add("quick-access-card");
+    qSignupButton.textContent = "Q Signup";
+    qSignupButton.addEventListener("click", () => {
+        state.currentView = "qSignup";
+        renderApp();
+    });
+
+    quickAccessRow.append(workoutLibraryButton, qSignupButton, rosterButton);
+
+    function renderMyUpcomingQs() {
+        const mySlots = state.qSlots
+            .filter(slot => slot.qUserId === state.currentUserId)
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+
+        const section = document.createElement("div");
+
+        const heading = document.createElement("div");
+        heading.textContent = "My Upcoming Qs";
+        heading.classList.add("detail-label");
+        section.appendChild(heading); 
+
+        mySlots.forEach(slot => {
+            const row = document.createElement("div");
+
+            const ao = state.aos.find(a => a.id === slot.aoId);
+            const hasPlannedWorkout = state.plannedWorkouts.some(workout =>
+                workout.date === slot.date &&
+                workout.createdByUserId === state.currentUserId &&
+                workout.aoName === ao?.name
+            );
+
+            const qUser = state.members.find(m => m.id === slot.qUserId);
+
+            const title = document.createElement("div");
+            title.classList.add("member-name");
+            title.textContent = `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
+
+            const status = document.createElement("div");
+            status.classList.add("stats-line");
+            status.textContent = hasPlannedWorkout ? "BD Ready" : "Needs BD";
+            row.append(title, status);
+
+            section.appendChild(row);
+        });
+
+        return section;
+    }
+
+    const myUpcomingQsSection = renderMyUpcomingQs();
 
     const recentSessionsSection = document.createElement("div");
     const recentHeading = document.createElement("h2");
@@ -247,7 +296,7 @@ export function renderDashboard() {
 
     const nav = createGlobalNav();
 
-    app.append(title, userRow, ...(todaySection ? [todaySection] : []), quickAccessHeading, quickAccessRow);
+    app.append(title, userRow, ...(todaySection ? [todaySection] : []), quickAccessHeading, quickAccessRow, myUpcomingQsSection);
 
     if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput);

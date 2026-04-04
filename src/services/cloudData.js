@@ -57,6 +57,8 @@ export async function loadRegionData(regionId) {
         memberResult,
         sessionResult,
         plannedWorkoutResult,
+        aoResult,
+        qSlotResult,
     ] = await Promise.all([
         supabase
             .from("regions")
@@ -72,11 +74,23 @@ export async function loadRegionData(regionId) {
             .from("planned_workouts")
             .select("*")
             .eq("region_id", regionId),
+
+        supabase
+            .from("aos")
+            .select("*")
+            .eq("region_id", regionId),
+
+        supabase
+            .from("q_slots")
+            .select("*")
+            .eq("region_id", regionId),
     ]);
 
     if (regionResult.error) throw regionResult.error;
     if (sessionResult.error) throw sessionResult.error;
     if (plannedWorkoutResult.error) throw plannedWorkoutResult.error;
+    if (aoResult.error) throw aoResult.error;
+    if (qSlotResult.error) throw qSlotResult.error;
     
     console.log("Loaded members count:", memberResult.length);
     
@@ -85,6 +99,8 @@ export async function loadRegionData(regionId) {
         members: memberResult.map(mapMemberFromDb),
         sessions: sessionResult.map(mapSessionFromDb),
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
+        aos: aoResult.data.map(mapAoFromDb),
+        qSlots: qSlotResult.data.map(mapQSlotFromDb),
     };
 }
 
@@ -131,6 +147,28 @@ function mapPlannedWorkoutFromDb(row) {
         lastModifiedAt: row.last_modified_at,
         createdByUserId: row.created_by_user_id || null,
         isShared: row.is_shared ?? true,
+    };
+}
+
+function mapAoFromDb(row) {
+    return {
+        id: row.id,
+        name: row.name,
+        locationName: row.location_name,
+        daysOfWeek: row.days_of_week || [],
+        time: row.time,
+        isActive: row.is_active ?? true,
+        createdAt: row.created_at,
+    };
+}
+
+function mapQSlotFromDb(row) {
+    return {
+        id: row.id,
+        aoId: row.ao_id,
+        date: row.date,
+        qUserId: row.q_user_id || null,
+        createdAt: row.created_at,
     };
 }
 
@@ -360,6 +398,112 @@ export async function deletePlannedWorkoutFromCloud(regionId, workoutId) {
         .delete()
         .eq("id", workoutId)
         .eq("region_id", regionId)
+
+    if (error) throw error;
+}
+
+export async function insertAo(regionId, ao) {
+    const { data, error } = await supabase
+        .from("aos")
+        .insert([
+            {
+                id: ao.id,
+                region_id: regionId,
+                name: ao.name,
+                location_name: ao.locationName || null,
+                days_of_week: ao.daysOfWeek || [],
+                time: ao.time,
+                is_active: ao.isActive ?? true,
+                created_at: ao.createdAt,
+            },
+        ])
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapAoFromDb(data);
+}
+
+export async function updateAoInCloud(regionId, ao) {
+    const { data, error } = await supabase
+        .from("aos")
+        .update({
+            region_id: regionId,
+            name: ao.name,
+            location_name: ao.locationName || "",
+            days_of_week: ao.daysOfWeek || [],
+            time: ao.time,
+            is_active: ao.isActive ?? true,
+            created_at: ao.createdAt,
+        })
+        .eq("id", ao.id)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapAoFromDb(data);
+}
+
+export async function deleteAoFromCloud(regionId, aoId) {
+    const { error } = await supabase
+        .from("aos")
+        .delete()
+        .eq("id", aoId)
+        .eq("region_id", regionId);
+
+    if (error) throw error;
+}
+
+export async function insertQSlot(regionId, qSlot) {
+    const { data, error } = await supabase
+        .from("q_slots")
+        .insert([
+            {
+                id: qSlot.id,
+                region_id: regionId,
+                ao_id: qSlot.aoId,
+                date: qSlot.date,
+                q_user_id: qSlot.qUserId || null,
+                created_at: qSlot.createdAt,
+            },
+        ])
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapQSlotFromDb(data);
+}
+
+export async function updateQSlotInCloud(regionId, qSlot) {
+    const { data, error } = await supabase
+        .from("q_slots")
+        .update({
+            region_id: regionId,
+            ao_id: qSlot.aoId,
+            date: qSlot.date,
+            q_user_id: qSlot.qUserId || null,
+            created_at: qSlot.createdAt,
+        })
+        .eq("id", qSlot.id)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapQSlotFromDb(data);
+}
+
+export async function deleteQSlotFromCloud(regionId, qSlotId) {
+    const { error } = await supabase
+        .from("q_slots")
+        .delete()
+        .eq("id", qSlotId)
+        .eq("region_id", regionId);
 
     if (error) throw error;
 }

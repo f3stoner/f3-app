@@ -34,6 +34,10 @@ export const state = {
     plannedWorkoutLaunchMode: null,
     stalePaxThresholdDays: 180,
     stalePaxSearchTerm: "",
+    aos: savedState?.aos || [],
+    qSlots: savedState?.qSlots || [],
+    homeAoId: savedState?.homeAoId || null,
+    favoriteAoIds: savedState?.favoriteAoIds || null,
 };
 
 state.runHistoricImport = async function () {
