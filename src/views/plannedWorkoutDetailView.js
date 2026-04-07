@@ -274,7 +274,7 @@ export function renderPlannedWorkoutDetail() {
         ...(aoSection ? [aoSection] : []),
         ...(!isExecutionMode ? [visibilitySection] : []),
         ...(!isExecutionMode && sourceSection ? [sourceSection] : []),
-        ...REGION_ID(introductionSection ? [introductionSection] : []),
+        ...(introductionSection ? [introductionSection] : []),
         ...(warmoramaSection ? [warmoramaSection] : []),
         ...(thangsSection ? [thangsSection] : []),
         ...(finisherSection ? [finisherSection] : []),
