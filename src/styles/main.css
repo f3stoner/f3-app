@@ -66,16 +66,22 @@ p {
     border-color: var(--accent);
 }
 
+.q-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    margin: 0;
+}
+
 .q-button.q-selected::after {
     content: " ✓";
     font-weight: 700;
 }
 
 .attendance-toggle {
-    padding: 6px 10px;
+    padding: 4px 8px;
     border-radius: 999px;
     background: #e9e9e9;
-    font-size: 12px;
+    font-size: 11px;
     white-space: nowrap;
 }
 
@@ -279,7 +285,8 @@ select:focus,
 }
 
 .sticky-header .detail-label {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    margin-top: 4px;
 }
 
 .session-search {
@@ -458,7 +465,7 @@ select:focus,
 }
 
 .loaded-workout-banner {
-    margin-bottom: 12px;
+    margin-bottom: 20px;
     padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -639,7 +646,7 @@ select:focus,
 
 .execution-text {
     font-size: 18px;
-    line-height: 1.6;
+    line-height: 1.65;
     white-space: pre-wrap;
 }
 
@@ -704,4 +711,57 @@ select:focus,
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.execution-section {
+    margin-bottom: 24px;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.execution-label {
+    font-size: 16px;
+    margin-bottom: 14px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.execution-section .detail-value {
+    max-width: 38rem;
+}
+
+.execution-title {
+    margin-bottom: 16px;
+}
+
+.execution-line {
+    margin-bottom: 6px;
+}
+
+.session-summary-strip .section {
+    margin-bottom: 8px;
+}
+
+session-summary-strip .detail-label {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.session-summary-strip .detail-value {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.session-summary-strip .selected-summary-row {
+    padding: 4px 6px;
+    font-size: 13px;
+}
+
+.session-summary-strip .selected-summary-row button {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0;
 }

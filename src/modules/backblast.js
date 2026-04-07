@@ -59,6 +59,10 @@ export function generateBackblast (session, members) {
             parts.push(`Title: ${workout.title}`);
         }
 
+        if (workout.introduction) {
+            parts.push(`Introduction:\n${workout.introduction}`);
+        }
+
         if (workout.warmorama) {
             parts.push(`Warm-O-Rama:\n${workout.warmorama}`);
         }

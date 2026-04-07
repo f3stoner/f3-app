@@ -18,6 +18,7 @@ export const state = {
     sessionShowAllOthers: false,
     sessionShowAllRecent: false,
     sessionSelectedExpanded: false,
+    sessionQExpanded: false,
     sessionHistorySearchTerm: "",
     plannedWorkouts: savedState?.plannedWorkouts || [],
     showMyPlannedWorkoutsOnly: false,

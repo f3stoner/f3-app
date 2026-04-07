@@ -3,7 +3,7 @@ import { renderApp } from "../index.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
-import { REGION_ID, REGION_AOS } from "../config.js";
+import { REGION_ID, REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -20,6 +20,12 @@ export function renderWorkoutPlanner() {
     } else {
         draftWorkout = createPlannedWorkout(getTodayDate(), "");
         draftWorkout.createdByUserId = state.currentUserId;
+    }
+
+    const regionIntroTemplate = REGION_INTRO_TEMPLATES[REGION_ID] || "";
+
+    if (!draftWorkout.introduction) {
+        draftWorkout.introduction = regionIntroTemplate;
     }
 
     const title = document.createElement("h1");
@@ -108,6 +114,18 @@ export function renderWorkoutPlanner() {
 
     workoutTitleInput.addEventListener("input", (event) => {
         draftWorkout.title = event.target.value;
+    });
+
+    const introductionLabel = document.createElement("div");
+    introductionLabel.textContent = "Introduction";
+    introductionLabel.classList.add("detail-label");
+
+    const introductionInput = document.createElement("textarea");
+    introductionInput.classList.add("notes");
+    introductionInput.value = draftWorkout.introduction || "";
+
+    introductionInput.addEventListener("input", (event) => {
+        draftWorkout.introduction = event.target.value;
     });
 
     const warmoramaLabel = document.createElement("div");
@@ -228,6 +246,8 @@ export function renderWorkoutPlanner() {
         aoSelect,
         workoutTitleLabel,
         workoutTitleInput,
+        introductionLabel,
+        introductionInput,
         warmoramaLabel,
         warmoramaInput,
         thangsLabel,

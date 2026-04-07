@@ -4,6 +4,7 @@ export function createPlannedWorkout(date, aoName) {
         id: crypto.randomUUID(),
         date,
         aoName,
+        introduction: "",
         title: "",
         warmorama: "",
         thangs: "",

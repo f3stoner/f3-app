@@ -107,6 +107,7 @@ if (isEditing) {
         state.sessionShowAllOthers = false;
         state.sessionShowAllRecent = false;
         state.sessionSelectedExpanded = false;
+        state.sessionQExpanded = false;
         renderApp();
     })
 } else {
@@ -117,6 +118,7 @@ backButton.addEventListener("click", () => {
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
+    state.sessionQExpanded = false;
     state.draftSession = null;
     renderApp();
 })};
@@ -287,15 +289,38 @@ function createQSection(qMembers) {
 
     const heading = document.createElement("div");
     heading.classList.add("detail-label");
-    heading.textContent = "Q";
+    heading.textContent = `Q (${qMembers.length})`;
 
     section.appendChild(heading);
+    heading.style.cursor = "pointer"
 
     if (qMembers.length === 0) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
         empty.textContent = "No Q selected";
         section.appendChild(empty);
+        return section;
+    }
+
+    const summary = document.createElement("div");
+    summary.classList.add("detail-value");
+
+    const summaryNames = qMembers.map(member => member.paxName);
+    summary.textContent = summaryNames.join(", ");
+
+    section.appendChild(summary);
+
+    heading.addEventListener("click", () => {
+        state.sessionQExpanded = !state.sessionQExpanded;
+        renderMemberList();
+    });
+
+    summary.addEventListener("click", () => {
+        state.sessionQExpanded = !state.sessionQExpanded;
+        renderMemberList();
+    });
+
+    if (!state.sessionQExpanded) {
         return section;
     }
 
@@ -394,24 +419,13 @@ const stickyHeader = document.createElement("div");
 stickyHeader.classList.add("sticky-header");
 
 const selectedHeaderSlot = document.createElement("div");
-stickyHeader.append(aoLabel, aoSelect, searchInput, selectedHeaderSlot)
+stickyHeader.append(searchInput, selectedHeaderSlot)
+selectedHeaderSlot.classList.add("session-summary-strip");
 
 function getSortedActiveMembers(lastPostMap) {
     return state.members
         .filter(m => m.status === "active")
-        .sort((a, b) => {
-            const aLastAoPost = lastPostMap.get(a.id) || null;
-            const bLastAoPost = lastPostMap.get(b.id) || null;
-
-            if (aLastAoPost && !bLastAoPost) return -1;
-            if (!aLastAoPost && bLastAoPost) return 1;
-
-            if (aLastAoPost && bLastAoPost && aLastAoPost !== bLastAoPost) {
-                return bLastAoPost.localeCompare(aLastAoPost);
-            }
-
-            return a.paxName.localeCompare(b.paxName);
-        });
+        .sort((a, b) => a.paxName.localeCompare(b.paxName));
 }
 
 function buildLastPostMapForAo(aoName) {
@@ -470,7 +484,7 @@ function renderMemberList() {
 
    const visibleRecentMembers = state.sessionShowAllRecent
         ? recentMembers
-        : recentMembers.slice(0, 8);
+        : recentMembers.slice(0, 12);
 
    const otherMembers = filteredMembers.filter(member => {
     if (draftSession.attendeeIds.includes(member.id)) return false;
@@ -481,7 +495,7 @@ function renderMemberList() {
 
    const visibleOtherMembers = state.sessionShowAllOthers
         ? otherMembers
-        : otherMembers.slice(0, 6);
+        : otherMembers.slice(0, 10);
     
     selectedHeaderSlot.textContent = "";
     selectedHeaderSlot.appendChild(createQSection(qMembers));
@@ -613,6 +627,7 @@ try {
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
+    state.sessionQExpanded = false;
     state.draftSession = null;
     
 

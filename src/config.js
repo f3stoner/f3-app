@@ -24,3 +24,13 @@ export const REGION_AOS = {
         "Melt Shop",
     ],
 }
+
+export const REGION_INTRO_TEMPLATES = {
+    "96c9eef9-3b6e-4365-86cd-51dbeccf231a": [
+        "This is where the introduction template will live!"
+    ],
+
+    "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a": [
+
+    ],
+}

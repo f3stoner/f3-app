@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createSession } from "../modules/sessions.js";
 import { deletePlannedWorkout } from "../services/appData.js";
+import { REGION_ID, REGION_INTRO_TEMPLATES } from "../config.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -11,6 +12,9 @@ export function renderPlannedWorkoutDetail() {
     const workout = state.plannedWorkouts.find(
         w => w.id === state.selectedPlannedWorkoutId
     );
+
+    const regionIntroTemplate = REGION_INTRO_TEMPLATES[REGION_ID] || "";
+    const resolvedIntroduction = workout.introduction || regionIntroTemplate;
 
     const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";
     const isTodayWorkout = workout?.date === getTodayDate();
@@ -45,6 +49,9 @@ export function renderPlannedWorkoutDetail() {
 
     const title = document.createElement("h1");
     title.textContent = workout.title || "Planned Workout";
+    if (isExecutionMode) {
+        title.classList.add("execution-title");
+    }
 
     let executionBanner = null;
 
@@ -54,13 +61,25 @@ export function renderPlannedWorkoutDetail() {
         executionBanner.textContent = `You are Qing ${isTodayWorkout ? "today" : "this workout"} at ${workout.aoName}`;
     }
 
-    function createDetailSection (labelText, valueText) {
+    function createDetailSection (labelText, valueText, { hideIfEmpty = false} = {}) {
+        const isEmpty = !valueText || valueText === "-";
+
+        if (hideIfEmpty && isEmpty) {
+            return null;
+        }
+        
         const section = document.createElement("div");
         section.classList.add("section");
+        if (isExecutionMode) {
+            section.classList.add("execution-section");
+        }
 
         const label = document.createElement("div");
         label.textContent = labelText;
         label.classList.add("detail-label");
+        if (isExecutionMode) {
+            label.classList.add("execution-label");
+        }
 
         const value = document.createElement("div");
         value.textContent = valueText;
@@ -74,8 +93,8 @@ export function renderPlannedWorkoutDetail() {
         return section;
     }
 
-    const dateSection = createDetailSection("Date", formatDate(workout.date));
-    const aoSection = createDetailSection("AO", workout.aoName || "-");
+    const dateSection = isExecutionMode ? null : createDetailSection("Date", formatDate(workout.date));
+    const aoSection = isExecutionMode ? null :createDetailSection("AO", workout.aoName || "-");
 
     let sourceSection = null;
 
@@ -101,10 +120,11 @@ export function renderPlannedWorkoutDetail() {
         }
     }
 
-    const warmoramaSection = createDetailSection("Warm-O-Rama", workout.warmorama || "-");
-    const thangsSection = createDetailSection("Thangs", workout.thangs || "-");
-    const finisherSection = createDetailSection("Mary / Finisher", workout.finisher || "-");
-    const notesSection = createDetailSection("Planner Notes", workout.notes || "-");
+    const introductionSection = createDetailSection("Introduction", resolvedIntroduction || "", { hideIfEmpty: isExecutionMode });
+    const warmoramaSection = createDetailSection("Warm-O-Rama", workout.warmorama || "-", { hideIfEmpty: isExecutionMode });
+    const thangsSection = createDetailSection("Thangs", workout.thangs || "-", { hideIfEmpty: isExecutionMode });
+    const finisherSection = createDetailSection("Mary / Finisher", workout.finisher || "-", { hideIfEmpty: isExecutionMode });
+    const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : "Planner Notes", workout.notes || "-", { hideIfEmpty: isExecutionMode });
     const visibilitySection = createDetailSection(
         "Visibility",
         workout.isShared ? "Workout Library" : "My Planner"
@@ -140,6 +160,7 @@ export function renderPlannedWorkoutDetail() {
         session.attendeeIds = currentMember ? [currentMember.id] : [];
         session.workout = {
             title: workout.title,
+            introduction: resolvedIntroduction,
             warmorama: workout.warmorama,
             thangs: workout.thangs,
             finisher: workout.finisher,
@@ -249,14 +270,15 @@ export function renderPlannedWorkoutDetail() {
     app.append(
         title,
         ...(executionBanner ? [executionBanner] : []),
-        dateSection,
-        aoSection,
+        ...(dateSection ? [dateSection] : []),
+        ...(aoSection ? [aoSection] : []),
         ...(!isExecutionMode ? [visibilitySection] : []),
         ...(!isExecutionMode && sourceSection ? [sourceSection] : []),
-        warmoramaSection,
-        thangsSection,
-        finisherSection,
-        notesSection,
+        ...REGION_ID(introductionSection ? [introductionSection] : []),
+        ...(warmoramaSection ? [warmoramaSection] : []),
+        ...(thangsSection ? [thangsSection] : []),
+        ...(finisherSection ? [finisherSection] : []),
+        ...(notesSection ? [notesSection] : []),
         primaryActionsRow,
         ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
         backRow,
