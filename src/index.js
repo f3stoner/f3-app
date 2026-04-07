@@ -11,7 +11,7 @@ import { renderWorkoutPlanner } from "./views/workoutPlannerView.js";
 import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 import { replacePersistedData } from "./services/appData.js";
-import { loadRegionData } from "./services/cloudData.js";
+import { loadAllRegions, loadRegionData } from "./services/cloudData.js";
 import { importPaxMasterCsv } from "./services/importAggieland.js";
 import { importAoLogCsv } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
@@ -21,6 +21,8 @@ import { groupHistoricRowsIntoSessions, parseHistoricCsvToPreview, mapGroupedSes
 import { renderHistoricImportPreview } from "./views/historicImportPreviewView.js";
 import { renderStalePaxView } from "./views/stalePaxView.js";
 import { renderQSignupView } from "./views/qSignupView.js";
+import { renderAoManagementView } from "./views/aoManagementView.js";
+import { renderAoEditView } from "./views/aoEditView.js";
 
 window.state = state;
 
@@ -108,6 +110,10 @@ function renderApp() {
         renderStalePaxView();
     } else if (state.currentView === "qSignup") {
         renderQSignupView();
+    } else if (state.currentView === "aoManagement") {
+        renderAoManagementView();
+    } else if (state.currentView === "aoEdit") {
+        renderAoEditView();
     } else {
         renderDashboard ();
     }
@@ -119,6 +125,14 @@ function hideBootSplash() {
 
     splash.classList.add("fade-out");
     setTimeout(() => splash.remove(), 220);
+}
+
+async function loadActiveRegionData(profileRegionId) {
+    const activeRegionId = state.regionOverrideId || profileRegionId;
+
+    const cloudData = await loadRegionData(activeRegionId);
+    replacePersistedData(cloudData);
+    state.currentRegionId = activeRegionId;
 }
 
 async function bootApp() {
@@ -147,18 +161,12 @@ async function bootApp() {
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
         state.currentUserDisplayName = profile.display_name || "User";
-        state.currentRegionId = profile.region_id;
+        state.profileRegionId = profile.region_id;
+        
+        const regions = await loadAllRegions();
+        state.availableRegions = regions || [];
 
-        const cloudData = await loadRegionData(profile.region_id);
-        console.log("bootApp cloudData:", cloudData);
-
-        replacePersistedData(cloudData);
-
-
-        console.log("before set currentRegionId:", state.currentRegionId);
-        state.currentRegionId = profile.region_id;
-        console.log("after set currentRegionId:", state.currentRegionId);
-        console.log("window.state after set:", window.state);
+        await loadActiveRegionData(profile.region_id);
 
         renderApp();
         hideBootSplash();

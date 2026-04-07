@@ -5,6 +5,8 @@ import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { signOut } from "../services/auth.js";
+import { loadRegionData } from "../services/cloudData.js";
+import { replacePersistedData } from "../services/appData.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -12,6 +14,48 @@ export function renderDashboard() {
 
     const title = document.createElement("h1");
     title.textContent = state.regionName || "F3 App";
+
+    let regionSwitcher = null;
+    let regionSwitcherLabel = null;
+
+    if (state.currentUserRole === "admin" && state.availableRegions?.length) {
+        regionSwitcherLabel = document.createElement("div");
+        regionSwitcherLabel.classList.add("detail-label");
+        regionSwitcherLabel.textContent = "Debug Region";
+        
+        regionSwitcher = document.createElement("select");
+
+        const profileOption = document.createElement("option");
+        profileOption.value = "";
+        profileOption.textContent = "Use Profile Region";
+        regionSwitcher.appendChild(profileOption);
+
+        state.availableRegions.forEach(region => {
+            const option = document.createElement("option");
+            option.value = region.id;
+            option.textContent = region.name;
+            regionSwitcher.appendChild(option);
+        });
+
+        regionSwitcher.value = state.regionOverrideId || "";
+
+        regionSwitcher.addEventListener("change", async (event) => {
+            
+            const selected = event.target.value;
+
+            state.regionOverrideId = selected || null;
+
+            const activeRegionId = state.regionOverrideId || state.profileRegionId;
+
+            const cloudData = await loadRegionData(activeRegionId);
+            replacePersistedData(cloudData);
+            state.currentRegionId = activeRegionId;
+
+            console.log("Switching to Region:", activeRegionId);
+
+            renderApp();
+        });
+}
 
     const userRow = document.createElement("div");
     userRow.classList.add("user-row");
@@ -51,6 +95,10 @@ export function renderDashboard() {
             state.editingPlannedWorkoutId = null;
             state.draftSession = null;
             state.currentView = "dashboard";
+            state.currentRegionId = null;
+            state.profileRegionId = null;
+            state.regionOverrideId = null;
+            state.availableRegions = [];
 
             await bootApp();
         } catch (error) {
@@ -281,6 +329,13 @@ export function renderDashboard() {
         renderApp();
     });
 
+    const manageAosButton = document.createElement("button");
+    manageAosButton.textContent = "Manage AOs";
+    manageAosButton.addEventListener("click", () => {
+        state.currentView = "aoManagement";
+        renderApp();
+    })
+
     const dataToolsHeading = document.createElement("div");
     dataToolsHeading.textContent = "Data Tools";
     dataToolsHeading. classList.add("detail-label");
@@ -291,12 +346,20 @@ export function renderDashboard() {
     userRow.append(userLeft, signOutButton);
 
     if(isAdmin){
-    dataToolsRow.append(importButton, exportButton, stalePaxButton);
+    dataToolsRow.append(importButton, exportButton, manageAosButton, stalePaxButton);
     }
 
     const nav = createGlobalNav();
 
-    app.append(title, userRow, ...(todaySection ? [todaySection] : []), quickAccessHeading, quickAccessRow, myUpcomingQsSection);
+    app.append(
+        title, 
+        ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
+        ...(regionSwitcher ? [regionSwitcher] : []),
+        userRow,
+        ...(todaySection ? [todaySection] : []), 
+        quickAccessHeading, 
+        quickAccessRow, 
+        myUpcomingQsSection);
 
     if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput);

@@ -746,7 +746,7 @@ select:focus,
     margin-bottom: 8px;
 }
 
-session-summary-strip .detail-label {
+.session-summary-strip .detail-label {
     font-size: 12px;
     margin-bottom: 2px;
 }
@@ -765,4 +765,87 @@ session-summary-strip .detail-label {
     padding: 4px 8px;
     font-size: 12px;
     margin: 0;
+}
+
+.inactive-card {
+    opacity: .72;
+}
+
+.inactive-text {
+    font-weight: 600;
+}
+
+.ao-card {
+    align-items: flex-start;
+}
+
+.ao-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.ao-card .member-name {
+    flex: unset;
+}
+
+.ao-card-status {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.ao-card .stats-line {
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.ao-days-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 20px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    max-width: 320px;
+}
+
+.ao-day-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.ao-day-option input {
+    width: auto;
+    max-width: none;
+    margin: 0;
+}
+
+.ao-status-row {
+    margin-bottom: 16px;
+}
+
+.ao-status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.ao-status-toggle input {
+    width: auto;
+    max-width: none;
+    margin: 0;
+}
+
+.ao-save-row {
+    margin-top: 4px;
+    margin-bottom: 16px;
+}
+
+.ao-save-row button {
+    width: 100%;
 }

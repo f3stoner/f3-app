@@ -93,7 +93,8 @@ export async function loadRegionData(regionId) {
     if (qSlotResult.error) throw qSlotResult.error;
     
     console.log("Loaded members count:", memberResult.length);
-    
+    console.log("RAW memberResult length:", memberResult.length);
+    console.log("RAW sessionResult length:", sessionResult.length);
     return {
         regionName: regionResult.data.name,
         members: memberResult.map(mapMemberFromDb),
@@ -509,4 +510,14 @@ export async function deleteQSlotFromCloud(regionId, qSlotId) {
         .eq("region_id", regionId);
 
     if (error) throw error;
+}
+
+export async function loadAllRegions() {
+    const { data, error } = await supabase
+        .from("regions")
+        .select("*")
+        .order("name", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
 }

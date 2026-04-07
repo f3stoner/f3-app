@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateQSlotInCloud } from "../services/cloudData.js";
+import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -14,6 +15,24 @@ export function renderQSignupView() {
     const subtitle = document.createElement("div");
     subtitle.classList.add("view-subtitle");
     subtitle.textContent = "Claim upcoming Q slots.";
+
+    let generateButton = null;
+
+    if (state.currentUserRole === "admin") {
+        generateButton = document.createElement("button");
+        generateButton.textContent = "Generate Next 4 Weeks";
+
+        generateButton.addEventListener("click", async () => {
+            try {
+                const result = await generateQSlotsForCurrentRegion(28);
+                alert(`Created ${result.createdCount} Q Slots.`);
+                renderApp();
+            } catch (error) {
+                console.error("Failed to generate Q slots:", error);
+                alert("Failed to generate Q slots.");
+            }
+        });
+    }
 
     const listContainer = document.createElement("div");
 
@@ -145,6 +164,7 @@ export function renderQSignupView() {
     app.append(
         title,
         subtitle,
+        ...(generateButton ? [generateButton] : []),
         listContainer,
         nav
     );

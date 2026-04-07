@@ -39,6 +39,11 @@ export const state = {
     qSlots: savedState?.qSlots || [],
     homeAoId: savedState?.homeAoId || null,
     favoriteAoIds: savedState?.favoriteAoIds || null,
+    regionOverrideId: savedState?.regionOverrideId || null,
+    availableRegions: [],
+    profileRegionId: savedState?.profileRegionId || null,
+    selectedAoId: null,
+    editingAoId: null,
 };
 
 state.runHistoricImport = async function () {
