@@ -46,6 +46,8 @@ export const state = {
     editingAoId: null,
     qSignupAoFilter: savedState?.qSignupAoFilter || "",
     qSignupOpenOnly: savedState?.qSignupOpenOnly ?? false,
+    draftPreblastText: "",
+    selectedPreblastWorkoutId: null,
 };
 
 state.runHistoricImport = async function () {

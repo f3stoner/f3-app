@@ -4,6 +4,7 @@ import { formatDate, getTodayDate } from "../utils/date.js";
 import { createSession } from "../modules/sessions.js";
 import { deletePlannedWorkout } from "../services/appData.js";
 import { REGION_INTRO_TEMPLATES } from "../config.js";
+import { generatePreblast } from "../modules/generatePreblast.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -232,6 +233,16 @@ export function renderPlannedWorkoutDetail() {
         });
     }
 
+    const preblastButton = document.createElement("button");
+    preblastButton.textContent = "Create Preblast";
+
+    preblastButton.addEventListener("click", () => {
+        state.selectedPreblastWorkoutId = workout.id;
+        state.draftPreblastText = generatePreblast(workout, state.aos);
+        state.currentView = "preblast";
+        renderApp();
+    });
+
     const primaryActionsRow = document.createElement("div");
     primaryActionsRow.classList.add("button-row", "primary-actions-row");
 
@@ -257,7 +268,7 @@ export function renderPlannedWorkoutDetail() {
             primaryActionsRow.append(editButton);
         }
 
-        primaryActionsRow.append(logButton);
+        primaryActionsRow.append(logButton, preblastButton);
         secondaryActionsRow.append(copyButton);
 
         if (canDeleteWorkout && deleteButton) {

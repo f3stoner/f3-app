@@ -23,6 +23,7 @@ import { renderStalePaxView } from "./views/stalePaxView.js";
 import { renderQSignupView } from "./views/qSignupView.js";
 import { renderAoManagementView } from "./views/aoManagementView.js";
 import { renderAoEditView } from "./views/aoEditView.js";
+import { renderPreblastView } from "./views/preblastView.js";
 
 window.state = state;
 
@@ -114,6 +115,8 @@ function renderApp() {
         renderAoManagementView();
     } else if (state.currentView === "aoEdit") {
         renderAoEditView();
+    } else if (state.currentView === "preblast") {
+        renderPreblastView();
     } else {
         renderDashboard ();
     }
