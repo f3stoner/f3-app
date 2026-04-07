@@ -1,7 +1,6 @@
 import { loadState } from "../utils/storage.js";
 import { seedMembers } from "../data/seedMembers.js";
 import { insertSessionsBatch } from "../services/cloudData.js";
-import { REGION_ID } from "../config.js";
 
 const savedState = loadState();
 
@@ -30,6 +29,7 @@ export const state = {
     currentUserId: null,
     currentUserRole: null,
     currentUserDisplayName: null,
+    currentRegionId: null,
     _historicImport: null,
     runHistoricImport: null,
     plannedWorkoutLaunchMode: null,
@@ -67,7 +67,7 @@ state.runHistoricImport = async function () {
     
         console.log(`Uploading batch ${i} with size ${batch.length}`);
     
-        await insertSessionsBatch(REGION_ID, batch);
+        await insertSessionsBatch(state.currentRegionId, batch);
     }
 
     state.sessions = [...state.sessions, ...sessions];

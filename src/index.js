@@ -7,13 +7,11 @@ import "./styles/main.css";
 import { renderSessionDetail } from "./views/sessionDetailView.js";
 import { renderMemberDetail } from "./views/memberDetailView.js";
 import { renderMemberEdit } from "./views/memberEditView.js";
-import { importData } from "./utils/importData.js";
 import { renderWorkoutPlanner } from "./views/workoutPlannerView.js";
 import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 import { replacePersistedData } from "./services/appData.js";
 import { loadRegionData } from "./services/cloudData.js";
-import { REGION_ID } from "./config.js";
 import { importPaxMasterCsv } from "./services/importAggieland.js";
 import { importAoLogCsv } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
@@ -149,11 +147,18 @@ async function bootApp() {
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
         state.currentUserDisplayName = profile.display_name || "User";
+        state.currentRegionId = profile.region_id;
 
         const cloudData = await loadRegionData(profile.region_id);
         console.log("bootApp cloudData:", cloudData);
 
         replacePersistedData(cloudData);
+
+        console.log("before set currentRegionId:", state.currentRegionId);
+        state.currentRegionId = profile.region_id;
+        console.log("after set currentRegionId:", state.currentRegionId);
+        console.log("window.state after set:", window.state);
+
         renderApp();
         hideBootSplash();
     } catch (error) {

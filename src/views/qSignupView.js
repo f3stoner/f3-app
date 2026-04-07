@@ -3,7 +3,6 @@ import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateQSlotInCloud } from "../services/cloudData.js";
-import { REGION_ID } from "../config.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -20,7 +19,12 @@ export function renderQSignupView() {
 
     async function claimQSlot(slot) {
         try {
-            const updatedSlot = await updateQSlotInCloud(REGION_ID, {
+            const activeRegionId = state.currentRegionId;
+            if (!activeRegionId) {
+                throw new Error("No active region id");
+            }
+
+            const updatedSlot = await updateQSlotInCloud(activeRegionId, {
                 ...slot,
                 qUserId: state.currentUserId,
             });
@@ -39,7 +43,12 @@ export function renderQSignupView() {
 
     async function unclaimQSlot(slot) {
         try {
-            const updatedSlot = await updateQSlotInCloud(REGION_ID, {
+            const activeRegionId = state.currentRegionId;
+            if (!activeRegionId) {
+                throw new Error("No active region id");
+            }
+
+            const updatedSlot = await updateQSlotInCloud(activeRegionId, {
                 ...slot,
                 qUserId: null,
             });

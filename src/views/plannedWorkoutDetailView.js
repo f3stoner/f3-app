@@ -3,7 +3,7 @@ import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createSession } from "../modules/sessions.js";
 import { deletePlannedWorkout } from "../services/appData.js";
-import { REGION_ID, REGION_INTRO_TEMPLATES } from "../config.js";
+import { REGION_INTRO_TEMPLATES } from "../config.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -13,7 +13,7 @@ export function renderPlannedWorkoutDetail() {
         w => w.id === state.selectedPlannedWorkoutId
     );
 
-    const regionIntroTemplate = REGION_INTRO_TEMPLATES[REGION_ID] || "";
+    const regionIntroTemplate = REGION_INTRO_TEMPLATES[state.currentRegionId] || "";
     const resolvedIntroduction = workout.introduction || regionIntroTemplate;
 
     const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";

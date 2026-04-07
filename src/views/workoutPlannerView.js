@@ -3,7 +3,7 @@ import { renderApp } from "../index.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
-import { REGION_ID, REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
+import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -22,7 +22,7 @@ export function renderWorkoutPlanner() {
         draftWorkout.createdByUserId = state.currentUserId;
     }
 
-    const regionIntroTemplate = REGION_INTRO_TEMPLATES[REGION_ID] || "";
+    const regionIntroTemplate = REGION_INTRO_TEMPLATES[state.currentRegionId] || "";
 
     if (!draftWorkout.introduction) {
         draftWorkout.introduction = regionIntroTemplate;
@@ -68,7 +68,7 @@ export function renderWorkoutPlanner() {
     dateInput.addEventListener("change", updateDraftDate);
     dateInput.addEventListener("input", updateDraftDate);
 
-    const configuredAoOptions = REGION_AOS[REGION_ID] || [];
+    const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
 
     const inferredAoOptions = [...new Set([
         ...state.members.map(m => m.homeAo).filter(Boolean),

@@ -7,7 +7,7 @@ import { renderBackblastView } from "./backblastView.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { addSession, updateSession } from "../services/appData.js";
-import { REGION_ID, REGION_AOS } from "../config.js";
+import { REGION_AOS } from "../config.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -123,7 +123,7 @@ backButton.addEventListener("click", () => {
     renderApp();
 })};
 
-const configuredAoOptions = REGION_AOS[REGION_ID] || [];
+const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
 
 const inferredAoOptions = [...new Set([
     ...state.members.map(m => m.homeAo).filter(Boolean),

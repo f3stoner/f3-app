@@ -1,5 +1,4 @@
 import { insertMember, updateMemberInCloud, insertSessionsBatch, deleteSessionsByAo,loadAllMembers } from "./cloudData.js"
-import { REGION_ID } from "../config.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
 import { normalizePaxName } from "../utils/historicImport.js";
@@ -34,7 +33,7 @@ export async function importPaxMasterCsv(csvText) {
             status: "active",
         };
 
-        const saved = await insertMember(REGION_ID, member);
+        const saved = await insertMember(state.currentRegionId, member);
         memberMap[normalizePaxName(paxName)] = saved;
     }
 
@@ -53,7 +52,7 @@ export async function importPaxMasterCsv(csvText) {
 
         member.invitedById = inviter.id;
 
-        await updateMemberInCloud(REGION_ID, member);
+        await updateMemberInCloud(state.currentRegionId, member);
     }
 
     console.log("Pass 2 complete (invitedBy)");
@@ -156,8 +155,7 @@ export async function importAoLogCsv(csvText, aoName) {
     const sessions = Object.values(grouped).sort((a, b) => a.date.localeCompare(b.date));
     console.log(`${aoName} sessions grouped:`, sessions.length);
 
-    //await deleteSessionsByAo(REGION_ID, aoName);
-    await insertSessionsBatch(REGION_ID, sessions);
+    await insertSessionsBatch(state.currentRegionId, sessions);
 
     console.log(`${aoName} session import complete`);
 }
@@ -171,7 +169,7 @@ async function buildMemberNameToIdMap() {
         const { data, error } = await supabase
             .from("members")
             .select("id, pax_name")
-            .eq("region_id", REGION_ID)
+            .eq("region_id", state.currentRegionId)
             .range(from, from + pageSize - 1);
 
         if (error) throw error;

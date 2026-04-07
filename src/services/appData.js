@@ -1,6 +1,5 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { REGION_ID } from "../config.js";
 import { insertMember, updateMemberInCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
@@ -25,14 +24,22 @@ export function persistAppData() {
 }
 
 export async function addSession(session) {
-    const savedSession = await insertSession(REGION_ID, session)
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    const savedSession = await insertSession(activeRegionId, session)
     state.sessions.push(savedSession);
     persistAppData();
     return savedSession;
 }
 
 export async function updateSession(sessionId, updatedSession) {
-    const savedSession = await updateSessionInCloud(REGION_ID, updatedSession);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    const savedSession = await updateSessionInCloud(activeRegionId, updatedSession);
     const index = state.sessions.findIndex(session => session.id === sessionId);
     if (index === -1) return false;
 
@@ -42,7 +49,11 @@ export async function updateSession(sessionId, updatedSession) {
 }
 
 export async function deleteSession(sessionId) {
-    await deleteSessionFromCloud(REGION_ID, sessionId);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    await deleteSessionFromCloud(activeRegionId, sessionId);
 
     state.sessions = state.sessions.filter(
         session => session.id !== sessionId
@@ -52,7 +63,11 @@ export async function deleteSession(sessionId) {
 }
 
 export async function addPlannedWorkout(workout) {
-    const savedWorkout = await insertPlannedWorkout(REGION_ID, workout);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    const savedWorkout = await insertPlannedWorkout(activeRegionId, workout);
     state.plannedWorkouts.push(savedWorkout);
     persistAppData();
     return savedWorkout;
@@ -61,7 +76,11 @@ export async function addPlannedWorkout(workout) {
 export async function updatePlannedWorkout(workoutId, updatedWorkout) {
     console.log("updatePlannedWorkout workoutId:", workoutId);
     console.log("updatePlannedWorkout updatedWorkout:", updatedWorkout);
-    const savedWorkout = await updatePlannedWorkoutInCloud(REGION_ID, updatedWorkout);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    const savedWorkout = await updatePlannedWorkoutInCloud(activeRegionId, updatedWorkout);
     const index = state.plannedWorkouts.findIndex(workout => workout.id === workoutId);
     if (index === -1) return false;
 
@@ -71,7 +90,11 @@ export async function updatePlannedWorkout(workoutId, updatedWorkout) {
 }
 
 export async function deletePlannedWorkout(workoutId) {
-    await deletePlannedWorkoutFromCloud(REGION_ID, workoutId);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    await deletePlannedWorkoutFromCloud(activeRegionId, workoutId);
 
     state.plannedWorkouts = state.plannedWorkouts.filter(
         workout => workout.id !== workoutId
@@ -81,14 +104,22 @@ export async function deletePlannedWorkout(workoutId) {
 }
 
 export async function addMember(member) {
-    const savedMember = await insertMember(REGION_ID, member);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    const savedMember = await insertMember(activeRegionId, member);
     state.members.push(savedMember);
     persistAppData();
     return savedMember;
 }
 
 export async function updateMember(memberId, updatedMember) {
-    const savedMember = await updateMemberInCloud(REGION_ID, updatedMember);
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+    const savedMember = await updateMemberInCloud(activeRegionId, updatedMember);
     const index = state.members.findIndex(member => member.id === memberId);
     if (index === -1) return false;
 
