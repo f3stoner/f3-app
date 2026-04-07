@@ -422,6 +422,10 @@ const selectedHeaderSlot = document.createElement("div");
 stickyHeader.append(searchInput, selectedHeaderSlot)
 selectedHeaderSlot.classList.add("session-summary-strip");
 
+const sessionControls = document.createElement("div");
+sessionControls.classList.add("section");
+sessionControls.append(aoLabel, aoSelect);
+
 function getSortedActiveMembers(lastPostMap) {
     return state.members
         .filter(m => m.status === "active")
@@ -661,6 +665,7 @@ app.append(
     dateLabel,
     dateInput, 
     ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []),
+    sessionControls,
     stickyHeader, 
     memberList, 
     fngHeading, 
