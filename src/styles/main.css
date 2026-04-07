@@ -148,6 +148,7 @@ pre,
 
 .member-name {
     font-weight: 600;
+    flex: 1;
 }
 
 .stats-line{

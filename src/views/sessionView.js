@@ -212,14 +212,6 @@ function createMemberCard(member) {
     const name = document.createElement("span");
     name.classList.add("member-name");
     name.textContent = getMemberDisplayName(member);
-    const toggle = document.createElement("div");
-    toggle.classList.add("attendance-toggle");
-    toggle.textContent = "Out";
-    if (draftSession.attendeeIds.includes(member.id)) {
-        card.classList.add("selected");
-        toggle.textContent = "Present";
-    }
-
     const qButton = document.createElement("button");
     qButton.classList.add("q-button");
     qButton.textContent = "Q";
@@ -243,7 +235,7 @@ function createMemberCard(member) {
         renderMemberList();
     });
 
-card.append(name, toggle, qButton);
+card.append(name, qButton);
 card.addEventListener("click", () => {
     const isPresent = draftSession.attendeeIds.includes(member.id);
 
