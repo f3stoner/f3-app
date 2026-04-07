@@ -849,3 +849,22 @@ select:focus,
 .ao-save-row button {
     width: 100%;
 }
+
+.q-signup-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.q-signup-controls-row select {
+    flex: 1;
+    min-width: 220px;
+    margin-bottom: 0;
+}
+
+.q-signup-controls-row .ao-status-toggle {
+    margin-bottom: 0;
+    white-space: nowrap;
+}

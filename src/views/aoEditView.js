@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { insertAo, updateAoInCloud } from "../services/cloudData.js";
+import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 
 const DAY_OPTIONS = [
     { value: 0, label: "Sun" },
@@ -160,6 +161,8 @@ export function renderAoEditView() {
                 const savedAo = await insertAo(activeRegionId, draftAo);
                 state.aos.push(savedAo);
             }
+            
+            await generateQSlotsForCurrentRegion(28);
 
             state.editingAoId = null;
             state.currentView = "aoManagement";

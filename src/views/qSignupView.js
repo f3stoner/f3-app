@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { formatDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateQSlotInCloud } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
@@ -15,6 +15,64 @@ export function renderQSignupView() {
     const subtitle = document.createElement("div");
     subtitle.classList.add("view-subtitle");
     subtitle.textContent = "Claim upcoming Q slots.";
+
+    const currentMember = state.members.find(
+        member => member.id === state.currentUserId || member.paxName === state.currentUserDisplayName
+    );
+
+    const homeAoName = currentMember?.homeAo || "";
+    const homeAo = state.aos.find(ao => ao.name === homeAoName) || null;
+
+    const aoFilterLabel = document.createElement("div");
+    aoFilterLabel.classList.add("detail-label");
+    aoFilterLabel.textContent = "Filter by AO";
+
+    const aoFilterSelect = document.createElement("select");
+
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All AOs";
+    aoFilterSelect.appendChild(allOption);
+
+    const filterAos = [...state.aos].sort((a, b) => {
+        if (homeAo && a.id === homeAo.id) return -1;
+        if (homeAo && b.id === homeAo.id) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    filterAos.forEach(ao => {
+        const option = document.createElement("option");
+        option.value = ao.id;
+        option.textContent = homeAo && ao.id === homeAo.id
+            ? `${ao.name} (Home)`
+            : ao.name;
+        aoFilterSelect.appendChild(option);
+    });
+
+    if (!state.qSignupAoFilter) {
+        state.qSignupAoFilter = homeAo ? homeAo.id : "all";
+    }
+
+    aoFilterSelect.value = state.qSignupAoFilter || "";
+
+    aoFilterSelect.addEventListener("change", (event) => {
+        state.qSignupAoFilter = event.target.value;
+        renderApp();
+    });
+
+    const openOnlyWrap = document.createElement("label");
+    openOnlyWrap.classList.add("ao-status-toggle");
+
+    const openOnlyInput = document.createElement("input");
+    openOnlyInput.type = "checkbox";
+    openOnlyInput.checked = state.qSignupOpenOnly;
+
+    openOnlyInput.addEventListener("change", (event) => {
+        state.qSignupOpenOnly = event.target.checked;
+        renderApp();
+    });
+
+    openOnlyWrap.append(openOnlyInput, document.createTextNode(" Open only"));
 
     let generateButton = null;
 
@@ -84,7 +142,19 @@ export function renderQSignupView() {
         }
     }
 
-    const sortedSlots = [...state.qSlots].sort((a, b) => {
+    const today = getTodayDate();
+    const futureSlots = state.qSlots.filter(slot => slot.date >= today);
+
+    const aoFilteredSlots = state.qSignupAoFilter === "all"
+        ? futureSlots
+        : futureSlots.filter(slot => slot.aoId === state.qSignupAoFilter);
+    
+    const filteredSlots = state.qSignupOpenOnly
+        ? aoFilteredSlots.filter(slot => !slot.qUserId)
+        : aoFilteredSlots;
+        
+
+    const sortedSlots = [...filteredSlots].sort((a, b) => {
         if (a.date !== b.date) {
             return a.date.localeCompare(b.date);
         }
@@ -98,7 +168,9 @@ export function renderQSignupView() {
     if (sortedSlots.length === 0) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
-        empty.textContent = "No Q slots available yet"
+        empty.textContent = state.qSignupOpenOnly
+        ? "No open Q slots for this filter"
+        : "No Q slots available yet";
 
         listContainer.appendChild(empty);
     } else {
@@ -161,10 +233,16 @@ export function renderQSignupView() {
 
     const nav = createGlobalNav();
 
+    const controlsRow = document.createElement("div");
+    controlsRow.classList.add("q-signup-controls-row");
+    controlsRow.append(aoFilterSelect, openOnlyWrap);
+
     app.append(
         title,
         subtitle,
         ...(generateButton ? [generateButton] : []),
+        aoFilterLabel,
+        controlsRow,
         listContainer,
         nav
     );

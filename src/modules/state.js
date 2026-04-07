@@ -44,6 +44,8 @@ export const state = {
     profileRegionId: savedState?.profileRegionId || null,
     selectedAoId: null,
     editingAoId: null,
+    qSignupAoFilter: savedState?.qSignupAoFilter || "",
+    qSignupOpenOnly: savedState?.qSignupOpenOnly ?? false,
 };
 
 state.runHistoricImport = async function () {

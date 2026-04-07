@@ -99,6 +99,8 @@ export function renderDashboard() {
             state.profileRegionId = null;
             state.regionOverrideId = null;
             state.availableRegions = [];
+            state.qSignupAoFilter = "all";
+            state.qSingupOpenOnly = false,
 
             await bootApp();
         } catch (error) {
