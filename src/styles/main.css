@@ -868,3 +868,62 @@ select:focus,
     margin-bottom: 0;
     white-space: nowrap;
 }
+
+.q-slot-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.q-slot-actions button {
+    margin: 0;
+    width: 100%;
+}
+
+.planner-card {
+    align-items: flex-start;
+}
+
+.planner-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.planner-card .member-name {
+    flex: unset;
+}
+
+.planner-status-line {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    align-self: flex-start;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f0f0f0;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin-top: 6px;
+}
+
+.planner-title-line {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.planner-preview-line {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.35;
+    opacity: 0.8;
+}

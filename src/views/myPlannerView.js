@@ -45,29 +45,41 @@ export function renderMyPlanner() {
     } else {
         sortedDrafts.forEach(workout => {
             const card = document.createElement("div");
-            card.classList.add("member-card");
+            card.classList.add("member-card", "planner-card");
+
+            const cardContent = document.createElement("div");
+            cardContent.classList.add("planner-card-content");
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
 
             const dateText = workout.date ? formatDate(workout.date) : "No Date";
-            topLine.textContent = `${dateText} - ${workout.aoName || "AO"}`;
+            topLine.textContent = `${dateText} • ${workout.aoName || "AO"}`;
 
             const titleLine = document.createElement("div");
-            titleLine.classList.add("stats-line");
-            titleLine.textContent = workout.title || "(No Title)";
+            titleLine.classList.add("stats-line", "planner-title-line");
+            titleLine.textContent = workout.title || "Untitled Workout";
+
+            const previewText = workout.thangs
+                ? workout.thangs.split("\n")[0]
+                : (workout.notes ? workout.notes.split("\n")[0] : "");
 
             const previewLine = document.createElement("div");
-            previewLine.classList.add("stats-line");
-            previewLine.textContent = workout.thangs
-                ? workout.thangs.split("\n")[0]
-                : (workout.notes ? workout.notes.split("\n")[0] : "No workout details");
+            previewLine.classList.add("stats-line", "planner-preview-line");
+            previewLine.textContent = previewText;
 
             const privateBadge = document.createElement("div");
-            privateBadge.classList.add("detail-label");
+            privateBadge.classList.add("detail-label", "planner-status-line");
             privateBadge.textContent = "Private Draft";
 
-            card.append(topLine, titleLine, previewLine, privateBadge);
+            cardContent.append(topLine, titleLine);
+
+            if (previewText) {
+                cardContent.appendChild(previewLine);
+            }
+
+            cardContent.appendChild(privateBadge);
+            card.append(cardContent);
 
             card.addEventListener("click", () => {
                 state.selectedPlannedWorkoutId = workout.id;
@@ -83,6 +95,7 @@ export function renderMyPlanner() {
 
     app.append(
         title,
+        subtitle,
         newWorkoutButton,
         listContainer,
         nav

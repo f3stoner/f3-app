@@ -142,6 +142,14 @@ export function renderQSignupView() {
         }
     }
 
+    function findMatchingPlannedWorkout(slot, ao) {
+        return state.plannedWorkouts.find(workout => 
+            workout.date === slot.date &&
+            workout.createdByUserId === state.currentUserId &&
+            workout.aoName === ao?.name
+        );
+    }
+
     const today = getTodayDate();
     const futureSlots = state.qSlots.filter(slot => slot.date >= today);
 
@@ -181,6 +189,8 @@ export function renderQSignupView() {
             const ao = state.aos.find(a => a.id === slot.aoId);
             const isMine = slot.qUserId === state.currentUserId;
             const qMember = state.members.find(m => m.id === slot.qUserId);
+            const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
+            const hasPlannedWorkout = Boolean(matchingWorkout);
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
@@ -198,9 +208,14 @@ export function renderQSignupView() {
 
             const previewLine = document.createElement("div");
             previewLine.classList.add("stats-line");
-            previewLine.textContent = ao?.time ? `Start: ${ao.time}` : "No time set";
+            if (isMine) {
+                previewLine.textContent = hasPlannedWorkout ? "BD Ready" : "Needs BD"
+            } else {
+                previewLine.textContent = ao?.time ? `Start: ${ao.time}` : "No time set";
+            }
 
             const actionWrap = document.createElement("div");
+            actionWrap.classList.add("q-slot-actions");
 
             if (!slot.qUserId) {
                 const claimButton = document.createElement("button");
@@ -212,15 +227,52 @@ export function renderQSignupView() {
                 });
             
                 actionWrap.appendChild(claimButton);
-            } else if (slot.qUserId === state.currentUserId) {
+            } else if (isMine) {
+                const workoutButton = document.createElement("button");
+                workoutButton.textContent = hasPlannedWorkout ? "View BD" : "Plan BD";
+
+                workoutButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+
+                    if (hasPlannedWorkout) {
+                        state.selectedPlannedWorkoutId = matchingWorkout.id;
+                        state.plannedWorkoutLaunchMode = null;
+                        state.currentView = "plannedWorkoutDetail";
+                    } else {
+                        state.draftPlannedWorkout = {
+                            id: crypto.randomUUID(),
+                            date: slot.date,
+                            aoName: ao?.name || "",
+                            title: "",
+                            introduction: "",
+                            warmorama: "",
+                            thangs: "",
+                            finisher: "",
+                            notes: "",
+                            sourceWorkoutId: null,
+                            sourceSessionId: null,
+                            createdAt: Date.now(),
+                            lastModifiedAt: null,
+                            createdByUserId: state.currentUserId,
+                            isShared: false,
+                        };
+
+                        state.editingPlannedWorkoutId = null;
+                        state.currentView = "workoutPlanner";
+                    }
+
+                    renderApp();
+                });
+
                 const unclaimButton = document.createElement("button");
                 unclaimButton.textContent = "Unclaim";
 
                 unclaimButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
                     await unclaimQSlot(slot);
-                })
-                actionWrap.appendChild(unclaimButton);
+                });
+
+                actionWrap.append(workoutButton, unclaimButton);
             }
 
             const cardContent = document.createElement("div");
