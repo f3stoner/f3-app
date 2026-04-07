@@ -1,7 +1,8 @@
 import fs from "node:fs";
-import path from "node:path";
-import { parse } from "csv-parse/sync";
 import crypto from "node:crypto";
+import Papa from "papaparse";
+import { insertMember, updateMemberInCloud, insertSessionsBatch } from "../src/services/cloudData.js";
+import { state } from "../src/modules/state.js";
 
 const filePath = path.resolve(
     "./import/Attendance - F3 Old 300 - Attendance.csv"
@@ -144,7 +145,7 @@ for (const item of rowToMember) {
                 date: sessionDate,
                 aoName: attendance.aoName,
                 attendeeIds: [],
-                qId: null,
+                qIds: [],
                 fngs: [],
                 notes: "",
             });
@@ -156,8 +157,8 @@ for (const item of rowToMember) {
             session.attendeeIds.push(member.id);
         }
 
-        if (attendance.isQ) {
-            session.qId = member.id;
+        if (attendance.isQ && !session.qIds.includes(member.id)) {
+            session.qIds.push(member.id);
         }
 
         if (attendance.isFNG && !member.firstPostDate) {

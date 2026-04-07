@@ -154,6 +154,7 @@ async function bootApp() {
 
         replacePersistedData(cloudData);
 
+
         console.log("before set currentRegionId:", state.currentRegionId);
         state.currentRegionId = profile.region_id;
         console.log("after set currentRegionId:", state.currentRegionId);
