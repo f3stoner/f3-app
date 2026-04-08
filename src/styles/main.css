@@ -947,3 +947,13 @@ select:focus,
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
 }
+
+.primary-button {
+    background: var(--primary);
+    color: var(--surface);
+    border-color: var(--primary);
+}
+
+.primary-button:hover {
+    background: var(--primary-hover);
+}

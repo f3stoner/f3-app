@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { bootApp, renderApp } from "../index.js";
-import { formatDate, getTodayDate } from "../utils/date.js";
+import { formatShortDate, formatDate, getTodayDate } from "../utils/date.js";
 import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
@@ -100,7 +100,7 @@ export function renderDashboard() {
             state.regionOverrideId = null;
             state.availableRegions = [];
             state.qSignupAoFilter = "all";
-            state.qSingupOpenOnly = false,
+            state.qSignupOpenOnly = false;
 
             await bootApp();
         } catch (error) {
@@ -111,64 +111,164 @@ export function renderDashboard() {
 
     const isAdmin = state.currentUserRole === "admin";
 
+    function findMatchingPlannedWorkoutForSlot(slot) {
+        const ao = state.aos.find(a => a.id === slot.aoId);
+
+        return state.plannedWorkouts.find(workout => 
+            workout.date === slot.date &&
+            workout.createdByUserId === state.currentUserId &&
+            workout.aoName === ao?.name
+        );
+    }
+
+    function getMyUpcomingQSlots() {
+        const today = getTodayDate();
+
+        return state.qSlots
+            .filter(slot =>
+                slot.qUserId === state.currentUserId &&
+                slot.date >= today
+            )
+            .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
     const today = getTodayDate();
+    const myUpcomingQSlots = getMyUpcomingQSlots();
+    const nextQSlot = myUpcomingQSlots[0] || null;
 
-    const todaysWorkout = state.plannedWorkouts.find(workout => 
-        workout.date === today &&
-        workout.createdByUserId === state.currentUserId
-    );
+    let nextQSection = null;
 
-    let todaySection = null;
+    if (nextQSlot) {
+        const ao = state.aos.find(a => a.id === nextQSlot.aoId);
+        const matchingWorkout = findMatchingPlannedWorkoutForSlot(nextQSlot);
+        const hasPlannedWorkout = Boolean(matchingWorkout);
+        const isTodayQ = nextQSlot.date === today;
 
-    if (todaysWorkout) {
-        todaySection = document.createElement("div");
-        todaySection.classList.add("section");
+        nextQSection = document.createElement("div");
+        nextQSection.classList.add("section");
 
-        const todayHeading = document.createElement("div");
-        todayHeading.classList.add("detail-label");
-        todayHeading.textContent = "Today";
+        const nextQHeading = document.createElement("div");
+        nextQHeading.classList.add("detail-label");
+        nextQHeading.textContent = "Your Next Q";
 
-        const todayCard = document.createElement("div");
-        todayCard.classList.add("member-card");
+        const nextQCard = document.createElement("div");
+        nextQCard.classList.add("member-card");
 
-        const todayCardContent = document.createElement("div");
+        const nextQCardContent = document.createElement("div");
 
-        const todayTitle = document.createElement("div");
-        todayTitle.classList.add("member-name");
-        todayTitle.textContent = `You are Qing today at ${todaysWorkout.aoName}`;
+        const nextQTitle = document.createElement("div");
+        nextQTitle.classList.add("member-name");
+        nextQTitle.textContent = isTodayQ
+            ? `You are Qing today at ${ao?.name || "Unknown AO"}`
+            : `You are Qing at ${ao?.name || "Unknown AO"}`;
 
-        const todaySubtitle = document.createElement("div");
-        todaySubtitle.classList.add("stats-line");
-        todaySubtitle.textContent = todaysWorkout.title || "Workout planned";
+        const nextQSubtitle = document.createElement("div");
+        nextQSubtitle.classList.add("stats-line");
 
-        const todayPreview = document.createElement("div");
-        todayPreview.classList.add("stats-line");
-        todayPreview.textContent = todaysWorkout.thangs
-            ? todaysWorkout.thangs.split("\n")[0]
-            : (todaysWorkout.notes ? todaysWorkout.notes.split("\n")[0] : "Ready to run");
-        
-        todayCardContent.append(todayTitle, todaySubtitle, todayPreview);
+        if (isTodayQ) {
+            nextQSubtitle.textContent = hasPlannedWorkout
+                ? (matchingWorkout.title || "BD Ready")
+                : "No workout planned";
+        } else {
+            nextQSubtitle.textContent = ao?.time
+                ? `${formatShortDate(nextQSlot.date)} • ${ao.time}`
+                : formatShortDate(nextQSlot.date);
+        }
 
-        const startButton = document.createElement("button");
-        startButton.textContent = "Start Today's Workout";
-        startButton.classList.add("quick-start-button");
-        startButton.addEventListener("click", (event) => {
-            event.stopPropagation();
-            state.selectedPlannedWorkoutId = todaysWorkout.id;
-            state.plannedWorkoutLaunchMode = "execution";
-            state.currentView = "plannedWorkoutDetail";
+        const nextQPreview = document.createElement("div");
+        nextQPreview.classList.add("stats-line");
+        nextQPreview.textContent = hasPlannedWorkout
+            ? "BD Ready"
+            : "No workout planned";
+
+        nextQCardContent.append(nextQTitle, nextQSubtitle, nextQPreview);
+
+        const actionButton = document.createElement("button");
+        actionButton.classList.add("primary-button");
+
+        if (!hasPlannedWorkout) {
+            actionButton.textContent = "Plan Workout";
+
+            actionButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+
+                state.draftPlannedWorkout = {
+                    id: crypto.randomUUID(),
+                    date: nextQSlot.date,
+                    aoName: ao?.name || "",
+                    title: "",
+                    introduction: "",
+                    warmorama: "",
+                    thangs: "",
+                    finisher: "",
+                    notes: "",
+                    sourceWorkoutId: null,
+                    sourceSessionId: null,
+                    createdAt: Date.now(),
+                    lastModifiedAt: null,
+                    createdByUserId: state.currentUserId,
+                    isShared: false,
+                };
+
+                state.editingPlannedWorkoutId = null;
+                state.currentView = "workoutPlanner";
+                renderApp();
+            });
+        } else if (isTodayQ) {
+            actionButton.textContent = "Start Today's Workout";
+
+            actionButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+                state.selectedPlannedWorkoutId = matchingWorkout.id;
+                state.plannedWorkoutLaunchMode = "execution";
+                state.currentView = "plannedWorkoutDetail";
+                renderApp();
+            });
+        } else {
+            actionButton.textContent = "View Workout";
+
+            actionButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+                state.selectedPlannedWorkoutId = matchingWorkout.id;
+                state.plannedWorkoutLaunchMode = null;
+                state.currentView = "plannedWorkoutDetail";
+                renderApp();
+            });
+        }
+
+        nextQCard.addEventListener("click", () => {
+            if (!hasPlannedWorkout) {
+                state.draftPlannedWorkout = {
+                    id: crypto.randomUUID(),
+                    date: nextQSlot.date,
+                    aoName: ao?.name || "",
+                    title: "",
+                    introduction: "",
+                    warmorama: "",
+                    thangs: "",
+                    finisher: "",
+                    notes: "",
+                    sourceWorkoutId: null,
+                    sourceSessionId: null,
+                    createdAt: Date.now(),
+                    lastModifiedAt: null,
+                    createdByUserId: state.currentUserId,
+                    isShared: false,
+                };
+
+                state.editingPlannedWorkoutId = null;
+                state.currentView = "workoutPlanner";
+            } else {
+                state.selectedPlannedWorkoutId = matchingWorkout.id;
+                state.plannedWorkoutLaunchMode = isTodayQ ? "execution" : null;
+                state.currentView = "plannedWorkoutDetail";
+            }
+
             renderApp();
         });
 
-        todayCard.addEventListener("click", () => {
-            state.selectedPlannedWorkoutId = todaysWorkout.id;
-            state.plannedWorkoutLaunchMode = "execution";
-            state.currentView = "plannedWorkoutDetail";
-            renderApp();
-        });
-
-        todayCard.append(todayCardContent, startButton);
-        todaySection.append(todayHeading, todayCard);
+        nextQCard.append(nextQCardContent, actionButton);
+        nextQSection.append(nextQHeading, nextQCard);
     }
 
     const quickAccessHeading = document.createElement("div");
@@ -205,19 +305,27 @@ export function renderDashboard() {
     quickAccessRow.append(workoutLibraryButton, qSignupButton, rosterButton);
 
     function renderMyUpcomingQs() {
-        const mySlots = state.qSlots
-            .filter(slot => slot.qUserId === state.currentUserId)
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
+        const mySlots = myUpcomingQSlots.slice(1);
 
         const section = document.createElement("div");
+        section.classList.add("section");
 
         const heading = document.createElement("div");
         heading.textContent = "My Upcoming Qs";
         heading.classList.add("detail-label");
         section.appendChild(heading); 
 
+        if (mySlots.length === 0) {
+            const empty = document.createElement("div");
+            empty.classList.add("detail-value");
+            empty.textContent = "No other upcoming Qs."
+            section.appendChild(empty);
+            return section;
+        }
+
         mySlots.forEach(slot => {
             const row = document.createElement("div");
+            row.classList.add("selected-summary-row");
 
             const ao = state.aos.find(a => a.id === slot.aoId);
             const hasPlannedWorkout = state.plannedWorkouts.some(workout =>
@@ -226,15 +334,13 @@ export function renderDashboard() {
                 workout.aoName === ao?.name
             );
 
-            const qUser = state.members.find(m => m.id === slot.qUserId);
-
             const title = document.createElement("div");
             title.classList.add("member-name");
             title.textContent = `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
 
             const status = document.createElement("div");
             status.classList.add("stats-line");
-            status.textContent = hasPlannedWorkout ? "BD Ready" : "Needs BD";
+            status.textContent = hasPlannedWorkout ? "BD Ready" : "No workout planned";
             row.append(title, status);
 
             section.appendChild(row);
@@ -358,7 +464,7 @@ export function renderDashboard() {
         ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
         ...(regionSwitcher ? [regionSwitcher] : []),
         userRow,
-        ...(todaySection ? [todaySection] : []), 
+        ...(nextQSection ? [nextQSection] : []), 
         quickAccessHeading, 
         quickAccessRow, 
         myUpcomingQsSection);

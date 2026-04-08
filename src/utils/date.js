@@ -12,6 +12,16 @@ export function formatDate(dateString) {
     });
 }
 
+export function formatShortDate(dateString) {
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+    });
+}
+
 export function getTodayDate() {
     const today = new Date();
 
