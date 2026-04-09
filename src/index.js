@@ -28,6 +28,7 @@ import { renderRegionGateView } from "./views/regionGateView.js";
 import { checkRegionAccess } from "./services/cloudData.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
+import { renderResetPasswordView } from "./views/resetPasswordView.js";
 
 window.state = state;
 
@@ -91,7 +92,9 @@ function renderApp() {
     
     console.log("SUPABASE URL:", process.env.SUPABASE_URL);
 
-    if (state.currentView === "roster") {
+    if (state.currentView === "auth") {
+        renderAuthView();
+    } else if (state.currentView === "roster") {
         renderRoster();
     } else if (state.currentView === "session"){
         renderSession();
@@ -127,6 +130,8 @@ function renderApp() {
         renderClaimMemberView();
     } else if (state.currentView === "backblast") {
         renderBackblastView();
+    } else if (state.currentView === "resetPassword"){
+        renderResetPasswordView();
     } else {
         renderDashboard ();
     }
@@ -141,7 +146,7 @@ function hideBootSplash() {
 }
 
 async function loadActiveRegionData(profileRegionId) {
-    const activeRegionId = state.profileRegionId;
+    const activeRegionId = profileRegionId;
 
     const access = await checkRegionAccess(state.currentUserId, activeRegionId);
 
@@ -161,6 +166,16 @@ async function loadActiveRegionData(profileRegionId) {
 }
 
 async function bootApp() {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+
+    if (mode === "reset-password") {
+        state.currentView = "resetPassword";
+        renderApp();
+        hideBootSplash();
+        return;
+    }
+
     try {
         console.log("bootApp starting");
 

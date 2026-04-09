@@ -1,4 +1,4 @@
-import { createProfile, signInWithEmail, signUpWithEmail } from "../services/auth.js";
+import { createProfile, signInWithEmail, signUpWithEmail, requestPasswordReset } from "../services/auth.js";
 import { bootApp } from "../index.js";
 
 export function renderAuthView() {
@@ -115,6 +115,28 @@ export function renderAuthView() {
         regionSelect.style.display = isSignUpMode ? "block" : "none";
     });
 
+    const forgotPasswordButton = document.createElement("button");
+    forgotPasswordButton.textContent = "Forgot Password?";
+    forgotPasswordButton.classList.add("secondary-button");
+
+    forgotPasswordButton.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+
+        if (!email) {
+            alert("Enter your email first.");
+            return;
+        }
+
+        try {
+            await requestPasswordReset(email);
+            alert("Password reset email sent. Check your inbox.");
+        } catch (error) {
+            console.error("Password reset failed:", error);
+            alert("Failed to send password reset email.");
+        }
+    });
+
+
     card.append(
         title, 
         emailInput, 
@@ -122,8 +144,10 @@ export function renderAuthView() {
         displayNameInput,
         regionSelect,
         signInButton,
-        toggleModeButton
+        toggleModeButton,
+        forgotPasswordButton
     );
     wrapper.appendChild(card);
     app.appendChild(wrapper);
 }
+

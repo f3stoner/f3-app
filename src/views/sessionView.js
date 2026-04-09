@@ -632,8 +632,10 @@ try {
         state.currentView = "sessionDetail";
         renderApp();
     } else {
-    const backblast = generateBackblast(savedSession || draftSession, state.members);
-    renderBackblastView(backblast);
+        state.draftBackblastText = generateBackblast(savedSession || draftSession, state.members);
+        state.draftBackblastMediaFiles = [];
+        state.currentView = "backblast";
+        renderApp();
     }
 } catch (error) {
     console.error("Failed to save session:", error);

@@ -1,12 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 
-export function renderBackblastView (backblast) {
-    state.currentView = "backblast";
-
-    if (backblast) {
-        state.draftBackblastText = backblast;
-    }
+export function renderBackblastView () {
 
     const app = document.getElementById("app");
     app.textContent = "";

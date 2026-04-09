@@ -115,3 +115,23 @@ export async function updateMyProfile(updates) {
 
     return data;
 }
+
+export async function requestPasswordReset(email) {
+    const redirectTo = `${window.location.origin}${window.location.pathname}?mode=reset-password`;
+
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+    });
+
+    if (error) throw error;
+    return data;
+}
+
+export async function updateMyPassword(newPassword) {
+    const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+    });
+
+    if (error) throw error;
+    return data;
+}
