@@ -5,7 +5,7 @@ import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { signOut } from "../services/auth.js";
-import { loadRegionData } from "../services/cloudData.js";
+import { checkRegionAccess, loadRegionData } from "../services/cloudData.js";
 import { replacePersistedData } from "../services/appData.js";
 
 export function renderDashboard() {
@@ -46,11 +46,21 @@ export function renderDashboard() {
             state.regionOverrideId = selected || null;
 
             const activeRegionId = state.regionOverrideId || state.profileRegionId;
+            state.currentRegionId = activeRegionId;
+
+            const access = await checkRegionAccess(state.currentUserId, activeRegionId);
+
+            if (!access) {
+                const region = state.availableRegions.find(r => r.id === activeRegionId);
+                state.regionName = region?.name || state.regionName;
+                state.currentView = "regionGate";
+                renderApp();
+                return;
+            }
 
             const cloudData = await loadRegionData(activeRegionId);
             replacePersistedData(cloudData);
-            state.currentRegionId = activeRegionId;
-
+            
             console.log("Switching to Region:", activeRegionId);
 
             renderApp();
@@ -101,6 +111,8 @@ export function renderDashboard() {
             state.availableRegions = [];
             state.qSignupAoFilter = "all";
             state.qSignupOpenOnly = false;
+            state.currentUserMemberId = null;
+            state.claimingMemberId = null;
 
             await bootApp();
         } catch (error) {

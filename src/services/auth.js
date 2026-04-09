@@ -58,6 +58,7 @@ export async function createProfile({ id, email, displayName, regionId, role = "
                 display_name: displayName || null,
                 region_id: regionId,
                 role,
+                member_id: null,
             },
         ])
         .select()
@@ -94,4 +95,23 @@ export async function ensureMyProfile(defaultRegionId = null) {
     });
 
     return createdProfile;
+}
+
+export async function updateMyProfile(updates) {
+    const currentSession = await getCurrentSession();
+
+    if (!currentSession) {
+        throw new Error("No active session");
+    }
+
+    const { data, error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", currentSession.user.id)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
 }

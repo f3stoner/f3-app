@@ -24,6 +24,9 @@ import { renderQSignupView } from "./views/qSignupView.js";
 import { renderAoManagementView } from "./views/aoManagementView.js";
 import { renderAoEditView } from "./views/aoEditView.js";
 import { renderPreblastView } from "./views/preblastView.js";
+import { renderRegionGateView } from "./views/regionGateView.js";
+import { checkRegionAccess } from "./services/cloudData.js";
+import { renderClaimMemberView } from "./views/claimMemberView.js";
 
 window.state = state;
 
@@ -117,6 +120,10 @@ function renderApp() {
         renderAoEditView();
     } else if (state.currentView === "preblast") {
         renderPreblastView();
+    } else if (state.currentView === "regionGate") {
+        renderRegionGateView();
+    } else if (state.currentView === "claimMember") {
+        renderClaimMemberView();
     } else {
         renderDashboard ();
     }
@@ -131,11 +138,23 @@ function hideBootSplash() {
 }
 
 async function loadActiveRegionData(profileRegionId) {
-    const activeRegionId = state.regionOverrideId || profileRegionId;
+    const activeRegionId = state.profileRegionId;
+
+    const access = await checkRegionAccess(state.currentUserId, activeRegionId);
+
+    if (!access) {
+        state.currentRegionId = activeRegionId;
+        const region = state.availableRegions.find(r => r.id === activeRegionId);
+        state.regionName = region?.name || "";
+        state.currentView = "regionGate";
+        renderApp();
+        return false;
+    }
 
     const cloudData = await loadRegionData(activeRegionId);
     replacePersistedData(cloudData);
     state.currentRegionId = activeRegionId;
+    return true;
 }
 
 async function bootApp() {
@@ -158,18 +177,29 @@ async function bootApp() {
             return;
         }
 
-        const profile = await ensureMyProfile("96c9eef9-3b6e-4365-86cd-51dbeccf231a");
+        const profile = await ensureMyProfile(session.user.id);
         console.log("bootApp profile:", profile);
 
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
         state.currentUserDisplayName = profile.display_name || "User";
         state.profileRegionId = profile.region_id;
+        state.regionOverrideId = null;
+        state.currentUserMemberId = profile.member_id || null;
         
         const regions = await loadAllRegions();
         state.availableRegions = regions || [];
 
-        await loadActiveRegionData(profile.region_id);
+        const regionLoaded = await loadActiveRegionData(profile.region_id);
+
+        if (!regionLoaded) {
+            hideBootSplash();
+            return;
+        }
+
+        if (!state.currentUserMemberId) {
+            state.currentView = "claimMember";
+        }
 
         renderApp();
         hideBootSplash();

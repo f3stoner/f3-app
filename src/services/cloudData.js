@@ -521,3 +521,37 @@ export async function loadAllRegions() {
     if (error) throw error;
     return data || [];
 }
+
+export async function getRegionById(regionId) {
+    const { data, error } = await supabase
+        .from("regions")
+        .select("*")
+        .eq("id", regionId)
+        .single()
+
+    if (error) throw error;
+    return data;
+}
+
+export async function checkRegionAccess(userId, regionId) {
+    const { data, error } = await supabase
+        .from("region_access")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("region_id", regionId)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function grantRegionAccess(userId, regionId) {
+    const { error } = await supabase
+        .from("region_access")
+        .insert({
+            user_id: userId,
+            region_id: regionId
+        });
+
+    if (error && error.code !== "23505") throw error;
+}
