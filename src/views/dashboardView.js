@@ -89,7 +89,7 @@ export function renderDashboard() {
     signOutButton.addEventListener("click", async () => {
         try{
             await signOut();
-
+            localStorage.removeItem("f3AppState");
             state.regionName = "";
             state.members = [];
             state.sessions = [];

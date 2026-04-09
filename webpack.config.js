@@ -5,40 +5,42 @@ import CopyPlugin from "copy-webpack-plugin";
 
 export default (env, argv) => {
     const isProd = argv.mode === "production";
+
     return {
-    mode: argv.mode || "development",
-    entry: "./src/index.js",
-    output: {
-        filename: "[name].[contenthash].js",
-        path: path.resolve(import.meta.dirname, "dist"),
-        clean: true,
-        publicPath: isProd ? "/f3-app/" : "/",
-    },
-    devtool: "eval-source-map",
-    devServer: {
-        static:  {
-            directory: path.resolve(import.meta.dirname, "public"),
+        mode: argv.mode || "development",
+        entry: "./src/index.js",
+        output: {
+            filename: "[name].[contenthash].js",
+            path: path.resolve(import.meta.dirname, "dist"),
+            clean: true,
+            publicPath: isProd ? "/f3-app/" : "/",
         },
-        historyApiFallback: true,
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: "./index.html",
-        }),
-        new CopyPlugin({
-            patterns: [
-                { from: "public", to: "" },
-            ],
-        }),
-        new Dotenv(),
-    ],
-    module: {
-        rules: [
-            {
-                test: /\.css$/i,
-                use: ["style-loader", "css-loader"],
+        devtool: "eval-source-map",
+        devServer: {
+            host: "0.0.0.0",
+            port: 8080,
+            static: {
+                directory: path.resolve(import.meta.dirname, "public"),
             },
+            historyApiFallback: true,
+            allowedHosts: "all",
+        },
+        plugins: [
+            new HtmlWebpackPlugin({
+                template: "./index.html",
+            }),
+            new CopyPlugin({
+                patterns: [{ from: "public", to: "" }],
+            }),
+            new Dotenv(),
         ],
-    },
+        module: {
+            rules: [
+                {
+                    test: /\.css$/i,
+                    use: ["style-loader", "css-loader"],
+                },
+            ],
+        },
+    };
 };
-}

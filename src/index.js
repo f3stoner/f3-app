@@ -27,6 +27,7 @@ import { renderPreblastView } from "./views/preblastView.js";
 import { renderRegionGateView } from "./views/regionGateView.js";
 import { checkRegionAccess } from "./services/cloudData.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
+import { renderBackblastView } from "./views/backblastView.js";
 
 window.state = state;
 
@@ -124,6 +125,8 @@ function renderApp() {
         renderRegionGateView();
     } else if (state.currentView === "claimMember") {
         renderClaimMemberView();
+    } else if (state.currentView === "backblast") {
+        renderBackblastView();
     } else {
         renderDashboard ();
     }

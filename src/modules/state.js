@@ -51,6 +51,9 @@ export const state = {
     currentUserMemberId: null,
     claimingMemberId: null,
     claimMemberSearchTerm: "",
+    draftPreblastMediaFiles: [],
+    draftBackblastMediaFiles: [],
+    draftBackblastText: "",
 };
 
 state.runHistoricImport = async function () {

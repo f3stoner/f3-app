@@ -957,3 +957,57 @@ select:focus,
 .primary-button:hover {
     background: var(--primary-hover);
 }
+
+.preblast-media-preview {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-top: 0;
+}
+
+.preblast-media-preview-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.preblast-media-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preblast-media-helper {
+    margin-top: 8px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    opacity: 0.8;
+}
+
+.media-input {
+    width: 100%;
+    font: inherit;
+    color: var(--text-primary);
+    margin-top: 8px;
+}
+
+.media-input::file-selector-button {
+    margin-right: 12px;
+    padding: 0.7rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: white;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.media-input::file-selector-button:hover {
+    background: var(--primary-hover);
+}

@@ -20,6 +20,62 @@ export function renderPreblastView() {
         state.draftPreblastText = event.target.value;
     });
 
+    const mediaSection = document.createElement("div");
+    mediaSection.classList.add("preblast-media-section");
+
+    const mediaHelperText = document.createElement("div");
+    mediaHelperText.classList.add("preblast-media-helper");
+    mediaHelperText.textContent = "Videos may take a few seconds to load and may uploade more slowly in BAND.";
+
+    const mediaInput = document.createElement("input");
+    mediaInput.classList.add("media-input");
+    mediaInput.type = "file";
+    mediaInput.accept = "image/*,video/*";
+    mediaInput.multiple = true;
+
+    mediaInput.addEventListener("change", (event) => {
+        const files = Array.from(event.target.files || []);
+        state.draftPreblastMediaFiles = files;
+        renderApp();
+    });
+
+    const mediaPreviewWrapper = document.createElement("div");
+    mediaPreviewWrapper.classList.add("preblast-media-preview-wrapper");
+
+    const mediaFiles = state.draftPreblastMediaFiles || [];
+
+    mediaFiles.forEach((file, index) => {
+        
+        const mediaItem = document.createElement("div");
+        mediaItem.classList.add("preblast-media-item");
+
+        let previewMedia;
+    
+        if (file.type.startsWith("video/")) {
+            previewMedia = document.createElement("video");
+            previewMedia.controls = true;
+        } else {
+            previewMedia = document.createElement("img");
+            previewMedia.alt = "Selected preblast media";
+        }
+    
+        previewMedia.classList.add("preblast-media-preview");
+        previewMedia.src = URL.createObjectURL(file);
+
+        const removeMediaButton = document.createElement("button");
+        removeMediaButton.textContent = "Remove Media";
+
+        removeMediaButton.addEventListener("click", () => {
+            state.draftPreblastMediaFiles = state.draftPreblastMediaFiles.filter((_, i) => i !== index);
+            renderApp();
+        });
+
+        mediaItem.append(previewMedia, removeMediaButton);
+        mediaPreviewWrapper.append(mediaItem);
+    });
+
+    mediaSection.append(mediaInput, mediaHelperText, mediaPreviewWrapper);
+
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy Preblast";
 
@@ -44,11 +100,21 @@ export function renderPreblastView() {
         shareButton.textContent = "Share Not Available";
     } else {
         shareButton.addEventListener("click", async () => {
+            const text = state.draftPreblastText || "";
+            const mediaFiles = state.draftPreblastMediaFiles || [];
+
             try {
-                await navigator.share({ text: state.draftPreblastText || "" });
+                if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
+                    await navigator.share({
+                        text,
+                        files: mediaFiles,
+                    });
+                } else {
+                    await navigator.share({ text });
+                }
             } catch (error) {
                 console.error("Share failed:", error);
-                alert("Share failed.")
+                alert("Share failed.");
             }
         });
     }
@@ -57,6 +123,8 @@ export function renderPreblastView() {
     doneButton.textContent = "Done";
 
     doneButton.addEventListener("click", () => {
+        state.draftPreblastMediaFiles = [];
+        state.draftPreblastText = "";
         state.currentView = "plannedWorkoutDetail";
         renderApp();
     });
@@ -69,6 +137,7 @@ export function renderPreblastView() {
         title,
         subtitle,
         textInput,
+        mediaSection,
         actionRow,
     );
 }
