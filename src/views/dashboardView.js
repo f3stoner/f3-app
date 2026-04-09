@@ -138,7 +138,7 @@ export function renderDashboard() {
 
         return state.qSlots
             .filter(slot =>
-                slot.qUserId === state.currentUserId &&
+                slot.qUserId === state.currentUserMemberId &&
                 slot.date >= today
             )
             .sort((a, b) => a.date.localeCompare(b.date));
