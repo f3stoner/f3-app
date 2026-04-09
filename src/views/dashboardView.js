@@ -382,7 +382,6 @@ export function renderDashboard() {
         recentSessionList.textContent = "No sessions saved yet";
     } else {
         sortedSessions.slice(0, 3).forEach((session) => {
-            const sessionDetail = document.createElement("div");
             const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
             const qNames = effectiveQIds
@@ -391,9 +390,22 @@ export function renderDashboard() {
                 .map(member => member.paxName);
             
             const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
-            sessionDetail.textContent = `${formatDate(session.date)} - ${session.aoName} | Q: ${qLabel} | ${session.attendeeIds.length} PAX | ${session.fngs.length} FNGs`;
-            sessionDetail.classList.add("section");
-            sessionDetail.classList.add("member-card");
+            const sessionDetail = document.createElement("div");
+            sessionDetail.classList.add("member-card", "session-history-card");
+
+            const topLine = document.createElement("div");
+            topLine.classList.add("member-name");
+            topLine.textContent = `${formatDate(session.date)} · ${session.aoName}`;
+
+            const qLine = document.createElement("div");
+            qLine.classList.add("stats-line", "q-line");
+            qLine.textContent = `Q: ${qLabel}`;
+
+            const summaryLine = document.createElement("div");
+            summaryLine.classList.add("stats-line");
+            summaryLine.textContent = `${session.attendeeIds.length} PAX · ${session.fngs.length} FNGs`;
+
+            sessionDetail.append(topLine, qLine, summaryLine);
             sessionDetail.addEventListener("click", () => {
                 state.selectedSessionId = session.id;
                 state.currentView = "sessionDetail";

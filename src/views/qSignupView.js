@@ -17,8 +17,7 @@ export function renderQSignupView() {
     subtitle.textContent = "Claim upcoming Q slots.";
 
     const currentMember = state.members.find(
-        member => member.id === state.currentUserId || member.paxName === state.currentUserDisplayName
-    );
+        member => member.id === state.currentUserMemberId);
 
     const homeAoName = currentMember?.homeAo || "";
     const homeAo = state.aos.find(ao => ao.name === homeAoName) || null;
@@ -103,7 +102,7 @@ export function renderQSignupView() {
 
             const updatedSlot = await updateQSlotInCloud(activeRegionId, {
                 ...slot,
-                qUserId: state.currentUserId,
+                qUserId: state.currentUserMemberId,
             });
 
             const index = state.qSlots.findIndex(q => q.id ===slot.id);
@@ -187,7 +186,7 @@ export function renderQSignupView() {
             card.classList.add("member-card");
 
             const ao = state.aos.find(a => a.id === slot.aoId);
-            const isMine = slot.qUserId === state.currentUserId;
+            const isMine = slot.qUserId === state.currentUserMemberId;
             const qMember = state.members.find(m => m.id === slot.qUserId);
             const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
             const hasPlannedWorkout = Boolean(matchingWorkout);
