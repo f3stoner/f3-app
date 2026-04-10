@@ -45,13 +45,15 @@ export function renderStalePaxView() {
 
     const stalePaxList = document.createElement("div");
 
-    function getLastPostDate(memberId) {
+    function getLastPostDate(member) {
         const matchingSessions = state.sessions.filter(session => 
-            session.attendeeIds.includes(memberId) ||
-            session.fngs?.some(fng => fng.memberId === memberId)
+            session.attendeeIds.includes(member.id) ||
+            session.fngs?.some(fng => fng.memberId === member.id)
         );
 
-        if (matchingSessions.length === 0) return null;
+        if (matchingSessions.length === 0) {
+            return member.firstPostDate || null;
+        }
 
         return matchingSessions
             .map(session => session.date)
@@ -78,7 +80,7 @@ export function renderStalePaxView() {
         const rows = state.members
             .map(member => ({
                 member,
-                lastPostDate: getLastPostDate(member.id),
+                lastPostDate: getLastPostDate(member),
             }))
             .filter(({ member, lastPostDate }) => {
                 const needsReview = !lastPostDate && member.firstPostDate;
