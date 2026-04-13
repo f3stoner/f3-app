@@ -13,7 +13,7 @@ export function formatDate(dateString) {
 }
 
 export function formatShortDate(dateString) {
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
 
     return date.toLocaleDateString(undefined, {
         weekday: "short",
@@ -36,4 +36,9 @@ export function formatDateForInput(date) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateString) {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
 }
