@@ -4,6 +4,7 @@ import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { saveState } from "../utils/storage.js";
 import { updateMember } from "../services/appData.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 
 export function renderMemberDetail () {
     const app = document.getElementById("app");
@@ -12,10 +13,10 @@ export function renderMemberDetail () {
     const member = state.members.find(m => m.id === state.selectedMemberId);
 
     const backButton = document.createElement("button");
-    backButton.textContent = "Back to Roster";
+    backButton.textContent = "← Back";
+    backButton.classList.add("secondary-button");
     backButton.addEventListener("click", () => {
-        state.currentView = "roster";
-        renderApp();
+        goBack("roster");
     });
 
     if (!member) {
@@ -96,12 +97,15 @@ export function renderMemberDetail () {
     editButton.textContent = "Edit Member";
     editButton.addEventListener("click", () => {
         state.editingMemberId = member.id;
-        state.currentView = "memberEdit";
-        renderApp();
+        navigateTo("memberEdit");
     })
 
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
+
     app.append(
-        title, 
+        header,
         nameSection, 
         realNameSection, 
         statusSection, 
@@ -116,5 +120,5 @@ export function renderMemberDetail () {
         app.append(toggleStatusButton);
     }
 
-    app.append(editButton, backButton);
+    app.append(editButton);
 }

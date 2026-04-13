@@ -5,6 +5,7 @@ import { generateBackblast } from "../modules/backblast.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { addMember, deleteSession } from "../services/appData.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -13,11 +14,10 @@ export function renderSessionDetail() {
     const session = state.sessions.find(s => s.id === state.selectedSessionId);
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
-    backButton.textContent = "Back to Session History";
+    backButton.textContent = "← Back";
     backButton.addEventListener("click", () => {
-        state.currentView = "sessionHistory";
-        renderApp();
-    })
+        goBack("sessionHistory");
+    });
 
     if (!session) {
         app.textContent = "No Session Found";
@@ -237,16 +237,14 @@ export function renderSessionDetail() {
 
         state.draftPlannedWorkout = newWorkout;
         state.editingPlannedWorkoutId = null;
-        state.currentView = "workoutPlanner";
-        renderApp();
+        navigateTo("workoutPlanner");
     });
 
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Session";
     editButton.addEventListener("click", () => {
         state.editingSessionId = session.id;
-        state.currentView = "session";
-        renderApp();
+        navigateTo("session");
     })
 
     const primaryActionsRow = document.createElement("div");
@@ -254,10 +252,6 @@ export function renderSessionDetail() {
 
     const secondaryActionsRow = document.createElement("div");
     secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
-
-    const backRow = document.createElement("div");
-    backRow.classList.add("button-row", "back-actions-row");
-
 
     const nav = createGlobalNav();
 
@@ -289,10 +283,12 @@ export function renderSessionDetail() {
         secondaryActionsRow.appendChild(deleteButton);
     }
 
-    backRow.append(backButton);
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
 
     app.append(
-        title, 
+        header,
         summaryCard,
         paxSection, 
         fngSection, 
@@ -300,7 +296,6 @@ export function renderSessionDetail() {
         ...(shouldShowNotesSection ? [notesSection] : []), 
         primaryActionsRow,
         secondaryActionsRow,
-        backRow,
         nav
     );
     }

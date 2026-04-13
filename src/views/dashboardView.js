@@ -7,6 +7,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { signOut } from "../services/auth.js";
 import { checkRegionAccess, loadRegionData } from "../services/cloudData.js";
 import { replacePersistedData } from "../services/appData.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -223,8 +224,7 @@ export function renderDashboard() {
                 };
 
                 state.editingPlannedWorkoutId = null;
-                state.currentView = "workoutPlanner";
-                renderApp();
+                navigateTo("workoutPlanner");
             });
         } else if (isTodayQ) {
             actionButton.textContent = "Start Today's Workout";
@@ -233,8 +233,7 @@ export function renderDashboard() {
                 event.stopPropagation();
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = "execution";
-                state.currentView = "plannedWorkoutDetail";
-                renderApp();
+                navigateTo("plannedWorkoutDetail");
             });
         } else {
             actionButton.textContent = "View Workout";
@@ -243,8 +242,7 @@ export function renderDashboard() {
                 event.stopPropagation();
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = null;
-                state.currentView = "plannedWorkoutDetail";
-                renderApp();
+                navigateTo("plannedWorkoutDetail");
             });
         }
 
@@ -269,14 +267,12 @@ export function renderDashboard() {
                 };
 
                 state.editingPlannedWorkoutId = null;
-                state.currentView = "workoutPlanner";
+                navigateTo("workoutPlanner");
             } else {
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = isTodayQ ? "execution" : null;
-                state.currentView = "plannedWorkoutDetail";
+                navigateTo("plannedWorkoutDetail");
             }
-
-            renderApp();
         });
 
         nextQCard.append(nextQCardContent, actionButton);
@@ -457,15 +453,13 @@ export function renderDashboard() {
     const stalePaxButton = document.createElement("button");
     stalePaxButton.textContent = "Review Stale PAX";
     stalePaxButton.addEventListener("click", () => {
-        state.currentView = "stalePax";
-        renderApp();
+        navigateTo("stalePax");
     });
 
     const manageAosButton = document.createElement("button");
     manageAosButton.textContent = "Manage AOs";
     manageAosButton.addEventListener("click", () => {
-        state.currentView = "aoManagement";
-        renderApp();
+        navigateTo("aoManagement");
     })
 
     const dataToolsHeading = document.createElement("div");

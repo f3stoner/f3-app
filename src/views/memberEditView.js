@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { saveState } from "../utils/storage.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { updateMember } from "../services/appData.js";
+import { goBack } from "../utils/navigation.js";
 
 export function renderMemberEdit () {
     
@@ -74,8 +75,19 @@ export function renderMemberEdit () {
         }   
     });
 
+    const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
+    backButton.textContent = "← Back";
+    backButton.addEventListener("click", () => {
+        goBack("memberDetail");
+    })
+
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
+
     app.append(
-        title, 
+        header,
         paxNameLabel, 
         paxNameInput, 
         realNameLabel, 

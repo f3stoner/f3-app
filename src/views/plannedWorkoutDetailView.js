@@ -5,6 +5,7 @@ import { createSession } from "../modules/sessions.js";
 import { deletePlannedWorkout } from "../services/appData.js";
 import { REGION_INTRO_TEMPLATES } from "../config.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -27,26 +28,23 @@ export function renderPlannedWorkoutDetail() {
 
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
-
-    const backDestination = isExecutionMode
-        ? "dashboard"
-        : (workout.isShared ? "plannedWorkoutList" : "myPlanner");
-
-    const backLabel = isExecutionMode
-        ? "Back to Dashboard"
-        : (workout.isShared ? "Back to Workout Library" : "Back to My Planner");
-
-    backButton.textContent = backLabel;
+    
+    backButton.textContent = "← Back";
+    
     backButton.addEventListener("click", () => {
         if (isExecutionMode) {
             const confirmed = confirm("Exit workout view?");
-            if(!confirmed) return;
+            if (!confirmed) return;
+    
+            state.plannedWorkoutLaunchMode = null;
+            state.currentView = "dashboard";
+            renderApp();
+            return;
         }
-
+    
         state.plannedWorkoutLaunchMode = null;
-        state.currentView = backDestination;
-        renderApp();
-});
+        goBack(workout.isShared ? "plannedWorkoutList" : "myPlanner");
+    });
 
     const title = document.createElement("h1");
     title.textContent = workout.title || "Planned Workout";
@@ -144,8 +142,7 @@ export function renderPlannedWorkoutDetail() {
 
         state.plannedWorkoutLaunchMode = null;
         state.editingPlannedWorkoutId = workout.id;
-        state.currentView = "workoutPlanner";
-        renderApp();
+        navigateTo("workoutPlanner")
     });
 
     const logButton = document.createElement("button");
@@ -173,8 +170,7 @@ export function renderPlannedWorkoutDetail() {
         state.selectedSessionId = null;
         state.editingSessionId = null;
         state.plannedWorkoutLaunchMode = null;
-        state.currentView = "session";
-        renderApp();
+        navigateTo("session");
     });
 
     const copyButton = document.createElement("button");
@@ -194,9 +190,7 @@ export function renderPlannedWorkoutDetail() {
 
         state.draftPlannedWorkout = newWorkout;
         state.editingPlannedWorkoutId = null;
-        state.currentView = "workoutPlanner";
-
-        renderApp();
+        navigateTo("workoutPlanner");
     })
 
     const canEditWorkout = 
@@ -249,9 +243,6 @@ export function renderPlannedWorkoutDetail() {
     const secondaryActionsRow = document.createElement("div");
     secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
 
-    const backRow = document.createElement("div");
-    backRow.classList.add("button-row", "back-actions-row");
-
     if (isExecutionMode) {
         logButton.textContent = "Finish & Log Session";
         logButton.classList.add("primary-button");
@@ -276,10 +267,12 @@ export function renderPlannedWorkoutDetail() {
         }
     }
 
-    backRow.append(backButton);
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
 
     app.append(
-        title,
+        header,
         ...(executionBanner ? [executionBanner] : []),
         ...(dateSection ? [dateSection] : []),
         ...(aoSection ? [aoSection] : []),
@@ -292,6 +285,5 @@ export function renderPlannedWorkoutDetail() {
         ...(notesSection ? [notesSection] : []),
         primaryActionsRow,
         ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
-        backRow,
     );
 }

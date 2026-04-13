@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { insertAo, updateAoInCloud } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
+import { goBack } from "../utils/navigation.js";
 
 const DAY_OPTIONS = [
     { value: 0, label: "Sun" },
@@ -177,10 +178,21 @@ export function renderAoEditView() {
     saveRow.classList.add("button-row", "ao-save-row");
     saveRow.append(saveButton);
 
+    const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
+    backButton.textContent = "← Back";
+    backButton.addEventListener("click", () => {
+        goBack("aoManagement");
+    });
+
     const nav = createGlobalNav();
 
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
+
     app.append(
-        title,
+        header,
         nameLabel,
         nameInput,
         locationLabel,

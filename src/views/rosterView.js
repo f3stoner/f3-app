@@ -4,6 +4,7 @@ import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
+import { navigateTo } from "../utils/navigation.js";
 
 function renderRosterList(rosterContainer, members) {
     rosterContainer.textContent = "";
@@ -46,8 +47,7 @@ function renderRosterList(rosterContainer, members) {
 
         memberCard.addEventListener("click", () => {
             state.selectedMemberId = member.id;
-            state.currentView = "memberDetail";
-            renderApp();
+            navigateTo("memberDetail");
         })
 
         rosterContainer.appendChild(memberCard);

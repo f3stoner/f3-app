@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderSessionHistory() {
     const app = document.getElementById("app");
@@ -59,8 +60,7 @@ export function renderSessionHistory() {
 
     card.addEventListener("click", () => {
         state.selectedSessionId = session.id;
-        state.currentView = "sessionDetail";
-        renderApp();
+        navigateTo("sessionDetail");
     });
 
     return card;

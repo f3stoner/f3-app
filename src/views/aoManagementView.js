@@ -1,6 +1,7 @@
 import { renderApp } from "../index.js";
 import { state } from "../modules/state.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 
 export function renderAoManagementView() {
 const app = document.getElementById("app");
@@ -13,9 +14,15 @@ const addAoButton = document.createElement("button");
 addAoButton.textContent = "Add AO";
 addAoButton.addEventListener("click", () => {
     state.editingAoId = null;
-    state.currentView = "aoEdit";
-    renderApp();
+    navigateTo("aoEdit");
 });
+
+const backButton = document.createElement("button");
+backButton.classList.add("secondary-button");
+backButton.textContent = "← Back";
+backButton.addEventListener("click", () => {
+    goBack("dashboard");
+})
 
 const actionRow = document.createElement("div");
 actionRow.classList.add("button-row");
@@ -87,8 +94,7 @@ if (sortedAos.length === 0) {
 
         card.addEventListener("click", () => {
             state.editingAoId = ao.id;
-            state.currentView = "aoEdit";
-            renderApp();
+            navigateTo("aoEdit");
         });
 
         listContainer.appendChild(card);
@@ -97,8 +103,12 @@ if (sortedAos.length === 0) {
 
 const nav = createGlobalNav();
 
+const header = document.createElement("div");
+header.classList.add("view-header");
+header.append(backButton, title);
+
 app.append(
-    title,
+    header,
     actionRow,
     listContainer,
     nav,

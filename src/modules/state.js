@@ -9,6 +9,7 @@ export const state = {
     members: savedState?.members || [...seedMembers],
     sessions: savedState?.sessions || [],
     currentView: "dashboard",
+    viewHistory: [],
     selectedSessionId: null,
     editingSessionId: null,
     selectedMemberId: null,

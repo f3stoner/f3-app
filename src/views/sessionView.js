@@ -8,6 +8,7 @@ import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { addSession, updateSession } from "../services/appData.js";
 import { REGION_AOS } from "../config.js";
+import { goBack } from "../utils/navigation.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -97,31 +98,29 @@ if (draftSession.workout) {
         : "Workout attached";
 }
 
-const backButton = document.createElement("button");
-if (isEditing) {
-    backButton.textContent = "Back to Session Details";
-   
-    backButton.addEventListener("click", () => {
-        state.currentView = "sessionDetail";
-        state.sessionSearchTerm = "";
-        state.sessionShowAllOthers = false;
-        state.sessionShowAllRecent = false;
-        state.sessionSelectedExpanded = false;
-        state.sessionQExpanded = false;
-        renderApp();
-    })
-} else {
-backButton.textContent = "Back to Dashboard";
-backButton.addEventListener("click", () => {
-    state.currentView = "dashboard";
+function resetSessionUiState() {
     state.sessionSearchTerm = "";
     state.sessionShowAllOthers = false;
     state.sessionShowAllRecent = false;
     state.sessionSelectedExpanded = false;
     state.sessionQExpanded = false;
-    state.draftSession = null;
-    renderApp();
-})};
+}
+
+const backButton = document.createElement("button");
+    backButton.textContent = "← Back";
+    backButton.classList.add("secondary-button");
+
+    backButton.addEventListener("click", () => {
+        resetSessionUiState();
+        
+        if (!isEditing) {
+            state.draftSession = null;
+            goBack("dashboard");
+            return;
+        }
+
+        goBack("sessionDetail");
+    });
 
 const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
 
@@ -652,9 +651,10 @@ notes.value = draftSession.notes || "";
 const actionBar = document.createElement("div");
 actionBar.classList.add("sticky-action-bar");
 
-actionBar.append(backButton, saveButton);
+actionBar.append(saveButton);
 
 app.append(
+    backButton,
     title, 
     dateLabel,
     dateInput, 

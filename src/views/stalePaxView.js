@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateMember } from "../services/appData.js";
 import { formatDate } from "../utils/date.js";
+import { goBack } from "../utils/navigation.js";
 
 export function renderStalePaxView() {
     const app = document.getElementById("app");
@@ -170,16 +171,19 @@ export function renderStalePaxView() {
     }
 
     const backButton = document.createElement("button");
-    backButton.textContent = "Back to Dashboard";
+    backButton.textContent = "← Back";
     backButton.classList.add("secondary-button");
     backButton.addEventListener("click", () => {
-        state.currentView = "dashboard";
-        renderApp();
+        goBack("dashboard");
     });
 
     const nav = createGlobalNav();
 
     renderStalePaxList();
 
-    app.append(title, controlsRow, stalePaxList, backButton, nav);
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
+
+    app.append(header, controlsRow, stalePaxList, nav);
 }

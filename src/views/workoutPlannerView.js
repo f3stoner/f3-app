@@ -4,6 +4,7 @@ import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
+import { goBack } from "../utils/navigation.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -33,12 +34,11 @@ export function renderWorkoutPlanner() {
 
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
-    backButton.textContent = "Back to Dashboard";
+    backButton.textContent = "← Back";
     backButton.addEventListener("click", () => {
         state.editingPlannedWorkoutId = null;
         state.draftPlannedWorkout = null;
-        state.currentView = "dashboard";
-        renderApp();
+        goBack("dashboard");
     })
 
     const dateLabel = document.createElement("div");
@@ -232,14 +232,14 @@ export function renderWorkoutPlanner() {
     const primaryActionsRow = document.createElement("div");
     primaryActionsRow.classList.add("button-row", "primary-actions-row");
 
-    const backRow = document.createElement("div");
-    backRow.classList.add("button-row", "back-actions-row");
-
     primaryActionsRow.append(saveButton);
-    backRow.append(backButton);
+
+    const header = document.createElement("div");
+    header.classList.add("view-header");
+    header.append(backButton, title);
 
     app.append(
-        title,
+        header,
         dateLabel,
         dateInput,
         aoLabel,
@@ -259,6 +259,5 @@ export function renderWorkoutPlanner() {
         shareLabel,
         shareSelect,
         primaryActionsRow,
-        backRow
     );
 }

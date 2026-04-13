@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderMyPlanner() {
     const app = document.getElementById("app");
@@ -20,8 +21,7 @@ export function renderMyPlanner() {
     newWorkoutButton.addEventListener("click", () => {
         state.editingPlannedWorkoutId = null;
         state.draftPlannedWorkout = null;
-        state.currentView = "workoutPlanner";
-        renderApp();
+        navigateTo("workoutPlanner");
     });
 
     const listContainer = document.createElement("div");
@@ -83,8 +83,7 @@ export function renderMyPlanner() {
 
             card.addEventListener("click", () => {
                 state.selectedPlannedWorkoutId = workout.id;
-                state.currentView = "plannedWorkoutDetail";
-                renderApp();
+                navigateTo("plannedWorkoutDetail");
             });
 
             listContainer.appendChild(card);

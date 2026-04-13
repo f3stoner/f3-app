@@ -4,6 +4,7 @@ import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateQSlotInCloud } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -236,7 +237,7 @@ export function renderQSignupView() {
                     if (hasPlannedWorkout) {
                         state.selectedPlannedWorkoutId = matchingWorkout.id;
                         state.plannedWorkoutLaunchMode = null;
-                        state.currentView = "plannedWorkoutDetail";
+                        navigateTo("plannedWorkoutDetail");
                     } else {
                         state.draftPlannedWorkout = {
                             id: crypto.randomUUID(),
@@ -257,10 +258,8 @@ export function renderQSignupView() {
                         };
 
                         state.editingPlannedWorkoutId = null;
-                        state.currentView = "workoutPlanner";
+                        navigateTo("workoutPlanner");
                     }
-
-                    renderApp();
                 });
 
                 const unclaimButton = document.createElement("button");

@@ -1,5 +1,6 @@
 import { renderApp } from "../index.js";
 import { state } from "../modules/state.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function createGlobalNav () {
     const nav = document.createElement("div");
@@ -43,8 +44,7 @@ export function createGlobalNav () {
     fabButton.addEventListener("click", () => {
         state.editingSessionId = null;
         state.selectedSessionId = null;
-        state.currentView = "session";
-        renderApp();
+        navigateTo("session");
     });
 
     nav.appendChild(fabButton);
