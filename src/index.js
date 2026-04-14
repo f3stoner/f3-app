@@ -88,7 +88,14 @@ async function runAggielandAoImports() {
     console.log("All AO imports complete");
 }
 
+let lastRenderedView = null;
+
 function renderApp() {
+
+    if (state.currentView !== lastRenderedView) {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        lastRenderedView = state.currentView;
+    }
     
     console.log("SUPABASE URL:", process.env.SUPABASE_URL);
 

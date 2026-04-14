@@ -33,7 +33,6 @@ export function navigateTo(view) {
 
     state.currentView = view;
     renderApp();
-    window.scrollTo({ top: 0, left: 0, behavior: "auto"});
 }
 
 export function goBack(fallbackView = "dashboard") {
@@ -41,5 +40,4 @@ export function goBack(fallbackView = "dashboard") {
 
     state.currentView = previousView || fallbackView;
     renderApp();
-    window.scrollTo({ top: 0, left: 0, behavior: "auto"});
 }
