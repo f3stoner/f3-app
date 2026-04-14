@@ -664,9 +664,15 @@ actionBar.classList.add("sticky-action-bar");
 
 actionBar.append(saveButton);
 
+const dateInputWrap = document.createElement("div");
+dateInputWrap.classList.add("date-input-wrap");
+dateInputWrap.appendChild(dateInput);
+
 const topSection = document.createElement("div");
 topSection.classList.add("session-top-section");
-topSection.append(dateLabel, dateInput, ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []), sessionControls);
+topSection.append(dateLabel, dateInputWrap, ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []), sessionControls);
+
+
 
 app.append(
     backButton,

@@ -1083,3 +1083,17 @@ input[type="date"] {
     display: block;
     box-sizing: border-box;
 }
+
+.date-input-wrap {
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+}
+
+.date-input-wrap input[type="date"] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: block;
+    box-sizing: border-box;
+}
