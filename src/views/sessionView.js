@@ -234,7 +234,7 @@ function createMemberCard(member) {
         renderMemberList();
     });
 
-card.append(name, qButton);
+card.append(qButton, name);
 card.addEventListener("click", () => {
     const isPresent = draftSession.attendeeIds.includes(member.id);
 
@@ -409,8 +409,19 @@ function createSelectedSection(selectedMembers) {
 const stickyHeader = document.createElement("div");
 stickyHeader.classList.add("sticky-header");
 
+const sessionHelperText = document.createElement("div");
+sessionHelperText.classList.add("session-helper-text");
+
+const helperLineOne = document.createElement("div");
+helperLineOne.textContent = "Tap name → attendance";
+
+const helperLineTwo = document.createElement("div");
+helperLineTwo.textContent = "Tap Q → assign Q";
+
+sessionHelperText.append(helperLineOne, helperLineTwo);
+
 const selectedHeaderSlot = document.createElement("div");
-stickyHeader.append(searchInput, selectedHeaderSlot)
+stickyHeader.append(searchInput, sessionHelperText, selectedHeaderSlot)
 selectedHeaderSlot.classList.add("session-summary-strip");
 
 const sessionControls = document.createElement("div");
@@ -653,14 +664,15 @@ actionBar.classList.add("sticky-action-bar");
 
 actionBar.append(saveButton);
 
+const topSection = document.createElement("div");
+topSection.classList.add("session-top-section");
+topSection.append(dateLabel, dateInput, ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []), sessionControls);
+
 app.append(
     backButton,
     title, 
-    dateLabel,
-    dateInput, 
-    ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []),
-    sessionControls,
-    stickyHeader, 
+    topSection, 
+    stickyHeader,
     memberList, 
     fngHeading, 
     addFngButton, 

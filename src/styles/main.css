@@ -291,7 +291,7 @@ select:focus,
 }
 
 .session-search {
-    margin-top: 10px;
+    margin-top: 4px;
     margin-bottom: 0;
 }
 
@@ -1033,4 +1033,37 @@ select:focus,
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.session-helper-text {
+    font-size: 13px;
+    line-height: 1.35;
+    opacity: 0.75;
+    margin-top: 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-top-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.session-top-section .detail-label {
+    margin-top: 0;
+}
+
+.session-top-section input,
+.session-top-section select {
+    margin-bottom: 0;
+}
+
+.session-top-section .section {
+    margin-bottom: 0;
 }

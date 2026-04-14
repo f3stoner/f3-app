@@ -30,8 +30,7 @@ export function renderBackblastView () {
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "Videos may take a few seconds to load and may upload more slowly in BAND.";
-
+    mediaHelperText.textContent = "Images share quickly. Videos may upload slowly in BAND. For fastest posting, share text + images first and add videos separately in BAND App.";
     const mediaPreviewWrapper = document.createElement("div");
     mediaPreviewWrapper.classList.add("preblast-media-preview-wrapper");
 
@@ -83,7 +82,7 @@ export function renderBackblastView () {
 
     const shareButton = document.createElement("button");
     shareButton.textContent = "Share Backblast";
-
+    
     if (typeof navigator.share !== "function") {
         shareButton.disabled = true;
         shareButton.textContent = "Share Not Available";
@@ -91,14 +90,52 @@ export function renderBackblastView () {
         shareButton.addEventListener("click", async () => {
             try {
                 const mediaFiles = state.draftBackblastMediaFiles || [];
-
-                if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
+                const text = state.draftBackblastText || "";
+    
+                const imageFiles = mediaFiles.filter(file =>
+                    file.type.startsWith("image/")
+                );
+    
+                const videoFiles = mediaFiles.filter(file =>
+                    file.type.startsWith("video/")
+                );
+    
+                const hasVideo = videoFiles.length > 0;
+    
+                if (!mediaFiles.length) {
+                    await navigator.share({ text });
+                    return;
+                }
+    
+                if (hasVideo) {
+                    const useFastShare = confirm(
+                        "This post includes video.\n\n" +
+                        "OK = Fast Share (recommended): share text + images only\n" +
+                        "Cancel = Include Video: may take longer to upload in BAND"
+                    );
+    
+                    if (useFastShare) {
+                        if (imageFiles.length && navigator.canShare?.({ files: imageFiles })) {
+                            await navigator.share({
+                                text,
+                                files: imageFiles,
+                            });
+                        } else {
+                            await navigator.share({ text });
+                        }
+    
+                        alert("Shared text" + (imageFiles.length ? " + images" : "") + ". Upload videos separately in BAND if needed.");
+                        return;
+                    }
+                }
+    
+                if (navigator.canShare?.({ files: mediaFiles })) {
                     await navigator.share({
-                        text: state.draftBackblastText || "",
+                        text,
                         files: mediaFiles,
                     });
                 } else {
-                    await navigator.share({ text: state.draftBackblastText || "" });
+                    await navigator.share({ text });
                 }
             } catch (error) {
                 console.error("Share failed:", error);
