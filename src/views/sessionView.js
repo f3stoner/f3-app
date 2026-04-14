@@ -1,6 +1,6 @@
 import { renderApp } from "../index.js";
 import { createSession } from "../modules/sessions.js";
-import { getTodayDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { state } from "../modules/state.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { renderBackblastView } from "./backblastView.js";
@@ -64,6 +64,8 @@ dateLabel.classList.add("detail-label");
 const dateInput = document.createElement("input");
 dateInput.type = "date";
 dateInput.value = draftSession.date;
+dateInput.classList.add("native-date-input");
+
 
 const today = getTodayDate();
 const minDate = new Date();
@@ -80,6 +82,7 @@ dateInput.max = today;
 
 function updateDraftDate(event) {
     draftSession.date = event.target.value;
+    dateDisplay.textContent = formatDate(draftSession.date);
 }
 
 dateInput.addEventListener("change", updateDraftDate);
@@ -664,9 +667,14 @@ actionBar.classList.add("sticky-action-bar");
 
 actionBar.append(saveButton);
 
-const dateInputWrap = document.createElement("div");
-dateInputWrap.classList.add("date-input-wrap");
-dateInputWrap.appendChild(dateInput);
+const dateInputWrap = document.createElement("label");
+dateInputWrap.classList.add("fake-date-field");
+
+const dateDisplay = document.createElement("div");
+dateDisplay.classList.add("fake-date-display");
+dateDisplay.textContent = formatDate(draftSession.date);
+
+dateInputWrap.append(dateDisplay, dateInput);
 
 const topSection = document.createElement("div");
 topSection.classList.add("session-top-section");
