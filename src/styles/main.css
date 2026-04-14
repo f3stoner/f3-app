@@ -1075,3 +1075,11 @@ input[type="date"] {
 .session-top-section input[type="date"] {
     margin-bottom: 4px;
 }
+
+input[type="date"] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: block;
+    box-sizing: border-box;
+}
