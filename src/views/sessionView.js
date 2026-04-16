@@ -109,6 +109,51 @@ function resetSessionUiState() {
     state.sessionQExpanded = false;
 }
 
+function createSelectedPillStrip(qMembers, selectedMembers) {
+    const strip = document.createElement("div");
+    strip.classList.add("selected-pill-strip");
+
+    const allMembers = [
+        ...qMembers.map(member => ({...member, isQ: true})),
+        ...selectedMembers.map(member => ({ ...member, isQ: false })),
+    ];
+
+    if (allMembers.length === 0) {
+        return strip;
+    }
+
+    allMembers.forEach(member => {
+        const pill = document.createElement("div");
+        pill.classList.add("selected-pill");
+
+        if (member.isQ) {
+            pill.classList.add("selected-pill-q");
+            pill.textContent = `Q: ${member.paxName}`;
+        } else {
+            pill.textContent = member.paxName;
+        }
+
+        pill.addEventListener("click", () => {
+            const confirmed = confirm(
+                member.isQ
+                    ? `Remove ${member.paxName} as Q and attendee?`
+                    : `Remove ${member.paxName}?`
+            );
+
+            if (!confirmed) return;
+
+            draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
+            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
+
+            renderMemberList();
+        });
+
+        strip.appendChild(pill);
+    });
+
+    return strip;
+}
+
 const backButton = document.createElement("button");
     backButton.textContent = "← Back";
     backButton.classList.add("secondary-button");
@@ -283,69 +328,7 @@ function createMemberSection(titleText, members, options = {}) {
     return section;
 }
 
-function createQSection(qMembers) {
-    const section = document.createElement("div");
-    section.classList.add("section");
-
-    const heading = document.createElement("div");
-    heading.classList.add("detail-label");
-    heading.textContent = `Q (${qMembers.length})`;
-
-    section.appendChild(heading);
-    heading.style.cursor = "pointer"
-
-    if (qMembers.length === 0) {
-        const empty = document.createElement("div");
-        empty.classList.add("detail-value");
-        empty.textContent = "No Q selected";
-        section.appendChild(empty);
-        return section;
-    }
-
-    const summary = document.createElement("div");
-    summary.classList.add("detail-value");
-
-    const summaryNames = qMembers.map(member => member.paxName);
-    summary.textContent = summaryNames.join(", ");
-
-    section.appendChild(summary);
-
-    heading.addEventListener("click", () => {
-        state.sessionQExpanded = !state.sessionQExpanded;
-        renderMemberList();
-    });
-
-    summary.addEventListener("click", () => {
-        state.sessionQExpanded = !state.sessionQExpanded;
-        renderMemberList();
-    });
-
-    if (!state.sessionQExpanded) {
-        return section;
-    }
-
-    qMembers.forEach(member => {
-        const row = document.createElement("div");
-        row.classList.add("selected-summary-row");
-
-        const name = document.createElement("span");
-        name.textContent = member.paxName;
-
-        const clearButton = document.createElement("button");
-        clearButton.textContent = "Clear";
-        clearButton.addEventListener("click", () => {
-            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
-            renderMemberList();
-        });
-
-        row.append(name, clearButton);
-        section.appendChild(row);
-    });
-
-    return section;
-}
-
-function createSelectedSection(selectedMembers) {
+function createSelectedSection(qMembers, selectedMembers) {
     const section = document.createElement("div");
     section.classList.add("section");
 
@@ -353,10 +336,12 @@ function createSelectedSection(selectedMembers) {
     heading.classList.add("detail-label");
     heading.textContent = state.sessionSelectedExpanded
         ? `Selected PAX (${selectedMembers.length}) • Tap to collapse`
-        : `Selected PAX (${selectedMembers.length}) • Tap to review`;
+        : `Selected PAX (${selectedMembers.length}) • Tap to review/edit`;
     heading.style.cursor = "pointer";
 
     section.appendChild(heading);
+
+    section.appendChild(createSelectedPillStrip(qMembers, selectedMembers));
 
     if (selectedMembers.length === 0) {
         const empty = document.createElement("div");
@@ -366,27 +351,7 @@ function createSelectedSection(selectedMembers) {
         return section;
     }
 
-    const summary = document.createElement("div");
-    summary.classList.add("selected-summary-preview");
-    summary.classList.add("detail-value");
-
-    const summaryNames = selectedMembers.map(member => member.paxName);
-    const MAX_VISIBLE_SELECTED = 6;
-
-    if (summaryNames.length <= MAX_VISIBLE_SELECTED) {
-        summary.textContent = summaryNames.join(", ");
-    } else {
-        summary.textContent = `${summaryNames.slice(0, MAX_VISIBLE_SELECTED).join(", ")} +${summaryNames.length - MAX_VISIBLE_SELECTED}`;
-    }
-
-    section.appendChild(summary);
-
     heading.addEventListener("click", () => {
-        state.sessionSelectedExpanded = !state.sessionSelectedExpanded;
-        renderMemberList();
-    });
-
-    summary.addEventListener("click", () => {
         state.sessionSelectedExpanded = !state.sessionSelectedExpanded;
         renderMemberList();
     });
@@ -398,17 +363,23 @@ function createSelectedSection(selectedMembers) {
     const selectedList = document.createElement("div");
     selectedList.classList.add("selected-summary-list");
 
-    selectedMembers.forEach(member => {
+    const reviewMembers = [
+        ...qMembers.map(member => ({...member, isQ: true})),
+        ...selectedMembers.map(member => ({ ...member, isQ: false })),
+    ];
+
+    reviewMembers.forEach(member => {
         const row = document.createElement("div");
         row.classList.add("selected-summary-row");
 
         const name = document.createElement("span");
-        name.textContent = member.paxName;
+        name.textContent = member.isQ ? `Q: ${member.paxName}` : member.paxName;
 
         const removeButton = document.createElement("button");
         removeButton.textContent = "Remove";
         removeButton.addEventListener("click", () => {
             draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
+            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
             renderMemberList();
         });
 
@@ -435,8 +406,9 @@ helperLineTwo.textContent = "Tap Q → assign Q";
 sessionHelperText.append(helperLineOne, helperLineTwo);
 
 const selectedHeaderSlot = document.createElement("div");
-stickyHeader.append(searchInput, sessionHelperText, selectedHeaderSlot)
 selectedHeaderSlot.classList.add("session-summary-strip");
+
+stickyHeader.append(searchInput, sessionHelperText, selectedHeaderSlot)
 
 const sessionControls = document.createElement("div");
 sessionControls.classList.add("section");
@@ -516,10 +488,9 @@ function renderMemberList() {
    const visibleOtherMembers = state.sessionShowAllOthers
         ? otherMembers
         : otherMembers.slice(0, 10);
-    
+     
     selectedHeaderSlot.textContent = "";
-    selectedHeaderSlot.appendChild(createQSection(qMembers));
-    selectedHeaderSlot.appendChild(createSelectedSection(selectedMembers));
+    selectedHeaderSlot.appendChild(createSelectedSection(qMembers, selectedMembers));
 
         const recentSection = createMemberSection(`Recent at ${draftSession.aoName || "AO"}`, visibleRecentMembers, {
             emptyText: "No recent posters at this AO",

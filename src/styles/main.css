@@ -1112,3 +1112,34 @@ select:focus,
     overflow-y: auto;
     padding-right: 4px;
 }
+
+.selected-pill-slot {
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
+.selected-pill-strip {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.selected-pill {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.selected-pill-q {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 700;
+}
