@@ -129,6 +129,7 @@ function mapSessionFromDb(row) {
         workout: row.workout || null,
         sourcePlannedWorkoutId: row.source_planned_workout_id,
         createdAt: row.created_at,
+        createdByUserId: row.created_by_user_id || null,
     };
 }
 
@@ -235,6 +236,7 @@ export async function insertSession(regionId, session) {
                 workout: session.workout || null,
                 source_planned_workout_id: session.sourcePlannedWorkoutId || null,
                 created_at: session.createdAt,
+                created_by_user_id: session.createdByUserId,
             },
         ])
         .select()

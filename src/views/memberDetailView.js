@@ -2,7 +2,6 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
-import { saveState } from "../utils/storage.js";
 import { updateMember } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 
@@ -93,6 +92,10 @@ export function renderMemberDetail () {
         }
     });
 
+    const canEditMember =
+    state.currentUserRole === "admin" ||
+    member.id === state.currentUserMemberId;
+
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Member";
     editButton.addEventListener("click", () => {
@@ -119,6 +122,7 @@ export function renderMemberDetail () {
     if (state.currentUserRole === "admin") {
         app.append(toggleStatusButton);
     }
-
+    if (canEditMember) {
     app.append(editButton);
+    }
 }

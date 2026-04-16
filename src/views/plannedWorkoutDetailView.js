@@ -150,12 +150,11 @@ export function renderPlannedWorkoutDetail() {
     logButton.addEventListener("click", () => {
         const session = createSession(workout.date || getTodayDate(), workout.aoName);
 
-        const currentMember = state.members.find(
-            member => member.paxName === state.currentUserDisplayName
-        );
+        const currentMemberId = state.currentUserMemberId || null;
 
-        session.qIds = currentMember ? [currentMember.id] : [];
-        session.attendeeIds = currentMember ? [currentMember.id] : [];
+        session.qIds = currentMemberId ? [currentMemberId] : [];
+        session.attendeeIds = currentMemberId ? [currentMemberId] : [];
+        
         session.workout = {
             title: workout.title,
             introduction: resolvedIntroduction,

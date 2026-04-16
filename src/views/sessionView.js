@@ -627,7 +627,11 @@ try {
         await updateSession(sessionId, draftSession);
         savedSession = state.sessions.find(session => session.id === sessionId);
     } else {
-        savedSession = await addSession(draftSession);
+        const sessionToCreate = {
+            ...draftSession,
+            createdByUserId: state.currentUserId,
+        };
+        savedSession = await addSession(sessionToCreate);
     }
     state.selectedSessionId = savedSession?.id || draftSession.id;
     state.editingSessionId = null;

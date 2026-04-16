@@ -76,9 +76,13 @@ export function renderDashboard() {
     roleBadge.dataset.role = state.currentUserRole;
     roleBadge.textContent = state.currentUserRole === "admin" ? "Admin" : "User";
 
+    const linkedMember = state.members.find(
+        member => member.id === state.currentUserMemberId
+    );
+
     const userName = document.createElement("span");
     userName.classList.add("user-name");
-    userName.textContent = state.currentUserDisplayName || "User";
+    userName.textContent = linkedMember?.paxName || state.currentUserDisplayName || "User";
 
     const userLeft = document.createElement("div");
     userLeft.classList.add("user-left");
@@ -178,15 +182,11 @@ export function renderDashboard() {
         const nextQSubtitle = document.createElement("div");
         nextQSubtitle.classList.add("stats-line");
 
-        if (isTodayQ) {
-            nextQSubtitle.textContent = hasPlannedWorkout
-                ? (matchingWorkout.title || "BD Ready")
-                : "No workout planned";
-        } else {
-            nextQSubtitle.textContent = ao?.time
+        nextQSubtitle.textContent = isTodayQ
+            ? (ao?.time ? `Today • ${ao.time}` : "Today")
+            : (ao?.time
                 ? `${formatShortDate(nextQSlot.date)} • ${ao.time}`
-                : formatShortDate(nextQSlot.date);
-        }
+                : formatShortDate(nextQSlot.date));
 
         const nextQPreview = document.createElement("div");
         nextQPreview.classList.add("stats-line");

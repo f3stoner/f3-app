@@ -12,6 +12,14 @@ export function renderSessionDetail() {
     app.textContent = "";
 
     const session = state.sessions.find(s => s.id === state.selectedSessionId);
+
+    const canEditSession =
+        session &&
+        (
+            state.currentUserRole === "admin" ||
+            session.createdByUserId === state.currentUserId
+        );
+
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
     backButton.textContent = "← Back";
@@ -243,9 +251,14 @@ export function renderSessionDetail() {
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Session";
     editButton.addEventListener("click", () => {
+        if (!canEditSession) {
+            alert("You can only edit sessionsyou created.");
+            return;
+        }
+
         state.editingSessionId = session.id;
         navigateTo("session");
-    })
+    });
 
     const primaryActionsRow = document.createElement("div");
     primaryActionsRow.classList.add("button-row", "primary-actions-row");
@@ -255,7 +268,10 @@ export function renderSessionDetail() {
 
     const nav = createGlobalNav();
 
-    primaryActionsRow.append(backblastButton, editButton);
+    primaryActionsRow.append(backblastButton);
+    if (canEditSession) {
+        primaryActionsRow.append(editButton);
+    }
     secondaryActionsRow.append(copyToPlanButton);
 
     if (state.currentUserRole === "admin") {

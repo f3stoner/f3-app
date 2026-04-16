@@ -1,6 +1,5 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { saveState } from "../utils/storage.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { updateMember } from "../services/appData.js";
 import { goBack } from "../utils/navigation.js";
@@ -22,6 +21,17 @@ export function renderMemberEdit () {
     if (!member) {
         app.textContent = "No Member Found";
         app.append(cancelButton);
+        return;
+    }
+
+    const canEditMember =
+    state.currentUserRole === "admin" ||
+    member?.id === state.currentUserMemberId;
+
+    if (!canEditMember) {
+        alert("You can only edit your own profile.");
+        state.currentView = "dashboard";
+        renderApp();
         return;
     }
 
