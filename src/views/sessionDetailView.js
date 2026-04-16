@@ -218,10 +218,14 @@ export function renderSessionDetail() {
     const notesSection = createDetailSection("Notes", notesText);
 
     const backblastButton = document.createElement("button");
-    backblastButton.textContent = "Generate Backblast";
+    backblastButton.textContent = "Backblast";
     backblastButton.addEventListener("click", () => {
-        const backblast = generateBackblast(session, state.members);
-        renderBackblastModal(backblast);
+        state.draftBackblastText =
+            session.backblastText ||
+            generateBackblast(session, state.members);
+
+        state.draftBackblastMediaFiles = [];
+        navigateTo("backblast");
     })
 
     const copyToPlanButton = document.createElement("button");

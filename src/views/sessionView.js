@@ -649,7 +649,12 @@ try {
         state.currentView = "sessionDetail";
         renderApp();
     } else {
-        state.draftBackblastText = generateBackblast(savedSession || draftSession, state.members);
+        const sessionForBackblast = savedSession || draftSession;
+
+        state.draftBackblastText = 
+            sessionForBackblast.backblastText ||
+            generateBackblast(sessionForBackblast, state.members);
+
         state.draftBackblastMediaFiles = [];
         state.currentView = "backblast";
         renderApp();

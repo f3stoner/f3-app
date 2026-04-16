@@ -1,3 +1,4 @@
+import { generateBackblast } from "../modules/backblast.js";
 import { supabase } from "./supabaseClient.js";
 
 export async function loadAllSessions(regionId) {
@@ -130,6 +131,7 @@ function mapSessionFromDb(row) {
         sourcePlannedWorkoutId: row.source_planned_workout_id,
         createdAt: row.created_at,
         createdByUserId: row.created_by_user_id || null,
+        backblastText: row.backblast_text || "",
     };
 }
 
@@ -237,6 +239,7 @@ export async function insertSession(regionId, session) {
                 source_planned_workout_id: session.sourcePlannedWorkoutId || null,
                 created_at: session.createdAt,
                 created_by_user_id: session.createdByUserId,
+                backblast_text: session.backblastText || "",
             },
         ])
         .select()
@@ -261,6 +264,7 @@ export async function updateSessionInCloud(regionId, session) {
             workout: session.workout || null,
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
             created_at: session.createdAt,
+            backblast_text: session.backblastText || "",
         })
         .eq("id", session.id)
         .select()

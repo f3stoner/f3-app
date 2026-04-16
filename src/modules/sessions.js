@@ -1,3 +1,5 @@
+import { state } from "./state.js";
+
 export function createSession(date, aoName) {
     return {
         id: crypto.randomUUID(),
@@ -10,5 +12,7 @@ export function createSession(date, aoName) {
         workout: null,
         sourcePlannedWorkoutId: null,
         createdAt: Date.now(),
+        createdByUserId: state.currentUserId,
+        backblastText: "",
     };
 }

@@ -88,12 +88,21 @@ export function generateBackblast (session, members) {
         workoutText = `Notes:\n${session.notes}`;
     }
 
-    return `AO: ${session.aoName}
-Date: ${formattedDate}
-    
-Q: ${qLabel}
-PAX: ${paxNames}
-FNGs: ${fngText}
-    
-${workoutText}`;
+    const paxCount = session.attendeeIds.length;
+    const aoHashtag = session.aoName
+        ? `#${session.aoName.replace(/\s+/g, "")}`
+        : "";
+
+    return [
+        `#backblast ${aoHashtag}`.trim(),
+        "",
+        `AO: ${session.aoName}`,
+        `Date: ${formattedDate}`,
+        `Q: ${qLabel}`,
+        `PAX Count: ${paxCount}`,
+        `PAX: ${paxNames}`,
+        `FNGs: ${fngText}`,
+        "",
+        workoutText,
+    ].join("\n");
 }

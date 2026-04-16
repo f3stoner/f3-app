@@ -1,5 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
+import { generateBackblast } from "../modules/backblast.js";
+import { updateSession } from "../services/appData.js";
 
 export function renderBackblastView () {
 
@@ -9,8 +11,25 @@ export function renderBackblastView () {
     const title = document.createElement("h1");
     title.textContent = "Backblast";
 
-    const textBlock = document.createElement("pre");
-    textBlock.textContent = state.draftBackblastText;
+    const helper = document.createElement("div");
+    helper.classList.add("detail-label");
+    helper.textContent = "Edit before sharing";
+
+    const textArea = document.createElement("textarea");
+    textArea.classList.add("preblast-textarea");
+    textArea.value = state.draftBackblastText || "";
+
+    function autoResize(textarea) {
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+    }
+
+    autoResize(textArea);
+
+    textArea.addEventListener("input", () => {
+        autoResize(textArea);
+        state.draftBackblastText = textArea.value;
+    })
 
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");
@@ -144,14 +163,55 @@ export function renderBackblastView () {
     }
     const doneButton = document.createElement("button");
     doneButton.textContent ="Done";
-    doneButton.addEventListener("click", () => {
+
+    doneButton.addEventListener("click", async () => {
+        const session = state.sessions.find(
+            s => s.id === state.selectedSessionId
+        );
+
+        if (session) {
+            try {
+                const updatedSession = {
+                    ...session,
+                    backblastText: state.draftBackblastText || "",
+                };
+
+                await updateSession(session.id, updatedSession);
+            } catch (error) {
+                console.error("Failed to save backblast text:", error);
+                alert("Failed to save backblast.");
+                return;
+            }
+        }
+
         state.draftBackblastMediaFiles = [];
         state.draftBackblastText = "";
-        state.currentView = "dashboard";
+        state.currentView = "sessionDetail";
         renderApp();
     });
 
-    app.append(title, textBlock, mediaSection, shareButton, copyButton);
+    const resetButton = document.createElement("button");
+    resetButton.textContent = "Reset";
 
-    app.append(doneButton);
+    resetButton.addEventListener("click", () => {
+        const confirmed = confirm("Reset backblast to original?");
+        if (!confirmed) return;
+        const session = state.sessions.find(
+            s => s.id === state.selectedSessionId
+        );
+        if (!session) {
+            alert("Could not reset backblast. Session not found.");
+            return;
+        }
+        session.backblastText = "";
+        state.draftBackblastText = generateBackblast(session, state.members);
+        renderApp();
+    });
+
+    const actionRow = document.createElement("div");
+    actionRow.classList.add("button-row");
+
+    actionRow.append(shareButton, copyButton, resetButton, doneButton);
+
+    app.append(title, helper, textArea, mediaSection, actionRow);
 }
