@@ -18,7 +18,7 @@ export function generateBackblast (session, members) {
                 });
                 return null;
             }
-            return matchedMember.paxName;
+            return `@${matchedMember.paxName}`;
         })
         .filter(Boolean)
 
@@ -32,7 +32,9 @@ export function generateBackblast (session, members) {
         const member = members.find(m => m.id === id);
         return member ? member.paxName : "Unknown";
     });
-    const paxNames = paxNamesArray.length > 0 ? paxNamesArray.join(", ") : "-";
+    const paxNames = paxNamesArray.length > 0 
+    ? paxNamesArray.map(name => `@${name}`).join(", ") 
+    : "-";
     const fngText = session.fngs.length === 0
     ? "None"
     : session.fngs.map(fng => {
@@ -45,7 +47,7 @@ export function generateBackblast (session, members) {
         const inviter = members.find(m => m.id === fng.invitedById);
         const inviterName = inviter ? inviter.paxName : "Unknown";
 
-        return `${displayName} (Invited by ${inviterName})`;
+        return `${displayName} (Invited by @${inviterName})`;
 
     }).join(", ");
 
