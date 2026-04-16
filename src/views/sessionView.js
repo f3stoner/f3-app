@@ -207,6 +207,11 @@ function getLastPostAtAo(memberId, aoName) {
     return dates[dates.length - 1];
 }
 
+function clearSessionSearch() {
+    state.sessionSearchTerm = "";
+    searchInput.value = "";
+}
+
 function createMemberCard(member) {
     const card = document.createElement("div");
     card.classList.add("member-card");
@@ -233,7 +238,7 @@ function createMemberCard(member) {
         if (!draftSession.attendeeIds.includes(member.id)) {
             draftSession.attendeeIds.push(member.id);
         }
-
+        clearSessionSearch();
         renderMemberList();
     });
 
@@ -247,6 +252,7 @@ card.addEventListener("click", () => {
         draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
         draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
     }
+    clearSessionSearch();
     renderMemberList();
     });
 return card;
@@ -345,7 +351,9 @@ function createSelectedSection(selectedMembers) {
 
     const heading = document.createElement("div");
     heading.classList.add("detail-label");
-    heading.textContent = `Selected PAX (${selectedMembers.length})`;
+    heading.textContent = state.sessionSelectedExpanded
+        ? `Selected PAX (${selectedMembers.length}) • Tap to collapse`
+        : `Selected PAX (${selectedMembers.length}) • Tap to review`;
     heading.style.cursor = "pointer";
 
     section.appendChild(heading);
@@ -359,13 +367,16 @@ function createSelectedSection(selectedMembers) {
     }
 
     const summary = document.createElement("div");
+    summary.classList.add("selected-summary-preview");
     summary.classList.add("detail-value");
 
     const summaryNames = selectedMembers.map(member => member.paxName);
-    if (summaryNames.length <= 3) {
+    const MAX_VISIBLE_SELECTED = 6;
+
+    if (summaryNames.length <= MAX_VISIBLE_SELECTED) {
         summary.textContent = summaryNames.join(", ");
     } else {
-        summary.textContent = `${summaryNames.slice(0, 3).join(", ")} +${summaryNames.length - 3}`;
+        summary.textContent = `${summaryNames.slice(0, MAX_VISIBLE_SELECTED).join(", ")} +${summaryNames.length - MAX_VISIBLE_SELECTED}`;
     }
 
     section.appendChild(summary);

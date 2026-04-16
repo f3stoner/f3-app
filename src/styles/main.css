@@ -749,6 +749,7 @@ select:focus,
 .session-summary-strip .detail-label {
     font-size: 12px;
     margin-bottom: 2px;
+    white-space: normal;
 }
 
 .session-summary-strip .detail-value {
@@ -1096,4 +1097,18 @@ select:focus,
     cursor: pointer;
     margin: 0;
     max-width: 100%;
+}
+
+.selected-summary-preview {
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.session-summary-strip .selected-summary-list {
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
