@@ -535,12 +535,16 @@ export function renderDashboard() {
 
     notificationToggle.addEventListener("click", async () => {
         const nextValue = !state.notificationSettings?.pushEnabled;
+        alert(`Toggle tapped. nextValue = ${nextValue}`);
         try {
+            alert("Starting reminder enable flow");
             let pushSubscription = state.notificationSettings?.pushSubscription ?? null;
-        
+            
             if (nextValue) {
+                alert("About to subscribe to push");
                 const subscription = await subscribeToPush();
                 pushSubscription = subscription?.toJSON() ?? null;
+                alert("Push subscription created");
             }
             await upsertNotificationSettings(state.currentUserId, {
                 push_enabled: nextValue,
@@ -554,6 +558,7 @@ export function renderDashboard() {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 pushSubscription,
             };
+            alert("Notficaiton settings saved");
             renderApp();
         } catch (error) {
             console.error("Failed to update notification settings:", error);

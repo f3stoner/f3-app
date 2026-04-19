@@ -1,6 +1,8 @@
 export async function subscribeToPush() {
     if (!("serviceWorker" in navigator)) return null;
 
+    
+
     const registration = await navigator.serviceWorker.ready;
 
     const permission = await Notification.requestPermission();
