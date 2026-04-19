@@ -33,9 +33,13 @@ import { renderResetPasswordView } from "./views/resetPasswordView.js";
 window.state = state;
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js")
-        .then(reg => console.log("SW registered", reg))
-        .catch(err => console.error("SW failed", err));
+    const swPath =
+        process.env.NODE_ENV === "production"
+            ? "/f3-app/sw.js"
+            : "/sw.js";
+    navigator.serviceWorker.register(swPath)
+        .then(() => console.log("SW registered"))
+        .catch(err => console.error("SW registration failed:", err));
 }
 
 async function runHistoricPreview() {
