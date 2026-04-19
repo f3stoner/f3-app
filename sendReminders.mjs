@@ -40,12 +40,33 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
   const weekEnd = new Date(today);
   weekEnd.setDate(today.getDate() + 7);
   const weekEndKey = formatDateKey(weekEnd);
+
+  console.log("now:", today.toString());
+
+  console.log("todayKey:", todayKey);
+  
+  console.log("tomorrowKey:", tomorrowKey);
+  
+  console.log("weekEndKey:", weekEndKey);
+  
+  console.log("currentUserMemberId:", currentUserMemberId);
+
   const reminders = [];
   const mySlots = qSlots
     .filter(
       (slot) => slot.q_user_id === currentUserMemberId && slot.date >= todayKey
     )
     .sort((a, b) => a.date.localeCompare(b.date));
+
+    console.log(
+
+        "matching slots before sort/filter check:",
+      
+        qSlots.filter((slot) => slot.q_user_id === currentUserMemberId)
+      
+      );
+      
+      console.log("mySlots:", mySlots);
   mySlots.forEach((slot) => {
     if (slot.date === tomorrowKey && (FORCE_TEST || isAroundHour(11))) {
       const ao = aos.find((a) => a.id === slot.ao_id);
