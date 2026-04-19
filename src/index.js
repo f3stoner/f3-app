@@ -11,7 +11,7 @@ import { renderWorkoutPlanner } from "./views/workoutPlannerView.js";
 import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 import { replacePersistedData } from "./services/appData.js";
-import { loadAllRegions, loadRegionData } from "./services/cloudData.js";
+import { loadAllRegions, loadRegionData, getNotificationSettings } from "./services/cloudData.js";
 import { importPaxMasterCsv } from "./services/importAggieland.js";
 import { importAoLogCsv } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
@@ -31,6 +31,12 @@ import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
 
 window.state = state;
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js")
+        .then(reg => console.log("SW registered", reg))
+        .catch(err => console.error("SW failed", err));
+}
 
 async function runHistoricPreview() {
     const response = await fetch("/Historic_Log.csv");
@@ -211,6 +217,20 @@ async function bootApp() {
         state.profileRegionId = profile.region_id;
         state.regionOverrideId = null;
         state.currentUserMemberId = profile.member_id || null;
+
+        const dbNotificationSettings = await getNotificationSettings(state.currentUserId);
+
+        state.notificationSettings = dbNotificationSettings
+            ? {
+                pushEnabled: dbNotificationSettings.push_enabled,
+                timezone: dbNotificationSettings.timezone,
+                PushSubscription: dbNotificationSettings.push_subscription,
+            }
+            : {
+                pushEnabled: false,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                PushSubscription: null,
+            };
         
         const regions = await loadAllRegions();
         state.availableRegions = regions || [];

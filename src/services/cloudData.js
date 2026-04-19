@@ -561,3 +561,33 @@ export async function grantRegionAccess(userId, regionId) {
 
     if (error && error.code !== "23505") throw error;
 }
+
+export async function getNotificationSettings(userId) {
+    const { data, error } = await supabase
+        .from("notification_settings")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function upsertNotificationSettings(userId, settings) {
+    const { data, error } = await supabase
+        .from("notification_settings")
+        .upsert(
+            {
+                user_id: userId,
+                push_enabled: settings.push_enabled,
+                timezone: settings.timezone,
+                push_subscription: settings.push_subscription ?? null,
+            },
+            { onConflict: "user_id" }
+        )
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}

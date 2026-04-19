@@ -8,6 +8,10 @@ import { signOut } from "../services/auth.js";
 import { checkRegionAccess, loadRegionData } from "../services/cloudData.js";
 import { replacePersistedData } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
+import { generatePreblast } from "../modules/generatePreblast.js";
+import { upsertNotificationSettings } from "../services/cloudData.js";
+import { getUpcomingReminders } from "../utils/upcomingReminders.js";
+import { subscribeToPush } from "../services/pushNotifications.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -118,6 +122,7 @@ export function renderDashboard() {
             state.qSignupOpenOnly = false;
             state.currentUserMemberId = null;
             state.claimingMemberId = null;
+            state.notificationSettings = null;
 
             await bootApp();
         } catch (error) {
@@ -149,6 +154,15 @@ export function renderDashboard() {
             .sort((a, b) => a.date.localeCompare(b.date));
     }
 
+    const tomorrowDate = new Date();
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+
+    const tomorrow = [
+        tomorrowDate.getFullYear(),
+        String(tomorrowDate.getMonth() + 1).padStart(2, "0"),
+        String(tomorrowDate.getDate()).padStart(2, "0"),
+    ].join("-");
+
     const today = getTodayDate();
     const myUpcomingQSlots = getMyUpcomingQSlots();
     const nextQSlot = myUpcomingQSlots[0] || null;
@@ -160,6 +174,7 @@ export function renderDashboard() {
         const matchingWorkout = findMatchingPlannedWorkoutForSlot(nextQSlot);
         const hasPlannedWorkout = Boolean(matchingWorkout);
         const isTodayQ = nextQSlot.date === today;
+        const isTomorrowQ = nextQSlot.date === tomorrow;
 
         nextQSection = document.createElement("div");
         nextQSection.classList.add("section");
@@ -172,6 +187,9 @@ export function renderDashboard() {
         nextQCard.classList.add("member-card");
 
         const nextQCardContent = document.createElement("div");
+
+        const nextQActions = document.createElement("div");
+        nextQActions.classList.add("q-slot-actions");
 
         const nextQTitle = document.createElement("div");
         nextQTitle.classList.add("member-name");
@@ -246,6 +264,33 @@ export function renderDashboard() {
             });
         }
 
+        if (isTomorrowQ) {
+            const preblastButton = document.createElement("button");
+            preblastButton.textContent = "Post Preblast";
+
+            preblastButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+
+                if (matchingWorkout) {
+                    state.selectedPreblastWorkoutId = matchingWorkout.id;
+                    state.draftPreblastText = generatePreblast(matchingWorkout, state.aos);
+                } else {
+                    const fallbackWorkout = {
+                        date: nextQSlot.date,
+                        aoName: ao?.name || "",
+                    };
+
+                    state.selectedPreblastWorkoutId = matchingWorkout?.id || null;
+                    state.draftPreblastText = generatePreblast(fallbackWorkout, state.aos);
+                }
+
+                state.currentView = "preblast";
+                renderApp();
+            });
+
+            nextQActions.appendChild(preblastButton);
+        }
+
         nextQCard.addEventListener("click", () => {
             if (!hasPlannedWorkout) {
                 state.draftPlannedWorkout = {
@@ -275,7 +320,8 @@ export function renderDashboard() {
             }
         });
 
-        nextQCard.append(nextQCardContent, actionButton);
+        nextQActions.prepend(actionButton);
+        nextQCard.append(nextQCardContent, nextQActions);
         nextQSection.append(nextQHeading, nextQCard);
     }
 
@@ -471,24 +517,90 @@ export function renderDashboard() {
 
     userRow.append(userLeft, signOutButton);
 
+    const notificationRow = document.createElement("div");
+    notificationRow.classList.add("section");
+
+    const notificationLabel = document.createElement("div");
+    notificationLabel.classList.add("detail-label");
+    notificationLabel.textContent = "Reminders";
+
+    const notificationToggle = document.createElement("button");
+    notificationToggle.classList.add("secondary-button");
+
+    const isEnabled = state.notificationSettings?.pushEnabled;
+
+    notificationToggle.textContent = isEnabled
+        ? "On"
+        : "Off";
+
+    notificationToggle.addEventListener("click", async () => {
+        const nextValue = !state.notificationSettings?.pushEnabled;
+        try {
+            let pushSubscription = state.notificationSettings?.pushSubscription ?? null;
+        
+            if (nextValue) {
+                const subscription = await subscribeToPush();
+                pushSubscription = subscription?.toJSON() ?? null;
+            }
+            await upsertNotificationSettings(state.currentUserId, {
+                push_enabled: nextValue,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                push_subscription: pushSubscription,
+            });
+        
+            state.notificationSettings = {
+                ...state.notificationSettings,
+                pushEnabled: nextValue,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                pushSubscription,
+            };
+            renderApp();
+        } catch (error) {
+            console.error("Failed to update notification settings:", error);
+            alert("Failed to update reminders.");
+        }
+    });
+
     if(isAdmin){
     dataToolsRow.append(importButton, exportButton, manageAosButton, stalePaxButton);
     }
 
     const nav = createGlobalNav();
+    notificationRow.append(notificationLabel, notificationToggle);
+
+    const testNotificationButton = document.createElement("button");
+    testNotificationButton.textContent = "Test Reminders";
+
+    testNotificationButton.addEventListener("click", () => {
+        const reminders = getUpcomingReminders(state);
+        console.log("Reminders:", reminders);
+
+        if (reminders.length === 0) {
+            alert("No reminders");
+            return;
+        }
+        alert(reminders.map(r => r.message).join("\n\n"));
+
+        reminders.forEach(r => {
+            state.sentNotificationKeys.push(r.key);
+        });
+
+        console.log("sent keys:", state.sentNotificationKeys);
+    });
 
     app.append(
         title, 
         ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
         ...(regionSwitcher ? [regionSwitcher] : []),
         userRow,
+        notificationRow,
         ...(nextQSection ? [nextQSection] : []), 
         quickAccessHeading, 
         quickAccessRow, 
         myUpcomingQsSection);
 
     if (isAdmin) {
-        app.append(dataToolsHeading, dataToolsRow, importInput);
+        app.append(dataToolsHeading, dataToolsRow, importInput, testNotificationButton);
     }
     app.append(recentSessionsSection, nav);
 }

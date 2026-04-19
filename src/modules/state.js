@@ -55,6 +55,8 @@ export const state = {
     draftPreblastMediaFiles: [],
     draftBackblastMediaFiles: [],
     draftBackblastText: "",
+    notificationSettings: null,
+    sentNotificationKeys: savedState?.sentNotificationKeys || [],
 };
 
 state.runHistoricImport = async function () {

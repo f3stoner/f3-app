@@ -113,6 +113,10 @@ export function renderPreblastView() {
                     await navigator.share({ text });
                 }
             } catch (error) {
+                if (error.name === "AbortError") {
+                    return;
+                }
+                
                 console.error("Share failed:", error);
                 alert("Share failed.");
             }
@@ -123,9 +127,17 @@ export function renderPreblastView() {
     doneButton.textContent = "Done";
 
     doneButton.addEventListener("click", () => {
+        const returnToWorkout = Boolean(state.selectedPlannedWorkoutId);
+
         state.draftPreblastMediaFiles = [];
         state.draftPreblastText = "";
-        state.currentView = "plannedWorkoutDetail";
+
+        if (returnToWorkout) {
+            state.currentView = "plannedWorkoutDetail";
+        } else {
+            state.currentView = "dashboard";
+        }
+        state.selectedPlannedWorkoutId = null;
         renderApp();
     });
 

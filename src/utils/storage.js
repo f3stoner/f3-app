@@ -5,7 +5,8 @@ export function saveState(state) {
         regionName: state.regionName,
         members: state.members,
         sessions: state.sessions,
-        plannedWorkouts: state.plannedWorkouts
+        plannedWorkouts: state.plannedWorkouts,
+        sentNotificationKeys: state.sentNotificationKeys,
     });
     localStorage.setItem(STORAGE_KEY, data);
 }
@@ -25,6 +26,10 @@ export function loadState() {
 
         if (!saved.plannedWorkouts) {
             saved.plannedWorkouts = [];
+        }
+
+        if (!saved.sentNotificationKeys) {
+            saved.sentNotificationKeys = [];
         }
         return saved;
     } catch (error) {
