@@ -2,7 +2,7 @@ import "dotenv/config";
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
 
-const FORCE_TEST = true;
+const FORCE_TEST = false;
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
