@@ -147,16 +147,28 @@ async function run() {
   if (qSlotsError) throw qSlotsError;
   if (aosError) throw aosError;
   if (profilesError) throw profilesError;
+
+    console.log("settingsRows:", settingsRows);
+    console.log("profiles:", profiles);
+    console.log("qSlots:", qSlots);
+    console.log("aos:", aos);
+
   for (const settings of settingsRows) {
     const profile = profiles.find((p) => p.id === settings.user_id);
+    console.log("Processing user:", settings.user_id);
+
+console.log("Matched profile:", profile);
     if (!profile?.member_id) continue;
     const reminders = getUpcomingRemindersForUser({
       qSlots,
       aos,
       currentUserMemberId: profile.member_id,
     });
+    console.log("Generated reminders:", reminders);
     for (const reminder of reminders) {
+        console.log("Checking reminder:", reminder.type, reminder.body);
       const sent = await alreadySent(settings.user_id, reminder);
+      console.log("Already sent?", sent);
       if (sent) continue;
       const payload = JSON.stringify({
         title: reminder.title,
