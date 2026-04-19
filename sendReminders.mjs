@@ -8,29 +8,35 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT,
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
+
 function formatDateKey(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
+
 function isSundayNow() {
   return new Date().getDay() === 0;
 }
+
 function isAroundHour(targetHour, windowMinutes = 30) {
   const now = new Date();
   const target = new Date(now);
   target.setHours(targetHour, 0, 0, 0);
   return Math.abs(now - target) <= windowMinutes * 60 * 1000;
 }
+
 function buildNotificationKey({ type, slot }) {
   return `${type}_${slot?.id || "weekly"}_${slot?.date || ""}`;
 }
+
 function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
   const today = new Date();
   const tomorrow = new Date();
@@ -41,16 +47,6 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
   weekEnd.setDate(today.getDate() + 7);
   const weekEndKey = formatDateKey(weekEnd);
 
-  console.log("now:", today.toString());
-
-  console.log("todayKey:", todayKey);
-  
-  console.log("tomorrowKey:", tomorrowKey);
-  
-  console.log("weekEndKey:", weekEndKey);
-  
-  console.log("currentUserMemberId:", currentUserMemberId);
-
   const reminders = [];
   const mySlots = qSlots
     .filter(
@@ -58,15 +54,6 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
     )
     .sort((a, b) => a.date.localeCompare(b.date));
 
-    console.log(
-
-        "matching slots before sort/filter check:",
-      
-        qSlots.filter((slot) => slot.q_user_id === currentUserMemberId)
-      
-      );
-      
-      console.log("mySlots:", mySlots);
   mySlots.forEach((slot) => {
     if (slot.date === tomorrowKey && (FORCE_TEST || isAroundHour(11))) {
       const ao = aos.find((a) => a.id === slot.ao_id);
@@ -79,9 +66,11 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
       });
     }
   });
+
   const weeklySlots = mySlots.filter(
     (slot) => slot.date >= todayKey && slot.date < weekEndKey
   );
+
   if (weeklySlots.length > 0 && (FORCE_TEST || (isSundayNow() && isAroundHour(17)))) {
     const summaryParts = weeklySlots.map((slot) => {
       const ao = aos.find((a) => a.id === slot.ao_id);
@@ -89,6 +78,7 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
       const shortDay = slotDate.toLocaleDateString(undefined, { weekday: "short" });
       return `${shortDay} @ ${ao?.name || "Unknown AO"}`;
     });
+
     const weeklyMessage =
       weeklySlots.length === 1
         ? `You are Qing this week: ${summaryParts[0]}`
@@ -101,8 +91,10 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
       body: weeklyMessage,
     });
   }
+
   return reminders;
 }
+
 async function alreadySent(userId, reminder) {
   if (reminder.type === "day-before" && reminder.slot?.id) {
     const { data, error } = await supabase
@@ -129,6 +121,7 @@ async function alreadySent(userId, reminder) {
   }
   return false;
 }
+
 async function logSent(userId, reminder) {
   const payload = {
     user_id: userId,
@@ -145,6 +138,7 @@ async function logSent(userId, reminder) {
   const { error } = await supabase.from("notification_log").insert(payload);
   if (error) throw error;
 }
+
 async function clearDeadSubscription(userId) {
   const { error } = await supabase
     .from("notification_settings")
@@ -155,7 +149,10 @@ async function clearDeadSubscription(userId) {
     .eq("user_id", userId);
   if (error) throw error;
 }
+
 async function run() {
+  let sentCount = 0;
+
   const [{ data: settingsRows, error: settingsError }, { data: qSlots, error: qSlotsError }, { data: aos, error: aosError }, { data: profiles, error: profilesError }] =
     await Promise.all([
       supabase
@@ -172,22 +169,23 @@ async function run() {
   if (aosError) throw aosError;
   if (profilesError) throw profilesError;
 
-    console.log("settingsRows:", settingsRows);
-    console.log("profiles:", profiles);
-    console.log("qSlots:", qSlots);
-    console.log("aos:", aos);
+  console.log("Reminder job started:", new Date().toISOString());
+  console.log("Eligible notification settings count:", settingsRows.length);
 
   for (const settings of settingsRows) {
     const profile = profiles.find((p) => p.id === settings.user_id);
+    
     console.log("Processing user:", settings.user_id);
 
-console.log("Matched profile:", profile);
+    console.log("Matched profile:", profile);
+    
     if (!profile?.member_id) continue;
+    
     const reminders = getUpcomingRemindersForUser({
-      qSlots,
-      aos,
-      currentUserMemberId: profile.member_id,
-    });
+          qSlots,
+          aos,
+          currentUserMemberId: profile.member_id,
+        });
     console.log("Generated reminders:", reminders);
     for (const reminder of reminders) {
         console.log("Checking reminder:", reminder.type, reminder.body);
@@ -198,12 +196,14 @@ console.log("Matched profile:", profile);
         title: reminder.title,
         body: reminder.body,
       });
+
       try {
         const result = await webpush.sendNotification(
           settings.push_subscription,
           payload
         );
         console.log(`Sent ${reminder.type} to ${settings.user_id}:`, result.statusCode);
+        sentCount++;
         await logSent(settings.user_id, reminder);
       } catch (err) {
         console.error(`Failed ${reminder.type} for ${settings.user_id}:`, err.statusCode || err);
@@ -213,6 +213,7 @@ console.log("Matched profile:", profile);
       }
     }
   }
+  console.log("Reminder job finished. Sent:", sentCount);
 }
 run().catch((err) => {
   console.error("Reminder run failed:", err);
