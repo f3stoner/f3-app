@@ -1,0 +1,1 @@
+self.addEventListener("push",t=>{let e={};try{e=t.data?.json()||{}}catch(i){e={title:"F3 Reminder",body:t.data?.text()||""}}t.waitUntil(self.registration.showNotification(e.title||"F3 Reminder",{body:e.body||""}))});
