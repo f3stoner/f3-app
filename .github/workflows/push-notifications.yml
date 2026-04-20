@@ -3,9 +3,13 @@ name: Push Notifications
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 11 * * 0-5"
+    - cron: "7 11 * * 0-5"
       timezone: "America/Chicago"
-    - cron: "0 17 * * 0"
+    - cron: "22 11 * * 0-5"
+      timezone: "America/Chicago"
+    - cron: "7 17 * * 0"
+      timezone: "America/Chicago"
+    - cron: "22 17 * * 0"
       timezone: "America/Chicago"
 
 concurrency:
