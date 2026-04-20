@@ -26,7 +26,7 @@ function isSundayNow() {
   return new Date().getDay() === 0;
 }
 
-function isAroundHour(targetHour, windowMinutes = 30) {
+function isAroundHour(targetHour, windowMinutes = 60) {
   const now = new Date();
   const target = new Date(now);
   target.setHours(targetHour, 0, 0, 0);
