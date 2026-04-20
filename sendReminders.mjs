@@ -47,6 +47,22 @@ function getUpcomingRemindersForUser({ qSlots, aos, currentUserMemberId }) {
   weekEnd.setDate(today.getDate() + 7);
   const weekEndKey = formatDateKey(weekEnd);
 
+  console.log("---- reminder debug ----");
+
+  console.log("currentUserMemberId:", currentUserMemberId);
+
+  console.log("todayKey:", todayKey);
+
+  console.log("tomorrowKey:", tomorrowKey);
+
+  console.log("weekEndKey:", weekEndKey);
+
+  console.log("isSundayNow:", isSundayNow());
+
+  console.log("isAroundHour(11):", isAroundHour(11));
+
+  console.log("isAroundHour(17):", isAroundHour(17));
+
   const reminders = [];
   const mySlots = qSlots
     .filter(
