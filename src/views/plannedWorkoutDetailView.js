@@ -15,7 +15,12 @@ export function renderPlannedWorkoutDetail() {
         w => w.id === state.selectedPlannedWorkoutId
     );
 
-    const regionIntroTemplate = REGION_INTRO_TEMPLATES[state.currentRegionId] || "";
+    const currentMember = state.members.find(
+        member => member.id === state.currentUserMemberId
+    );
+
+    const introTemplateFn = REGION_INTRO_TEMPLATES[state.currentRegionId];
+    const regionIntroTemplate = introTemplateFn?.(currentMember?.paxName) || "";
     const resolvedIntroduction = workout.introduction || regionIntroTemplate;
 
     const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";

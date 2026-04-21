@@ -26,9 +26,9 @@ export const REGION_AOS = {
 }
 
 export const REGION_INTRO_TEMPLATES = {
-    "96c9eef9-3b6e-4365-86cd-51dbeccf231a": `-1 Minute Warning-
+    "96c9eef9-3b6e-4365-86cd-51dbeccf231a": (paxName = "<Insert PAX Name>") => `-1 Minute Warning-
     
-Good Morning & Welcome to F3! My name is Mario and I’ll be your Q today.
+Good Morning & Welcome to F3! My name is ${paxName} and I’ll be your Q today.
 
 F3 stands for Fitness, Fellowship & Faith.
 
