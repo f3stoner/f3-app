@@ -26,7 +26,30 @@ export const REGION_AOS = {
 }
 
 export const REGION_INTRO_TEMPLATES = {
-    "96c9eef9-3b6e-4365-86cd-51dbeccf231a": `This is where the introduction template will live!`,
+    "96c9eef9-3b6e-4365-86cd-51dbeccf231a": `-1 Minute Warning-
+    
+Good Morning & Welcome to F3! My name is Mario and I’ll be your Q today.
+
+F3 stands for Fitness, Fellowship & Faith.
+
+The Mission of F3 is to plant, grow and serve small workout groups for men for the invigoration of male community leadership. 
+
+F3 has 5 Core Principles for our workouts:
+
+1. Free of Charge
+2. Open to All Men
+3. Held Outdoors, Rain or Shine
+4. Peer Led in a rotating fashion
+5. Always Ends in Circle of Trust
+
+F3 Credo: Leave no man behind but leave no man where you found him. 
+
+Disclaimer: F3 is a free, volunteer, peer-led workout. I am not a professional trainer. I have no knowledge of any injuries or fitness history. It is each man’s responsibility to be safe and modify exercises if you need to, we all do it. Push yourself, but don’t hurt yourself. 
+
+FNGs/Assign Battle Buddies 
+Phones
+CPR
+Count-O-Rama`,
 
     "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a": `Welcome to F3
 
