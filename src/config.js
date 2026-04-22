@@ -51,7 +51,7 @@ Phones
 CPR
 Count-O-Rama`,
 
-    "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a": `Welcome to F3
+    "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a": (paxName = "<Insert PAX Name>") => `Good Morning & Welcome to F3! My name is ${paxName} and I’ll be your Q today.
 
 F3 Mission: The mission of F3 is to plant, grow and serve small workout groups for men for the invigoration of male community leadership.
 

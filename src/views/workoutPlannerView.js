@@ -24,8 +24,20 @@ export function renderWorkoutPlanner() {
     }
 
     const currentMember = state.members.find(member => member.id === state.currentUserMemberId);
+
+    console.log("planner region debug", {
+
+        currentRegionId: state.currentRegionId,
+    
+        introTemplateValue: REGION_INTRO_TEMPLATES[state.currentRegionId],
+    
+    });
+
     const introTemplateFn = REGION_INTRO_TEMPLATES[state.currentRegionId];
-    const regionIntroTemplate = introTemplateFn?.(currentMember?.paxName) || "";
+    const regionIntroTemplate =
+        typeof introTemplateFn === "function"
+            ? introTemplateFn?.(currentMember?.paxName)
+            : "";
 
     if (!draftWorkout.introduction) {
         draftWorkout.introduction = regionIntroTemplate;

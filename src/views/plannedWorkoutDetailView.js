@@ -19,10 +19,6 @@ export function renderPlannedWorkoutDetail() {
         member => member.id === state.currentUserMemberId
     );
 
-    const introTemplateFn = REGION_INTRO_TEMPLATES[state.currentRegionId];
-    const regionIntroTemplate = introTemplateFn?.(currentMember?.paxName) || "";
-    const resolvedIntroduction = workout.introduction || regionIntroTemplate;
-
     const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";
     const isTodayWorkout = workout?.date === getTodayDate();
 
@@ -30,6 +26,21 @@ export function renderPlannedWorkoutDetail() {
         app.textContent = "No Planned Workout Found";
         return;
     }
+
+    console.log("Region intro lookup:", {
+
+        currentRegionId: state.currentRegionId,
+      
+        template: REGION_INTRO_TEMPLATES[state.currentRegionId],
+      
+      });
+
+    const introTemplateFn = REGION_INTRO_TEMPLATES[state.currentRegionId];
+    const regionIntroTemplate = 
+        typeof introTemplateFn === "function"
+            ? introTemplateFn?.(currentMember?.paxName)
+            : "";
+    const resolvedIntroduction = workout.introduction || regionIntroTemplate;
 
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
