@@ -221,6 +221,7 @@ async function bootApp() {
         state.profileRegionId = profile.region_id;
         state.regionOverrideId = null;
         state.currentUserMemberId = profile.member_id || null;
+        state.customTemplates = profile.custom_templates || state.customTemplates;
 
         const dbNotificationSettings = await getNotificationSettings(state.currentUserId);
 

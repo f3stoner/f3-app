@@ -1,5 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
+import { saveState } from "../utils/storage.js";
+import { updateCustomTemplates } from "../services/cloudData.js";
 
 export function renderPreblastView() {
     const app = document.getElementById("app");
@@ -20,12 +22,73 @@ export function renderPreblastView() {
         state.draftPreblastText = event.target.value;
     });
 
+    const templateButtonRow = document.createElement("div");
+    templateButtonRow.classList.add("button-row");
+
+    const saveTemplateButton = document.createElement("button");
+    saveTemplateButton.textContent = "Save Template";
+
+    saveTemplateButton.addEventListener("click", async () => {
+        state.customTemplates = state.customTemplates || {
+            preblast: {
+                activeTemplateId: "default",
+                savedTemplates: [],
+            },
+            backblast: {
+                activeTemplateId: "default",
+                savedTemplates: [],
+            },
+        };
+        const existingTemplate = state.customTemplates.preblast.savedTemplates[0];
+
+        if (existingTemplate) {
+            existingTemplate.content = textInput.value;
+            existingTemplate.name = existingTemplate.name || "My Preblast Template";
+        } else {
+            state.customTemplates.preblast.savedTemplates.push({
+                id: crypto.randomUUID(),
+                name: "My Preblast Template",
+                content: textInput.value,
+            });
+        }
+
+        saveState(state);
+        try {
+            await updateCustomTemplates(state.currentUserId, state.customTemplates);
+
+            saveTemplateButton.textContent = "Template Saved";
+            setTimeout(() => {
+                saveTemplateButton.textContent = "Save Template";
+            }, 1500);
+        } catch (error) {
+            console.error("Template save failed:", error);
+            alert("Template saved locally, but failed to save to your account.");
+        }
+    });
+
+    const useTemplateButton = document.createElement("button");
+    useTemplateButton.textContent = "Use Template";
+
+    useTemplateButton.addEventListener("click", () => {
+        const savedTemplate = state.customTemplates?.preblast?.savedTemplates?.[0];
+
+        if (!savedTemplate) {
+            alert("No saved preblast template yet.");
+            return;
+        }
+
+        textInput.value = savedTemplate.content;
+        state.draftPreblastText = savedTemplate.content;
+    });
+
+    templateButtonRow.append(useTemplateButton, saveTemplateButton);
+
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "Videos may take a few seconds to load and may uploade more slowly in BAND.";
+    mediaHelperText.textContent = "Videos may take a few seconds to load and may upload more slowly in BAND.";
 
     const mediaInput = document.createElement("input");
     mediaInput.classList.add("media-input");
@@ -136,8 +199,9 @@ export function renderPreblastView() {
             state.currentView = "plannedWorkoutDetail";
         } else {
             state.currentView = "dashboard";
+            state.selectedPlannedWorkoutId = null;
         }
-        state.selectedPlannedWorkoutId = null;
+        
         renderApp();
     });
 
@@ -149,6 +213,7 @@ export function renderPreblastView() {
         title,
         subtitle,
         textInput,
+        templateButtonRow,
         mediaSection,
         actionRow,
     );

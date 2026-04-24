@@ -57,6 +57,16 @@ export const state = {
     draftBackblastText: "",
     notificationSettings: null,
     sentNotificationKeys: savedState?.sentNotificationKeys || [],
+    customTemplates: savedState?.customTemplates || {
+        preblast: {
+            activeTemplateId: "default",
+            savedTemplates: [],
+        },
+        backblast: {
+            activeTemplateId: "default",
+            savedTemplates: [],
+        },
+    },
 };
 
 state.runHistoricImport = async function () {

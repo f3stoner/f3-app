@@ -591,3 +591,17 @@ export async function upsertNotificationSettings(userId, settings) {
     if (error) throw error;
     return data;
 }
+
+export async function updateCustomTemplates(userId, customTemplates) {
+    const { data, error } = await supabase
+        .from("profiles")
+        .update({
+            custom_templates: customTemplates,
+        })
+        .eq("id", userId)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}

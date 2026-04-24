@@ -20,6 +20,7 @@ export function persistAppData() {
         sessionHistorySearchTerm: state.sessionHistorySearchTerm,
         rosterSearchTerm: state.rosterSearchTerm,
         showMyPlannedWorkoutsOnly: state.showMyPlannedWorkoutsOnly,
+        customTemplates: state.customTemplates,
     });
 }
 

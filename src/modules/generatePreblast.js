@@ -11,7 +11,7 @@ export function generatePreblast(workout, aos = []) {
 
     const lines = [];
 
-    lines.push(`#Preblast #${normalizeTag(aoName)}`);
+    lines.push(`#preblast #${normalizeTag(aoName)}`);
 
     lines.push("");
 
