@@ -1,4 +1,5 @@
 const STORAGE_KEY = "f3AppState";
+const NAV_STATE_KEY = "theQNavState";
 
 export function saveState(state) {
     const data = JSON.stringify({
@@ -9,6 +10,22 @@ export function saveState(state) {
         sentNotificationKeys: state.sentNotificationKeys,
     });
     localStorage.setItem(STORAGE_KEY, data);
+}
+
+export function saveNavState(state) {
+    localStorage.setItem(NAV_STATE_KEY, JSON.stringify({
+        currentView: state.currentView,
+        selectedPlannedWorkoutId: state.selectedPlannedWorkoutId,
+        editingPlannedWorkoutId: state.editingPlannedWorkoutId,
+        plannedWorkoutLaunchMode: state.plannedWorkoutLaunchMode,
+        selectedSessionId: state.selectedSessionId,
+        editingSessionId: state.editingSessionId,
+        selectedPreblastWorkoutId: state.selectedPreblastWorkoutId,
+    }));
+}
+
+export function loadNavState() {
+    return JSON.parse(localStorage.getItem(NAV_STATE_KEY) || "null");
 }
 
 export function loadState() {

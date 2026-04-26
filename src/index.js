@@ -29,6 +29,7 @@ import { checkRegionAccess } from "./services/cloudData.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
+import { saveNavState } from "./utils/storage.js";
 
 window.state = state;
 window.renderApp = renderApp;
@@ -102,6 +103,8 @@ async function runAggielandAoImports() {
 let lastRenderedView = null;
 
 function renderApp() {
+
+    saveNavState(state);
 
     if (state.currentView !== lastRenderedView) {
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
