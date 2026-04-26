@@ -156,6 +156,11 @@ export function renderPlannedWorkoutDetail() {
             return;
         }
 
+        if (isExecutionMode) {
+            state.returnToViewAfterPlanner = "plannedWorkoutDetail";
+            state.returnToLaunchModeAfterPlanner = "execution";
+        }
+
         state.plannedWorkoutLaunchMode = null;
         state.editingPlannedWorkoutId = workout.id;
         navigateTo("workoutPlanner")

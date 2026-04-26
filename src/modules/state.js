@@ -67,6 +67,8 @@ export const state = {
             savedTemplates: [],
         },
     },
+    returnToViewAfterPlanner: null,
+    returnToLaunchModeAfterPlanner: null,
 };
 
 state.runHistoricImport = async function () {

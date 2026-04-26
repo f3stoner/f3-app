@@ -13,6 +13,20 @@ export function renderWorkoutPlanner() {
     const isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
 
+    function returnAfterPlanner(fallbackView = "dashboard") {
+        const returnView = state.returnToViewAfterPlanner || fallbackView;
+        const returnLaunchMode = state.returnToLaunchModeAfterPlanner;
+
+        state.returnToViewAfterPlanner = null;
+        state.returnToLaunchModeAfterPlanner = null;
+        state.editingPlannedWorkoutId = null;
+        state.draftPlannedWorkout = null;
+        state.plannedWorkoutLaunchMode = returnLaunchMode || null;
+        state.currentView = returnView;
+
+        renderApp();
+    }
+
     if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
@@ -50,9 +64,7 @@ export function renderWorkoutPlanner() {
     backButton.classList.add("secondary-button");
     backButton.textContent = "← Back";
     backButton.addEventListener("click", () => {
-        state.editingPlannedWorkoutId = null;
-        state.draftPlannedWorkout = null;
-        goBack("dashboard");
+        returnAfterPlanner(draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner");
     })
 
     const dateLabel = document.createElement("div");
@@ -233,9 +245,15 @@ export function renderWorkoutPlanner() {
             ? "Workout shared to Workout Library."
             : "Saved to My Planner.";
 
+            alert(successMessage);
+
+            if(state.returnToViewAfterPlanner) {
+                returnAfterPlanner(destinationView);
+                return;
+            }
+
             state.draftPlannedWorkout = null;
             state.currentView = destinationView;
-            alert(successMessage);
             renderApp();
         } catch (error) {
             console.error("Failed to save workout:", error);

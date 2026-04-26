@@ -31,6 +31,7 @@ import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
 
 window.state = state;
+window.renderApp = renderApp;
 
 if ("serviceWorker" in navigator) {
     const swPath =
