@@ -5,11 +5,26 @@ import { insertSessionsBatch } from "../services/cloudData.js";
 const savedState = loadState();
 const savedNav = loadNavState();
 
+const RESTORABLE_VIEWS = new Set([
+    "dashboard",
+    "myPlanner",
+    "plannedWorkoutDetail",
+    "plannedWorkoutList",
+    "workoutPlanner",
+    "sessionHistory",
+    "roster",
+    "preblast",
+]);
+
+const restoredView = RESTORABLE_VIEWS.has(savedNav?.currentView)
+    ? savedNav.currentView
+    : "dashboard";
+
 export const state = {
     regionName: savedState?.regionName || "F3 Old 300",
     members: savedState?.members || [...seedMembers],
     sessions: savedState?.sessions || [],
-    currentView: savedNav?.currentView || "dashboard",
+    currentView: restoredView,
     viewHistory: [],
     selectedSessionId: null,
     editingSessionId: null,

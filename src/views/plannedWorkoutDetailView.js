@@ -6,6 +6,7 @@ import { deletePlannedWorkout } from "../services/appData.js";
 import { REGION_INTRO_TEMPLATES } from "../config.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
+import { saveNavState } from "../utils/storage.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -23,7 +24,10 @@ export function renderPlannedWorkoutDetail() {
     const isTodayWorkout = workout?.date === getTodayDate();
 
     if (!workout) {
-        app.textContent = "No Planned Workout Found";
+        console.warn("Missing workout. Redirecting to safe view.");
+        state.currentView = "plannedWorkoutList";
+        saveNavState(state);
+        renderApp();
         return;
     }
 

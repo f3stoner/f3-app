@@ -154,6 +154,11 @@ function renderApp() {
     } else if (state.currentView === "resetPassword"){
         renderResetPasswordView();
     } else {
+        console.warn("Unknown view. Resetting to dashboard:", state.currentView);
+
+        state.currentView = "dashboard";
+        saveNavState(state);
+        
         renderDashboard ();
     }
 }
