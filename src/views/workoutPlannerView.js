@@ -13,6 +13,14 @@ export function renderWorkoutPlanner() {
     const isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
 
+    const SAVED_PLANNED_WORKOUT_DRAFT_KEY = "draftPlannedWorkout";
+
+    const savedDraft = localStorage.getItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
+
+    if (!state.draftPlannedWorkout && savedDraft) {
+        state.draftPlannedWorkout = JSON.parse(savedDraft);
+    }
+
     function returnAfterPlanner(fallbackView = "dashboard") {
         const returnView = state.returnToViewAfterPlanner || fallbackView;
         const returnLaunchMode = state.returnToLaunchModeAfterPlanner;
@@ -23,7 +31,7 @@ export function renderWorkoutPlanner() {
         state.draftPlannedWorkout = null;
         state.plannedWorkoutLaunchMode = returnLaunchMode || null;
         state.currentView = returnView;
-
+        localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
         renderApp();
     }
 
@@ -35,6 +43,15 @@ export function renderWorkoutPlanner() {
     } else {
         draftWorkout = createPlannedWorkout(getTodayDate(), "");
         draftWorkout.createdByUserId = state.currentUserId;
+    }
+
+    function persistDraft() {
+        state.draftPlannedWorkout = { ...draftWorkout };
+
+        localStorage.setItem(
+            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+            JSON.stringify(state.draftPlannedWorkout)
+        );
     }
 
     const currentMember = state.members.find(member => member.id === state.currentUserMemberId);
@@ -89,6 +106,7 @@ export function renderWorkoutPlanner() {
 
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;
+        persistDraft();
     }
 
     dateInput.addEventListener("change", updateDraftDate);
@@ -128,6 +146,7 @@ export function renderWorkoutPlanner() {
     
     aoSelect.addEventListener("change", (event) => {
         draftWorkout.aoName = event.target.value;
+        persistDraft();
     });
 
     const workoutTitleLabel = document.createElement("div");
@@ -140,6 +159,7 @@ export function renderWorkoutPlanner() {
 
     workoutTitleInput.addEventListener("input", (event) => {
         draftWorkout.title = event.target.value;
+        persistDraft();
     });
 
     const introductionLabel = document.createElement("div");
@@ -152,6 +172,7 @@ export function renderWorkoutPlanner() {
 
     introductionInput.addEventListener("input", (event) => {
         draftWorkout.introduction = event.target.value;
+        persistDraft();
     });
 
     const warmoramaLabel = document.createElement("div");
@@ -164,6 +185,7 @@ export function renderWorkoutPlanner() {
 
     warmoramaInput.addEventListener("input", (event) => {
         draftWorkout.warmorama = event.target.value;
+        persistDraft();
     });
 
     const thangsLabel = document.createElement("div");
@@ -176,6 +198,7 @@ export function renderWorkoutPlanner() {
 
     thangsInput.addEventListener("input", (event) => {
         draftWorkout.thangs = event.target.value;
+        persistDraft();
     });
 
     const finisherLabel = document.createElement("div");
@@ -188,6 +211,7 @@ export function renderWorkoutPlanner() {
 
     finisherInput.addEventListener("input", (event) => {
         draftWorkout.finisher = event.target.value;
+        persistDraft();
     });
 
     const notesLabel = document.createElement("div");
@@ -200,6 +224,7 @@ export function renderWorkoutPlanner() {
 
     notesInput.addEventListener("input", (event) => {
         draftWorkout.notes = event.target.value;
+        persistDraft();
     });
 
     const shareLabel = document.createElement("div");
@@ -221,6 +246,7 @@ export function renderWorkoutPlanner() {
 
     shareSelect.addEventListener("change", (event) => {
         draftWorkout.isShared = event.target.value === "shared";
+        persistDraft();
     });
     
     const saveButton = document.createElement("button");
@@ -254,7 +280,9 @@ export function renderWorkoutPlanner() {
 
             state.draftPlannedWorkout = null;
             state.currentView = destinationView;
+            localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
             renderApp();
+
         } catch (error) {
             console.error("Failed to save workout:", error);
             alert("Failed to save workout.")
