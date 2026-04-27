@@ -197,14 +197,29 @@ export function renderPlannedWorkoutDetail() {
         navigateTo("session");
     });
 
+    function getNextClaimedQSlot() {
+        const today = getTodayDate();
+
+        return [...state.qSlots]
+            .filter(slot =>
+                slot.qUserId === state.currentUserMemberId &&
+                slot.date >= today
+            )
+            .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+    }       
+
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy to New Plan";
 
     copyButton.addEventListener("click", () => {
+        const nextQSlot = getNextClaimedQSlot();
+        const nextAo = state.aos.find(ao => ao.id === nextQSlot?.aoId);
+
         const newWorkout = {
             ...workout,
             id: crypto.randomUUID(),
-            date: "",
+            date: nextQSlot?.date || getTodayDate(),
+            aoName: nextAo?.name || workout.aoName || "",
             createdAt: Date.now(),
             lastModifiedAt: null,
             sourceWorkoutId: workout.id,
