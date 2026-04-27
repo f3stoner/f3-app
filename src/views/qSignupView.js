@@ -156,7 +156,7 @@ export function renderQSignupView() {
     }
 
     async function deleteQSlot(slot) {
-        const confirmed = confirm("Delete this Q slot? This cannot be undone.");
+        const confirmed = confirm("Remove this Q slot? It may be recreated if slots are regenerated.");
         if (!confirmed) return;
 
         try {
@@ -325,7 +325,7 @@ export function renderQSignupView() {
 
                 const deleteButton = document.createElement("button");
                 deleteButton.classList.add("danger-button");
-                deleteButton.textContent = "Delete";
+                deleteButton.textContent = "Remove";
 
                 deleteButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
