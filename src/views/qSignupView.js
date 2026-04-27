@@ -75,10 +75,13 @@ export function renderQSignupView() {
     openOnlyWrap.append(openOnlyInput, document.createTextNode(" Open only"));
 
     let generateButton = null;
+    let manageAosButton = null;
 
     if (state.currentUserRole === "admin") {
         generateButton = document.createElement("button");
         generateButton.textContent = "Generate Next 12 Weeks";
+        manageAosButton = document.createElement("button");
+        manageAosButton.textContent = "Manage AOs";
 
         generateButton.addEventListener("click", async () => {
             try {
@@ -90,7 +93,17 @@ export function renderQSignupView() {
                 alert("Failed to generate Q slots.");
             }
         });
+
+        manageAosButton.addEventListener("click", () => {
+            navigateTo("aoManagement");
+        });
     }
+
+    const adminRow = document.createElement("div");
+    adminRow.classList.add("button-row");
+
+    if (generateButton) adminRow.appendChild(generateButton);
+    if (manageAosButton) adminRow.appendChild(manageAosButton);
 
     const listContainer = document.createElement("div");
 
@@ -290,7 +303,7 @@ export function renderQSignupView() {
     app.append(
         title,
         subtitle,
-        ...(generateButton ? [generateButton] : []),
+        ...(adminRow.children.length ? [adminRow] : []),
         aoFilterLabel,
         controlsRow,
         listContainer,

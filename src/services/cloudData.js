@@ -529,6 +529,18 @@ export async function deleteUpcomingQSlotsForAo(regionId, aoId, today) {
     if (error) throw error;
 }
 
+export async function deleteQSlotsByIds(regionId, qSlotIds) {
+    if (!qSlotIds.length) return;
+
+    const { error } = await supabase
+        .from("q_slots")
+        .delete()
+        .eq("region_id", regionId)
+        .in("id", qSlotIds);
+
+    if (error) throw error;
+}
+
 export async function loadAllRegions() {
     const { data, error } = await supabase
         .from("regions")

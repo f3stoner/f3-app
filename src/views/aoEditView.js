@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { insertAo, updateAoInCloud, deleteUpcomingQSlotsForAo } from "../services/cloudData.js";
+import { insertAo, updateAoInCloud, deleteUpcomingQSlotsForAo, deleteQSlotsByIds } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { goBack } from "../utils/navigation.js";
 import { getTodayDate } from "../utils/date.js";
@@ -17,6 +17,21 @@ const DAY_OPTIONS = [
 ];
 
 export function renderAoEditView() {
+
+    function sameDaysOfWeek(a = [], b = []) {
+        if (a.length !== b.length) return false;
+
+        const sortedA = [...a].sort((x, y) => x - y);
+        const sortedB = [...b].sort((x, y) => x - y);
+
+        return sortedA.every((day, index) => day === sortedB[index]);
+    }
+
+    function getDayOfWeekFromDateKey(dateKey) {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        return new Date(year, month - 1, day).getDay();
+    }
+
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -153,6 +168,9 @@ export function renderAoEditView() {
 
         try {
             if (isEditing) {
+                const wasActive = existingAo?.isActive === true;
+                const oldDays = existingAo?.daysOfWeek || [];
+
                 const savedAo = await updateAoInCloud(activeRegionId, draftAo);
                 const index = state.aos.findIndex(ao => ao.id === savedAo.id);
 
@@ -160,15 +178,34 @@ export function renderAoEditView() {
                     state.aos[index] = savedAo;
                 }
 
-                if (existingAo?.isActive && !savedAo.isActive) {
-                    const today = getTodayDate();
+                const today = getTodayDate();
 
+                if (wasActive && !savedAo.isActive) {
                     await deleteUpcomingQSlotsForAo(activeRegionId, savedAo.id, today);
 
                     state.qSlots = state.qSlots.filter(slot =>
                         !(slot.aoId === savedAo.id && slot.date >= today)
                     );
+                } else if (!wasActive && savedAo.isActive) {
+                    await generateQSlotsForCurrentRegion();
+                } else if (wasActive && savedAo.isActive && !sameDaysOfWeek(oldDays, savedAo.daysOfWeek || [])) {
+                    const validDays = savedAo.daysOfWeek || [];
+
+                    const slotsToDelete = state.qSlots.filter(slot => 
+                        slot.aoId === savedAo.id &&
+                        slot.date >= today &&
+                        !validDays.includes(getDayOfWeekFromDateKey(slot.date))
+                    );
+
+                    await deleteQSlotsByIds(activeRegionId, slotsToDelete.map(slot => slot.id));
+
+                    state.qSlots = state.qSlots.filter(slot =>
+                        !slotsToDelete.some(deletedSlot => deletedSlot.id === slot.id)
+                    );
+
+                    await generateQSlotsForCurrentRegion();
                 }
+                
             } else {
                 const savedAo = await insertAo(activeRegionId, draftAo);
                 state.aos.push(savedAo);
