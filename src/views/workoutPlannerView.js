@@ -54,6 +54,12 @@ export function renderWorkoutPlanner() {
         );
     }
 
+    function closeWorkoutBrowseModal() {
+        state.workoutBrowseModalOpen = false;
+        state.selectedWorkoutPreviewId = null;
+        renderApp();
+    }
+
     const currentMember = state.members.find(member => member.id === state.currentUserMemberId);
 
     console.log("planner region debug", {
@@ -90,8 +96,10 @@ export function renderWorkoutPlanner() {
 
     browseWorkoutsButton.addEventListener("click", () => {
         persistDraft();
-        state.showMyPlannedWorkoutsOnly = true;
-        navigateTo("myPlanner");
+        state.workoutBrowseModalOpen = true;
+        state.workoutBrowseMode = "list";
+        state.workoutBrowseScrollTop = 0;
+        renderApp();
     });
 
     const divider = document.createElement("div");
@@ -361,4 +369,220 @@ export function renderWorkoutPlanner() {
         shareSelect,
         primaryActionsRow,
     );
+
+    if (state.workoutBrowseModalOpen) {
+        app.appendChild(createWorkoutBrowseModal(closeWorkoutBrowseModal));
+    }
+}
+
+function createWorkoutBrowseModal(onClose) {
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay");
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+
+    modal.classList.add("workout-browse-modal")
+
+    if (state.workoutBrowseMode === "preview") {
+        modal.classList.add("is-preview-mode");
+    } else {
+        modal.classList.add("is-list-mode");
+    }
+
+    const title = document.createElement("h2");
+    title.textContent = "Browse & Copy Workouts";
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.textContent = "Close";
+    closeButton.classList.add("secondary-button");
+
+    const workoutList = document.createElement("div");
+    workoutList.classList.add("workout-browse-list");
+
+    const workouts = (state.plannedWorkouts || [])
+        .filter(workout => workout.createdByUserId === state.currentUserId)
+        .sort((a, b) => {
+            const aTime = a.lastModifiedAt || 0;
+            const bTime = b.lastModifiedAt || 0;
+            return bTime - aTime;
+        });
+
+    const selectedWorkout = workouts.find(
+        workout => workout.id === state.selectedWorkoutPreviewId
+    );
+
+    if (workouts.length === 0) {
+        const emptyMessage = document.createElement("div");
+        emptyMessage.textContent = "No saved workouts yet.";
+        workoutList.appendChild(emptyMessage);
+    } else {
+        workouts.forEach(workout => {
+            const workoutCard = document.createElement("div");
+            workoutCard.classList.add("workout-browse-card");
+            workoutCard.setAttribute("role", "button");
+            workoutCard.tabIndex = 0;
+
+            const workoutTitle = document.createElement("div");
+            workoutTitle.textContent = workout.title || "Untitled Workout";
+            workoutTitle.classList.add("workout-browse-title");
+
+            const workoutMeta = document.createElement("div");
+            workoutMeta.textContent = `${formatDate(workout.date)} • ${workout.aoName || "No AO"}`;
+            workoutMeta.classList.add("workout-browse-meta");
+
+            const copyButton = document.createElement("button");
+            copyButton.type = "button";
+            copyButton.textContent = "Copy to Planner";
+            copyButton.classList.add("secondary-button");
+
+            copyButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+
+                const copiedWorkout = { ...workout };
+
+                copiedWorkout.id = crypto.randomUUID();
+
+                copiedWorkout.isShared = false;
+                copiedWorkout.createdByUserId = state.currentUserId;
+                copiedWorkout.lastModifiedAt = Date.now();
+
+                state.draftPlannedWorkout = copiedWorkout;
+
+                localStorage.setItem(
+                    "draftPlannedWorkout",
+                    JSON.stringify(copiedWorkout)
+                );
+
+                state.workoutBrowseModalOpen = false;
+                state.selectedWorkoutPreviewId = null;
+                state.workoutBrowseMode = "list";
+                state.editingPlannedWorkoutId = null;
+                renderApp();
+            })
+
+            const cardActions = document.createElement("div");
+            cardActions.classList.add("workout-browse-card-actions");
+
+            cardActions.appendChild(copyButton);
+
+            workoutCard.addEventListener("click", () => {
+                state.workoutBrowseScrollTop = workoutList.scrollTop;
+                state.selectedWorkoutPreviewId = workout.id;
+                state.workoutBrowseMode = "preview";
+                renderApp();
+            });
+
+            if (workout.id === state.selectedWorkoutPreviewId) {
+                workoutCard.classList.add("selected");
+            }
+
+            workoutCard.append(workoutTitle, workoutMeta, cardActions);
+            workoutList.appendChild(workoutCard);
+        });
+    }
+
+    setTimeout(() => {
+        workoutList.scrollTop = state.workoutBrowseScrollTop || 0;
+    }, 0);
+
+    const preview = document.createElement("div");
+    preview.classList.add("workout-preview");
+
+    if (selectedWorkout) {
+        const backToListButton = document.createElement("button");
+        backToListButton.type = "button";
+        backToListButton.textContent = "← Back to Workouts";
+        backToListButton.classList.add("secondary-button");
+
+        backToListButton.addEventListener("click", () => {
+            state.workoutBrowseMode = "list";
+            renderApp();
+        });
+
+        const previewTitle = document.createElement("h3");
+        previewTitle.textContent = selectedWorkout.title || "Untitled Workout";
+
+        const warmLabel = document.createElement("div");
+        warmLabel.textContent = "Warm-O-Rama";
+        warmLabel.classList.add("detail-label");
+
+        const previewWarmorama = document.createElement("pre");
+        previewWarmorama.textContent = selectedWorkout.warmorama || "No Warm-O-Rama";
+       
+        const thangLabel = document.createElement("div");
+        thangLabel.textContent = "Thangs";
+        thangLabel.classList.add("detail-label");
+        
+        const previewThangs = document.createElement("pre");
+        previewThangs.textContent = selectedWorkout.thangs || "No Thangs";
+
+        const finisherLabel = document.createElement("div");
+        finisherLabel.textContent = "Mary/Finisher";
+        finisherLabel.classList.add("detail-label");
+
+        const previewFinisher = document.createElement("pre");
+        previewFinisher.textContent = selectedWorkout.finisher || "No Mary/Finisher";
+
+        const previewCopyButton = document.createElement("button");
+        previewCopyButton.textContent = "Copy to Planner";
+        
+        previewCopyButton.addEventListener("click", () => {
+            const copiedWorkout = { ...selectedWorkout };
+
+            copiedWorkout.id = crypto.randomUUID();
+            copiedWorkout.isShared = false;
+            copiedWorkout.createdByUserId = state.currentUserId;
+            copiedWorkout.lastModifiedAt = Date.now();
+
+            state.draftPlannedWorkout = copiedWorkout;
+
+            localStorage.setItem(
+                "draftPlannedWorkout",
+                JSON.stringify(copiedWorkout)
+            );
+
+            state.workoutBrowseModalOpen = false;
+            state.selectedWorkoutPreviewId = null;
+            state.workoutBrowseMode = "list";
+            state.editingPlannedWorkoutId = null;
+
+            renderApp();
+        });
+
+        preview.append(
+            backToListButton,
+            previewTitle,
+            previewCopyButton,
+            warmLabel,
+            previewWarmorama,
+            thangLabel,
+            previewThangs,
+            finisherLabel,
+            previewFinisher
+        );
+    }
+
+    if (!selectedWorkout) {
+        preview.style.display = "none";
+    }
+
+    closeButton.addEventListener("click", onClose);
+
+    overlay.addEventListener("click", onClose);
+
+    modal.addEventListener("click", (event) => {
+        event.stopPropagation();
+    });
+
+    const modalBody = document.createElement("div");
+    modalBody.classList.add("workout-browse-modal-body");
+
+    modalBody.append(workoutList, preview);
+
+    modal.append(title, closeButton, modalBody);
+    overlay.appendChild(modal);
+
+    return overlay;
 }

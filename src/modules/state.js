@@ -86,6 +86,10 @@ export const state = {
     },
     returnToViewAfterPlanner: null,
     returnToLaunchModeAfterPlanner: null,
+    workoutBrowseModalOpen: false,
+    selectedWorkoutPreviewId: null,
+    workoutBrowseMode: "list",
+    workoutBrowseScrollTop: 0,
 };
 
 if (savedNav) {
