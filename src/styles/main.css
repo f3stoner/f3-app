@@ -1187,3 +1187,41 @@ select:focus,
 .q-slot-card .q-slot-actions {
     flex-shrink: 0;
 }
+
+.browse-workout-button {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    margin: 12px 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+}
+
+.browse-workout-button:active {
+    transform: scale(0.98);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--border);
+}
+
+.divider span {
+    margin: 0 8px;
+}

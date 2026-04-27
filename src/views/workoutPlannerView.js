@@ -4,7 +4,7 @@ import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
-import { goBack } from "../utils/navigation.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -83,6 +83,29 @@ export function renderWorkoutPlanner() {
     backButton.addEventListener("click", () => {
         returnAfterPlanner(draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner");
     })
+
+    const browseWorkoutsButton = document.createElement("button");
+    browseWorkoutsButton.textContent = "Browse & Copy Workouts";
+    browseWorkoutsButton.classList.add("browse-workout-button");
+
+    browseWorkoutsButton.addEventListener("click", () => {
+        persistDraft();
+        state.showMyPlannedWorkoutsOnly = true;
+        navigateTo("myPlanner");
+    });
+
+    const divider = document.createElement("div");
+    divider.classList.add("divider");
+
+    const text = document.createElement("span");
+    text.textContent = "OR";
+
+    divider.appendChild(text);
+
+    const browseRow = document.createElement("div");
+    browseRow.classList.add("button-row");
+
+    browseRow.append(browseWorkoutsButton);
 
     const dateLabel = document.createElement("div");
     dateLabel.textContent = isEditing ? "Edit Date" : "Date";
@@ -302,6 +325,8 @@ export function renderWorkoutPlanner() {
 
     app.append(
         header,
+        browseRow,
+        divider,
         dateLabel,
         dateInput,
         aoLabel,
