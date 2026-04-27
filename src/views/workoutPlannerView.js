@@ -114,16 +114,18 @@ export function renderWorkoutPlanner() {
 
     const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
 
-    const inferredAoOptions = [...new Set([
-        ...state.members.map(m => m.homeAo).filter(Boolean),
+    const inferredAoOptions = [
+        ...(state.aos || []).map(ao => ao.name).filter(Boolean),
         ...state.sessions.map(s => s.aoName).filter(Boolean),
         ...state.plannedWorkouts.map(w => w.aoName).filter(Boolean),
-    ])].sort();
+    ];
 
-    const aoOptions = (configuredAoOptions.length > 0
-        ? configuredAoOptions
-        : inferredAoOptions
-    ).filter(ao => ao && ao !== "DR");
+    const aoOptions = [...new Set([
+        ...configuredAoOptions,
+        ...inferredAoOptions,
+    ])]
+        .filter(ao => ao && ao !== "DR")
+        .sort();
     
     const aoLabel = document.createElement("div");
     aoLabel.textContent = "AO";
