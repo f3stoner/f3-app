@@ -518,6 +518,17 @@ export async function deleteQSlotFromCloud(regionId, qSlotId) {
     if (error) throw error;
 }
 
+export async function deleteUpcomingQSlotsForAo(regionId, aoId, today) {
+    const { error } = await supabase
+        .from("q_slots")
+        .delete()
+        .eq("region_id", regionId)
+        .eq("ao_id", aoId)
+        .gte("date", today);
+
+    if (error) throw error;
+}
+
 export async function loadAllRegions() {
     const { data, error } = await supabase
         .from("regions")
@@ -605,3 +616,4 @@ export async function updateCustomTemplates(userId, customTemplates) {
     if (error) throw error;
     return data;
 }
+
