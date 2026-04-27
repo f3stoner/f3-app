@@ -1143,3 +1143,47 @@ select:focus,
     color: var(--text);
     font-weight: 700;
 }
+
+.q-slot-admin-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.q-slot-admin-actions button {
+    width: auto;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.q-slot-admin-actions button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.q-slot-card {
+    display: block;
+}
+
+.q-slot-card > .q-slot-actions {
+    margin-top: 0.75rem;
+}
+
+.q-slot-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.q-slot-main-row > div:first-child {
+    min-width: 0;
+    flex: 1;
+}
+
+.q-slot-card .q-slot-actions {
+    flex-shrink: 0;
+}

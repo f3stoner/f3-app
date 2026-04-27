@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateQSlotInCloud } from "../services/cloudData.js";
+import { updateQSlotInCloud, deleteQSlotFromCloud } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 
@@ -155,6 +155,27 @@ export function renderQSignupView() {
         }
     }
 
+    async function deleteQSlot(slot) {
+        const confirmed = confirm("Delete this Q slot? This cannot be undone.");
+        if (!confirmed) return;
+
+        try {
+            const activeRegionId = state.currentRegionId;
+            if (!activeRegionId) {
+                throw new Error("No active region id");
+            }
+
+            await deleteQSlotFromCloud(activeRegionId, slot.id);
+
+            state.qSlots = state.qSlots.filter(q => q.id !== slot.id);
+
+            renderApp();
+        } catch (error) {
+            console.error("Failed to delete Q slot:", error);
+            alert("Failed to delete Q slot.");
+        }
+    }
+
     function findMatchingPlannedWorkout(slot, ao) {
         return state.plannedWorkouts.find(workout => 
             workout.date === slot.date &&
@@ -197,7 +218,7 @@ export function renderQSignupView() {
     } else {
         sortedSlots.forEach(slot => {
             const card = document.createElement("div");
-            card.classList.add("member-card");
+            card.classList.add("member-card", "q-slot-card");
 
             const ao = state.aos.find(a => a.id === slot.aoId);
             const isMine = slot.qUserId === state.currentUserMemberId;
@@ -286,9 +307,46 @@ export function renderQSignupView() {
                 actionWrap.append(workoutButton, unclaimButton);
             }
 
+            let adminActions = null;
+
+            if (state.currentUserRole === "admin") {
+                adminActions = document.createElement("div");
+                adminActions.classList.add("q-slot-admin-actions");
+
+                const clearButton = document.createElement("button");
+                clearButton.textContent = "Clear Q";
+
+                clearButton.disabled = !slot.qUserId;
+
+                clearButton.addEventListener("click", async (event) => {
+                    event.stopPropagation();
+                    await unclaimQSlot(slot);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.classList.add("danger-button");
+                deleteButton.textContent = "Delete";
+
+                deleteButton.addEventListener("click", async (event) => {
+                    event.stopPropagation();
+                    await deleteQSlot(slot);
+                });
+
+                adminActions.append(clearButton, deleteButton);
+            }
+
+            const mainRow = document.createElement("div");
+            mainRow.classList.add("q-slot-main-row");
+
             const cardContent = document.createElement("div");
             cardContent.append(topLine, titleLine, previewLine);
-            card.append(cardContent, actionWrap);
+            
+            mainRow.append(cardContent, actionWrap);
+            card.appendChild(mainRow);
+
+            if (state.currentUserRole === "admin") {
+                card.append(adminActions);
+            }
 
             listContainer.appendChild(card);
         });
