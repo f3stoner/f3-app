@@ -14,6 +14,7 @@ const RESTORABLE_VIEWS = new Set([
     "sessionHistory",
     "roster",
     "preblast",
+    "qSignup",
 ]);
 
 const restoredView = RESTORABLE_VIEWS.has(savedNav?.currentView)

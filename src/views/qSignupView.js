@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateQSlotInCloud, deleteQSlotFromCloud } from "../services/cloudData.js";
+import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 
@@ -76,6 +76,7 @@ export function renderQSignupView() {
 
     let generateButton = null;
     let manageAosButton = null;
+    let addSlotButton = null;
 
     if (state.currentUserRole === "admin") {
         generateButton = document.createElement("button");
@@ -97,6 +98,13 @@ export function renderQSignupView() {
         manageAosButton.addEventListener("click", () => {
             navigateTo("aoManagement");
         });
+
+        addSlotButton = document.createElement("button");
+        addSlotButton.textContent = "Add One-Off Slot";
+
+        addSlotButton.addEventListener("click", () => {
+            openAddSlotModal();
+        });
     }
 
     const adminRow = document.createElement("div");
@@ -104,8 +112,203 @@ export function renderQSignupView() {
 
     if (generateButton) adminRow.appendChild(generateButton);
     if (manageAosButton) adminRow.appendChild(manageAosButton);
+    if (addSlotButton) adminRow.appendChild(addSlotButton);
 
     const listContainer = document.createElement("div");
+
+    function openAddSlotModal() {
+        const overlay = document.createElement("div");
+        overlay.classList.add("modal-overlay");
+
+        const modal = document.createElement("div");
+        modal.classList.add("modal");
+
+        const heading = document.createElement("h2");
+        heading.textContent = "Add One-Off Slot";
+
+        const aoLabel = document.createElement("div");
+        aoLabel.classList.add("detail-label");
+        aoLabel.textContent = "AO";
+
+        const aoSelect = document.createElement("select");
+
+        const activeAos = [...state.aos]
+            .filter(ao => ao.isActive)
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        activeAos.forEach(ao => {
+            const option = document.createElement("option");
+            option.value = ao.id;
+            option.textContent = ao.name;
+            aoSelect.appendChild(option);
+        });
+
+        const dateLabel = document.createElement("div");
+        dateLabel.classList.add("detail-label");
+        dateLabel.textContent = "Date";
+
+        const dateInput = document.createElement("input");
+        dateInput.type = "date";
+        dateInput.value = getTodayDate();
+
+        const qLabel = document.createElement("div");
+        qLabel.classList.add("detail-label");
+        qLabel.textContent = "Q";
+
+        const qSelect = document.createElement("select");
+
+        const openOption = document.createElement("option");
+        openOption.value = "";
+        openOption.textContent = "Open";
+        qSelect.appendChild(openOption);
+
+        const activeMembers = [...state.members]
+            .filter(member => member.status !== "inactive")
+            .sort((a, b) => a.paxName.localeCompare(b.paxName));
+
+        activeMembers.forEach(member => {
+            const option = document.createElement("option");
+            option.value = member.id;
+            option.textContent = member.paxName;
+            qSelect.appendChild(option);
+        });
+
+        const buttonRow = document.createElement("div");
+        buttonRow.classList.add("button-row");
+
+        const cancelButton = document.createElement("button");
+        cancelButton.classList.add("secondary-button");
+        cancelButton.textContent = "Cancel";
+
+        cancelButton.addEventListener("click", () => {
+            overlay.remove();
+        });
+
+        const createButton = document.createElement("button");
+        createButton.textContent = "Create Slot";
+
+        createButton.addEventListener("click", async () => {
+            const activeRegionId = state.currentRegionId;
+
+            if (!activeRegionId) {
+                alert("No active region");
+                return;
+            }
+
+            if (!aoSelect.value) {
+                alert("Please select an AO.");
+                return;
+            }
+
+            if (!dateInput.value) {
+                alert("Please select a date.");
+                return;
+            }
+
+            const newSlot = {
+                id: crypto.randomUUID(),
+                aoId: aoSelect.value,
+                date: dateInput.value,
+                qUserId: qSelect.value || null,
+                createdAt: new Date().toISOString(),
+            };
+
+            try {
+                const saved = await insertQSlot(activeRegionId, newSlot);
+                state.qSlots.push(saved);
+
+                overlay.remove();
+                renderApp();
+            } catch (error) {
+                console.error("Failed to create one-off Q slot:", error);
+                alert("Failed to create Q slot.");
+            }
+        });
+
+        buttonRow.append(cancelButton, createButton);
+
+        modal.append(
+            heading,
+            aoLabel,
+            aoSelect,
+            dateLabel,
+            dateInput,
+            qLabel,
+            qSelect,
+            buttonRow
+        );
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    function openAssignQModal(slot) {
+        const overlay = document.createElement("div");
+        overlay.classList.add("modal-overlay");
+
+        const modal = document.createElement("div");
+        modal.classList.add("modal");
+
+        const heading = document.createElement("h2");
+        heading.textContent = "Assign Q";
+
+        const qLabel = document.createElement("div");
+        qLabel.classList.add("detail-label");
+        qLabel.textContent = "Q";
+
+        const qSelect = document.createElement("select");
+
+        const activeMembers = [...state.members]
+            .filter(member => member.status !== "inactive")
+            .sort((a, b) => a.paxName.localeCompare(b.paxName));
+
+        activeMembers.forEach(member => {
+            const option = document.createElement("option");
+            option.value = member.id;
+            option.textContent = member.paxName;
+            qSelect.appendChild(option);
+        });
+
+        if (slot.qUserId) {
+            qSelect.value = slot.qUserId;
+        }
+
+        const buttonRow = document.createElement("div");
+        buttonRow.classList.add("button-row");
+
+        const cancelButton = document.createElement("button");
+        cancelButton.classList.add("secondary-button");
+        cancelButton.textContent = "Cancel";
+
+        cancelButton.addEventListener("click", ()=> {
+            overlay.remove();
+        });
+
+        const assignButton = document.createElement("button");
+        assignButton.textContent = "Assign Q";
+
+        assignButton.addEventListener("click", async () => {
+            if (!qSelect.value) {
+                alert("Please select a Q.");
+                return;
+            }
+
+            await assignQSlot(slot, qSelect.value);
+            overlay.remove();
+        });
+
+        buttonRow.append(cancelButton, assignButton);
+
+        modal.append(
+            heading,
+            qLabel,
+            qSelect,
+            buttonRow
+        );
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
 
     async function claimQSlot(slot) {
         try {
@@ -119,7 +322,7 @@ export function renderQSignupView() {
                 qUserId: state.currentUserMemberId,
             });
 
-            const index = state.qSlots.findIndex(q => q.id ===slot.id);
+            const index = state.qSlots.findIndex(q => q.id === slot.id);
             if (index !== -1) {
                 state.qSlots[index] = updatedSlot;
             }
@@ -152,6 +355,30 @@ export function renderQSignupView() {
         } catch (error) {
             console.error("Failed to unclaim Q slot:", error);
             alert("Failed to unclaim Q slot.");
+        }
+    }
+
+    async function assignQSlot(slot, memberId) {
+        try {
+            const activeRegionId = state.currentRegionId;
+            if(!activeRegionId) {
+                throw new Error("No active region id");
+            }
+
+            const updatedSlot = await updateQSlotInCloud(activeRegionId, {
+                ...slot,
+                qUserId: memberId,
+            });
+
+            const index = state.qSlots.findIndex(q => q.id === slot.id);
+            if (index !== -1) {
+                state.qSlots[index] = updatedSlot;
+            }
+
+            renderApp();
+        } catch (error) {
+            console.error("failed to assign Q slot:", error);
+            alert("Failed to assign Q slot.");
         }
     }
 
@@ -313,6 +540,14 @@ export function renderQSignupView() {
                 adminActions = document.createElement("div");
                 adminActions.classList.add("q-slot-admin-actions");
 
+                const assignButton = document.createElement("button");
+                assignButton.textContent = "Assign Q";
+
+                assignButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    openAssignQModal(slot);
+                });
+
                 const clearButton = document.createElement("button");
                 clearButton.textContent = "Clear Q";
 
@@ -332,7 +567,7 @@ export function renderQSignupView() {
                     await deleteQSlot(slot);
                 });
 
-                adminActions.append(clearButton, deleteButton);
+                adminActions.append(assignButton, clearButton, deleteButton);
             }
 
             const mainRow = document.createElement("div");
