@@ -54,6 +54,32 @@ export function renderWorkoutPlanner() {
         );
     }
 
+    function copyWorkoutToPlanner(sourceWorkout) {
+        const copiedWorkout = {
+            ...sourceWorkout,
+            id: crypto.randomUUID(),
+            isShared: false,
+            createdByUserId: state.currentUserId,
+            lastModifiedAt: Date.now(),
+            date: draftWorkout.date || getTodayDate(),
+            aoName: draftWorkout.aoName || "",
+        };
+    
+        state.draftPlannedWorkout = copiedWorkout;
+    
+        localStorage.setItem(
+            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+            JSON.stringify(copiedWorkout)
+        );
+    
+        state.workoutBrowseModalOpen = false;
+        state.selectedWorkoutPreviewId = null;
+        state.workoutBrowseMode = "list";
+        state.editingPlannedWorkoutId = null;
+
+        renderApp();
+    }
+
     function closeWorkoutBrowseModal() {
         state.workoutBrowseModalOpen = false;
         state.selectedWorkoutPreviewId = null;
@@ -371,11 +397,11 @@ export function renderWorkoutPlanner() {
     );
 
     if (state.workoutBrowseModalOpen) {
-        app.appendChild(createWorkoutBrowseModal(closeWorkoutBrowseModal));
+        app.appendChild(createWorkoutBrowseModal(closeWorkoutBrowseModal, copyWorkoutToPlanner));
     }
 }
 
-function createWorkoutBrowseModal(onClose) {
+function createWorkoutBrowseModal(onClose, onCopyWorkout) {
     const overlay = document.createElement("div");
     overlay.classList.add("modal-overlay");
 
@@ -439,27 +465,7 @@ function createWorkoutBrowseModal(onClose) {
 
             copyButton.addEventListener("click", (event) => {
                 event.stopPropagation();
-
-                const copiedWorkout = { ...workout };
-
-                copiedWorkout.id = crypto.randomUUID();
-
-                copiedWorkout.isShared = false;
-                copiedWorkout.createdByUserId = state.currentUserId;
-                copiedWorkout.lastModifiedAt = Date.now();
-
-                state.draftPlannedWorkout = copiedWorkout;
-
-                localStorage.setItem(
-                    "draftPlannedWorkout",
-                    JSON.stringify(copiedWorkout)
-                );
-
-                state.workoutBrowseModalOpen = false;
-                state.selectedWorkoutPreviewId = null;
-                state.workoutBrowseMode = "list";
-                state.editingPlannedWorkoutId = null;
-                renderApp();
+                onCopyWorkout(workout);
             })
 
             const cardActions = document.createElement("div");
@@ -529,26 +535,7 @@ function createWorkoutBrowseModal(onClose) {
         previewCopyButton.textContent = "Copy to Planner";
         
         previewCopyButton.addEventListener("click", () => {
-            const copiedWorkout = { ...selectedWorkout };
-
-            copiedWorkout.id = crypto.randomUUID();
-            copiedWorkout.isShared = false;
-            copiedWorkout.createdByUserId = state.currentUserId;
-            copiedWorkout.lastModifiedAt = Date.now();
-
-            state.draftPlannedWorkout = copiedWorkout;
-
-            localStorage.setItem(
-                "draftPlannedWorkout",
-                JSON.stringify(copiedWorkout)
-            );
-
-            state.workoutBrowseModalOpen = false;
-            state.selectedWorkoutPreviewId = null;
-            state.workoutBrowseMode = "list";
-            state.editingPlannedWorkoutId = null;
-
-            renderApp();
+            onCopyWorkout(selectedWorkout);
         });
 
         preview.append(
