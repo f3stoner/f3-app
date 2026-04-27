@@ -87,6 +87,9 @@ function updateDraftDate(event) {
 
 dateInput.addEventListener("change", updateDraftDate);
 dateInput.addEventListener("input", updateDraftDate);
+dateInput.addEventListener("click", () => {
+    dateInput.showPicker?.();
+});
 
 let loadedWorkoutBanner = null;
 

@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
-import { getTodayDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
@@ -114,6 +114,7 @@ export function renderWorkoutPlanner() {
     const dateInput = document.createElement("input");
     dateInput.type = "date";
     dateInput.value = draftWorkout.date;
+    dateInput.classList.add("native-date-input");
 
     const today = getTodayDate();
     const minDate = new Date();
@@ -129,11 +130,24 @@ export function renderWorkoutPlanner() {
 
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;
+        dateDisplay.textContent = formatDate(draftWorkout.date);
         persistDraft();
     }
 
     dateInput.addEventListener("change", updateDraftDate);
     dateInput.addEventListener("input", updateDraftDate);
+    dateInput.addEventListener("click", () => {
+        dateInput.showPicker?.();
+    });
+
+    const dateInputWrap = document.createElement("label");
+    dateInputWrap.classList.add("fake-date-field");
+
+    const dateDisplay = document.createElement("div");
+    dateDisplay.classList.add("fake-date-display");
+    dateDisplay.textContent = formatDate(draftWorkout.date || getTodayDate());
+
+    dateInputWrap.append(dateDisplay, dateInput);
 
     const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
 
@@ -328,7 +342,7 @@ export function renderWorkoutPlanner() {
         browseRow,
         divider,
         dateLabel,
-        dateInput,
+        dateInputWrap,
         aoLabel,
         aoSelect,
         workoutTitleLabel,

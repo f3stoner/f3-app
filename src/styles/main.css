@@ -1225,3 +1225,21 @@ select:focus,
 .divider span {
     margin: 0 8px;
 }
+
+@media (hover: hover) and (pointer: fine) {
+    .fake-date-field {
+        position: static;
+    }
+    .fake-date-display {
+        display: none;
+    }
+    .native-date-input {
+        position: static;
+        opacity: 1;
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        margin-bottom: 14px;
+        cursor: pointer;
+    }
+}
