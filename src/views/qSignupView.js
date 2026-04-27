@@ -78,11 +78,11 @@ export function renderQSignupView() {
 
     if (state.currentUserRole === "admin") {
         generateButton = document.createElement("button");
-        generateButton.textContent = "Generate Next 4 Weeks";
+        generateButton.textContent = "Generate Next 12 Weeks";
 
         generateButton.addEventListener("click", async () => {
             try {
-                const result = await generateQSlotsForCurrentRegion(28);
+                const result = await generateQSlotsForCurrentRegion();
                 alert(`Created ${result.createdCount} Q Slots.`);
                 renderApp();
             } catch (error) {
