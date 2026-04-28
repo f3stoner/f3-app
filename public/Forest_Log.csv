@@ -1,5 +1,112 @@
 FOREST,,,,,
 Date,Pax,Code,DD Only,DR Only,Weekday
+4/28/26,Anakin,,FALSE,,Tue
+4/28/26,8-Mile,QDD,FALSE,,Tue
+4/28/26,Siesta,,FALSE,,Tue
+4/28/26,Skin Graft,,FALSE,,Tue
+4/28/26,Whistleblower,,FALSE,,Tue
+4/27/26,Dodgeball,Q,FALSE,,Mon
+4/27/26,Skin Graft,,FALSE,,Mon
+4/27/26,Wolfie,DD,FALSE,,Mon
+4/23/26,8 Mile,,FALSE,,Thu
+4/23/26,Anakin,,FALSE,,Thu
+4/23/26,Beaver,,FALSE,,Thu
+4/23/26,Frodo,,FALSE,,Thu
+4/23/26,Shaggy,,FALSE,,Thu
+4/23/26,Siesta,,FALSE,,Thu
+4/23/26,Skin Graft,,FALSE,,Thu
+4/23/26,Whistleblower,Q,FALSE,,Thu
+4/22/26,Anakin,QDD,FALSE,,Wed
+4/22/26,Boomer,,FALSE,,Wed
+4/22/26,Johnny 5,,FALSE,,Wed
+4/22/26,Siesta,,FALSE,,Wed
+4/22/26,Skin Graft,,FALSE,,Wed
+4/22/26,Twinkle,,FALSE,,Wed
+4/22/26,Valero,,FALSE,,Wed
+4/22/26,Wolfie,DD,FALSE,,Wed
+4/21/26,8 Mile,,FALSE,,Tue
+4/21/26,Anakin,,FALSE,,Tue
+4/21/26,Eraser,,FALSE,,Tue
+4/21/26,Frodo,Q,FALSE,,Tue
+4/21/26,Nickels,,FALSE,,Tue
+4/21/26,Twinkle,,FALSE,,Tue
+4/21/26,Skin Graft,,FALSE,,Tue
+4/21/26,Whistleblower,,FALSE,,Tue
+4/20/26,Boomer,,FALSE,,Mon
+4/20/26,Jake,,FALSE,,Mon
+4/20/26,Shaggy,Q,FALSE,,Mon
+4/20/26,Skin Graft,,FALSE,,Mon
+4/20/26,Wolfie,DD,FALSE,,Mon
+4/16/26,Anakin,,FALSE,,Thu
+4/16/26,Babel,,FALSE,,Thu
+4/16/26,Beaver,,FALSE,,Thu
+4/16/26,Cindy,,FALSE,,Thu
+4/16/26,Frodo,,FALSE,,Thu
+4/16/26,Lt. Dangle,,FALSE,,Thu
+4/16/26,Moses,,FALSE,,Thu
+4/16/26,Nickels,,FALSE,,Thu
+4/16/26,Shaggy,Q,FALSE,,Thu
+4/16/26,Whistleblower,,FALSE,,Thu
+4/15/26,Anakin,DD,FALSE,,Wed
+4/15/26,Babel,,FALSE,,Wed
+4/15/26,Boomer,,FALSE,,Wed
+4/15/26,Firestarter,DD,FALSE,,Wed
+4/15/26,Frodo,,FALSE,,Wed
+4/15/26,Shaggy,,FALSE,,Wed
+4/15/26,Skin Graft,,FALSE,,Wed
+4/15/26,Wolfie,QDD,FALSE,,Wed
+4/14/26,8 Mile,,FALSE,,Tue
+4/14/26,Beaver,,FALSE,,Tue
+4/14/26,Dodgeball,,FALSE,,Tue
+4/14/26,Frodo,DD,FALSE,,Tue
+4/14/26,Siesta,,FALSE,,Tue
+4/14/26,Skin Graft,,FALSE,,Tue
+4/14/26,Twinkle,,FALSE,,Tue
+4/14/26,Whistleblower,Q,FALSE,,Tue
+4/13/26,Life Jacket,,FALSE,,Mon
+4/13/26,Wolfie,DD,FALSE,,Mon
+4/13/26,Lt. Dangle,Q,FALSE,,Mon
+4/9/26,8 Mile,,FALSE,,Thu
+4/9/26,Anakin,,FALSE,,Thu
+4/9/26,Beaver,,FALSE,,Thu
+4/9/26,Fertile,,FALSE,,Thu
+4/9/26,Firestarter,DD,FALSE,,Thu
+4/9/26,Frodo,,FALSE,,Thu
+4/9/26,K-Pop,,FALSE,,Thu
+4/9/26,Siesta,Q,FALSE,,Thu
+4/8/26,Delta Blues,Q,FALSE,,Wed
+4/8/26,Anakin,DD,FALSE,,Wed
+4/8/26,Skin Graft,,FALSE,,Wed
+4/8/26,Babel,,FALSE,,Wed
+4/8/26,Boomer,,FALSE,,Wed
+4/8/26,Shaggy,,FALSE,,Wed
+4/8/26,Siesta,,FALSE,,Wed
+4/8/26,Neon Moon,,FALSE,,Wed
+4/8/26,Frodo,,FALSE,,Wed
+4/7/26,Delta Blues,,FALSE,,Tue
+4/7/26,Frodo,DD,FALSE,,Tue
+4/7/26,Shaggy,,FALSE,,Tue
+4/7/26,Siesta,,FALSE,,Tue
+4/7/26,Skin Graft,Q,FALSE,,Tue
+4/6/26,Dodgeball,Q,FALSE,,Mon
+4/6/26,Frodo,,FALSE,,Mon
+4/6/26,Lt. Dangle,,FALSE,,Mon
+4/6/26,Skin Graft,,FALSE,,Mon
+4/6/26,Wolfie,DD,FALSE,,Mon
+4/2/26,Anakin,,FALSE,,Thu
+4/2/26,Beaver,,FALSE,,Thu
+4/2/26,Frodo,,FALSE,,Thu
+4/2/26,Lt. Dangle,,FALSE,,Thu
+4/2/26,Neon Moon,,FALSE,,Thu
+4/2/26,Nickels,,FALSE,,Thu
+4/2/26,Skin Graft,Q,FALSE,,Thu
+4/1/26,8 Mile,,FALSE,,Wed
+4/1/26,Anakin,QDD,FALSE,,Wed
+4/1/26,Babel,,FALSE,,Wed
+4/1/26,Boomer,,FALSE,,Wed
+4/1/26,Frodo,,FALSE,,Wed
+4/1/26,The Rev,,FALSE,,Wed
+4/1/26,Skin Graft,,FALSE,,Wed
 3/31/26,8 Mile,,FALSE,,Tue
 3/31/26,Frodo,,FALSE,,Tue
 3/31/26,K-Pop,,FALSE,,Tue
@@ -7,7 +114,7 @@ Date,Pax,Code,DD Only,DR Only,Weekday
 3/31/26,Shaggy,Q,FALSE,,Tue
 3/31/26,Siesta,,FALSE,,Tue
 3/31/26,Skin Graft,,FALSE,,Tue
-3/31/26,sponge,,FALSE,,Tue
+3/31/26,Sponge,,FALSE,,Tue
 3/31/26,Twinkle,,FALSE,,Tue
 3/30/26,Dodgeball,,FALSE,,Mon
 3/30/26,Life Jacket,,FALSE,,Mon

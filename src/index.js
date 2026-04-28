@@ -13,7 +13,7 @@ import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js"
 import { replacePersistedData } from "./services/appData.js";
 import { loadAllRegions, loadRegionData, getNotificationSettings } from "./services/cloudData.js";
 import { importPaxMasterCsv } from "./services/importAggieland.js";
-import { importAoLogCsv } from "./services/importAggieland.js";
+import { importAoLogCsv, runAggielandDeltaAoImports } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
 import { renderMyPlanner } from "./views/myPlannerView.js";
@@ -34,6 +34,7 @@ import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 
 window.state = state;
 window.renderApp = renderApp;
+window.runAggielandDeltaAoImports = runAggielandDeltaAoImports;
 
 if ("serviceWorker" in navigator) {
     const swPath =
@@ -114,7 +115,9 @@ function renderApp() {
     
     console.log("SUPABASE URL:", process.env.SUPABASE_URL);
 
-    if (state.currentView === "auth") {
+    if (state.currentView === "dashboard") { 
+        renderDashboard();
+    } else if (state.currentView === "auth") {
         renderAuthView();
     } else if (state.currentView === "roster") {
         renderRoster();
@@ -216,9 +219,12 @@ async function bootApp() {
     }
 
     try {
+        console.time("bootApp total");
         console.log("bootApp starting");
 
+        console.time("getCurrentSession");
         let session = await getCurrentSession();
+        console.timeEnd("getCurrentSession");
         console.log("bootApp session 1:", session);
 
         if (!session) {
@@ -234,7 +240,9 @@ async function bootApp() {
             return;
         }
 
+        console.time("ensureMyProfile");
         const profile = await ensureMyProfile(session.user.id);
+        console.timeEnd("ensureMyProfile");
         console.log("bootApp profile:", profile);
 
         state.currentUserId = session.user.id;
@@ -245,8 +253,13 @@ async function bootApp() {
         state.currentUserMemberId = profile.member_id || null;
         state.customTemplates = profile.custom_templates || state.customTemplates;
 
-        const dbNotificationSettings = await getNotificationSettings(state.currentUserId);
-
+        console.time("notificationSettings + regions");
+        const [dbNotificationSettings, regions] = await Promise.all([
+            getNotificationSettings(state.currentUserId),
+            loadAllRegions(),
+        ]);
+        console.timeEnd("notificationSettings + regions");
+        
         state.notificationSettings = dbNotificationSettings
             ? {
                 pushEnabled: dbNotificationSettings.push_enabled,
@@ -259,10 +272,11 @@ async function bootApp() {
                 PushSubscription: null,
             };
         
-        const regions = await loadAllRegions();
         state.availableRegions = regions || [];
 
+        console.time("loadActiveRegionData");
         const regionLoaded = await loadActiveRegionData(profile.region_id);
+        console.timeEnd("loadActiveRegionData");
 
         if (!regionLoaded) {
             hideBootSplash();
@@ -274,6 +288,7 @@ async function bootApp() {
         }
 
         renderApp();
+        console.timeEnd("bootApp total");
         hideBootSplash();
     } catch (error) {
         console.error("Failed to boot app:", error);
