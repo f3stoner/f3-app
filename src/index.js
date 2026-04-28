@@ -33,7 +33,7 @@ import { saveNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 
 window.state = state;
-//window.renderApp = renderApp;
+window.renderApp = renderApp;
 
 if ("serviceWorker" in navigator) {
     const swPath =

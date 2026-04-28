@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { insertAdminFlags, insertMember, updateMemberInCloud } from "./cloudData.js";
+import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 
@@ -30,6 +30,14 @@ export async function addSession(session) {
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
+
+    console.log("addSession RLS debug", {
+        activeRegionId: state.currentRegionId,
+        currentUserId: state.currentUserId,
+        profileRegionId: state.profileRegionId,
+        regionName: state.regionName,
+    });
+
     const savedSession = await insertSession(activeRegionId, session)
     state.sessions.push(savedSession);
     persistAppData();
@@ -159,4 +167,41 @@ export async function addAdminFlags(flags) {
     persistAppData();
 
     return savedFlags;
+}
+
+export async function updateAdminFlag(flagId, updates) {
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+
+    const existingFlag = state.adminFlags.find(flag => flag.id === flagId);
+    if (!existingFlag) return false;
+
+    const updatedFlag = {
+        ...existingFlag,
+        ...updates,
+    };
+
+    const savedFlag = await updateAdminFlagInCloud(activeRegionId, updatedFlag);
+
+    const index = state.adminFlags.findIndex(flag => flag.id === flagId);
+    if (index === -1) return false;
+
+    state.adminFlags[index] = savedFlag;
+    persistAppData();
+
+    return true;
+}
+
+export async function setMemberStatus(memberId, status) {
+    const member = state.members.find(member => member.id === memberId);
+    if (!member) throw new Error("Member not found");
+
+    const updatedMember = {
+        ...member,
+        status,
+    };
+
+    await updateMember(memberId, updatedMember);
 }

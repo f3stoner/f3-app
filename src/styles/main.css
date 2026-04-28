@@ -1441,3 +1441,58 @@ select:focus,
 .severity-medium { background: #f59e0b; }  /* amber */
 .severity-high { background: #ef4444; }    /* red */
 .severity-low { background: #10b981; }     /* green */
+
+.admin-flag-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    padding-left: 0.25rem;
+}
+
+.admin-flag-match-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.1rem;
+}
+
+.admin-flag-match-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;           
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+}
+
+.admin-flag-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.admin-flag-toggle::after {
+    content: "Tap to review";
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.admin-flag-toggle:hover {
+    text-decoration: underline;
+}
+
+.admin-flag-match-card button {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+}
+
+.admin-flag-detail {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.3;
+}

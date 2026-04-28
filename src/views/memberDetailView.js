@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
-import { updateMember } from "../services/appData.js";
+import { setMemberStatus, updateMember } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 
@@ -80,13 +80,9 @@ export function renderMemberDetail () {
         if (!confirmed) return;
 
         try {
-            const updatedMember = {
-                ...member,
-                status: nextStatus,
-            };
-
-            await updateMember(member.id, updatedMember);
+            await setMemberStatus(member.id, nextStatus)
             renderApp();
+
         } catch (error) {
             console.error("Failed to update member status:", error);
             showToast("Failed to update member status.", "error");

@@ -4,7 +4,7 @@ import { formatDate } from "../utils/date.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
-import { addMember, deleteSession } from "../services/appData.js";
+import { addMember, deleteSession, updateSession } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 
@@ -126,7 +126,17 @@ export function renderSessionDetail() {
                 const text = document.createElement("span");
                 text.textContent = rowText;
 
-                const alreadyOnRoster = Boolean(fng.memberId) || state.members.some(m => m.realName === fng.realName);
+                const existingMember = state.members.find(m => 
+                    m.realName &&
+                    fng.realName &&
+                    m.realName.trim().toLowerCase() === fng.realName.trim().toLowerCase()
+                );
+
+                if (existingMember && !fng.memberId) {
+                    fng.memberId = existingMember.id;
+                }
+
+                const alreadyOnRoster = Boolean(fng.memberId);
 
                 const addButton = document.createElement("button");
                 addButton.textContent = alreadyOnRoster ? "On Roster" : "Add to Roster";
@@ -145,10 +155,28 @@ export function renderSessionDetail() {
 
                     try{
                         const savedMember = await addMember(newMember);
-                        fng.memberId = newMember.id;
+                        
+                        const updatedFngs = (session.fngs || []).map(existingFng => {
+                            const isTargetFng =
+                            existingFng.realName === fng.realName &&
+                            existingFng.paxName === fng.paxName;
+
+                        return isTargetFng
+                            ? { ...existingFng, memberId: savedMember.id }
+                            : existingFng;
+                        });
+
+                        await updateSession(session.id, {
+                            ...session,
+                            fngs: updatedFngs,
+                        });
+
+                        session.fngs = updatedFngs;
 
                         addButton.textContent = "On Roster";
                         addButton.disabled = true;
+                        showToast("FNG added to roster.", "success")
+
                     } catch (error) {
                         console.error("Failed to add member:", error);
                         showToast("Failed to add member to roster.", "error");
@@ -210,9 +238,6 @@ export function renderSessionDetail() {
         return section;
     }
 
-    const dateSection = createDetailSection("Date", formattedDate);
-    const aoSection = createDetailSection("AO", session.aoName);
-    const qSection = createDetailSection("Q", qLabel);
     const paxSection = createDetailSection(`PAX (${paxNamesArray.length})`, paxNames);
     const fngSection = createFngSection();
     const workoutSection = createWorkoutSection();

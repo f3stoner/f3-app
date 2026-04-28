@@ -690,3 +690,23 @@ export async function insertAdminFlags(regionId, flags) {
 
     return (data || []).map(mapAdminFlagFromDb);
 }
+
+export async function updateAdminFlagInCloud(regionId, flag) {
+    const { data, error } = await supabase
+        .from("admin_flags")
+        .update({
+            status: flag.status,
+            severity: flag.severity,
+            resolved_at: flag.resolvedAt || null,
+            resolved_by_user_id: flag.resolvedByUserId || null,
+            resolution_notes: flag.resolutionNotes || null,
+        })
+        .eq("id", flag.id)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapAdminFlagFromDb(data);
+}
