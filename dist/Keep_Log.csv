@@ -1,5 +1,131 @@
 KEEP,,,,,
 Date,Pax,Code,DD Only,DR Only,Weekday
+4/28/26,Acme,,FALSE,,Tue
+4/28/26,Dial-Up,,FALSE,,Tue
+4/28/26,Buttercream,,FALSE,,Tue
+4/28/26,Light Show,FNG,FALSE,,Tue
+4/28/26,Thermostat,Q,FALSE,,Tue
+4/24/26,TeaTime,,FALSE,,Fri
+4/24/26,Mix-A-Lot,,FALSE,,Fri
+4/24/26,Mario,,FALSE,,Fri
+4/24/26,Victory Lap,,FALSE,,Fri
+4/24/26,Dr. Frasier Crane,,FALSE,,Fri
+4/24/26,Skipper,DD,FALSE,,Fri
+4/24/26,Live Wire,,FALSE,,Fri
+4/24/26,Archy,Q,FALSE,,Fri
+4/23/26,Acme,,FALSE,,Thu
+4/23/26,Archy,,FALSE,,Thu
+4/23/26,Barbarosa,,FALSE,,Thu
+4/23/26,Freedom,,FALSE,,Thu
+4/23/26,Frogger,,FALSE,,Thu
+4/23/26,Hippo,,FALSE,,Thu
+4/23/26,Kelvin,,FALSE,,Thu
+4/23/26,Live Wire,,FALSE,,Thu
+4/23/26,Mario,,FALSE,,Thu
+4/23/26,Mogul,,FALSE,,Thu
+4/23/26,Tinkerbell,Q,FALSE,,Thu
+4/23/26,Victory Lap,,FALSE,,Thu
+4/22/26,Acme,,FALSE,,Wed
+4/22/26,Barbarosa,Q,FALSE,,Wed
+4/22/26,Bareback,,FALSE,,Wed
+4/22/26,Hot Wheels,,FALSE,,Wed
+4/22/26,Skipper,,FALSE,,Wed
+4/21/26,Acme,Q,FALSE,,Tue
+4/21/26,Barbarosa,,FALSE,,Tue
+4/21/26,Buttercream,,FALSE,,Tue
+4/21/26,Dial-Up,,FALSE,,Tue
+4/21/26,Freedom,,FALSE,,Tue
+4/21/26,Frogger,,FALSE,,Tue
+4/21/26,Mario,,FALSE,,Tue
+4/21/26,Mogul,,FALSE,,Tue
+4/21/26,Peaches (DR),,FALSE,,Tue
+4/21/26,Victory Lap,,FALSE,,Tue
+4/17/26,Acme,,FALSE,,Fri
+4/17/26,Archy,,FALSE,,Fri
+4/17/26,Freedom,,FALSE,,Fri
+4/17/26,Live Wire,,FALSE,,Fri
+4/17/26,Mix-A-Lot,,FALSE,,Fri
+4/17/26,Skipper,,FALSE,,Fri
+4/17/26,TeaTime,,FALSE,,Fri
+4/17/26,Dr. Frasier Crane,Q,FALSE,,Fri
+4/16/26,Acme,,FALSE,,Thu
+4/16/26,Archy,,FALSE,,Thu
+4/16/26,Bareback,,FALSE,,Thu
+4/16/26,Live Wire,,FALSE,,Thu
+4/16/26,Search Party,,FALSE,,Thu
+4/16/26,Skipper,DD,FALSE,,Thu
+4/16/26,Victory Lap,,FALSE,,Thu
+4/16/26,Kelvin,Q,FALSE,,Thu
+4/15/26,Acme,,FALSE,,Wed
+4/15/26,Archy,,FALSE,,Wed
+4/15/26,Barbarosa,,FALSE,,Wed
+4/15/26,Bareback,Q,FALSE,,Wed
+4/15/26,Dr. Frasier Crane,,FALSE,,Wed
+4/15/26,Freedom,,FALSE,,Wed
+4/14/26,Dr. Frasier Crane,,FALSE,,Tue
+4/14/26,Freedom,,FALSE,,Tue
+4/14/26,Acme,,FALSE,,Tue
+4/14/26,Double A,,FALSE,,Tue
+4/14/26,Victory Lap,,FALSE,,Tue
+4/14/26,Skipper,,FALSE,,Tue
+4/14/26,Barbarosa,,FALSE,,Tue
+4/14/26,Bareback,,FALSE,,Tue
+4/14/26,Kelvin,,FALSE,,Tue
+4/14/26,Hippo,Q,FALSE,,Tue
+4/10/26,Archy,,FALSE,,Fri
+4/10/26,Dr. Frasier Crane,,FALSE,,Fri
+4/10/26,Double A,,FALSE,,Fri
+4/10/26,Acme,,FALSE,,Fri
+4/10/26,Mix-A-Lot,,FALSE,,Fri
+4/10/26,TeaTime,,FALSE,,Fri
+4/10/26,Skipper,Q,FALSE,,Fri
+4/9/26,Double A,,FALSE,,Thu
+4/9/26,D20,Q,FALSE,,Thu
+4/9/26,Mix-A-Lot,,FALSE,,Thu
+4/9/26,TeaTime,,FALSE,,Thu
+4/9/26,Frogger,,FALSE,,Thu
+4/9/26,Sack,,FALSE,,Thu
+4/8/26,Narc,Q,FALSE,,Wed
+4/8/26,Archy,,FALSE,,Wed
+4/8/26,SCUBA Steve,,FALSE,,Wed
+4/8/26,Werner,,FALSE,,Wed
+4/8/26,Gamma,,FALSE,,Wed
+4/8/26,Dr. Frasier Crane,,FALSE,,Wed
+4/8/26,Skipper,,FALSE,,Wed
+4/8/26,LinkedIn,,FALSE,,Wed
+4/7/26,Freedom,,FALSE,,Tue
+4/7/26,D20,Q,FALSE,,Tue
+4/7/26,Acme,,FALSE,,Tue
+4/7/26,Dr. Frasier Crane,,FALSE,,Tue
+4/7/26,Archy,,FALSE,,Tue
+4/7/26,Live Wire,,FALSE,,Tue
+4/3/26,TeaTime,,FALSE,,Fri
+4/3/26,Skipper,,FALSE,,Fri
+4/3/26,Sack,,FALSE,,Fri
+4/3/26,Mix-A-Lot,,FALSE,,Fri
+4/3/26,Mario,,FALSE,,Fri
+4/3/26,Anakin,,FALSE,,Fri
+4/3/26,Acme,,FALSE,,Fri
+4/3/26,Dream Shake,,FALSE,,Fri
+4/3/26,Dodgeball,,FALSE,,Fri
+4/3/26,Live Wire,,FALSE,,Fri
+4/3/26,Recurve,,FALSE,,Fri
+4/3/26,Wallaby,FNG,FALSE,,Fri
+4/3/26,Rawhide,Q,FALSE,,Fri
+4/2/26,D20,Q,FALSE,,Thu
+4/2/26,Mario,,FALSE,,Thu
+4/2/26,Frogger,,FALSE,,Thu
+4/2/26,Skipper,,FALSE,,Thu
+4/2/26,Super Soaker,,FALSE,,Thu
+4/2/26,Mogul,,FALSE,,Thu
+4/1/26,Acme,Q,FALSE,,Wed
+4/1/26,Archy,,FALSE,,Wed
+4/1/26,Barbarosa,,FALSE,,Wed
+4/1/26,Dr. Frasier Crane,,FALSE,,Wed
+4/1/26,Freedom,,FALSE,,Wed
+4/1/26,Johnny 5,,FALSE,,Wed
+4/1/26,Live Wire,,FALSE,,Wed
+4/1/26,Mario,,FALSE,,Wed
 3/31/26,Sack,,FALSE,,Tue
 3/31/26,Barbarosa,,FALSE,,Tue
 3/31/26,Mogul,,FALSE,,Tue

@@ -1,5 +1,182 @@
 CAVE,,,,,
 Date,Pax,Code,DD Only,DR Only,Weekday
+4/28/26,Beaver,,FALSE,,Tue
+4/28/26,Blue Screen,,FALSE,,Tue
+4/28/26,Burgundy,,FALSE,,Tue
+4/28/26,Cowbell,Q,FALSE,,Tue
+4/28/26,Freedom,,FALSE,,Tue
+4/28/26,Johnny 5,,FALSE,,Tue
+4/28/26,Rose Bowl,FNG,FALSE,,Tue
+4/28/26,Rosetta,,FALSE,,Tue
+4/28/26,Tinkerbell,,FALSE,,Tue
+4/27/26,Babel,,FALSE,,Mon
+4/27/26,Blue Screen,DD,FALSE,,Mon
+4/27/26,Boomer,DD,FALSE,,Mon
+4/27/26,Burgundy,,FALSE,,Mon
+4/27/26,Cowbell,,FALSE,,Mon
+4/27/26,Crevasse,,FALSE,,Mon
+4/27/26,Hacksaw,,TRUE,,Mon
+4/27/26,Johnny 5,,FALSE,,Mon
+4/27/26,Rosetta,Q,FALSE,,Mon
+4/27/26,Slide Show,,FALSE,,Mon
+4/27/26,Werner,,TRUE,,Mon
+4/25/26,Acme,,FALSE,,Sat
+4/25/26,Beaver,,FALSE,,Sat
+4/25/26,Blue Screen,,FALSE,,Sat
+4/25/26,Boomer,DD,FALSE,,Sat
+4/25/26,Burgundy,,FALSE,,Sat
+4/25/26,Cindy,DD,FALSE,,Sat
+4/25/26,Circuit,DD,FALSE,,Sat
+4/25/26,Coach Kline,FNG,FALSE,,Sat
+4/25/26,Crevasse,,FALSE,,Sat
+4/25/26,Delta Blues,QDD,FALSE,,Sat
+4/25/26,Dr scholl's,,FALSE,,Sat
+4/25/26,Firestarter,QDD,FALSE,,Sat
+4/25/26,Flossin,,FALSE,,Sat
+4/25/26,Freedom,,FALSE,,Sat
+4/25/26,Half Pipe,,FALSE,,Sat
+4/25/26,Hancock,,FALSE,,Sat
+4/25/26,Hippo,,FALSE,,Sat
+4/25/26,Jake,,FALSE,,Sat
+4/25/26,Johnny 5,,FALSE,,Sat
+4/25/26,Lazarus,,FALSE,,Sat
+4/25/26,LinkedIn,,FALSE,,Sat
+4/25/26,Liver King,FNG,FALSE,,Sat
+4/25/26,Lt. Dangle,DD,FALSE,,Sat
+4/25/26,Mario,,FALSE,,Sat
+4/25/26,Mash,,FALSE,,Sat
+4/25/26,Moses,DD,FALSE,,Sat
+4/25/26,Mudder,,FALSE,,Sat
+4/25/26,Narc,DD,FALSE,,Sat
+4/25/26,Rosetta,,FALSE,,Sat
+4/25/26,Search Party,,FALSE,,Sat
+4/25/26,Shaggy,DD,FALSE,,Sat
+4/25/26,Siesta,,FALSE,,Sat
+4/25/26,Sinko,DD,FALSE,,Sat
+4/25/26,Skin Graft,DD,FALSE,,Sat
+4/25/26,Slide Show,FNG,FALSE,,Sat
+4/25/26,Squatter,,FALSE,,Sat
+4/25/26,Thermostat,,FALSE,,Sat
+4/25/26,Tinkerbell,QDD,FALSE,,Sat
+4/25/26,Tony Hawk,QDD,FALSE,,Sat
+4/25/26,Valero,,FALSE,,Sat
+4/25/26,Victory Lap,,FALSE,,Sat
+4/25/26,Whistleblower,,FALSE,,Sat
+4/24/26,Boomer,,FALSE,,Fri
+4/24/26,Cowbell,,FALSE,,Fri
+4/24/26,Crevasse,,FALSE,,Fri
+4/24/26,Frodo,,FALSE,,Fri
+4/24/26,Johnny 5,,FALSE,,Fri
+4/24/26,Rosetta,Q,FALSE,,Fri
+4/24/26,Tony Hawk,,FALSE,,Fri
+4/21/26,Cowbell,Q,FALSE,,Tue
+4/21/26,Crevasse,,FALSE,,Tue
+4/21/26,Fertile,,FALSE,,Tue
+4/21/26,Hippo,,FALSE,,Tue
+4/21/26,Johnny 5,,FALSE,,Tue
+4/21/26,Rosetta,,FALSE,,Tue
+4/20/26,Babel,,FALSE,,Mon
+4/20/26,Cowbell,,FALSE,,Mon
+4/20/26,Crevasse,,FALSE,,Mon
+4/20/26,Johnny 5,,FALSE,,Mon
+4/20/26,Rosetta,Q,FALSE,,Mon
+4/20/26,SCUBA Steve,,FALSE,,Mon
+4/17/26,Ant Farm (DR),FNG,FALSE,,Fri
+4/17/26,Babel,,FALSE,,Fri
+4/17/26,Boomer,Q,FALSE,,Fri
+4/17/26,Cowbell,,FALSE,,Fri
+4/17/26,Crevasse,,FALSE,,Fri
+4/17/26,Johnny 5,,FALSE,,Fri
+4/17/26,Rosetta,,FALSE,,Fri
+4/17/26,SCUBA Steve,,FALSE,,Fri
+4/17/26,Second City (DR),,FALSE,,Fri
+4/17/26,Werner,,FALSE,,Fri
+4/14/26,Babel,,FALSE,,Tue
+4/14/26,Cowbell,,FALSE,,Tue
+4/14/26,Johnny 5,,FALSE,,Tue
+4/14/26,Rosetta,Q,FALSE,,Tue
+4/13/26,Boomer,,FALSE,,Mon
+4/13/26,Cowbell,,FALSE,,Mon
+4/13/26,Crevasse,,FALSE,,Mon
+4/13/26,Fertile,,FALSE,,Mon
+4/13/26,Hot Wheels,,FALSE,,Mon
+4/13/26,Johnny 5,Q,FALSE,,Mon
+4/13/26,Remax,,FALSE,,Mon
+4/13/26,Rosetta,,FALSE,,Mon
+4/13/26,Siesta,,FALSE,,Mon
+4/11/26,Anakin,DD,FALSE,,Sat
+4/11/26,Babel,,FALSE,,Sat
+4/11/26,Boomer,DD,FALSE,,Sat
+4/11/26,Cindy,,FALSE,,Sat
+4/11/26,Circuit,DD,FALSE,,Sat
+4/11/26,Dr scholl's,,FALSE,,Sat
+4/11/26,Drumline (DR),FNG,FALSE,,Sat
+4/11/26,Freefall (DR),FNG,FALSE,,Sat
+4/11/26,Frodo,,FALSE,,Sat
+4/11/26,Godzilla (DR),,FALSE,,Sat
+4/11/26,Hancock (DR),FNG,FALSE,,Sat
+4/11/26,Jake,DD,FALSE,,Sat
+4/11/26,Johnny 5,,FALSE,,Sat
+4/11/26,Maple (DR),FNG,FALSE,,Sat
+4/11/26,Moses,,FALSE,,Sat
+4/11/26,Rosetta,Q,FALSE,,Sat
+4/11/26,Shaggy,DD,FALSE,,Sat
+4/11/26,Siesta,,FALSE,,Sat
+4/11/26,Super Soaker,,FALSE,,Sat
+4/11/26,Tinkerbell,,FALSE,,Sat
+4/10/26,Babel,,FALSE,,Fri
+4/10/26,Boomer,,FALSE,,Fri
+4/10/26,Cindy,,FALSE,,Fri
+4/10/26,Crevasse,,FALSE,,Fri
+4/10/26,Frodo,,FALSE,,Fri
+4/10/26,Johnny 5,,FALSE,,Fri
+4/10/26,Rosetta,Q,FALSE,,Fri
+4/10/26,Shaggy,,FALSE,,Fri
+4/7/26,Babel,,FALSE,,Tue
+4/7/26,Cowbell,Q,FALSE,,Tue
+4/7/26,Crevasse,,FALSE,,Tue
+4/7/26,Johnny 5,,FALSE,,Tue
+4/7/26,Rosetta,,FALSE,,Tue
+4/7/26,Tinkerbell,,FALSE,,Tue
+4/6/26,Anakin,DD,FALSE,,Mon
+4/6/26,Babel,,FALSE,,Mon
+4/6/26,Boomer,,FALSE,,Mon
+4/6/26,Cowbell,,FALSE,,Mon
+4/6/26,Firestarter,QDD,FALSE,,Mon
+4/6/26,Grizzly,,FALSE,,Mon
+4/6/26,Johnny 5,,FALSE,,Mon
+4/6/26,Mudder,,FALSE,,Mon
+4/6/26,Rosetta,,FALSE,,Mon
+4/6/26,SCUBA Steve,,FALSE,,Mon
+4/6/26,Werner,,FALSE,,Mon
+4/4/26,Anakin,DD,FALSE,,Sat
+4/4/26,Beaver,,FALSE,,Sat
+4/4/26,Boomer,,FALSE,,Sat
+4/4/26,Cindy,DD,FALSE,,Sat
+4/4/26,Cowbell,DD,FALSE,,Sat
+4/4/26,Crevasse,DD,FALSE,,Sat
+4/4/26,Frodo,,FALSE,,Sat
+4/4/26,Hector,DD,FALSE,,Sat
+4/4/26,Jake,DD,FALSE,,Sat
+4/4/26,Johnny 5,,FALSE,,Sat
+4/4/26,Mario,,FALSE,,Sat
+4/4/26,Moses,DD,FALSE,,Sat
+4/4/26,Rosetta,,FALSE,,Sat
+4/4/26,Sack,,FALSE,,Sat
+4/4/26,Shaggy,DD,FALSE,,Sat
+4/4/26,Stoner,Q,FALSE,,Sat
+4/4/26,Tinkerbell,,FALSE,,Sat
+4/4/26,Wrangler,,FALSE,,Sat
+4/3/26,Babel,,FALSE,,Fri
+4/3/26,Boomer,,FALSE,,Fri
+4/3/26,Cindy,,FALSE,,Fri
+4/3/26,Cowbell,,FALSE,,Fri
+4/3/26,Crevasse,,FALSE,,Fri
+4/3/26,Johnny 5,,FALSE,,Fri
+4/3/26,Rosetta,Q,FALSE,,Fri
+4/3/26,Shaggy,,FALSE,,Fri
+4/3/26,Super Soaker,,FALSE,,Fri
+4/3/26,Tony Hawk,,FALSE,,Fri
 3/31/26,Babel,,FALSE,,Tue
 3/31/26,Beaver,,FALSE,,Tue
 3/31/26,Cowbell,,FALSE,,Tue

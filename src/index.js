@@ -32,9 +32,11 @@ import { renderResetPasswordView } from "./views/resetPasswordView.js";
 import { saveNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 
+if (process.env.NODE_ENV === "development") {
 window.state = state;
 window.renderApp = renderApp;
 window.runAggielandDeltaAoImports = runAggielandDeltaAoImports;
+}
 
 if ("serviceWorker" in navigator) {
     const swPath =
