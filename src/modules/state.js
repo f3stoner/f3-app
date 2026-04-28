@@ -90,6 +90,8 @@ export const state = {
     selectedWorkoutPreviewId: null,
     workoutBrowseMode: "list",
     workoutBrowseScrollTop: 0,
+    toastMessage: null,
+    toastType: "info",
 };
 
 if (savedNav) {

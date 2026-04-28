@@ -7,6 +7,7 @@ import { REGION_INTRO_TEMPLATES } from "../config.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { saveNavState } from "../utils/storage.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
@@ -261,7 +262,7 @@ export function renderPlannedWorkoutDetail() {
                 renderApp();
             } catch (error) {
                 console.error("Failed to delete workout:", error);
-                alert("Failed to delete workout.")
+                showToast("Failed to delete workout.", "error")
             }
         });
     }

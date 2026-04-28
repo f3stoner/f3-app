@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { updateSession } from "../services/appData.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderBackblastView () {
 
@@ -143,7 +144,7 @@ export function renderBackblastView () {
                             await navigator.share({ text });
                         }
     
-                        alert("Shared text" + (imageFiles.length ? " + images" : "") + ". Upload videos separately in BAND if needed.");
+                        showToast("Shared text" + (imageFiles.length ? " + images" : "") + ". Upload videos separately in BAND if needed.", "success");
                         return;
                     }
                 }
@@ -179,7 +180,7 @@ export function renderBackblastView () {
                 await updateSession(session.id, updatedSession);
             } catch (error) {
                 console.error("Failed to save backblast text:", error);
-                alert("Failed to save backblast.");
+                showToast("Failed to save backblast.", "error");
                 return;
             }
         }
@@ -200,7 +201,7 @@ export function renderBackblastView () {
             s => s.id === state.selectedSessionId
         );
         if (!session) {
-            alert("Could not reset backblast. Session not found.");
+            showToast("Could not reset backblast. Session not found.", "error");
             return;
         }
         session.backblastText = "";

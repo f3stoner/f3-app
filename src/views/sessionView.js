@@ -9,6 +9,7 @@ import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { addSession, updateSession } from "../services/appData.js";
 import { REGION_AOS } from "../config.js";
 import { goBack } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -648,7 +649,7 @@ try {
     }
 } catch (error) {
     console.error("Failed to save session:", error);
-    alert("Failed to save session.");
+    showToast("Failed to save session.", "error");
 }
 
 });

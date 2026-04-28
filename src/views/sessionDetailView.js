@@ -6,6 +6,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { addMember, deleteSession } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -150,7 +151,7 @@ export function renderSessionDetail() {
                         addButton.disabled = true;
                     } catch (error) {
                         console.error("Failed to add member:", error);
-                        alert("Failed to add member to roster.");
+                        showToast("Failed to add member to roster.", "error");
                     }
                 });
 
@@ -296,7 +297,7 @@ export function renderSessionDetail() {
                 renderApp();
             } catch (error) {
                 console.error("Failed to delete session:", error);
-                alert("Failed to delete session");
+                showToast("Failed to delete session", "error");
             }
         });
 

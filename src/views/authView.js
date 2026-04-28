@@ -1,5 +1,6 @@
 import { createProfile, signInWithEmail, signUpWithEmail, requestPasswordReset } from "../services/auth.js";
 import { bootApp } from "../index.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderAuthView() {
     const app = document.getElementById("app");
@@ -97,7 +98,7 @@ export function renderAuthView() {
             await bootApp();
         } catch (error) {
             console.error("Auth action failed:", error);
-            alert("Authentication failed.");
+            showToast("Authentication failed.", "error");
         }
     });
 
@@ -132,7 +133,7 @@ export function renderAuthView() {
             alert("Password reset email sent. Check your inbox.");
         } catch (error) {
             console.error("Password reset failed:", error);
-            alert("Failed to send password reset email.");
+            showToast("Failed to send password reset email.", "error");
         }
     });
 

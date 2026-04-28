@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { updateMember } from "../services/appData.js";
 import { goBack } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderMemberEdit () {
     
@@ -81,7 +82,7 @@ export function renderMemberEdit () {
             renderApp();
         } catch (error) {
             console.error("Failed to update member:", error);
-            alert("Failed to save member");
+            showToast("Failed to save member", "error");
         }   
     });
 

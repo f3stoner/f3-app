@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { updateMyProfile } from "../services/auth.js";
 import { updateMemberInCloud } from "../services/cloudData.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderClaimMemberView() {
     const app = document.getElementById("app");
@@ -169,7 +170,7 @@ export function renderClaimMemberView() {
                     renderApp();
                 } catch (error) {
                     console.error("Failed to claim member profile:", error);
-                    alert("Failed to save profile setup.");
+                    showToast("Failed to save profile setup.", "error");
                 }
             });
 

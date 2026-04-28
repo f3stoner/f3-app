@@ -5,6 +5,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -87,11 +88,11 @@ export function renderQSignupView() {
         generateButton.addEventListener("click", async () => {
             try {
                 const result = await generateQSlotsForCurrentRegion();
-                alert(`Created ${result.createdCount} Q Slots.`);
+                showToast(`Created ${result.createdCount} Q Slots.`, "success");
                 renderApp();
             } catch (error) {
                 console.error("Failed to generate Q slots:", error);
-                alert("Failed to generate Q slots.");
+                showToast("Failed to generate Q slots.", "error");
             }
         });
 
@@ -221,7 +222,7 @@ export function renderQSignupView() {
                 renderApp();
             } catch (error) {
                 console.error("Failed to create one-off Q slot:", error);
-                alert("Failed to create Q slot.");
+                showToast("Failed to create Q slot.", "error");
             }
         });
 
@@ -330,7 +331,7 @@ export function renderQSignupView() {
             renderApp();
         } catch (error) {
             console.error("Failed to claim Q slot:", error);
-            alert("Failed to claim Q slot.");
+            showToast("Failed to claim Q slot.", "error");
         }
     }
 
@@ -354,7 +355,7 @@ export function renderQSignupView() {
             renderApp();
         } catch (error) {
             console.error("Failed to unclaim Q slot:", error);
-            alert("Failed to unclaim Q slot.");
+            showToast("Failed to unclaim Q slot.", "error");
         }
     }
 
@@ -378,7 +379,7 @@ export function renderQSignupView() {
             renderApp();
         } catch (error) {
             console.error("failed to assign Q slot:", error);
-            alert("Failed to assign Q slot.");
+            showToast("Failed to assign Q slot.", "error");
         }
     }
 
@@ -399,7 +400,7 @@ export function renderQSignupView() {
             renderApp();
         } catch (error) {
             console.error("Failed to delete Q slot:", error);
-            alert("Failed to delete Q slot.");
+            showToast("Failed to delete Q slot.", "error");
         }
     }
 

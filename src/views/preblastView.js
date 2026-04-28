@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { saveState } from "../utils/storage.js";
 import { updateCustomTemplates } from "../services/cloudData.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderPreblastView() {
     const app = document.getElementById("app");
@@ -62,7 +63,7 @@ export function renderPreblastView() {
             }, 1500);
         } catch (error) {
             console.error("Template save failed:", error);
-            alert("Template saved locally, but failed to save to your account.");
+            showToast("Template saved locally, but failed to save to your account.");
         }
     });
 
@@ -73,7 +74,7 @@ export function renderPreblastView() {
         const savedTemplate = state.customTemplates?.preblast?.savedTemplates?.[0];
 
         if (!savedTemplate) {
-            alert("No saved preblast template yet.");
+            showToast("No saved preblast template yet.");
             return;
         }
 
@@ -151,7 +152,7 @@ export function renderPreblastView() {
             }, 1500);
         } catch (error) {
             console.error("Copy failed:", error);
-            alert("Failed to copy preblast.");
+            showToast("Failed to copy preblast.", "error");
         }
     });
 
@@ -181,7 +182,7 @@ export function renderPreblastView() {
                 }
                 
                 console.error("Share failed:", error);
-                alert("Share failed.");
+                showToast("Share failed.", "error");
             }
         });
     }

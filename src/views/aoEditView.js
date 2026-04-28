@@ -5,6 +5,7 @@ import { insertAo, updateAoInCloud, deleteUpcomingQSlotsForAo, deleteQSlotsByIds
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { goBack } from "../utils/navigation.js";
 import { getTodayDate } from "../utils/date.js";
+import { showToast } from "../utils/toast.js";
 
 const DAY_OPTIONS = [
     { value: 0, label: "Sun" },
@@ -220,7 +221,7 @@ export function renderAoEditView() {
             renderApp();
         } catch (error) {
             console.error("Failed to save AO:", error);
-            alert("Failed to save AO.");
+            showToast("Failed to save AO.", "error");
         }
     });
 

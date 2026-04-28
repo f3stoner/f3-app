@@ -5,6 +5,7 @@ import { formatDate, getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -77,7 +78,7 @@ export function renderWorkoutPlanner() {
         state.workoutBrowseMode = "list";
         state.editingPlannedWorkoutId = null;
 
-        renderApp();
+        showToast("Copied to Planner", "success");
     }
 
     function closeWorkoutBrowseModal() {
@@ -344,7 +345,7 @@ export function renderWorkoutPlanner() {
             ? "Workout shared to Workout Library."
             : "Saved to My Planner.";
 
-            alert(successMessage);
+            showToast(successMessage, "success");
 
             if(state.returnToViewAfterPlanner) {
                 returnAfterPlanner(destinationView);
@@ -358,7 +359,7 @@ export function renderWorkoutPlanner() {
 
         } catch (error) {
             console.error("Failed to save workout:", error);
-            alert("Failed to save workout.")
+            showToast("Failed to save workout.", "error")
         }
 });
 

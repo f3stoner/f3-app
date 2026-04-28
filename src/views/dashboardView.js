@@ -12,6 +12,7 @@ import { generatePreblast } from "../modules/generatePreblast.js";
 import { upsertNotificationSettings } from "../services/cloudData.js";
 import { getUpcomingReminders } from "../utils/upcomingReminders.js";
 import { subscribeToPush } from "../services/pushNotifications.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -127,7 +128,7 @@ export function renderDashboard() {
             await bootApp();
         } catch (error) {
             console.error("Failed to sign out:", error);
-            alert("Failed to sign out.");
+            showToast("Failed to sign out.", "error");
         }
     });
 
@@ -493,7 +494,7 @@ export function renderDashboard() {
 
     exportButton.addEventListener("click", () => {
         exportState(state);
-        alert("Data exported!");
+        showToast("Data exported!", "success");
     });
 
     const stalePaxButton = document.createElement("button");

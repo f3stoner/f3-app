@@ -4,6 +4,7 @@ import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { updateMember } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderMemberDetail () {
     const app = document.getElementById("app");
@@ -88,7 +89,7 @@ export function renderMemberDetail () {
             renderApp();
         } catch (error) {
             console.error("Failed to update member status:", error);
-            alert("Failed to update member status.");
+            showToast("Failed to update member status.", "error");
         }
     });
 

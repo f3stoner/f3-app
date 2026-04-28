@@ -4,6 +4,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { updateMember } from "../services/appData.js";
 import { formatDate } from "../utils/date.js";
 import { goBack } from "../utils/navigation.js";
+import { showToast } from "../utils/toast.js";
 
 export function renderStalePaxView() {
     const app = document.getElementById("app");
@@ -160,7 +161,7 @@ export function renderStalePaxView() {
                     renderStalePaxList();
                 } catch (error) {
                     console.error("Failed to update member status:", error);
-                    alert("Failed to update member.");
+                    showToast("Failed to update member.", "error");
                 }
             });
 

@@ -32,7 +32,7 @@ import { renderResetPasswordView } from "./views/resetPasswordView.js";
 import { saveNavState } from "./utils/storage.js";
 
 window.state = state;
-window.renderApp = renderApp;
+//window.renderApp = renderApp;
 
 if ("serviceWorker" in navigator) {
     const swPath =
@@ -158,8 +158,18 @@ function renderApp() {
 
         state.currentView = "dashboard";
         saveNavState(state);
-        
+
         renderDashboard ();
+    }
+    const existingToast = document.querySelector(".toast");
+    existingToast?.remove();
+
+    if (state.toastMessage) {
+        const toast = document.createElement("div");
+        toast.classList.add("toast", state.toastType || "info");
+        toast.textContent = state.toastMessage;
+
+        document.body.appendChild(toast);
     }
 }
 
