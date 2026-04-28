@@ -92,6 +92,7 @@ export const state = {
     workoutBrowseScrollTop: 0,
     toastMessage: null,
     toastType: "info",
+    adminFlags: savedState?.adminFlags || [],
 };
 
 if (savedNav) {

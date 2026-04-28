@@ -60,6 +60,7 @@ export async function loadRegionData(regionId) {
         plannedWorkoutResult,
         aoResult,
         qSlotResult,
+        adminFlagResult,
     ] = await Promise.all([
         supabase
             .from("regions")
@@ -85,6 +86,8 @@ export async function loadRegionData(regionId) {
             .from("q_slots")
             .select("*")
             .eq("region_id", regionId),
+
+        loadAdminFlags(regionId),
     ]);
 
     if (regionResult.error) throw regionResult.error;
@@ -103,6 +106,7 @@ export async function loadRegionData(regionId) {
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
         aos: aoResult.data.map(mapAoFromDb),
         qSlots: qSlotResult.data.map(mapQSlotFromDb),
+        adminFlags: adminFlagResult,
     };
 }
 
@@ -174,6 +178,25 @@ function mapQSlotFromDb(row) {
         date: row.date,
         qUserId: row.q_user_id || null,
         createdAt: row.created_at,
+    };
+}
+
+function mapAdminFlagFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        type: row.type,
+        status: row.status,
+        severity: row.severity,
+        createdAt: row.created_at,
+        createdByUserId: row.created_by_user_id,
+        sessionId: row.session_id,
+        proposedPaxName: row.proposed_pax_name,
+        matchedMemberIds: row.matched_member_ids || [],
+        message: row.message || "",
+        resolvedAt: row.resolved_at,
+        resolvedByUserId: row.resolved_by_user_id,
+        resolutionNotes: row.resolution_notes || "",
     };
 }
 
@@ -629,3 +652,41 @@ export async function updateCustomTemplates(userId, customTemplates) {
     return data;
 }
 
+export async function loadAdminFlags(regionId) {
+    const { data, error } = await supabase
+        .from("admin_flags")
+        .select("*")
+        .eq("region_id", regionId);
+
+    if (error) throw error;
+
+    return (data || []).map(mapAdminFlagFromDb);
+}
+
+export async function insertAdminFlags(regionId, flags) {
+    const rows = flags.map(flag => ({
+        id: flag.id,
+        region_id: regionId,
+        type: flag.type,
+        status: flag.status,
+        severity: flag.severity,
+        created_at: flag.createdAt,
+        created_by_user_id: flag.createdByUserId || null,
+        session_id: flag.sessionId || null,
+        proposed_pax_name: flag.proposedPaxName || null,
+        matched_member_ids: flag.matchedMemberIds || [],
+        message: flag.message || "",
+        resolved_at: flag.resolvedAt || null,
+        resolved_by_user_id: flag.resolvedByUserId || null,
+        resolution_notes: flag.resolutionNotes || null,
+    }));
+
+    const { data, error } = await supabase
+        .from("admin_flags")
+        .insert(rows)
+        .select()
+
+    if (error) throw error;
+
+    return (data || []).map(mapAdminFlagFromDb);
+}

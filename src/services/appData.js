@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { insertMember, updateMemberInCloud } from "./cloudData.js";
+import { insertAdminFlags, insertMember, updateMemberInCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 
@@ -21,6 +21,7 @@ export function persistAppData() {
         rosterSearchTerm: state.rosterSearchTerm,
         showMyPlannedWorkoutsOnly: state.showMyPlannedWorkoutsOnly,
         customTemplates: state.customTemplates,
+        adminFlags: state.adminFlags,
     });
 }
 
@@ -134,12 +135,28 @@ export function removeMemberFromState(memberId) {
     persistAppData();
 }
 
-export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots }) {
+export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots, adminFlags }) {
     state.regionName = regionName;
     state.members = members;
     state.sessions = sessions;
     state.plannedWorkouts = plannedWorkouts;
     state.aos = aos || [];
     state.qSlots = qSlots || [];
+    state.adminFlags = adminFlags || [];
 }
 
+export async function addAdminFlags(flags) {
+    if (!Array.isArray(flags) || flags.length === 0) return [];
+
+    const activeRegionId = state.currentRegionId;
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+
+    const savedFlags = await insertAdminFlags(activeRegionId, flags);
+
+    state.adminFlags.push(...savedFlags);
+    persistAppData();
+
+    return savedFlags;
+}

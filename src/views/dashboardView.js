@@ -503,6 +503,14 @@ export function renderDashboard() {
         navigateTo("stalePax");
     });
 
+    const adminFlagsButton = document.createElement("button");
+    const openFlagsCount = (state.adminFlags || [])
+        .filter(f => f.status === "open").length;
+    adminFlagsButton.textContent = `Admin Flags (${openFlagsCount})`;
+    adminFlagsButton.addEventListener("click", () => {
+        navigateTo("adminFlags");
+    })
+
     const manageAosButton = document.createElement("button");
     manageAosButton.textContent = "Manage AOs";
     manageAosButton.addEventListener("click", () => {
@@ -563,7 +571,7 @@ export function renderDashboard() {
     });
 
     if(isAdmin){
-    dataToolsRow.append(importButton, exportButton, manageAosButton, stalePaxButton);
+    dataToolsRow.append(importButton, exportButton, manageAosButton, adminFlagsButton, stalePaxButton);
     }
 
     const nav = createGlobalNav();

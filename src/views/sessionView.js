@@ -10,6 +10,8 @@ import { addSession, updateSession } from "../services/appData.js";
 import { REGION_AOS } from "../config.js";
 import { goBack } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
+import { addAdminFlags } from "../services/appData.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -621,6 +623,20 @@ try {
         };
         savedSession = await addSession(sessionToCreate);
     }
+
+    const flags = createDuplicateFngNameFlags(
+        savedSession,
+        state.members,
+        state.currentUserId
+    );
+
+    if (flags.length > 0) {
+        await addAdminFlags(flags);
+        showToast("Session saved • Duplicate name flagged for admin review", "info");
+    } else {
+        showToast("Session saved", "success");
+    }
+
     state.selectedSessionId = savedSession?.id || draftSession.id;
     state.editingSessionId = null;
     state.selectedPlannedWorkoutId = null;

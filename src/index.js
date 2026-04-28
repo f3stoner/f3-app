@@ -30,6 +30,7 @@ import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
 import { saveNavState } from "./utils/storage.js";
+import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 
 window.state = state;
 //window.renderApp = renderApp;
@@ -153,6 +154,8 @@ function renderApp() {
         renderBackblastView();
     } else if (state.currentView === "resetPassword"){
         renderResetPasswordView();
+    } else if (state.currentView === "adminFlags") {
+        renderAdminFlagsView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 
