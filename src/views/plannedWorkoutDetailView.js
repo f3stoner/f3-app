@@ -53,6 +53,14 @@ export function renderPlannedWorkoutDetail() {
     backButton.textContent = "← Back";
     
     backButton.addEventListener("click", () => {
+        if (state.sharedWorkoutViewMode) {
+            state.sharedWorkoutViewMode = false;
+            state.selectedPlannedWorkoutId = null;
+            state.currentView = "plannedWorkoutList";
+            renderApp();
+            return;
+        }
+
         if (isExecutionMode) {
             const confirmed = confirm("Exit workout view?");
             if (!confirmed) return;
@@ -120,7 +128,7 @@ export function renderPlannedWorkoutDetail() {
             `${formatDate(workout.date)} • ${workout.aoName || "AO"}`,
             "",
             resolvedIntroduction ? `INTRODUCTION\n${resolvedIntroduction}` : "",
-            workout.warmorama ? `WARM-O-RAMA\n${workout.warnmora}` : "",
+            workout.warmorama ? `WARM-O-RAMA\n${workout.warmorama}` : "",
             workout.thangs ? `THANGS\n${workout.thangs}` : "",
             workout.finisher ? `MARY / FINISHER\n${workout.finisher}` : "",
             workout.notes ? `NOTES\n${workout.notes}` : ""
@@ -249,13 +257,22 @@ export function renderPlannedWorkoutDetail() {
         navigateTo("workoutPlanner");
     })
 
+    const isWorkoutOwner = workout.createdByUserId === state.currentUserId;
+    const isSharedViewer = state.sharedWorkoutViewMode && !isWorkoutOwner;
+
     const canEditWorkout = 
-        state.currentUserRole === "admin" ||
-        workout.createdByUserId === state.currentUserId;
+        !state.sharedWorkoutViewMode &&
+        (
+            state.currentUserRole === "admin" ||
+            workout.createdByUserId === state.currentUserId
+        );
 
     const canDeleteWorkout = 
-        state.currentUserRole === "admin" ||
-        workout.createdByUserId === state.currentUserId;
+        !state.sharedWorkoutViewMode &&
+        (
+            state.currentUserRole === "admin" ||
+            workout.createdByUserId === state.currentUserId
+        );
 
     let deleteButton = null;
 
@@ -301,9 +318,12 @@ export function renderPlannedWorkoutDetail() {
 
         try {
             if (navigator.share) {
+                const APP_BASE_URL = "https://f3stoner.github.io/f3-app/";
+
                 await navigator.share({
                     title: workout.title || "Workout",
-                    text: shareText
+                    text: "Check out this workout in The Q:",
+                    url: `${APP_BASE_URL}#?workoutId=${workout.id}`
                 });
             } else {
                 await navigator.clipboard.writeText(shareText);
@@ -339,8 +359,13 @@ export function renderPlannedWorkoutDetail() {
             primaryActionsRow.append(editButton);
         }
 
+        if (isSharedViewer) {
+            copyButton.textContent = "Save to My Planner";
+            primaryActionsRow.append(copyButton);
+        } else {
         primaryActionsRow.append(logButton, preblastButton);
         secondaryActionsRow.append(shareButton, copyButton);
+        }
 
         if (canDeleteWorkout && deleteButton) {
             secondaryActionsRow.append(deleteButton);

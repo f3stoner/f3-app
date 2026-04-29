@@ -211,9 +211,19 @@ async function loadActiveRegionData(profileRegionId) {
     return true;
 }
 
+function getSharedWorkoutIdFromUrl() {
+    const hash = window.location.hash;
+    const hashQueryString = hash.includes("?") ? hash.split("?")[1] : "";
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(hashQueryString);
+
+    return searchParams.get("workoutId") || hashParams.get("workoutId");
+}
+
 async function bootApp() {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
+    const sharedWorkoutId = getSharedWorkoutIdFromUrl();
 
     if (mode === "reset-password") {
         state.currentView = "resetPassword";
@@ -287,7 +297,11 @@ async function bootApp() {
             return;
         }
 
-        if (!state.currentUserMemberId) {
+        if (sharedWorkoutId) {
+            state.selectedPlannedWorkoutId = sharedWorkoutId;
+            state.sharedWorkoutViewMode = true;
+            state.currentView = "plannedWorkoutDetail";
+        } else if (!state.currentUserMemberId) {
             state.currentView = "claimMember";
         }
 

@@ -93,6 +93,7 @@ export const state = {
     toastMessage: null,
     toastType: "info",
     adminFlags: savedState?.adminFlags || [],
+    sharedWorkoutViewMode: false,
 };
 
 if (savedNav) {
