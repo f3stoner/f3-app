@@ -467,6 +467,25 @@ export function renderDashboard() {
             topLine.classList.add("member-name");
             topLine.textContent = `${formatDate(session.date)} · ${session.aoName}`;
 
+            const isQ = effectiveQIds.includes(state.currentUserMemberId);
+            const isSoloQ = isQ && effectiveQIds.length === 1;
+            const isCoQ = isQ && effectiveQIds.length > 1;
+
+            const typeLine = document.createElement("div");
+            typeLine.classList.add("stats-line", "activity-type");
+
+            if (isQ) {
+                typeLine.classList.add("q");
+            }
+            
+           if (isCoQ) {
+            typeLine.textContent = "Co-Q";
+           } else if (isQ) {
+            typeLine.textContent = "Q'd";
+           } else {
+            typeLine.textContent = "Attended";
+           }
+
             const qLine = document.createElement("div");
             qLine.classList.add("stats-line", "q-line");
             qLine.textContent = `Q: ${qLabel}`;
@@ -475,12 +494,20 @@ export function renderDashboard() {
             summaryLine.classList.add("stats-line");
             summaryLine.textContent = `${session.attendeeIds.length} PAX · ${session.fngs.length} FNGs`;
 
-            sessionDetail.append(topLine, qLine, summaryLine);
+            sessionDetail.append(topLine, typeLine);
+            
+            if (!isSoloQ) {
+                sessionDetail.appendChild(qLine);
+            }
+             
+            sessionDetail.appendChild(summaryLine);
+
             sessionDetail.addEventListener("click", () => {
                 state.selectedSessionId = session.id;
                 state.currentView = "sessionDetail";
                 renderApp();
             })
+
             recentSessionList.appendChild(sessionDetail);
         })
     }
