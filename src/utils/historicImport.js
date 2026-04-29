@@ -160,7 +160,7 @@ export function normalizePaxName(name) {
         .toLowerCase()
         .replace(/^dr\.\s*/i, "")            
         .replace(/\(.*?\)/g, "")           
-        .replace(/[^a-z0-9\s]/g, "")         
+        .replace(/[^a-z0-9]/g, "")         
         .replace(/\s+/g, " ")
         .trim();
 }

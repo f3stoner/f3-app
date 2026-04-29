@@ -69,18 +69,21 @@ export function renderPlannedWorkoutsList () {
     } else {
         sortedWorkouts.forEach(workout => {
             const card = document.createElement("div");
-            card.classList.add("member-card");
+            card.classList.add("member-card", "planner-card");
+
+            const cardContent = document.createElement("div");
+            cardContent.classList.add("planner-card-content");
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
             topLine.textContent = `${formatDate(workout.date)} - ${workout.aoName || "AO"}`;
 
             const titleLine = document.createElement("div");
-            titleLine.classList.add("stats-line");
+            titleLine.classList.add("stats-line", "planner-title-line");
             titleLine.textContent = workout.title || "(No Title)";
 
             const previewLine = document.createElement("div");
-            previewLine.classList.add("stats-line");
+            previewLine.classList.add("stats-line", "planner-preview-line");
             previewLine.textContent = workout.thangs
                 ? workout.thangs.split("\n")[0]
                 : (workout.notes ? workout.notes.split("\n")[0] : "No workout details");
@@ -88,8 +91,8 @@ export function renderPlannedWorkoutsList () {
             if (workout.date === getTodayDate()) {
                 card.classList.add("today-workout");
             }
-
-            card.append(topLine, titleLine, previewLine);
+            cardContent.append(topLine, titleLine, previewLine);
+            card.append(cardContent);
 
             card.addEventListener("click", () => {
                 state.selectedPlannedWorkoutId = workout.id;

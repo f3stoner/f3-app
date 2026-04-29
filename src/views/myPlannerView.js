@@ -1,5 +1,4 @@
 import { state } from "../modules/state.js";
-import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
@@ -13,7 +12,7 @@ export function renderMyPlanner() {
 
     const subtitle = document.createElement("div");
     subtitle.classList.add("view-subtitle");
-    subtitle.textContent = "Private drafts and workouts you are still planning.";
+    subtitle.textContent = "Your planned workouts, including private drafts and shared workouts.";
 
     const newWorkoutButton = document.createElement("button");
     newWorkoutButton.textContent = "Plan New Workout";
@@ -26,24 +25,23 @@ export function renderMyPlanner() {
 
     const listContainer = document.createElement("div");
 
-    const myDrafts = state.plannedWorkouts.filter(workout =>
-        workout.createdByUserId === state.currentUserId &&
-        !workout.isShared
+    const myWorkouts = state.plannedWorkouts.filter(workout =>
+        workout.createdByUserId === state.currentUserId
     );
 
-    const sortedDrafts = [...myDrafts].sort((a, b) => {
+    const sortedWorkouts = [...myWorkouts].sort((a, b) => {
         const aTime = a.lastModifiedAt || a.createdAt || 0;
         const bTime = b.lastModifiedAt || b.createdAt || 0;
         return bTime - aTime;
     });
 
-    if (sortedDrafts.length === 0) {
+    if (sortedWorkouts.length === 0) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
-        empty.textContent = "You have no private workouts yet. Start planning your next BD.";
+        empty.textContent = "You have no planned workouts yet. Start planning your next BD.";
         listContainer.appendChild(empty);
     } else {
-        sortedDrafts.forEach(workout => {
+        sortedWorkouts.forEach(workout => {
             const card = document.createElement("div");
             card.classList.add("member-card", "planner-card");
 
@@ -70,7 +68,7 @@ export function renderMyPlanner() {
 
             const privateBadge = document.createElement("div");
             privateBadge.classList.add("detail-label", "planner-status-line");
-            privateBadge.textContent = "Private Draft";
+            privateBadge.textContent = workout.isShared ? "Shared Workout" : "Private Draft";
 
             cardContent.append(topLine, titleLine);
 

@@ -12,7 +12,7 @@ import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 import { replacePersistedData } from "./services/appData.js";
 import { loadAllRegions, loadRegionData, getNotificationSettings } from "./services/cloudData.js";
-import { importPaxMasterCsv } from "./services/importAggieland.js";
+import { importPaxMasterCsv, repairAggielandDeltaSessions } from "./services/importAggieland.js";
 import { importAoLogCsv, runAggielandDeltaAoImports } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
@@ -36,6 +36,8 @@ if (process.env.NODE_ENV === "development") {
 window.state = state;
 window.renderApp = renderApp;
 window.runAggielandDeltaAoImports = runAggielandDeltaAoImports;
+window.importPaxMasterCsv = importPaxMasterCsv;
+window.repairAggielandDeltaSessions = repairAggielandDeltaSessions;
 }
 
 if ("serviceWorker" in navigator) {

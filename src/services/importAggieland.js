@@ -1,10 +1,12 @@
-import { insertMember, updateMemberInCloud, insertSessionsBatch } from "./cloudData.js"
+import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud } from "./cloudData.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
 import { normalizePaxName } from "../utils/historicImport.js";
 import { state } from "../modules/state.js";
 
 export async function importPaxMasterCsv(csvText) {
+    let reusedCount = 0;
+    let insertedCount = 0;
 
     const { data: rows, errors } = Papa.parse(csvText, {
         header: true,
@@ -18,11 +20,22 @@ export async function importPaxMasterCsv(csvText) {
 
     console.log("Importing Pax Master:", rows.length);
 
+    const existingMemberMap = await buildMemberNameToMemberMap(state.currentRegionId);
+    
     const memberMap = {};
 
     for (const row of rows) {
         const paxName = (row["Name"] || "").trim();
         if (!paxName) continue;
+
+        const normalizedPaxName = normalizePaxName(paxName);
+        const existingMember = existingMemberMap[normalizedPaxName];
+
+        if (existingMember) {
+            memberMap[normalizedPaxName] = existingMember;
+            reusedCount += 1;
+            continue;
+        }
 
         const member = {
             id: crypto.randomUUID(),
@@ -35,10 +48,16 @@ export async function importPaxMasterCsv(csvText) {
         };
 
         const saved = await insertMember(state.currentRegionId, member);
-        memberMap[normalizePaxName(paxName)] = saved;
+        memberMap[normalizedPaxName] = saved;
+        insertedCount += 1;
+
     }
 
-    console.log("Pass 1 complete:", Object.keys(memberMap).length);
+    console.log("Pass 1 complete:", {
+        totalMapped: Object.keys(memberMap).length,
+        reusedCount,
+        insertedCount,
+});
 
     for (const row of rows) {
         const paxName = (row["Name"] || "").trim();
@@ -61,6 +80,44 @@ export async function importPaxMasterCsv(csvText) {
     return memberMap;
 }
 
+async function buildMemberNameToMemberMap(regionId = state.currentRegionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let allMembers = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("members")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allMembers = allMembers.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
+
+    const map = {};
+
+    for (const row of allMembers) {
+        map[normalizePaxName(row.pax_name)] = {
+            id: row.id,
+            paxName: row.pax_name,
+            realName: row.real_name,
+            homeAo: row.home_ao,
+            invitedById: row.invited_by_id,
+            firstPostDate: row.first_post_date,
+            status: row.status,
+        };
+    }
+
+    return map;
+}
+
 function normalizeDate(value) {
     if (!value) return null;
 
@@ -81,6 +138,202 @@ function normalizeDate(value) {
     if (isNaN(date)) return null;
 
     return date.toISOString().split("T")[0];
+}
+
+async function loadExistingSessionsByDeltaKey(regionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let existingSessions = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("sessions")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        existingSessions = existingSessions.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
+
+    const map = {};
+
+    for (const row of existingSessions) {
+        const key = `${normalizeAoName(row.ao_name)}|${row.date}`;
+
+        map[key] = {
+            id: row.id,
+            date: row.date,
+            aoName: row.ao_name,
+            attendeeIds: row.attendee_ids || [],
+            qIds: row.q_ids || (row.q_id ? [row.q_id] : []),
+            fngs: row.fngs || [],
+            notes: row.notes || "",
+            workout: row.workout || null,
+            sourcePlannedWorkoutId: row.source_planned_workout_id,
+            createdAt: row.created_at,
+            createdByUserId: row.created_by_user_id,
+            backblastText: row.backblast_text || "",
+        };
+    }
+    
+    return map;
+}
+
+export async function repairAggielandDeltaSessions({ dryRun = true, regionId = state.currentRegionId } = {}) {
+    const targetRegionId = regionId;
+
+    const aoFiles = [
+        ["Forest", "/Forest_Log.csv"],
+        ["Cave", "/Cave_Log.csv"],
+        ["Iron", "/Iron_Log.csv"],
+        ["Keep", "/Keep_Log.csv"],
+        ["Rock", "/Rock_Log.csv"],
+        ["Mine", "/Mine_Log.csv"],
+        ["Southie", "/Southie_Log.csv"],
+        ["Watch", "/Watch_Log.csv"],
+        ["Dads", "/Dads_Log.csv"],
+        ["BlackOps", "/BlackOps_Log.csv"],
+        ["CSAUP", "/CSAUP_Log.csv"],
+        ["Other", "/Other_Log.csv"],
+    ];
+
+    console.log(`Aggieland session repair starting. dryRun = ${dryRun}`);
+
+    const existingSessionMap = await loadExistingSessionsByDeltaKey(targetRegionId);
+
+    let repairCandidates = [];
+    let missingExistingSessions = [];
+
+    for (const [aoName, path] of aoFiles) {
+        const response = await fetch(path);
+
+        if (!response.ok) {
+            console.warn(`Skipping ${aoName}. Could not fetch ${path}`);
+            continue;
+        }
+
+        const csvText = await response.text();
+        const parsedSessions = await parseAoLogCsvToSessions(csvText, aoName, targetRegionId);
+
+        for (const parsedSession of parsedSessions) {
+            const key = sessionDeltaKey(parsedSession);
+            const existingSession = existingSessionMap[key];
+
+            if (!existingSession) {
+                missingExistingSessions.push(parsedSession);
+                continue;
+            }
+
+            const existingAttendees = existingSession.attendeeIds || [];
+            const parsedAttendees = parsedSession.attendeeIds || [];
+
+            const existingQs = existingSession.qIds || [];
+            const parsedQs = parsedSession.qIds || [];
+
+            const existingFngs = existingSession.fngs || [];
+            const parsedFngs = parsedSession.fngs || [];
+
+            const mergedAttendeeIds = Array.from(new Set([
+                ...existingAttendees,
+                ...parsedAttendees,
+            ]));
+
+            const mergedQIds = Array.from(new Set([
+                ...existingQs,
+                ...parsedQs,
+            ]));
+
+            const mergedFngs = [...existingFngs];
+
+            for (const fng of parsedFngs) {
+                const alreadyExists = mergedFngs.some(existingFng =>
+                    existingFng.memberId === fng.memberId ||
+                    normalizePaxName(existingFng.paxName) === normalizePaxName(fng.paxName)
+                );
+
+                if (!alreadyExists) {
+                    mergedFngs.push(fng);
+                }
+            }
+
+            const attendeeChanged = mergedAttendeeIds.length !== existingAttendees.length ||
+                mergedAttendeeIds.some(id => !existingAttendees.includes(id));
+            const qChanged = mergedQIds.length !== existingQs.length ||
+                mergedQIds.some(id => !existingQs.includes(id));
+            const fngChanged = mergedFngs.length !== existingFngs.length;
+
+            if (!attendeeChanged && !qChanged && !fngChanged) continue;
+
+            const repairedSession = {
+                ...existingSession,
+                attendeeIds: mergedAttendeeIds,
+                qIds: mergedQIds,
+                fngs: mergedFngs,
+            };
+
+            repairCandidates.push({
+                key,
+                aoName: parsedSession.aoName,
+                date: parsedSession.date,
+                existingAttendeeCount: existingAttendees.length,
+                repairedAttendeeCount: mergedAttendeeIds.length,
+                existingQCount: existingQs.length,
+                repairedQCount: mergedQIds.length,
+                existingFngCount: existingFngs.length,
+                repairedFngCount: mergedFngs.length,
+                addedFngs: parsedFngs
+                    .filter(fng => !existingFngs.some(existingFng =>
+                        existingFng.memberId === fng.memberId ||
+                        normalizePaxName(existingFng.paxName) === normalizePaxName(fng.paxName)
+                    ))
+                    .map(fng => fng.paxName),
+                repairedSession,
+            });
+        }
+    }
+
+    console.log("Aggieland session repair summary:");
+    console.log("Repair candidates:", repairCandidates.length);
+    console.log("CSV sessions missing from DB:", missingExistingSessions.length);
+
+    console.table(repairCandidates.map(candidate => ({
+        aoName: candidate.aoName,
+        date: candidate.date,
+        attendees: `${candidate.existingAttendeeCount} → ${candidate.repairedAttendeeCount}`,
+        qCount: `${candidate.existingQCount} → ${candidate.repairedQCount}`,
+        fngCount: `${candidate.existingFngCount} → ${candidate.repairedFngCount}`,
+        addedFngs: candidate.addedFngs.join(", "),
+    })));
+
+    if (dryRun) {
+
+        console.log("Dry run only. No sessions updated.");
+
+        return {
+            dryRun,
+            repairCandidates,
+            missingExistingSessions,
+        };
+    }
+
+    for (const candidate of repairCandidates) {
+        await updateSessionInCloud(targetRegionId, candidate.repairedSession);
+    }
+
+    console.log(`Updated ${repairCandidates.length} sessions.`);
+
+    return {
+        dryRun,
+        updated: repairCandidates.length,
+        repairCandidates,
+        missingExistingSessions,
+    };
 }
 
 export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.currentRegionId) {
@@ -139,7 +392,10 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
             grouped[key].attendeeIds.push(memberId);
         }
 
-        if (["Q", "QDD", "VQ"].includes(code)) {
+        const normalizedCode = code.replace(/[^A-Z]/g, "");
+        const isQCode = normalizedCode.includes("Q");
+
+        if (isQCode) {
             if (!grouped[key].qIds.includes(memberId)) {
                 grouped[key].qIds.push(memberId);
             }
