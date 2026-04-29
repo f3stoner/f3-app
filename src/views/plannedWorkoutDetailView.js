@@ -113,6 +113,22 @@ export function renderPlannedWorkoutDetail() {
         return section;
     }
 
+    function buildWorkoutShareText(workout) {
+        return [
+            workout.title || "Workout",
+            "",
+            `${formatDate(workout.date)} • ${workout.aoName || "AO"}`,
+            "",
+            resolvedIntroduction ? `INTRODUCTION\n${resolvedIntroduction}` : "",
+            workout.warmorama ? `WARM-O-RAMA\n${workout.warnmora}` : "",
+            workout.thangs ? `THANGS\n${workout.thangs}` : "",
+            workout.finisher ? `MARY / FINISHER\n${workout.finisher}` : "",
+            workout.notes ? `NOTES\n${workout.notes}` : ""
+        ]
+            .filter(Boolean)
+            .join("\n\n");
+    }
+
     const dateSection = isExecutionMode ? null : createDetailSection("Date", formatDate(workout.date));
     const aoSection = isExecutionMode ? null :createDetailSection("AO", workout.aoName || "-");
 
@@ -277,6 +293,30 @@ export function renderPlannedWorkoutDetail() {
         renderApp();
     });
 
+    const shareButton = document.createElement("button");
+    shareButton.textContent = "Share Workout";
+
+    shareButton.addEventListener("click", async () => {
+        const shareText = buildWorkoutShareText(workout);
+
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: workout.title || "Workout",
+                    text: shareText
+                });
+            } else {
+                await navigator.clipboard.writeText(shareText);
+                showToast("Workout copied to clipboard.", "success");
+            }
+        } catch (error) {
+            if (error.name === "AbortError") return;
+
+            console.error("Failed to share workout:", error);
+            showToast("Failed to share workout.", "error");
+        }
+    });
+
     const primaryActionsRow = document.createElement("div");
     primaryActionsRow.classList.add("button-row", "primary-actions-row");
 
@@ -300,7 +340,7 @@ export function renderPlannedWorkoutDetail() {
         }
 
         primaryActionsRow.append(logButton, preblastButton);
-        secondaryActionsRow.append(copyButton);
+        secondaryActionsRow.append(shareButton, copyButton);
 
         if (canDeleteWorkout && deleteButton) {
             secondaryActionsRow.append(deleteButton);
