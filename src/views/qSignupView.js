@@ -6,6 +6,7 @@ import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot } from "../servic
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { unclaimQSlot } from "../services/qSlots.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -335,30 +336,6 @@ export function renderQSignupView() {
         }
     }
 
-    async function unclaimQSlot(slot) {
-        try {
-            const activeRegionId = state.currentRegionId;
-            if (!activeRegionId) {
-                throw new Error("No active region id");
-            }
-
-            const updatedSlot = await updateQSlotInCloud(activeRegionId, {
-                ...slot,
-                qUserId: null,
-            });
-    
-            const index = state.qSlots.findIndex(q => q.id === slot.id);
-            if (index !== -1) {
-                state.qSlots[index] = updatedSlot;
-            }
-    
-            renderApp();
-        } catch (error) {
-            console.error("Failed to unclaim Q slot:", error);
-            showToast("Failed to unclaim Q slot.", "error");
-        }
-    }
-
     async function assignQSlot(slot, memberId) {
         try {
             const activeRegionId = state.currentRegionId;
@@ -530,6 +507,7 @@ export function renderQSignupView() {
                 unclaimButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
                     await unclaimQSlot(slot);
+                    renderApp();
                 });
 
                 actionWrap.append(workoutButton, unclaimButton);
@@ -556,7 +534,8 @@ export function renderQSignupView() {
 
                 clearButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
-                    await unclaimQSlot(slot);
+                    await unclaimQSlot(slot, { bypassDropGuard: true });
+                    renderApp();
                 });
 
                 const deleteButton = document.createElement("button");

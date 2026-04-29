@@ -13,6 +13,7 @@ import { upsertNotificationSettings } from "../services/cloudData.js";
 import { getUpcomingReminders } from "../utils/upcomingReminders.js";
 import { subscribeToPush } from "../services/pushNotifications.js";
 import { showToast } from "../utils/toast.js";
+import { unclaimQSlot } from "../services/qSlots.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -291,6 +292,22 @@ export function renderDashboard() {
 
             nextQActions.appendChild(preblastButton);
         }
+
+        const unclaimButton = document.createElement("button");
+        unclaimButton.classList.add("secondary-button");
+        unclaimButton.textContent = "Unclaim Q";
+
+        unclaimButton.addEventListener("click", async (event) => {
+            event.stopPropagation();
+
+            const result = await unclaimQSlot(nextQSlot);
+
+            if (result?.success) {
+                renderApp();
+            }
+        });
+
+        nextQActions.appendChild(unclaimButton);
 
         nextQCard.addEventListener("click", () => {
             if (!hasPlannedWorkout) {
