@@ -426,9 +426,19 @@ export function renderDashboard() {
     const recentSessionsSection = document.createElement("div");
     const recentHeading = document.createElement("h2");
     const recentSessionList = document.createElement("div");
-    recentHeading.textContent = "Recent Sessions";
+    recentHeading.textContent = "My Recent Activity";
     recentSessionsSection.append(recentHeading);
-    const sortedSessions = [...state.sessions].sort((a,b) => {
+
+    const myRecentSessions = state.sessions.filter(session => {
+        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+        return (
+            effectiveQIds.includes(state.currentUserMemberId) ||
+            session.attendeeIds.includes(state.currentUserMemberId)
+        );
+    });
+
+    const sortedSessions = [...myRecentSessions].sort((a,b) => {
         if (a.date !== b.date) {
             return b.date.localeCompare(a.date);
         }
@@ -438,8 +448,8 @@ export function renderDashboard() {
 
         return bCreatedAt - aCreatedAt;
     })
-    if (state.sessions.length === 0) {
-        recentSessionList.textContent = "No sessions saved yet";
+    if (sortedSessions.length === 0) {
+        recentSessionList.textContent = "No recent activity.";
     } else {
         sortedSessions.slice(0, 3).forEach((session) => {
             const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
