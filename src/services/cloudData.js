@@ -180,6 +180,8 @@ function mapAoFromDb(row) {
         time: row.time,
         isActive: row.is_active ?? true,
         createdAt: row.created_at,
+        address: row.address || "",
+        mapUrl: row.map_url || "",
     };
 }
 
@@ -462,6 +464,8 @@ export async function insertAo(regionId, ao) {
                 time: ao.time,
                 is_active: ao.isActive ?? true,
                 created_at: ao.createdAt,
+                address: ao.address || null,
+                map_url: ao.mapUrl || null,
             },
         ])
         .select()
@@ -483,6 +487,8 @@ export async function updateAoInCloud(regionId, ao) {
             time: ao.time,
             is_active: ao.isActive ?? true,
             created_at: ao.createdAt,
+            address: ao.address || null,
+            map_url: ao.mapUrl || null,
         })
         .eq("id", ao.id)
         .eq("region_id", regionId)

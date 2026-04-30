@@ -47,6 +47,8 @@ export function renderAoEditView() {
         id: crypto.randomUUID(),
         name: "",
         locationName: "",
+        address: "",
+        mapUrl: "",
         daysOfWeek: [],
         time: "05:30",
         isActive: true,
@@ -79,6 +81,32 @@ export function renderAoEditView() {
     locationInput.addEventListener("input", (event) => {
         draftAo.locationName = event.target.value;
     });
+
+    const addressLabel = document.createElement("div");
+    addressLabel.classList.add("detail-label");
+    addressLabel.textContent = "Address";
+
+    const addressInput = document.createElement("input");
+    addressInput.type = "text";
+    addressInput.placeholder = "Street address, city, state";
+    addressInput.value = draftAo.address || "";
+
+    addressInput.addEventListener("input", (event) => {
+        draftAo.address = event.target.value;
+    });
+
+    /*const mapUrlLabel = document.createElement("div");
+    mapUrlLabel.classList.add("detail-label");
+    mapUrlLabel.textContent = "Map Link";
+
+    const mapUrlInput = document.createElement("input");
+    mapUrlInput.type = "url";
+    mapUrlInput.placeholder = "Google Maps Link";
+    mapUrlInput.value = draftAo.mapUrl || "";
+
+    mapUrlInput.addEventListener("input", (event) => {
+        draftAo.mapUrl = event.target.value;
+    }); */
 
     const timeLabel = document.createElement("div");
     timeLabel.classList.add("detail-label");
@@ -166,6 +194,8 @@ export function renderAoEditView() {
 
         draftAo.name = draftAo.name.trim();
         draftAo.locationName = draftAo.locationName.trim();
+        draftAo.address = (draftAo.address || "").trim();
+        draftAo.mapUrl = (draftAo.mapUrl || "").trim();
 
         try {
             if (isEditing) {
@@ -248,6 +278,10 @@ export function renderAoEditView() {
         nameInput,
         locationLabel,
         locationInput,
+        addressLabel,
+        addressInput,
+        /*mapUrlLabel,
+        mapUrlInput,*/
         timeLabel,
         timeInput,
         daysLabel,

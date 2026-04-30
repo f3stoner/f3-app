@@ -8,6 +8,8 @@ export function generatePreblast(workout, aos = []) {
     const aoTime = ao?.time || "";
     const locationName = ao?.locationName || "";
     const title = workout.title?.trim() || "F3 Workout";
+    const address = ao?.address || "";
+    const mapUrl = ao?.mapUrl || "";
 
     const lines = [];
 
@@ -18,6 +20,14 @@ export function generatePreblast(workout, aos = []) {
     lines.push(`What: ${title}`);
     lines.push("");
     lines.push(`Where: ${buildWhereLine(aoName, locationName)}`);
+    if (address) {
+        lines.push(`${address}`);
+    }
+
+    /*if (mapUrl) {
+        lines.push(`Map: ${mapUrl}`);
+    }*/
+
     lines.push("");
     lines.push(`When: ${buildWhenLine(formattedDate, aoTime)}`);
     lines.push("");
