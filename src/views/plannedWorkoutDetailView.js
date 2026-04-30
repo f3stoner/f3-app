@@ -11,6 +11,7 @@ import { showToast } from "../utils/toast.js";
 import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 
 let activeTimerIntervalId = null;
+let timerAudio = null;
 
 function clearActiveTimerInterval() {
     if (activeTimerIntervalId) {
@@ -215,7 +216,10 @@ export function renderPlannedWorkoutDetail() {
 
         function playTimerAlert() {
             navigator.vibrate?.([200, 100, 200]);
-            new Audio("/sounds/timer-complete.wav").play().catch(() => {});
+            if (timerAudio) {
+                timerAudio.currentTime = 0;
+                timerAudio.play().catch(() => {});
+            }
         }
 
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
@@ -306,6 +310,15 @@ export function renderPlannedWorkoutDetail() {
             const wasDone =
             state.activeWorkoutTimerStatus === "done" ||
             state.activeWorkoutTimerRemainingSeconds === 0;
+
+            if (!timerAudio) {
+                timerAudio = new Audio("/sounds/timer-somplete.wav");
+                timerAudio.volume = 1;
+                timerAudio.play().then(() => {
+                    timerAudio.pause();
+                    timerAudio.currentTime = 0;
+                }).catch(() => {});
+            }
             
             if (state.activeWorkoutTimerStatus === "running") {
                 state.activeWorkoutTimerStatus = "paused";

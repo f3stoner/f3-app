@@ -8,6 +8,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 
+
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
     app.textContent = "";
