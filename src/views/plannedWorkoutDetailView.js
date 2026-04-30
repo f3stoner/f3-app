@@ -9,6 +9,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { saveNavState } from "../utils/storage.js";
 import { showToast } from "../utils/toast.js";
 import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
+import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -444,11 +445,11 @@ export function renderPlannedWorkoutDetail() {
             "",
             `${formatDate(workout.date)} • ${workout.aoName || "AO"}`,
             "",
-            resolvedIntroduction ? `INTRODUCTION\n${resolvedIntroduction}` : "",
-            workout.warmorama ? `WARM-O-RAMA\n${workout.warmorama}` : "",
-            workout.thangs ? `THANGS\n${workout.thangs}` : "",
-            workout.finisher ? `MARY / FINISHER\n${workout.finisher}` : "",
-            workout.notes ? `NOTES\n${workout.notes}` : ""
+            resolvedIntroduction ? `${getWorkoutFieldLabel(state, "introduction").toUpperCase()}\n${resolvedIntroduction}` : "",
+            workout.warmorama ? `${getWorkoutFieldLabel(state, "warmorama").toUpperCase()}\n${workout.warmorama}` : "",
+            workout.thangs ? `${getWorkoutFieldLabel(state, "thangs").toUpperCase()}\n${workout.thangs}` : "",
+            workout.finisher ? `${getWorkoutFieldLabel(state, "finisher").toUpperCase()}\n${workout.finisher}` : "",
+            workout.notes ? `${getWorkoutFieldLabel(state, "notes").toUpperCase()}\n${workout.notes}` : ""
         ]
             .filter(Boolean)
             .join("\n\n");
@@ -481,11 +482,15 @@ export function renderPlannedWorkoutDetail() {
         }
     }
 
-    const introductionSection = createDetailSection("Introduction", resolvedIntroduction || "", { hideIfEmpty: isExecutionMode });
-    const warmoramaSection = createDetailSection("Warm-O-Rama", workout.warmorama || "-", { hideIfEmpty: isExecutionMode });
-    const thangsSection = createDetailSection("Thangs", workout.thangs || "-", { hideIfEmpty: isExecutionMode });
-    const finisherSection = createDetailSection("Mary / Finisher", workout.finisher || "-", { hideIfEmpty: isExecutionMode });
-    const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : "Planner Notes", workout.notes || "-", { hideIfEmpty: isExecutionMode });
+    const introductionSection = createDetailSection(
+        getWorkoutFieldLabel(state, "introduction"),
+        resolvedIntroduction || "",
+        { hideIfEmpty: isExecutionMode }
+        );
+    const warmoramaSection = createDetailSection(getWorkoutFieldLabel(state, "warmorama"), workout.warmorama || "-", { hideIfEmpty: isExecutionMode });
+    const thangsSection = createDetailSection(getWorkoutFieldLabel(state, "thangs"), workout.thangs || "-", { hideIfEmpty: isExecutionMode });
+    const finisherSection = createDetailSection(getWorkoutFieldLabel(state, "finisher"), workout.finisher || "-", { hideIfEmpty: isExecutionMode });
+    const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : getWorkoutFieldLabel(state, "notes"), workout.notes || "-", { hideIfEmpty: isExecutionMode });
     const visibilitySection = createDetailSection(
         "Visibility",
         workout.isShared ? "Workout Library" : "My Planner"

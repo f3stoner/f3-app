@@ -10,6 +10,7 @@ export function saveState(state) {
         sessions: state.sessions,
         plannedWorkouts: state.plannedWorkouts,
         sentNotificationKeys: state.sentNotificationKeys,
+        workoutFieldLabels: state.workoutFieldLabels,
     });
     localStorage.setItem(STORAGE_KEY, data);
 }

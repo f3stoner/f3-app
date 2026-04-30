@@ -8,6 +8,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 import { createSavedPlannerSection, getSavedSectionsByType } from "../utils/plannerSections.js";
+import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 
 
 export function renderWorkoutPlanner() {
@@ -375,7 +376,7 @@ export function renderWorkoutPlanner() {
     });
 
     const introductionLabel = document.createElement("div");
-    introductionLabel.textContent = "Introduction";
+    introductionLabel.textContent = getWorkoutFieldLabel(state, "introduction");
     introductionLabel.classList.add("detail-label");
 
     const introductionInput = document.createElement("textarea");
@@ -390,11 +391,11 @@ export function renderWorkoutPlanner() {
     const introductionTemplateControls = createSectionTemplateControls(
         "introduction",
         introductionInput,
-        "Introduction"
+        getWorkoutFieldLabel(state, "introduction")
     );
 
     const warmoramaLabel = document.createElement("div");
-    warmoramaLabel.textContent = "Warm-O-Rama";
+    warmoramaLabel.textContent = getWorkoutFieldLabel(state, "warmorama");
     warmoramaLabel.classList.add("detail-label");
 
     const warmoramaInput = document.createElement("textarea");
@@ -409,11 +410,11 @@ export function renderWorkoutPlanner() {
     const warmoramaTemplateControls = createSectionTemplateControls(
         "warmorama",
         warmoramaInput,
-        "Warm-O-Rama"
+        getWorkoutFieldLabel(state, "warmorama")
     );
 
     const thangsLabel = document.createElement("div");
-    thangsLabel.textContent = "Thangs";
+    thangsLabel.textContent = getWorkoutFieldLabel(state, "thangs");
     thangsLabel.classList.add("detail-label");
 
     const thangsInput = document.createElement("textarea");
@@ -428,11 +429,11 @@ export function renderWorkoutPlanner() {
     const thangsTemplateControls = createSectionTemplateControls(
         "thangs",
         thangsInput,
-        "Thangs"
+        getWorkoutFieldLabel(state, "thangs")
     );
 
     const finisherLabel = document.createElement("div");
-    finisherLabel.textContent = "Mary/Finisher";
+    finisherLabel.textContent = getWorkoutFieldLabel(state, "finisher");
     finisherLabel.classList.add("detail-label");
 
     const finisherInput = document.createElement("textarea");
@@ -447,7 +448,7 @@ export function renderWorkoutPlanner() {
     const finisherTemplateControls = createSectionTemplateControls(
         "finisher",
         finisherInput,
-        "Mary/Finisher"
+        getWorkoutFieldLabel(state, "finisher")
     );
 
     const warmoramaTimers = renderTimerList("warmorama");
@@ -455,7 +456,7 @@ export function renderWorkoutPlanner() {
     const finisherTimers = renderTimerList("finisher");
 
     const notesLabel = document.createElement("div");
-    notesLabel.textContent = "Planner Notes";
+    notesLabel.textContent = getWorkoutFieldLabel(state, "notes");
     notesLabel.classList.add("detail-label");
 
     const notesInput = document.createElement("textarea");
@@ -470,7 +471,7 @@ export function renderWorkoutPlanner() {
     const notesTemplateControls = createSectionTemplateControls(
         "notes",
         notesInput,
-        "Planner Notes"
+        getWorkoutFieldLabel(state, "notes")
     );
 
     const shareLabel = document.createElement("div");
@@ -506,7 +507,11 @@ export function renderWorkoutPlanner() {
             draftWorkout.lastModifiedAt = Date.now();
 
             if (isEditing) {
-                await updatePlannedWorkout(state.editingPlannedWorkoutId, draftWorkout);
+                const workoutToSave = {
+                    ...draftWorkout,
+                    id: state.editingPlannedWorkoutId,
+                };
+                await updatePlannedWorkout(state.editingPlannedWorkoutId, workoutToSave);
                 state.editingPlannedWorkoutId = null;
             } else {
                 await addPlannedWorkout(draftWorkout);
@@ -1018,25 +1023,25 @@ function createWorkoutBrowseModal(onClose, onCopyWorkout) {
         previewTitle.textContent = selectedWorkout.title || "Untitled Workout";
 
         const warmLabel = document.createElement("div");
-        warmLabel.textContent = "Warm-O-Rama";
+        warmLabel.textContent = getWorkoutFieldLabel(state, "warmorama");
         warmLabel.classList.add("detail-label");
 
         const previewWarmorama = document.createElement("pre");
-        previewWarmorama.textContent = selectedWorkout.warmorama || "No Warm-O-Rama";
+        previewWarmorama.textContent = selectedWorkout.warmorama || `No ${getWorkoutFieldLabel(state, "warmorama")}`;
        
         const thangLabel = document.createElement("div");
-        thangLabel.textContent = "Thangs";
+        thangLabel.textContent = getWorkoutFieldLabel(state, "thangs");
         thangLabel.classList.add("detail-label");
         
         const previewThangs = document.createElement("pre");
-        previewThangs.textContent = selectedWorkout.thangs || "No Thangs";
+        previewThangs.textContent = selectedWorkout.thangs || `No ${getWorkoutFieldLabel(state, "thangs")}`;
 
         const finisherLabel = document.createElement("div");
-        finisherLabel.textContent = "Mary/Finisher";
+        finisherLabel.textContent = getWorkoutFieldLabel(state, "finisher");
         finisherLabel.classList.add("detail-label");
 
         const previewFinisher = document.createElement("pre");
-        previewFinisher.textContent = selectedWorkout.finisher || "No Mary/Finisher";
+        previewFinisher.textContent = selectedWorkout.finisher || `No ${getWorkoutFieldLabel(state, "finisher")}`;
 
         const previewCopyButton = document.createElement("button");
         previewCopyButton.textContent = "Copy to Planner";

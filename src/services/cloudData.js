@@ -118,7 +118,23 @@ export async function loadRegionData(regionId) {
         adminFlags: adminFlagResult,
         savedPlannerSections: (savedPlannerSectionResult.data || [])
             .map(mapSavedPlannerSectionFromDb),
+        workoutFieldLabels: regionResult.data.workout_field_labels || {},
     };
+}
+
+export async function updateRegionWorkoutFieldLabels(regionId, labels) {
+    const { data, error } = await supabase
+        .from("regions")
+        .update({
+            workout_field_labels: labels,
+        })
+        .eq("id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapRegionFromDb(data);
 }
 
 function mapMemberFromDb(row) {
@@ -591,7 +607,7 @@ export async function loadAllRegions() {
         .order("name", { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(mapRegionFromDb);
 }
 
 export async function getRegionById(regionId) {
@@ -602,7 +618,7 @@ export async function getRegionById(regionId) {
         .single()
 
     if (error) throw error;
-    return data;
+    return mapRegionFromDb(data);
 }
 
 export async function checkRegionAccess(userId, regionId) {
@@ -790,4 +806,12 @@ export async function updateSavedPlannerSectionInCloud(regionId, section) {
     if (error) throw error;
 
     return mapSavedPlannerSectionFromDb(data);
+}
+
+function mapRegionFromDb(row) {
+    return {
+        id: row.id,
+        name: row.name,
+        workoutFieldLabels: row.workout_field_labels || null,
+    };
 }

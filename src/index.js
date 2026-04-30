@@ -31,6 +31,7 @@ import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
 import { saveNavState, getRestoredNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
+import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -62,6 +63,7 @@ const RESTORABLE_VIEWS = new Set([
     "preblast",
     "qSignup",
     "session",
+    "adminSettings",
 ]);
 
 function restoreNavState(nav) {
@@ -193,6 +195,8 @@ function renderApp() {
         renderResetPasswordView();
     } else if (state.currentView === "adminFlags") {
         renderAdminFlagsView();
+    } else if (state.currentView === "adminSettings") {
+        renderAdminSettingsView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

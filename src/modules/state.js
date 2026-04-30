@@ -92,6 +92,7 @@ export const state = {
     sessionHistoryFilterType: "all",
     sessionHistoryAoFilter: "",
     sessionHistoryQFilter: "",
+    workoutFieldLabels: savedState?.workoutFieldLabels || {},
 };
 
 state.runHistoricImport = async function () {

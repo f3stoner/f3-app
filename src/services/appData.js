@@ -143,7 +143,7 @@ export function removeMemberFromState(memberId) {
     persistAppData();
 }
 
-export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots, adminFlags, savedPlannerSections }) {
+export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots, adminFlags, savedPlannerSections, workoutFieldLabels }) {
     state.regionName = regionName;
     state.members = members;
     state.sessions = sessions;
@@ -152,6 +152,11 @@ export function replacePersistedData({ regionName, members, sessions, plannedWor
     state.qSlots = qSlots || [];
     state.adminFlags = adminFlags || [];
     state.savedPlannerSections = savedPlannerSections || [];
+    state.workoutFieldLabels = workoutFieldLabels || {};
+    state.selectedMemberId = null;
+    state.selectedAoId = null;
+    state.editingAoId = null;
+    state.selectedPreblastWorkoutId = null;
 }
 
 export async function addAdminFlags(flags) {
@@ -228,7 +233,7 @@ export async function addSavedPlannerSection(section) {
 
 export async function updateSavedPlannerSection(section) {
     const activeRegionId = state.currentRegionId;
-    
+
     if (!activeRegionId) {
         throw new Error("No active region id");
     }

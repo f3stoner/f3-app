@@ -7,6 +7,7 @@ import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { addMember, deleteSession, updateSession } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -214,19 +215,19 @@ export function renderSessionDetail() {
         }
 
         if (workout.warmorama) {
-            parts.push(`Warm-O-Rama:\n${workout.warmorama}`);
+            parts.push(`${getWorkoutFieldLabel(state, "warmorama")}:\n${workout.warmorama}`);
         }
 
         if (workout.thangs) {
-            parts.push(`Thangs:\n${workout.thangs}`);
+            parts.push(`${getWorkoutFieldLabel(state, "thangs")}:\n${workout.thangs}`);
         }
 
         if (workout.finisher) {
-            parts.push(`Mary / Finisher:\n${workout.finisher}`);
+            parts.push(`${getWorkoutFieldLabel(state, "finisher")}:\n${workout.finisher}`);
         }
 
         if (workout.notes) {
-            parts.push(`Planner Notes:\n${workout.notes}`);
+            parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
         value.textContent = parts.length > 0

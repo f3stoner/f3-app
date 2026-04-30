@@ -67,6 +67,16 @@ export function renderDashboard() {
 
             const cloudData = await loadRegionData(activeRegionId);
             replacePersistedData(cloudData);
+
+            state.draftPlannedWorkout = null;
+            state.editingPlannedWorkoutId = null;
+            state.selectedPlannedWorkoutId = null;
+            state.draftSession = null;
+            state.editingSessionId = null;
+            state.selectedSessionId = null;
+            state.plannedWorkoutLaunchMode = null;
+
+            localStorage.removeItem("draftPlannedWorkout");
             
             console.log("Switching to Region:", activeRegionId);
 
@@ -574,6 +584,12 @@ export function renderDashboard() {
         navigateTo("aoManagement");
     })
 
+    const adminSettingsButton = document.createElement("button");
+    adminSettingsButton.textContent = "Admin Settings";
+    adminSettingsButton.addEventListener("click", () => {
+        navigateTo("adminSettings");
+    });
+
     const dataToolsHeading = document.createElement("div");
     dataToolsHeading.textContent = "Data Tools";
     dataToolsHeading. classList.add("detail-label");
@@ -628,7 +644,14 @@ export function renderDashboard() {
     });
 
     if(isAdmin){
-    dataToolsRow.append(importButton, exportButton, manageAosButton, adminFlagsButton, stalePaxButton);
+        dataToolsRow.append(
+            importButton,
+            exportButton,
+            manageAosButton,
+            adminSettingsButton, 
+            adminFlagsButton, 
+            stalePaxButton
+        );
     }
 
     const nav = createGlobalNav();
