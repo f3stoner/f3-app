@@ -37,7 +37,9 @@ export function renderWorkoutPlanner() {
         renderApp();
     }
 
-    if (isEditing) {
+    if (state.draftPlannedWorkout) {
+        draftWorkout = { ...state.draftPlannedWorkout };
+    } else if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
     } else if (state.draftPlannedWorkout) {
@@ -78,6 +80,7 @@ export function renderWorkoutPlanner() {
             removeButton.classList.add("secondary-button");
 
             removeButton.addEventListener("click", (event) => {
+                event.preventDefault();
                 event.stopPropagation();
                 draftWorkout.timers = draftWorkout.timers.filter(t => t.id !== timer.id);
                 persistDraft();
