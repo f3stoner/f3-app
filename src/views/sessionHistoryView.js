@@ -7,9 +7,73 @@ import { navigateTo } from "../utils/navigation.js";
 export function renderSessionHistory() {
     const app = document.getElementById("app");
     app.textContent = "";
+    app.classList.add("view-session-history");
 
     const title = document.createElement("h1");
     title.textContent = "Session History";
+
+    const filterSection = document.createElement("div");
+    filterSection.classList.add("section");
+
+    const filterLabel = document.createElement("div");
+    filterLabel.classList.add("detail-label");
+    filterLabel.textContent = "Filters";
+
+    const typeFilterRow = document.createElement("div");
+    typeFilterRow.classList.add("button-row");
+
+    [
+        ["all", "All"],
+        ["q", "My Qs"],
+        ["attended", "My Posts"],
+    ].forEach(([value, label]) => {
+        const button = document.createElement("button");
+        button.textContent = label;
+
+        if ((state.sessionHistoryFilterType || "all") === value) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => {
+            state.sessionHistoryFilterType = value;
+            renderSessionList();
+        });
+
+        typeFilterRow.appendChild(button);
+    });
+
+    const aoSelect = document.createElement("select");
+
+    const allAoOption = document.createElement("option");
+    allAoOption.value = "";
+    allAoOption.textContent = "All AOs";
+    aoSelect.appendChild(allAoOption);
+
+    state.aos
+        .filter(ao => ao.isActive !== false)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(ao => {
+            const option = document.createElement("option");
+            option.value = ao.name;
+            option.textContent = ao.name;
+            aoSelect.appendChild(option);
+        });
+
+    aoSelect.value = state.sessionHistoryAoFilter || "";
+
+    aoSelect.addEventListener("change", (event) => {
+        state.sessionHistoryAoFilter = event.target.value;
+        renderSessionList();
+    });
+
+    filterSection.append(filterLabel);
+
+    const controlsRow = document.createElement("div");
+    controlsRow.classList.add("controls-row");
+
+    controlsRow.append(typeFilterRow, aoSelect);
+
+    filterSection.append(controlsRow);
 
     const searchInput = document.createElement("input");
     searchInput.type = "text";
@@ -73,9 +137,19 @@ export function renderSessionHistory() {
         const searchTerm = (state.sessionHistorySearchTerm || "").trim().toLowerCase();
 
         const filteredSessions = state.sessions.filter((session) => {
-            if (!searchTerm) return true;
-
             const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+            const isQ = effectiveQIds.includes(state.currentUserMemberId);
+            const isAttended = session.attendeeIds.includes(state.currentUserMemberId);
+
+            if (state.sessionHistoryFilterType === "q" && !isQ) return false;
+            if (state.sessionHistoryFilterType === "attended" && !isAttended) return false;
+
+            if (state.sessionHistoryAoFilter && session.aoName !== state.sessionHistoryAoFilter) {
+                return false;
+            }
+
+            if (!searchTerm) return true;
 
             const qNames = effectiveQIds
                 .map(qId => state.members.find(m => m.id === qId))
@@ -119,7 +193,8 @@ export function renderSessionHistory() {
             return bCreatedAt - aCreatedAt;
         })
         if (sortedSessions.length === 0) {
-            sessionList.textContent = searchTerm
+            sessionList.textContent = 
+            searchTerm || state.sessionHistoryFilterType !== "all" || state.sessionHistoryAoFilter
                 ? "No matching sessions found"            
                 : "No sessions saved yet";
             return;
@@ -155,5 +230,5 @@ export function renderSessionHistory() {
 
     renderSessionList();
 
-    app.append(title, searchInput, sessionList, backButton, nav);
+    app.append(title, filterSection, searchInput, sessionList, backButton, nav);
 }

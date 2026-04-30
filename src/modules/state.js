@@ -1,31 +1,14 @@
-import { loadState, loadNavState } from "../utils/storage.js";
+import { loadState } from "../utils/storage.js";
 import { seedMembers } from "../data/seedMembers.js";
 import { insertSessionsBatch } from "../services/cloudData.js";
 
 const savedState = loadState();
-const savedNav = loadNavState();
-
-const RESTORABLE_VIEWS = new Set([
-    "dashboard",
-    "myPlanner",
-    "plannedWorkoutDetail",
-    "plannedWorkoutList",
-    "workoutPlanner",
-    "sessionHistory",
-    "roster",
-    "preblast",
-    "qSignup",
-]);
-
-const restoredView = RESTORABLE_VIEWS.has(savedNav?.currentView)
-    ? savedNav.currentView
-    : "dashboard";
 
 export const state = {
     regionName: savedState?.regionName || "F3 Old 300",
     members: savedState?.members || [...seedMembers],
     sessions: savedState?.sessions || [],
-    currentView: restoredView,
+    currentView: "dashboard",
     viewHistory: [],
     selectedSessionId: null,
     editingSessionId: null,
@@ -106,16 +89,10 @@ export const state = {
     plannerSectionModalOpen: false,
     plannerSectionModalType: null,
     plannerSectionModalTarget: null,
+    sessionHistoryFilterType: "all",
+    sessionHistoryAoFilter: "",
+    sessionHistoryQFilter: "",
 };
-
-if (savedNav) {
-    state.selectedPlannedWorkoutId = savedNav.selectedPlannedWorkoutId || null;
-    state.editingPlannedWorkoutId = savedNav.editingPlannedWorkoutId || null;
-    state.plannedWorkoutLaunchMode = savedNav.plannedWorkoutLaunchMode || null;
-    state.selectedSessionId = savedNav.selectedSessionId || null;
-    state.editingSessionId = savedNav.editingSessionId || null;
-    state.selectedPreblastWorkoutId = savedNav.selectedPreblastWorkoutId || null;
-}
 
 state.runHistoricImport = async function () {
     if (!state._historicImport) {

@@ -1,5 +1,7 @@
 const STORAGE_KEY = "f3AppState";
 const NAV_STATE_KEY = "theQNavState";
+const NAV_RESTORE_TTL_MS = 15 * 60 * 1000;
+const EXECUTION_RESTORE_TTL_MS = 4 * 60 * 60 * 1000;
 
 export function saveState(state) {
     const data = JSON.stringify({
@@ -21,6 +23,12 @@ export function saveNavState(state) {
         selectedSessionId: state.selectedSessionId,
         editingSessionId: state.editingSessionId,
         selectedPreblastWorkoutId: state.selectedPreblastWorkoutId,
+        savedAt: Date.now(),
+        sessionRestoreMode: 
+            state.currentView === "session" &&
+            state.plannedWorkoutLaunchMode === "execution"
+                ? "execution"
+                : null,
     }));
 }
 
@@ -53,4 +61,31 @@ export function loadState() {
         console.error("Failed to load state", error);
         return null;
     }
+}
+
+export function getRestoredNavState() {
+    const saved = loadNavState();
+    if (!saved) return null;
+
+    const now = Date.now();
+
+    const isFresh =
+        saved.savedAt &&
+        now - saved.savedAt < NAV_RESTORE_TTL_MS;
+
+    const isExecutionValid =
+        saved.sessionRestoreMode === "execution" &&
+        saved.savedAt &&
+        now - saved.savedAt < EXECUTION_RESTORE_TTL_MS &&
+        saved.selectedSessionId;
+
+    if (isExecutionValid) {
+        return saved;
+    }
+
+    if (isFresh) {
+        return saved;
+    }
+
+    return null;
 }

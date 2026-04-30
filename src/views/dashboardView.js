@@ -125,6 +125,7 @@ export function renderDashboard() {
             state.currentUserMemberId = null;
             state.claimingMemberId = null;
             state.notificationSettings = null;
+            localStorage.removeItem("theQNavState");
 
             await bootApp();
         } catch (error) {

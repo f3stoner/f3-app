@@ -29,7 +29,7 @@ import { checkRegionAccess } from "./services/cloudData.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
-import { saveNavState } from "./utils/storage.js";
+import { saveNavState, getRestoredNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 
 if (process.env.NODE_ENV === "development") {
@@ -48,6 +48,36 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register(swPath)
         .then(() => console.log("SW registered"))
         .catch(err => console.error("SW registration failed:", err));
+}
+
+const RESTORABLE_VIEWS = new Set([
+    "dashboard",
+    "myPlanner",
+    "plannedWorkoutDetail",
+    "plannedWorkoutList",
+    "workoutPlanner",
+    "sessionHistory",
+    "sessionDetail",
+    "roster",
+    "preblast",
+    "qSignup",
+    "session",
+]);
+
+function restoreNavState(nav) {
+    if (!nav || !RESTORABLE_VIEWS.has(nav.currentView)) {
+        state.currentView = "dashboard";
+        return;
+    }
+
+    state.currentView = nav.currentView;
+    state.selectedPlannedWorkoutId = nav.selectedPlannedWorkoutId || null;
+    state.plannedWorkoutLaunchMode = nav.plannedWorkoutLaunchMode || null;
+    state.selectedSessionId = nav.selectedSessionId || null;
+    state.selectedPreblastWorkoutId = nav.selectedPreblastWorkoutId || null;
+
+    state.editingPlannedWorkoutId = null;
+    state.editingSessionId = null;
 }
 
 async function runHistoricPreview() {
@@ -303,6 +333,14 @@ async function bootApp() {
             state.currentView = "plannedWorkoutDetail";
         } else if (!state.currentUserMemberId) {
             state.currentView = "claimMember";
+        } else {
+            const restoredNav = getRestoredNavState();
+
+            if (restoredNav) {
+                restoreNavState(restoredNav);
+            } else {
+                state.currentView = "dashboard";
+            }
         }
 
         renderApp();

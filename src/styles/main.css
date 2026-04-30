@@ -1571,3 +1571,49 @@ select:focus,
     color: #9a3412;
 }
 
+.controls-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.controls-row select {
+    flex: 1;
+}
+
+.view-session-history .section {
+    padding: 8px;
+    margin-bottom: 0;
+}
+
+.view-session-history .button-row {
+    gap: 6px;
+}
+
+.view-session-history .button-row button {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.view-session-history .session-search {
+    padding: 8px 10px;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.view-session-history .detail-label {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.view-session-history select {
+    padding: 6px 10px;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.view-session-history .controls-row,
+.view-session-history select,
+.view-session-history .session-search {
+  margin-top: 6px;
+}
