@@ -100,6 +100,8 @@ export const state = {
     activeWorkoutTimerStatus: "idle",
     activeWorkoutTimerStartedAt: null,
     activeWorkoutTimerRemainingSeconds: null,
+    activeWorkoutTimerPhase: null,
+    activeWorkoutTimerRound: null,
 };
 
 if (savedNav) {
