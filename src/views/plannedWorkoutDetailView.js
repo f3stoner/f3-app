@@ -13,6 +13,9 @@ import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.
 let activeTimerIntervalId = null;
 let timerAudio = null;
 
+const TIMER_SOUND_URL =
+    `${window.location.origin}${process.env.NODE_ENV === "production" ? "/f3-app" : ""}/sounds/timer-complete.wav`;
+
 function clearActiveTimerInterval() {
     if (activeTimerIntervalId) {
         clearInterval(activeTimerIntervalId);
@@ -216,11 +219,16 @@ export function renderPlannedWorkoutDetail() {
 
         function playTimerAlert() {
             navigator.vibrate?.([200, 100, 200]);
-            if (timerAudio) {
-                timerAudio.currentTime = 0;
-                timerAudio.play().catch(() => {});
+            if (!timerAudio) {
+                timerAudio = new Audio(TIMER_SOUND_URL);
+                timerAudio.volume = 1;
             }
-        }
+                timerAudio.currentTime = 0;
+                timerAudio.play().catch((error) => {
+                    console.warn("Timer sound failed:", error);
+                });
+            }
+        
 
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
@@ -312,7 +320,7 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerRemainingSeconds === 0;
 
             if (!timerAudio) {
-                timerAudio = new Audio("/sounds/timer-somplete.wav");
+                timerAudio = new Audio(TIMER_SOUND_URL);
                 timerAudio.volume = 1;
                 timerAudio.play().then(() => {
                     timerAudio.pause();
