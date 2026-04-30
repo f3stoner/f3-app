@@ -1531,3 +1531,43 @@ select:focus,
     text-align: center;
     margin: 12px 0;
 }
+
+.active-timer-clock.running { color: #22c55e; }
+.active-timer-clock.paused  { color: #facc15; }
+.active-timer-clock.done    { color: #ef4444; }
+
+.active-timer-panel.timer-work {
+    border-top: 6px solid #22c55e;
+}
+
+.active-timer-panel.timer-rest {
+    border-top: 6px solid #f97316;
+}
+
+.active-timer-clock.timer-work {
+    color: #22c55e;
+}
+
+.active-timer-clock.timer-rest {
+    color: #f97316;
+}
+
+.timer-phase-badge {
+    display: inline-block;
+    margin: 12px 0 4px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.timer-phase-badge.work {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.timer-phase-badge.rest {
+    background: #ffedd5;
+    color: #9a3412;
+}
+

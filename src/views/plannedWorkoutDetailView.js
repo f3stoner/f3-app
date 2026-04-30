@@ -124,6 +124,10 @@ export function renderPlannedWorkoutDetail() {
                 state.activeWorkoutTimerId = timer.id;
                 state.activeWorkoutTimerStatus = "idle";
                 state.activeWorkoutTimerStartedAt = null;
+
+                state.activeWorkoutTimerPhase = timer.type === "interval" ? "work" : null;
+                state.activeWorkoutTimerRound = timer.type === "interval" ? 1 : null;
+
                 state.activeWorkoutTimerRemainingSeconds =
                     timer.type === "interval"
                         ? timer.workSeconds || 45
@@ -162,6 +166,14 @@ export function renderPlannedWorkoutDetail() {
         const modal = document.createElement("div");
         modal.classList.add("modal", "active-timer-panel");
 
+        if (timer.type === "interval") {
+            modal.classList.add(
+                state.activeWorkoutTimerPhase === "rest"
+                    ? "timer-rest"
+                    : "timer-work"
+            );
+        }
+
         const label = document.createElement("div");
         label.classList.add("detail-label");
         label.textContent = timer.label || "Workout Timer";
@@ -169,6 +181,29 @@ export function renderPlannedWorkoutDetail() {
         const summary = document.createElement("div");
         summary.classList.add("stats-line");
         summary.textContent = formatTimerSummary(timer);
+
+        let intervalStatus = null;
+
+        if (timer.type === "interval") {
+            intervalStatus = document.createElement("div");
+            intervalStatus.classList.add("stats-line");
+            intervalStatus.textContent = `${state.activeWorkoutTimerPhase === "rest" ? "Rest" : "Work"} · ${state.activeWorkoutTimerRound || 1} of ${timer.rounds || 1}`;
+        }
+
+        let phaseBadge = null;
+
+        if (timer.type === "interval") {
+            phaseBadge = document.createElement("div");
+            phaseBadge.classList.add("timer-phase-badge");
+
+            if (state.activeWorkoutTimerPhase === "rest") {
+                phaseBadge.classList.add("rest");
+                phaseBadge.textContent = "REST";
+            } else {
+                phaseBadge.classList.add("work");
+                phaseBadge.textContent = "WORK";
+            }
+        }
 
         const totalSeconds =
             timer.type === "interval"
@@ -178,16 +213,59 @@ export function renderPlannedWorkoutDetail() {
         const remainingSeconds =
             state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
 
+        function playTimerAlert() {
+            navigator.vibrate?.([200, 100, 200]);
+            new Audio("/sounds/timer-complete.wav").play().catch(() => {});
+        }
+
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
                 const currentRemaining = state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
 
                 if (currentRemaining <= 1) {
+                    if (timer.type === "interval") {
+                        playTimerAlert();
+
+                        const currentRound = state.activeWorkoutTimerRound || 1;
+                        const currentPhase = state.activeWorkoutTimerPhase || "work";
+
+                        if (currentPhase === "work") {
+                            state.activeWorkoutTimerPhase = "rest";
+                            state.activeWorkoutTimerRemainingSeconds = timer.restSeconds ?? 15;
+                        } else {
+                            if (currentRound >= (timer.rounds || 1)) {
+                                state.activeWorkoutTimerRemainingSeconds = 0;
+                                state.activeWorkoutTimerStatus = "done";
+                                state.activeWorkoutTimerPhase = null;
+                                clearActiveTimerInterval();
+                            } else {
+                                state.activeWorkoutTimerRound = currentRound + 1;
+                                state.activeWorkoutTimerPhase = "work";
+                                state.activeWorkoutTimerRemainingSeconds = timer.workSeconds || 45;
+                            }
+                        }
+
+                        renderApp();
+                        return;
+                    }
+
+                    if (timer.type === "emom") {
+                        playTimerAlert();
+                    }
+
                     state.activeWorkoutTimerRemainingSeconds = 0;
                     state.activeWorkoutTimerStatus = "done";
                     clearActiveTimerInterval();
                     renderApp();
                     return;
+                }
+
+                if (
+                    timer.type === "emom" &&
+                    currentRemaining !== totalSeconds &&
+                    currentRemaining % 60 === 0
+                ) {
+                    playTimerAlert();
                 }
 
                 state.activeWorkoutTimerRemainingSeconds = currentRemaining - 1;
@@ -202,6 +280,17 @@ export function renderPlannedWorkoutDetail() {
         const clock = document.createElement("div");
         clock.classList.add("active-timer-clock");
         clock.textContent = formatTimerClock(remainingSeconds);
+        
+        clock.classList.remove("running", "paused", "done");
+        clock.classList.add(state.activeWorkoutTimerStatus);
+        
+        if (timer.type === "interval") {
+            clock.classList.add(
+                state.activeWorkoutTimerPhase === "rest"
+                    ? "timer-rest"
+                    : "timer-work"
+            );
+        }
 
         const buttonRow = document.createElement("div");
         buttonRow.classList.add("button-row");
@@ -240,7 +329,17 @@ export function renderPlannedWorkoutDetail() {
         resetButton.addEventListener("click", () => {
             state.activeWorkoutTimerStatus = "idle";
             state.activeWorkoutTimerStartedAt = null;
+
+            if (timer.type === "interval") {
+                state.activeWorkoutTimerPhase = "work";
+                state.activeWorkoutTimerRound = 1;
+                state.activeWorkoutTimerRemainingSeconds = timer.workSeconds || 45;
+            } else {
             state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+            state.activeWorkoutTimerPhase = null;
+            state.activeWorkoutTimerRound = null;
+            }
+
             renderApp();
         });
 
@@ -256,23 +355,25 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerStatus = "idle";
             state.activeWorkoutTimerStartedAt = null;
             state.activeWorkoutTimerRemainingSeconds = null;
+            state.activeWorkoutTimerPhase = null;
+            state.activeWorkoutTimerRound = null;
             renderApp();
         });
 
         buttonRow.append(startButton, resetButton, closeButton);
 
-        modal.append(label, summary, clock, buttonRow);
+        modal.append(
+            label,
+            summary,
+            ...(intervalStatus ? [intervalStatus] : []),
+            ...(phaseBadge ? [phaseBadge] : []),
+            clock,
+            buttonRow
+        );
         panel.appendChild(modal);
 
-        panel.addEventListener("click", () => {
-            clearActiveTimerInterval();
-            removeActiveTimerModal();
-
-            state.activeWorkoutTimerId = null;
-            state.activeWorkoutTimerStatus = "idle";
-            state.activeWorkoutTimerStartedAt = null;
-            state.activeWorkoutTimerRemainingSeconds = null;
-            renderApp();
+        panel.addEventListener("click", (event) => {
+            event.stopPropagation();
         });
 
         modal.addEventListener("click", (event) => {
