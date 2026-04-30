@@ -176,19 +176,11 @@ const backButton = document.createElement("button");
         goBack("sessionDetail");
     });
 
-const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
-
-const inferredAoOptions = [...new Set([
-    ...(state.aos || []).map(ao => ao.name).filter(Boolean),
-    ...state.sessions.map(s => s.aoName).filter(Boolean),
-])].sort();
-
-const aoOptions = [...new Set([
-    ...configuredAoOptions,
-    ...inferredAoOptions,
-])]
-.filter(ao => ao && ao !== "DR")
-.sort();
+const aoOptions = (state.aos || [])
+    .filter(ao => ao.isActive)
+    .map(ao => ao.name)
+    .filter(ao => ao && ao !== "DR")
+    .sort((a, b) => a.localeCompare(b));
 
 const aoLabel = document.createElement("div");
 aoLabel.textContent = "AO";
