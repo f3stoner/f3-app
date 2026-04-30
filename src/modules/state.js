@@ -102,6 +102,10 @@ export const state = {
     activeWorkoutTimerRemainingSeconds: null,
     activeWorkoutTimerPhase: null,
     activeWorkoutTimerRound: null,
+    savedPlannerSections: [],
+    plannerSectionModalOpen: false,
+    plannerSectionModalType: null,
+    plannerSectionModalTarget: null,
 };
 
 if (savedNav) {

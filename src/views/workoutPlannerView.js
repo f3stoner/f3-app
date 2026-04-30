@@ -2,11 +2,12 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
-import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js";
+import { addPlannedWorkout, updatePlannedWorkout, addSavedPlannerSection, updateSavedPlannerSection } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
+import { createSavedPlannerSection, getSavedSectionsByType } from "../utils/plannerSections.js";
 
 
 export function renderWorkoutPlanner() {
@@ -43,11 +44,22 @@ export function renderWorkoutPlanner() {
     } else if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
-    } else if (state.draftPlannedWorkout) {
-        draftWorkout = { ...state.draftPlannedWorkout };
+        state.draftPlannedWorkout = { ...draftWorkout };
+
+        localStorage.setItem(
+            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+            JSON.stringify(state.draftPlannedWorkout)
+        );
     } else {
         draftWorkout = createPlannedWorkout(getTodayDate(), "");
         draftWorkout.createdByUserId = state.currentUserId;
+
+        state.draftPlannedWorkout = { ...draftWorkout };
+
+        localStorage.setItem(
+            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+            JSON.stringify(state.draftPlannedWorkout)
+        );
     }
 
     function persistDraft() {
@@ -57,6 +69,61 @@ export function renderWorkoutPlanner() {
             SAVED_PLANNED_WORKOUT_DRAFT_KEY,
             JSON.stringify(state.draftPlannedWorkout)
         );
+    }
+
+    function createSectionTemplateControls(sectionType, input, labelText) {
+        const controls = document.createElement("div");
+        controls.classList.add("button-row", "section-template-controls");
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.classList.add("secondary-button");
+        saveButton.textContent = "Save Section";
+
+        saveButton.addEventListener("click", async () => {
+            const content = input.value.trim();
+
+            if (!content) {
+                showToast("Nothing to save yet.", "error");
+                return;
+            }
+
+            const name = prompt(`Name this ${labelText} section:`);
+
+            if(!name?.trim()) return;
+
+            const newSection = createSavedPlannerSection({
+                regionId: state.currentRegionId,
+                sectionType,
+                name: name.trim(),
+                content,
+                createdByUserId: state.currentUserId,
+            });
+
+            try {
+                await addSavedPlannerSection(newSection);
+                showToast("Section saved.", "success");
+            } catch (error) {
+                console.error("Failed to save section:", error);
+                showToast("Failed to save section.", "error");
+            }
+        });
+
+        const insertButton = document.createElement("button");
+        insertButton.type ="button";
+        insertButton.classList.add("secondary-button");
+        insertButton.textContent = "Insert Saved";
+
+        insertButton.addEventListener("click", () => {
+            state.plannerSectionModalOpen = true;
+            state.plannerSectionModalType = sectionType;
+            state.plannerSectionModalTarget = sectionType;
+            renderApp();
+        });
+
+        controls.append(saveButton, insertButton);
+
+        return controls;
     }
 
     function renderTimerList(section) {
@@ -320,6 +387,12 @@ export function renderWorkoutPlanner() {
         persistDraft();
     });
 
+    const introductionTemplateControls = createSectionTemplateControls(
+        "introduction",
+        introductionInput,
+        "Introduction"
+    );
+
     const warmoramaLabel = document.createElement("div");
     warmoramaLabel.textContent = "Warm-O-Rama";
     warmoramaLabel.classList.add("detail-label");
@@ -332,6 +405,12 @@ export function renderWorkoutPlanner() {
         draftWorkout.warmorama = event.target.value;
         persistDraft();
     });
+
+    const warmoramaTemplateControls = createSectionTemplateControls(
+        "warmorama",
+        warmoramaInput,
+        "Warm-O-Rama"
+    );
 
     const thangsLabel = document.createElement("div");
     thangsLabel.textContent = "Thangs";
@@ -346,6 +425,12 @@ export function renderWorkoutPlanner() {
         persistDraft();
     });
 
+    const thangsTemplateControls = createSectionTemplateControls(
+        "thangs",
+        thangsInput,
+        "Thangs"
+    );
+
     const finisherLabel = document.createElement("div");
     finisherLabel.textContent = "Mary/Finisher";
     finisherLabel.classList.add("detail-label");
@@ -358,6 +443,12 @@ export function renderWorkoutPlanner() {
         draftWorkout.finisher = event.target.value;
         persistDraft();
     });
+
+    const finisherTemplateControls = createSectionTemplateControls(
+        "finisher",
+        finisherInput,
+        "Mary/Finisher"
+    );
 
     const warmoramaTimers = renderTimerList("warmorama");
     const thangsTimers = renderTimerList("thangs");
@@ -375,6 +466,12 @@ export function renderWorkoutPlanner() {
         draftWorkout.notes = event.target.value;
         persistDraft();
     });
+
+    const notesTemplateControls = createSectionTemplateControls(
+        "notes",
+        notesInput,
+        "Planner Notes"
+    );
 
     const shareLabel = document.createElement("div");
     shareLabel.textContent = "Visibility";
@@ -459,17 +556,22 @@ export function renderWorkoutPlanner() {
         workoutTitleInput,
         introductionLabel,
         introductionInput,
+        introductionTemplateControls,
         warmoramaLabel,
         warmoramaInput,
+        warmoramaTemplateControls,
         warmoramaTimers,
         thangsLabel,
         thangsInput,
+        thangsTemplateControls,
         thangsTimers,
         finisherLabel,
         finisherInput,
+        finisherTemplateControls,
         finisherTimers,
         notesLabel,
         notesInput,
+        notesTemplateControls,
         shareLabel,
         shareSelect,
         primaryActionsRow,
@@ -486,6 +588,19 @@ export function renderWorkoutPlanner() {
             onClose: () => {
                 state.editingWorkoutTimerId = null;
                 state.editingWorkoutTimerSection = null;
+                renderApp();
+            }
+        }));
+    }
+
+    if (state.plannerSectionModalOpen) {
+        app.appendChild(createSavedSectionModal({
+            draftWorkout,
+            persistDraft,
+            onClose: () => {
+                state.plannerSectionModalOpen = false;
+                state.plannerSectionModalType = null;
+                state.plannerSectionModalTarget = null;
                 renderApp();
             }
         }));
@@ -675,6 +790,115 @@ function createTimerEditorModal({ draftWorkout, persistDraft, onClose }) {
         fieldsWrap,
         buttonRow
     );
+
+    overlay.appendChild(modal);
+
+    overlay.addEventListener("click", onClose);
+    modal.addEventListener("click", event => event.stopPropagation());
+
+    return overlay;
+}
+
+function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
+    const sectionType = state.plannerSectionModalType;
+
+    const savedSections = getSavedSectionsByType(
+        state.savedPlannerSections,
+        sectionType,
+        state.currentUserId
+    );
+
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay");
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    
+    const title = document.createElement("h2");
+    title.textContent = "Insert Saved Section";
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.textContent = "Close";
+    closeButton.classList.add("secondary-button");
+    closeButton.addEventListener("click", onClose);
+
+    if (savedSections.length === 0) {
+        const emptyMessage = document.createElement("div");
+        emptyMessage.classList.add("stats-line");
+        emptyMessage.textContent = "No saved sections yet.";
+
+        modal.append(title, emptyMessage, closeButton);
+    } else {
+        const list = document.createElement("div");
+        list.classList.add("saved-section-list");
+
+        savedSections.forEach(section => {
+            const card = document.createElement("div");
+            card.classList.add("workout-browse-card");
+
+            const name = document.createElement("div");
+            name.classList.add("workout-browse-title");
+            name.textContent = section.name;
+
+            const preview = document.createElement("pre");
+            preview.textContent = section.content;
+            preview.classList.add("saved-section-preview");
+
+            const actions = document.createElement("div");
+            actions.classList.add("button-row");
+
+            const replaceButton = document.createElement("button");
+            replaceButton.type = "button";
+            replaceButton.textContent = "Replace";
+
+            replaceButton.addEventListener("click", async () => {
+                draftWorkout[sectionType] = section.content;
+                section.lastUsedAt = new Date().toISOString();
+
+                try {
+                    await updateSavedPlannerSection(section);
+                } catch (error) {
+                    console.error("failed to update section usage:", error);
+                }
+
+                persistDraft();
+                onClose();
+                showToast("Section inserted.", "success");
+            });
+
+            const appendButton = document.createElement("button");
+            appendButton.type = "button";
+            appendButton.classList.add("secondary-button");
+            appendButton.textContent = "Append";
+
+            appendButton.addEventListener("click", async () => {
+                const currentContent = draftWorkout[sectionType] || "";
+
+                draftWorkout[sectionType] = currentContent
+                    ? `${currentContent}\n\n${section.content}`
+                    : section.content;
+
+                section.lastUsedAt = new Date().toISOString();
+
+                try {
+                    await updateSavedPlannerSection(section);
+                } catch (error) {
+                    console.error("Failed to update section usage:", error);
+                }
+
+                persistDraft();
+                onClose();
+                showToast("Section inserted.", "success");
+            });
+
+            actions.append(replaceButton, appendButton);
+            card.append(name, preview, actions);
+            list.append(card);
+        });
+
+        modal.append(title, closeButton, list);
+    }
 
     overlay.appendChild(modal);
 

@@ -219,15 +219,17 @@ export function renderPlannedWorkoutDetail() {
 
         function playTimerAlert() {
             navigator.vibrate?.([200, 100, 200]);
+
             if (!timerAudio) {
                 timerAudio = new Audio(TIMER_SOUND_URL);
                 timerAudio.volume = 1;
             }
-                timerAudio.currentTime = 0;
-                timerAudio.play().catch((error) => {
-                    console.warn("Timer sound failed:", error);
-                });
-            }
+
+            timerAudio.currentTime = 0;
+            timerAudio.play().catch((error) => {
+                console.warn("Timer sound failed:", error);
+            });
+        }
         
 
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {

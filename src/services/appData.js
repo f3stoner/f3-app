@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud } from "./cloudData.js";
+import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 
@@ -143,7 +143,7 @@ export function removeMemberFromState(memberId) {
     persistAppData();
 }
 
-export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots, adminFlags }) {
+export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots, adminFlags, savedPlannerSections }) {
     state.regionName = regionName;
     state.members = members;
     state.sessions = sessions;
@@ -151,6 +151,7 @@ export function replacePersistedData({ regionName, members, sessions, plannedWor
     state.aos = aos || [];
     state.qSlots = qSlots || [];
     state.adminFlags = adminFlags || [];
+    state.savedPlannerSections = savedPlannerSections || [];
 }
 
 export async function addAdminFlags(flags) {
@@ -204,4 +205,44 @@ export async function setMemberStatus(memberId, status) {
     };
 
     await updateMember(memberId, updatedMember);
+}
+
+export async function addSavedPlannerSection(section) {
+    const activeRegionId = state.currentRegionId;
+
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+
+    const savedSection = await insertSavedPlannerSection(state.currentRegionId, section);
+
+    state.savedPlannerSections = [
+        savedSection,
+        ...(state.savedPlannerSections || []),
+    ];
+
+    persistAppData();
+
+    return savedSection;
+}
+
+export async function updateSavedPlannerSection(section) {
+    const activeRegionId = state.currentRegionId;
+    
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+
+    const savedSection = await updateSavedPlannerSectionInCloud(
+        state.currentRegionId,
+        section
+    );
+
+    state.savedPlannerSections = (state.savedPlannerSections || []).map(existing =>
+        existing.id === savedSection.id ? savedSection : existing
+    );
+
+    persistAppData();
+
+    return savedSection;
 }

@@ -61,6 +61,7 @@ export async function loadRegionData(regionId) {
         aoResult,
         qSlotResult,
         adminFlagResult,
+        savedPlannerSectionResult,
     ] = await Promise.all([
         supabase
             .from("regions")
@@ -88,6 +89,13 @@ export async function loadRegionData(regionId) {
             .eq("region_id", regionId),
 
         loadAdminFlags(regionId),
+
+        supabase
+            .from("saved_planner_sections")
+            .select("*")
+            .eq("region_id", regionId)
+            .order("last_used_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false }),
     ]);
 
     if (regionResult.error) throw regionResult.error;
@@ -95,6 +103,7 @@ export async function loadRegionData(regionId) {
     if (plannedWorkoutResult.error) throw plannedWorkoutResult.error;
     if (aoResult.error) throw aoResult.error;
     if (qSlotResult.error) throw qSlotResult.error;
+    if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
     
     console.log("Loaded members count:", memberResult.length);
     console.log("RAW memberResult length:", memberResult.length);
@@ -107,6 +116,8 @@ export async function loadRegionData(regionId) {
         aos: aoResult.data.map(mapAoFromDb),
         qSlots: qSlotResult.data.map(mapQSlotFromDb),
         adminFlags: adminFlagResult,
+        savedPlannerSections: (savedPlannerSectionResult.data || [])
+            .map(mapSavedPlannerSectionFromDb),
     };
 }
 
@@ -712,4 +723,65 @@ export async function updateAdminFlagInCloud(regionId, flag) {
     if (error) throw error;
 
     return mapAdminFlagFromDb(data);
+}
+
+function mapSavedPlannerSectionFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        sectionType: row.section_type,
+        name: row.name,
+        content: row.content,
+        isShared: row.is_shared ?? false,
+        createdByUserId: row.created_by_user_id,
+        createdAt: row.created_at,
+        lastUsedAt: row.last_used_at,
+    };
+}
+
+export async function insertSavedPlannerSection(regionId, section) {
+    const { data, error } = await supabase
+        .from("saved_planner_sections")
+        .insert([
+            {
+                id: section.id,
+                region_id: regionId,
+                section_type: section.sectionType,
+                name: section.name,
+                content: section.content,
+                is_shared: section.isShared ?? false,
+                created_by_user_id: section.createdByUserId,
+                created_at: section.createdAt,
+                last_used_at: section.lastUsedAt || null,
+            },
+        ])
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapSavedPlannerSectionFromDb(data);
+}
+
+export async function updateSavedPlannerSectionInCloud(regionId, section) {
+    const { data, error } = await supabase
+        .from("saved_planner_sections")
+        .update({
+            region_id: regionId,
+            section_type: section.sectionType,
+            name: section.name,
+            content: section.content,
+            is_shared: section.isShared ?? false,
+            created_by_user_id: section.createdByUserId,
+            created_at: section.createdAt,
+            last_used_at: section.lastUsedAt || null,
+        })
+        .eq("id", section.id)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapSavedPlannerSectionFromDb(data);
 }
