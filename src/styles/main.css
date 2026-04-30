@@ -1511,3 +1511,23 @@ select:focus,
     background: rgba(0, 140, 0, 0.1);
     color: #0a7a0a;
 }
+
+.workout-timer-button {
+    display: block;
+    width: 100%;
+    margin: 8px 0 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(0,0,0,0.04);
+    text-align: left;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.active-timer-clock {
+    font-size: 48px;
+    font-weight: 700;
+    text-align: center;
+    margin: 12px 0;
+}

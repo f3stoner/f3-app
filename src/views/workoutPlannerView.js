@@ -6,6 +6,7 @@ import { addPlannedWorkout, updatePlannedWorkout } from "../services/appData.js"
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -55,6 +56,67 @@ export function renderWorkoutPlanner() {
         );
     }
 
+    function renderTimerList(section) {
+        draftWorkout.timers ||= [];
+
+        const wrap = document.createElement("div");
+        wrap.classList.add("timer-list");
+
+        const timers = getTimersForSection(draftWorkout, section);
+
+        timers.forEach(timer => {
+            const row = document.createElement("div");
+            row.classList.add("timer-row");
+
+            const summary = document.createElement("div");
+            summary.classList.add("stats-line");
+            summary.textContent = `${timer.label || "Timer"} - ${formatTimerSummary(timer)}`;
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.textContent = "Remove";
+            removeButton.classList.add("secondary-button");
+
+            removeButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+                draftWorkout.timers = draftWorkout.timers.filter(t => t.id !== timer.id);
+                persistDraft();
+                renderApp();
+            });
+
+            row.append(summary, removeButton);
+
+            summary.addEventListener("click", () => {
+                state.editingWorkoutTimerId = timer.id;
+                state.editingWorkoutTimerSection = section;
+                renderApp();
+            });
+
+            wrap.append(row);
+        });
+
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.textContent = "+ Add Timer";
+        addButton.classList.add("secondary-button");
+
+        addButton.addEventListener("click", () => {
+            const newTimer = createWorkoutTimer(section);
+
+            draftWorkout.timers.push(newTimer);
+            persistDraft();
+
+            state.editingWorkoutTimerId = newTimer.id;
+            state.editingWorkoutTimerSection = section;
+
+            renderApp();
+        });
+
+        wrap.appendChild(addButton);
+
+        return wrap;
+    }
+
     function copyWorkoutToPlanner(sourceWorkout) {
         const copiedWorkout = {
             ...sourceWorkout,
@@ -65,6 +127,11 @@ export function renderWorkoutPlanner() {
             date: draftWorkout.date || getTodayDate(),
             aoName: draftWorkout.aoName || "",
         };
+
+       copiedWorkout.timers = (sourceWorkout.timers || []).map(timer => ({
+            ...timer,
+            id: crypto.randomUUID(),
+       }));
     
         state.draftPlannedWorkout = copiedWorkout;
     
@@ -288,6 +355,10 @@ export function renderWorkoutPlanner() {
         persistDraft();
     });
 
+    const warmoramaTimers = renderTimerList("warmorama");
+    const thangsTimers = renderTimerList("thangs");
+    const finisherTimers = renderTimerList("finisher");
+
     const notesLabel = document.createElement("div");
     notesLabel.textContent = "Planner Notes";
     notesLabel.classList.add("detail-label");
@@ -386,10 +457,13 @@ export function renderWorkoutPlanner() {
         introductionInput,
         warmoramaLabel,
         warmoramaInput,
+        warmoramaTimers,
         thangsLabel,
         thangsInput,
+        thangsTimers,
         finisherLabel,
         finisherInput,
+        finisherTimers,
         notesLabel,
         notesInput,
         shareLabel,
@@ -400,6 +474,210 @@ export function renderWorkoutPlanner() {
     if (state.workoutBrowseModalOpen) {
         app.appendChild(createWorkoutBrowseModal(closeWorkoutBrowseModal, copyWorkoutToPlanner));
     }
+
+    if (state.editingWorkoutTimerId) {
+        app.appendChild(createTimerEditorModal({
+            draftWorkout,
+            persistDraft,
+            onClose: () => {
+                state.editingWorkoutTimerId = null;
+                state.editingWorkoutTimerSection = null;
+                renderApp();
+            }
+        }));
+    }
+}
+
+function createTimerEditorModal({ draftWorkout, persistDraft, onClose }) {
+    const timer = (draftWorkout.timers || []).find(
+        t => t.id === state.editingWorkoutTimerId
+    );
+
+    if (!timer) {
+        onClose();
+        return document.createElement("div");
+    }
+
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay");
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Edit Timer";
+
+    const labelLabel = document.createElement("div");
+    labelLabel.classList.add("detail-label");
+    labelLabel.textContent = "Timer Label";
+
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+    labelInput.value = timer.label || "";
+    labelInput.placeholder = "Thang 1 EMOM";
+
+    const typeLabel = document.createElement("div");
+    typeLabel.classList.add("detail-label");
+    typeLabel.textContent = "Timer Type";
+
+    const typeSelect = document.createElement("select");
+
+    [
+        ["countdown", "Countdown"],
+        ["emom", "EMOM"],
+        ["interval", "Interval / Tabata"],
+    ].forEach(([value, text]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = text;
+        typeSelect.appendChild(option);
+    });
+
+    typeSelect.value = timer.type || "countdown";
+
+    const fieldsWrap = document.createElement("div");
+
+    function saveTimerChanges() {
+        timer.label = labelInput.value;
+        timer.type = typeSelect.value;
+        persistDraft();
+    }
+
+    function renderTypeFields() {
+        fieldsWrap.textContent = "";
+
+        if (typeSelect.value === "interval") {
+            const roundsLabel = document.createElement("div");
+            roundsLabel.classList.add("detail-label");
+            roundsLabel.textContent = "Rounds";
+
+            const roundsInput = document.createElement("input");
+            roundsInput.type = "number";
+            roundsInput.min = "1";
+            roundsInput.value = timer.rounds || 8;
+
+            const workLabel = document.createElement("div");
+            workLabel.classList.add("detail-label");
+            workLabel.textContent = "Work Seconds";
+
+            const workInput = document.createElement("input");
+            workInput.type = "number";
+            workInput.min = "1";
+            workInput.value = timer.workSeconds || 45;
+
+            const restLabel = document.createElement("div");
+            restLabel.classList.add("detail-label");
+            restLabel.textContent = "Rest Seconds";
+
+            const restInput = document.createElement("input");
+            restInput.type = "number";
+            restInput.min = "0";
+            restInput.value = timer.restSeconds ?? 15;
+
+            function updateIntervalTimer() {
+                timer.rounds = Number(roundsInput.value) || 1;
+                timer.workSeconds = Number(workInput.value) || 1;
+                timer.restSeconds = Number(restInput.value) || 0;
+                timer.durationSeconds = null;
+                persistDraft();
+            }
+
+            roundsInput.addEventListener("input", updateIntervalTimer);
+            workInput.addEventListener("input", updateIntervalTimer);
+            restInput.addEventListener("input", updateIntervalTimer);
+
+            fieldsWrap.append(
+                roundsLabel,
+                roundsInput,
+                workLabel,
+                workInput,
+                restLabel,
+                restInput
+            );
+
+            return;
+        }
+
+        const durationLabel = document.createElement("div");
+        durationLabel.classList.add("detail-label");
+        durationLabel.textContent = "Duration Minutes";
+
+        const durationInput = document.createElement("input");
+        durationInput.type = "number";
+        durationInput.min = "1";
+        durationInput.value = Math.max(1, Math.round((timer.durationSeconds || 300) / 60));
+
+        durationInput.addEventListener("input", () => {
+            timer.durationSeconds = (Number(durationInput.value) || 1) * 60;
+            timer.workSeconds = null;
+            timer.restSeconds = null;
+            timer.rounds = null;
+            persistDraft();
+        });
+
+        fieldsWrap.append(durationLabel, durationInput);
+    }
+
+    labelInput.addEventListener("input", saveTimerChanges);
+
+    typeSelect.addEventListener("change", () => {
+        timer.type = typeSelect.value;
+
+        if (timer.type === "interval") {
+            timer.durationSeconds = null;
+            timer.workSeconds ??= 45;
+            timer.restSeconds ??= 15;
+            timer.rounds ??= 8;
+        } else {
+            timer.durationSeconds = timer.durationSeconds || 300;
+            timer.workSeconds = null;
+            timer.restSeconds = null;
+            timer.rounds = null;
+        }
+
+        persistDraft();
+        renderTypeFields();
+    });
+
+    const buttonRow = document.createElement("div");
+    buttonRow.classList.add("button-row");
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.classList.add("secondary-button");
+    cancelButton.textContent = "Close";
+
+    cancelButton.addEventListener("click", onClose);
+
+    const doneButton = document.createElement("button");
+    doneButton.type = "button";
+    doneButton.textContent = "Done";
+
+    doneButton.addEventListener("click", () => {
+        saveTimerChanges();
+        onClose();
+    });
+
+    buttonRow.append(cancelButton, doneButton);
+
+    renderTypeFields();
+
+    modal.append(
+        heading,
+        labelLabel,
+        labelInput,
+        typeLabel,
+        typeSelect,
+        fieldsWrap,
+        buttonRow
+    );
+
+    overlay.appendChild(modal);
+
+    overlay.addEventListener("click", onClose);
+    modal.addEventListener("click", event => event.stopPropagation());
+
+    return overlay;
 }
 
 function createWorkoutBrowseModal(onClose, onCopyWorkout) {

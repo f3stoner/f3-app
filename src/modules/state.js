@@ -94,6 +94,12 @@ export const state = {
     toastType: "info",
     adminFlags: savedState?.adminFlags || [],
     sharedWorkoutViewMode: false,
+    editingWorkoutTimerId: null,
+    editingWorkoutTimerSection: null,
+    activeWorkoutTimerId: null,
+    activeWorkoutTimerStatus: "idle",
+    activeWorkoutTimerStartedAt: null,
+    activeWorkoutTimerRemainingSeconds: null,
 };
 
 if (savedNav) {

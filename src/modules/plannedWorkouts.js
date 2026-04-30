@@ -16,5 +16,6 @@ export function createPlannedWorkout(date, aoName) {
         sourceSessionId: null,
         createdByUserId: null,
         isShared: false,
+        timers: [],
     };
 }

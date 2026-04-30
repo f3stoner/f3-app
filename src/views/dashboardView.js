@@ -241,6 +241,7 @@ export function renderDashboard() {
                     lastModifiedAt: null,
                     createdByUserId: state.currentUserId,
                     isShared: false,
+                    timers: [],
                 };
 
                 state.editingPlannedWorkoutId = null;
@@ -327,6 +328,7 @@ export function renderDashboard() {
                     lastModifiedAt: null,
                     createdByUserId: state.currentUserId,
                     isShared: false,
+                    timers: [],
                 };
 
                 state.editingPlannedWorkoutId = null;
@@ -477,7 +479,7 @@ export function renderDashboard() {
             if (isQ) {
                 typeLine.classList.add("q");
             }
-            
+
            if (isCoQ) {
             typeLine.textContent = "Co-Q";
            } else if (isQ) {

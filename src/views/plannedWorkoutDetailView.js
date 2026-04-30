@@ -8,8 +8,26 @@ import { generatePreblast } from "../modules/generatePreblast.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { saveNavState } from "../utils/storage.js";
 import { showToast } from "../utils/toast.js";
+import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
+
+let activeTimerIntervalId = null;
+
+function clearActiveTimerInterval() {
+    if (activeTimerIntervalId) {
+        clearInterval(activeTimerIntervalId);
+        activeTimerIntervalId = null;
+    }
+}
+
+function removeActiveTimerModal() {
+    document.querySelectorAll(".timer-modal-overlay").forEach(modal => {
+        modal.remove();
+    });
+}
 
 export function renderPlannedWorkoutDetail() {
+    removeActiveTimerModal();
+
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -87,6 +105,181 @@ export function renderPlannedWorkoutDetail() {
         executionBanner = document.createElement("div");
         executionBanner.classList.add("loaded-workout-banner");
         executionBanner.textContent = `You are Qing ${isTodayWorkout ? "today" : "this workout"} at ${workout.aoName}`;
+    }
+
+    function createTimerButtonsForSection(section) {
+        const timers = getTimersForSection(workout, section);
+
+        if (!isExecutionMode || timers.length === 0) {
+            return [];
+        }
+
+        return timers.map(timer => {
+            const button = document.createElement("button");
+            button.classList.add("secondary-button", "workout-timer-button");
+            const timerName = timer.label || "Timer";
+            button.textContent = `▶ ${timerName} · ${formatTimerSummary(timer)}`;
+
+            button.addEventListener("click", () =>{
+                state.activeWorkoutTimerId = timer.id;
+                state.activeWorkoutTimerStatus = "idle";
+                state.activeWorkoutTimerStartedAt = null;
+                state.activeWorkoutTimerRemainingSeconds =
+                    timer.type === "interval"
+                        ? timer.workSeconds || 45
+                        : timer.durationSeconds || 300;
+                renderApp();
+            });
+
+            return button;
+        });
+    }
+
+    function formatTimerClock(totalSeconds) {
+        const safeSeconds = Math.max(0, totalSeconds || 0);
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = safeSeconds % 60;
+
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function getActiveTimer() {
+        return (workout.timers || []).find(
+            timer => timer.id === state.activeWorkoutTimerId
+        ) || null;
+    }
+
+    function createActiveTimerPanel() {
+        const timer = getActiveTimer();
+
+        if (!isExecutionMode || !timer) {
+            return null;
+        }
+
+        const panel = document.createElement("div");
+        panel.classList.add("modal-overlay", "timer-modal-overlay");
+
+        const modal = document.createElement("div");
+        modal.classList.add("modal", "active-timer-panel");
+
+        const label = document.createElement("div");
+        label.classList.add("detail-label");
+        label.textContent = timer.label || "Workout Timer";
+
+        const summary = document.createElement("div");
+        summary.classList.add("stats-line");
+        summary.textContent = formatTimerSummary(timer);
+
+        const totalSeconds =
+            timer.type === "interval"
+                ? timer.workSeconds || 45
+                : timer.durationSeconds || 300;
+
+        const remainingSeconds =
+            state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
+
+        if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
+            activeTimerIntervalId = setInterval(() => {
+                const currentRemaining = state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
+
+                if (currentRemaining <= 1) {
+                    state.activeWorkoutTimerRemainingSeconds = 0;
+                    state.activeWorkoutTimerStatus = "done";
+                    clearActiveTimerInterval();
+                    renderApp();
+                    return;
+                }
+
+                state.activeWorkoutTimerRemainingSeconds = currentRemaining - 1;
+                renderApp();
+            }, 1000);
+        }
+
+        if (state.activeWorkoutTimerStatus !== "running") {
+            clearActiveTimerInterval();
+        }
+
+        const clock = document.createElement("div");
+        clock.classList.add("active-timer-clock");
+        clock.textContent = formatTimerClock(remainingSeconds);
+
+        const buttonRow = document.createElement("div");
+        buttonRow.classList.add("button-row");
+
+        const startButton = document.createElement("button");
+        startButton.textContent = state.activeWorkoutTimerStatus === "running"
+            ? "Pause"
+            : state.activeWorkoutTimerStatus === "done"
+                ? "Restart"
+                : "Start";
+
+        startButton.addEventListener("click", () => {
+            const wasDone =
+            state.activeWorkoutTimerStatus === "done" ||
+            state.activeWorkoutTimerRemainingSeconds === 0;
+            
+            if (state.activeWorkoutTimerStatus === "running") {
+                state.activeWorkoutTimerStatus = "paused";
+            } else {
+                state.activeWorkoutTimerStatus = "running";
+
+                if (wasDone) {
+                    state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+                }
+            }
+
+            state.activeWorkoutTimerStartedAt = Date.now();
+
+            renderApp();
+        });
+
+        const resetButton = document.createElement("button");
+        resetButton.classList.add("secondary-button");
+        resetButton.textContent = "Reset";
+
+        resetButton.addEventListener("click", () => {
+            state.activeWorkoutTimerStatus = "idle";
+            state.activeWorkoutTimerStartedAt = null;
+            state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+            renderApp();
+        });
+
+        const closeButton = document.createElement("button");
+        closeButton.classList.add("secondary-button");
+        closeButton.textContent = "Close";
+
+        closeButton.addEventListener("click", () => {
+            clearActiveTimerInterval();
+            removeActiveTimerModal();
+
+            state.activeWorkoutTimerId = null;
+            state.activeWorkoutTimerStatus = "idle";
+            state.activeWorkoutTimerStartedAt = null;
+            state.activeWorkoutTimerRemainingSeconds = null;
+            renderApp();
+        });
+
+        buttonRow.append(startButton, resetButton, closeButton);
+
+        modal.append(label, summary, clock, buttonRow);
+        panel.appendChild(modal);
+
+        panel.addEventListener("click", () => {
+            clearActiveTimerInterval();
+            removeActiveTimerModal();
+
+            state.activeWorkoutTimerId = null;
+            state.activeWorkoutTimerStatus = "idle";
+            state.activeWorkoutTimerStartedAt = null;
+            state.activeWorkoutTimerRemainingSeconds = null;
+            renderApp();
+        });
+
+        modal.addEventListener("click", (event) => {
+            event.stopPropagation();
+        });
+
+        return panel;
     }
 
     function createDetailSection (labelText, valueText, { hideIfEmpty = false} = {}) {
@@ -250,6 +443,10 @@ export function renderPlannedWorkoutDetail() {
             sourceWorkoutId: workout.id,
             createdByUserId: state.currentUserId,
             isShared: false,
+            timers: (workout.timers || []).map(timer => ({
+                ...timer,
+                id: crypto.randomUUID()
+            })),
         };
 
         state.draftPlannedWorkout = newWorkout;
@@ -376,6 +573,8 @@ export function renderPlannedWorkoutDetail() {
     header.classList.add("view-header");
     header.append(backButton, title);
 
+    const activeTimerPanel = createActiveTimerPanel();
+
     app.append(
         header,
         ...(executionBanner ? [executionBanner] : []),
@@ -385,10 +584,17 @@ export function renderPlannedWorkoutDetail() {
         ...(!isExecutionMode && sourceSection ? [sourceSection] : []),
         ...(introductionSection ? [introductionSection] : []),
         ...(warmoramaSection ? [warmoramaSection] : []),
+        ...createTimerButtonsForSection("warmorama"),
         ...(thangsSection ? [thangsSection] : []),
+        ...createTimerButtonsForSection("thangs"),
         ...(finisherSection ? [finisherSection] : []),
+        ...createTimerButtonsForSection("finisher"),
         ...(notesSection ? [notesSection] : []),
         primaryActionsRow,
         ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
     );
+
+    if (activeTimerPanel) {
+        document.body.appendChild(activeTimerPanel);
+    }
 }

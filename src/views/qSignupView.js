@@ -494,6 +494,7 @@ export function renderQSignupView() {
                             lastModifiedAt: null,
                             createdByUserId: state.currentUserId,
                             isShared: false,
+                            timers: [],
                         };
 
                         state.editingPlannedWorkoutId = null;
