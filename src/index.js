@@ -283,6 +283,7 @@ async function bootApp() {
 
         if (!session) {
             console.log("No session found, rendering auth");
+            state.currentView = "auth";
             renderAuthView();
             hideBootSplash();
             return;
