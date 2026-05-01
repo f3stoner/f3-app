@@ -89,7 +89,7 @@ export function renderPreblastView() {
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "Videos may take a few seconds to load and may upload more slowly in BAND.";
+    mediaHelperText.textContent = "BAND heads up: videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND.";
 
     const mediaInput = document.createElement("input");
     mediaInput.classList.add("media-input");
@@ -163,27 +163,27 @@ export function renderPreblastView() {
         shareButton.disabled = true;
         shareButton.textContent = "Share Not Available";
     } else {
-        shareButton.addEventListener("click", async () => {
+        shareButton.addEventListener("click", () => {
             const text = state.draftPreblastText || "";
             const mediaFiles = state.draftPreblastMediaFiles || [];
 
-            try {
-                if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
-                    await navigator.share({
-                        text,
-                        files: mediaFiles,
-                    });
-                } else {
-                    await navigator.share({ text });
-                }
-            } catch (error) {
-                if (error.name === "AbortError") {
-                    return;
-                }
-                
+            let sharePromise;
+
+            if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
+                sharePromise = navigator.share({
+                    text,
+                    files: mediaFiles,
+                });
+            } else {
+                sharePromise = navigator.share({ text });
+            }
+
+            sharePromise.catch((error) => {
+                if (error.name === "AbortError") return;
+
                 console.error("Share failed:", error);
                 showToast("Share failed.", "error");
-            }
+            });
         });
     }
 

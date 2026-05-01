@@ -5,7 +5,6 @@ import { updateSession } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
 
 export function renderBackblastView () {
-
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -50,7 +49,8 @@ export function renderBackblastView () {
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "Images share quickly. Videos may upload slowly in BAND. For fastest posting, share text + images first and add videos separately in BAND App.";
+    mediaHelperText.textContent = "BAND heads up: videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND."
+
     const mediaPreviewWrapper = document.createElement("div");
     mediaPreviewWrapper.classList.add("preblast-media-preview-wrapper");
 
@@ -107,8 +107,7 @@ export function renderBackblastView () {
         shareButton.disabled = true;
         shareButton.textContent = "Share Not Available";
     } else {
-        shareButton.addEventListener("click", async () => {
-            try {
+        shareButton.addEventListener("click", () => {
                 const mediaFiles = state.draftBackblastMediaFiles || [];
                 const text = state.draftBackblastText || "";
     
@@ -121,47 +120,31 @@ export function renderBackblastView () {
                 );
     
                 const hasVideo = videoFiles.length > 0;
-    
-                if (!mediaFiles.length) {
-                    await navigator.share({ text });
-                    return;
-                }
+                const filesToShare = hasVideo ? imageFiles : mediaFiles;
     
                 if (hasVideo) {
-                    const useFastShare = confirm(
-                        "This post includes video.\n\n" +
-                        "OK = Fast Share (recommended): share text + images only\n" +
-                        "Cancel = Include Video: may take longer to upload in BAND"
-                    );
-    
-                    if (useFastShare) {
-                        if (imageFiles.length && navigator.canShare?.({ files: imageFiles })) {
-                            await navigator.share({
-                                text,
-                                files: imageFiles,
-                            });
-                        } else {
-                            await navigator.share({ text });
-                        }
-    
-                        showToast("Shared text" + (imageFiles.length ? " + images" : "") + ". Upload videos separately in BAND if needed.", "success");
-                        return;
-                    }
+                    showToast("Sharing text/images only. Add videos separately in BAND.", "success");
                 }
-    
-                if (navigator.canShare?.({ files: mediaFiles })) {
-                    await navigator.share({
+                let sharePromise;
+
+                if (filesToShare.length && navigator.canShare?.({ files: filesToShare})) {
+                    sharePromise = navigator.share({
                         text,
-                        files: mediaFiles,
+                        files: filesToShare,
                     });
                 } else {
-                    await navigator.share({ text });
+                    sharePromise = navigator.share({ text });
                 }
-            } catch (error) {
-                console.error("Share failed:", error);
-            }
+
+                sharePromise.catch((error) => {
+                    if (error.name === "AbortError") return;
+
+                    console.error("Share failed:", error);
+                    showToast("Share failed.", "error");
+                });
         });
     }
+
     const doneButton = document.createElement("button");
     doneButton.textContent ="Done";
 
