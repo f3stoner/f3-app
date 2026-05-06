@@ -79,7 +79,7 @@ export function renderWorkoutPlanner() {
         const saveButton = document.createElement("button");
         saveButton.type = "button";
         saveButton.classList.add("secondary-button");
-        saveButton.textContent = "Save Section";
+        saveButton.textContent = "Save Section as Template";
 
         saveButton.addEventListener("click", async () => {
             const content = input.value.trim();
@@ -113,7 +113,7 @@ export function renderWorkoutPlanner() {
         const insertButton = document.createElement("button");
         insertButton.type ="button";
         insertButton.classList.add("secondary-button");
-        insertButton.textContent = "Insert Saved";
+        insertButton.textContent = "Insert Saved Template";
 
         insertButton.addEventListener("click", () => {
             state.plannerSectionModalOpen = true;

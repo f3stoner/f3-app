@@ -8,6 +8,14 @@ export function renderBackblastView () {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    const session = state.sessions.find(
+        s => s.id === state.selectedSessionId
+    );
+
+    if (!state.draftBackblastText && session) {
+        state.draftBackblastText = generateBackblast(session, state.members);
+    }
+
     const title = document.createElement("h1");
     title.textContent = "Backblast";
 

@@ -4,9 +4,11 @@ import { state } from "./state.js";
 
 
 export function generateBackblast (session, members) {
-    const formattedDate = formatDate(session.date);
-
+    const attendeeIds = session.attendeeIds || [];
+    const fngs = session.fngs || [];
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+    const formattedDate = formatDate(session.date);
 
     const qNames = effectiveQIds
         .map(qId => {
@@ -15,7 +17,7 @@ export function generateBackblast (session, members) {
             if (!matchedMember) {
                 console.warn("Backblast Q not found in members:", {
                     qId,
-                    attendeeIds: session.attendeeIds,
+                    attendeeIds,
                     memberCount: members.length,
                 });
                 return null;
@@ -23,23 +25,30 @@ export function generateBackblast (session, members) {
             return `@${matchedMember.paxName}`;
         })
         .filter(Boolean)
+    
+    const sortedQNames = qNames.sort((a, b) => a.localeCompare(b));
 
-    const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+    const qLabel = sortedQNames.length > 0 ? sortedQNames.join("\n") : "-";
+
+    const qSectionLabel = sortedQNames.length === 1 ? "Q" : `Qs (${sortedQNames.length})`;
 
     const qIdSet = new Set(effectiveQIds);
     
-    const paxNamesArray = session.attendeeIds
+    const paxNamesArray = attendeeIds
         .filter(id => !qIdSet.has(id))
         .map(id => {
         const member = members.find(m => m.id === id);
         return member ? member.paxName : "Unknown";
-    });
+    })
+    .sort((a, b) => a.localeCompare(b));
+
     const paxNames = paxNamesArray.length > 0 
-    ? paxNamesArray.map(name => `@${name}`).join(", ") 
-    : "-";
-    const fngText = session.fngs.length === 0
+    ? paxNamesArray.map(name => `@${name}`).join("\n") 
+    : "None";
+
+    const fngText = fngs.length === 0
     ? "None"
-    : session.fngs.map(fng => {
+    : fngs.map(fng => {
         const displayName = fng.paxName && fng.realName
             ? `${fng.paxName} (${fng.realName})` 
             : (fng.paxName || fng.realName || "Unknown");
@@ -51,7 +60,11 @@ export function generateBackblast (session, members) {
 
         return `${displayName} (Invited by @${inviterName})`;
 
-    }).join(", ");
+    })
+    .sort((a, b) => a.localeCompare(b))
+    .join("\n");
+
+    const totalAttendees = attendeeIds.length + fngs.length;
 
     const workout = session.workout;
     let workoutText = session.notes ? session.notes : "-";
@@ -92,7 +105,6 @@ export function generateBackblast (session, members) {
         workoutText = `Notes:\n${session.notes}`;
     }
 
-    const paxCount = session.attendeeIds.length;
     const aoHashtag = session.aoName
         ? `#${session.aoName.replace(/\s+/g, "")}`
         : "";
@@ -102,10 +114,15 @@ export function generateBackblast (session, members) {
         "",
         `AO: ${session.aoName}`,
         `Date: ${formattedDate}`,
-        `Q: ${qLabel}`,
-        `PAX Count: ${paxCount}`,
-        `PAX: ${paxNames}`,
-        `FNGs: ${fngText}`,
+        "",
+        `Total Attendees: ${totalAttendees}`,
+        "",
+        `${qSectionLabel}: ${qLabel}`,
+        "",
+        `PAX (${paxNamesArray.length}):`, 
+        `${paxNames}`,
+        "",
+        `FNGs (${fngs.length}): ${fngText}`,
         "",
         workoutText,
     ].join("\n");
