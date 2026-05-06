@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud } from "./cloudData.js";
+import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud, deleteSavedPlannerSectionFromCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 
@@ -250,4 +250,20 @@ export async function updateSavedPlannerSection(section) {
     persistAppData();
 
     return savedSection;
+}
+
+export async function deleteSavedPlannerSection(sectionId) {
+    const activeRegionId = state.currentRegionId;
+
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+
+    await deleteSavedPlannerSectionFromCloud(activeRegionId, sectionId);
+
+    state.savedPlannerSections = (state.savedPlannerSections || []).filter(
+        section => section.id !== sectionId
+    );
+
+    persistAppData();
 }

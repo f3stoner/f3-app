@@ -808,6 +808,16 @@ export async function updateSavedPlannerSectionInCloud(regionId, section) {
     return mapSavedPlannerSectionFromDb(data);
 }
 
+export async function deleteSavedPlannerSectionFromCloud(regionId, sectionId) {
+    const { error } = await supabase
+        .from("saved_planner_sections")
+        .delete()
+        .eq("id", sectionId)
+        .eq("region_id", regionId);
+
+    if (error) throw error;
+}
+
 function mapRegionFromDb(row) {
     return {
         id: row.id,

@@ -218,6 +218,7 @@ pre,
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
 }
 
 .modal h2 {
@@ -1616,4 +1617,35 @@ select:focus,
 .view-session-history select,
 .view-session-history .session-search {
   margin-top: 6px;
+}
+
+.saved-section-list .button-row button {
+    padding: 0.55rem 0.8rem;
+    min-height: auto;
+    font-size: 0.9rem;
+}
+
+.saved-section-preview {
+    padding: 0.75rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    opacity: 0.6;
+}
+
+.modal-close-button:hover {
+    opacity: 1;
 }

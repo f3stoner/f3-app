@@ -2,13 +2,14 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
-import { addPlannedWorkout, updatePlannedWorkout, addSavedPlannerSection, updateSavedPlannerSection } from "../services/appData.js";
+import { addPlannedWorkout, updatePlannedWorkout, addSavedPlannerSection, updateSavedPlannerSection, deleteSavedPlannerSection } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 import { createSavedPlannerSection, getSavedSectionsByType } from "../utils/plannerSections.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
+import { deleteSavedPlannerSectionFromCloud } from "../services/cloudData.js";
 
 
 export function renderWorkoutPlanner() {
@@ -833,8 +834,8 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
 
     const closeButton = document.createElement("button");
     closeButton.type = "button";
-    closeButton.textContent = "Close";
-    closeButton.classList.add("secondary-button");
+    closeButton.textContent = "x";
+    closeButton.classList.add("secondary-button", "modal-close-button");
     closeButton.addEventListener("click", onClose);
 
     if (savedSections.length === 0) {
@@ -864,7 +865,7 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
 
             const replaceButton = document.createElement("button");
             replaceButton.type = "button";
-            replaceButton.textContent = "Replace";
+            replaceButton.textContent = "Replace Section";
 
             replaceButton.addEventListener("click", async () => {
                 draftWorkout[sectionType] = section.content;
@@ -883,8 +884,8 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
 
             const appendButton = document.createElement("button");
             appendButton.type = "button";
-            appendButton.classList.add("secondary-button");
-            appendButton.textContent = "Append";
+            appendButton.classList.add("button");
+            appendButton.textContent = "Add to Section";
 
             appendButton.addEventListener("click", async () => {
                 const currentContent = draftWorkout[sectionType] || "";
@@ -906,7 +907,26 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
                 showToast("Section inserted.", "success");
             });
 
-            actions.append(replaceButton, appendButton);
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.classList.add("danger-button");
+            deleteButton.textContent = "Delete";
+
+            deleteButton.addEventListener("click", async () => {
+                const confirmed = confirm(`Delete "${section.name}"?`);
+                if (!confirmed) return;
+
+                try {
+                    await deleteSavedPlannerSection(section.id);
+                    showToast("Section deleted.", "success");
+                    renderApp();
+                } catch (error) {
+                    console.error("Failed to delete saved section:", error);
+                    showToast("Failed to delete section.", "error");
+                }
+            });
+
+            actions.append(replaceButton, appendButton, deleteButton);
             card.append(name, preview, actions);
             list.append(card);
         });
