@@ -93,6 +93,8 @@ export const state = {
     sessionHistoryAoFilter: "",
     sessionHistoryQFilter: "",
     workoutFieldLabels: savedState?.workoutFieldLabels || {},
+    pendingPlannerDate: null,
+    pendingPlannerAoName: null,
 };
 
 state.runHistoricImport = async function () {

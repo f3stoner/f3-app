@@ -52,8 +52,14 @@ export function renderWorkoutPlanner() {
             JSON.stringify(state.draftPlannedWorkout)
         );
     } else {
-        draftWorkout = createPlannedWorkout(getTodayDate(), "");
+        const plannerDate = state.pendingPlannerDate || getTodayDate();
+        const plannerAoName = state.pendingPlannerAoName || "";
+
+        draftWorkout = createPlannedWorkout(plannerDate, plannerAoName);
         draftWorkout.createdByUserId = state.currentUserId;
+
+        state.pendingPlannerDate = null;
+        state.pendingPlannerAoName = null;
 
         state.draftPlannedWorkout = { ...draftWorkout };
 
@@ -351,8 +357,11 @@ export function renderWorkoutPlanner() {
         aoSelect.appendChild(option);
     });
     
-    if (!draftWorkout.aoName && aoOptions.length > 0) {
-        draftWorkout.aoName = aoOptions[0];
+    if (draftWorkout.aoName && !aoOptions.includes(draftWorkout.aoName)) {
+        const option = document.createElement("option");
+        option.value = draftWorkout.aoName;
+        option.textContent = draftWorkout.aoName;
+        aoSelect.appendChild(option);
     }
     
     aoSelect.value = draftWorkout.aoName || "";
