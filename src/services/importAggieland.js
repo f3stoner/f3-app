@@ -23,7 +23,7 @@ export async function importPaxMasterCsv(csvText) {
     const csvCollisions = findCsvPaxNameCollisions(rows);
 
     if (csvCollisions.length) {
-        throwCsvCollisionError(csvCollisions, "Pax Master Import");
+        throwCsvCollisionError(csvCollisions, "Pax Master import");
     }
 
     function findCsvPaxNameCollisions(rows) {
@@ -123,8 +123,7 @@ export async function importPaxMasterCsv(csvText) {
 }
 
 async function buildMemberNameToMemberMap(regionId = state.currentRegionId) {
-    const lookup = await assertNoMemberNameCollisions(regionId, "Pax Master import");
-
+    const lookup = await buildUniqueMemberLookup(regionId);
     return lookup.memberByNormalizedName;
 }
 
@@ -321,6 +320,7 @@ async function loadExistingSessionsByDeltaKey(regionId) {
             createdAt: row.created_at,
             createdByUserId: row.created_by_user_id,
             backblastText: row.backblast_text || "",
+            unresolvedPax: row.unresolved_pax || [],
         };
     }
     
@@ -380,6 +380,25 @@ export async function repairAggielandDeltaSessions({ dryRun = true, regionId = s
 
             const existingFngs = existingSession.fngs || [];
             const parsedFngs = parsedSession.fngs || [];
+            
+            const mergedUnresolvedPax = [
+                ...(existingSession.unresolvedPax || []),
+            ];
+
+            for (const unresolved of parsedSession.unresolvedPax || []) {
+                const alreadyExists = mergedUnresolvedPax.some(existing =>
+                    existing.rawName === unresolved.rawName &&
+                    existing.normalizedName === unresolved.normalizedName &&
+                    existing.code === unresolved.code &&
+                    existing.reason === unresolved.reason
+                );
+
+                if (!alreadyExists) {
+                    mergedUnresolvedPax.push(unresolved);
+                }
+            }
+
+            const unresolvedChanged = mergedUnresolvedPax.length !== (existingSession.unresolvedPax || []).length;
 
             const mergedAttendeeIds = Array.from(new Set([
                 ...existingAttendees,
@@ -410,13 +429,14 @@ export async function repairAggielandDeltaSessions({ dryRun = true, regionId = s
                 mergedQIds.some(id => !existingQs.includes(id));
             const fngChanged = mergedFngs.length !== existingFngs.length;
 
-            if (!attendeeChanged && !qChanged && !fngChanged) continue;
+            if (!attendeeChanged && !qChanged && !fngChanged && !unresolvedChanged) continue;
 
             const repairedSession = {
                 ...existingSession,
                 attendeeIds: mergedAttendeeIds,
                 qIds: mergedQIds,
                 fngs: mergedFngs,
+                unresolvedPax: mergedUnresolvedPax,
             };
 
             repairCandidates.push({
@@ -468,6 +488,11 @@ export async function repairAggielandDeltaSessions({ dryRun = true, regionId = s
         await updateSessionInCloud(targetRegionId, candidate.repairedSession);
     }
 
+    await createUnresolvedPaxFlagsForSessions(
+        targetRegionId,
+        repairCandidates.map(candidate => candidate.repairedSession)
+    );
+
     console.log(`Updated ${repairCandidates.length} sessions.`);
 
     return {
@@ -492,7 +517,7 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
 
     console.log(`Parsing ${aoName} rows:`, rows.length);
 
-    const memberMap = await buildMemberNameToIdMap(regionId);
+    const { memberIdByName, ambiguousMembersByName } = await buildMemberImportLookup(regionId);
     const grouped = {};
 
     for (const row of rows) {
@@ -506,12 +531,9 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
 
         if (!normalizedDate) continue;
 
-        const memberId = memberMap[normalizePaxName(paxName)];
-
-        if (!memberId) {
-            console.warn(`Skipping unmatched pax in ${aoName}:`, paxName);
-            continue;
-        }
+        const normalizedPaxName = normalizePaxName(paxName);
+        const memberId = memberIdByName[normalizedPaxName];
+        const ambiguousMembers = ambiguousMembersByName[normalizedPaxName] || [];
 
         const key = normalizedDate;
 
@@ -523,11 +545,34 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
                 attendeeIds: [],
                 qIds: [],
                 fngs: [],
+                unresolvedPax: [],
                 notes: "",
                 workout: null,
                 sourcePlannedWorkoutId: null,
                 createdAt: Date.now(),
             };
+        }
+
+        if (!memberId) {
+            const reason = ambiguousMembers.length
+                ? "ambiguous_member_reference"
+                : "unmatched_member_reference";
+
+            grouped[key].unresolvedPax.push({
+                rawName: paxName,
+                normalizedName: normalizedPaxName,
+                code,
+                reason,
+                candidateMemberIds: ambiguousMembers.map(member => member.id),
+            });
+
+            console.warn(`Unresolved pax in ${aoName} on ${normalizedDate}:`, {
+                paxName,
+                reason,
+                candidateMemberIds: ambiguousMembers.map(member => member.id),
+            });
+
+            continue;
         }
 
         if (!grouped[key].attendeeIds.includes(memberId)) {
@@ -558,7 +603,12 @@ export async function importAoLogCsv(csvText, aoName) {
 
     console.log(`${aoName} sessions grouped:`, sessions.length);
 
-    await insertSessionsBatch(state.currentRegionId, sessions);
+    const savedSessions = await insertSessionsBatch(state.currentRegionId, sessions);
+
+    await createUnresolvedPaxFlagsForSessions(
+        state.currentRegionId,
+        savedSessions
+    );
 
     console.log(`${aoName} session import complete`);
 }
@@ -701,7 +751,12 @@ export async function runAggielandDeltaAoImports({ dryRun = true, regionId = sta
         };
     }
 
-    await insertSessionsBatch(targetRegionId, allNewSessions);
+    const savedSessions = await insertSessionsBatch(targetRegionId, allNewSessions);
+
+    await createUnresolvedPaxFlagsForSessions(
+        targetRegionId,
+        savedSessions
+    );
 
     console.log(`Inserted ${allNewSessions.length} new sessions.`);
 
@@ -714,18 +769,79 @@ export async function runAggielandDeltaAoImports({ dryRun = true, regionId = sta
     };
 }
 
-async function buildMemberNameToIdMap(regionId = state.currentRegionId) {
-    const lookup = await assertNoMemberNameCollisions(regionId, "AO Log import");
+async function buildMemberImportLookup(regionId = state.currentRegionId) {
+    const lookup = await buildUniqueMemberLookup(regionId);
 
-    const map = {};
+    const memberIdByName = {};
+    const ambiguousMembersByName = {};
 
     Object.entries(lookup.memberByNormalizedName).forEach(([normalizedName, member]) => {
-        map[normalizedName] = member.id;
+        memberIdByName[normalizedName] = member.id;
     });
 
-    console.log("Import target region ID:", regionId);
-    console.log("Members loaded for import:", Object.keys(map).length);
-    console.log("Member map sample:", Object.keys(map).slice(0, 20));
+    lookup.collisions.forEach(collision => {
+        ambiguousMembersByName[collision.normalizedName] = collision.members;
+    });
 
-    return map;
+    return {
+        memberIdByName,
+        ambiguousMembersByName,
+    };
+}
+
+async function createUnresolvedPaxFlagsForSessions(regionId, sessions) {
+    const flags = [];
+
+    const sessionIds = sessions
+        .map(session => session.id)
+        .filter(Boolean);
+
+    if (!sessionIds.length) return [];
+
+    const { data: existingFlags, error } = await supabase
+        .from("admin_flags")
+        .select("session_id, proposed_pax_name, type, status")
+        .eq("region_id", regionId)
+        .eq("status", "open")
+        .in("session_id", sessionIds);
+
+    if (error) throw error;
+
+    const existingFlagKeys = new Set(
+        (existingFlags || []).map(flag =>
+            `${flag.session_id}|${flag.proposed_pax_name}|${flag.type}`
+        )
+    );
+
+    for (const session of sessions) {
+        const unresolvedPax = session.unresolvedPax || session.unresolved_pax || [];
+
+        for (const unresolved of unresolvedPax) {
+            const flagKey = `${session.id}|${unresolved.rawName}|${unresolved.reason}`;
+
+            if (existingFlagKeys.has(flagKey)) continue;
+
+            existingFlagKeys.add(flagKey);
+
+            flags.push({
+                id: crypto.randomUUID(),
+                type: unresolved.reason,
+                status: "open",
+                severity: "high",
+                createdAt: Date.now(),
+                createdByUserId: state.currentUserId || null,
+                sessionId: session.id,
+                proposedPaxName: unresolved.rawName,
+                matchedMemberIds: unresolved.candidateMemberIds || [],
+                message: `${session.aoName || session.ao_name} ${session.date}: could not safely assign ${unresolved.rawName} (${unresolved.code || "no code"}).`,
+                resolvedAt: null,
+                resolvedByUserId: null,
+                resolutionNotes: null,
+            });
+        }
+    }
+
+    if (!flags.length) return [];
+
+    return insertAdminFlags(regionId, flags);
 }

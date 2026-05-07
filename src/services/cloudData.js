@@ -163,6 +163,7 @@ export function mapSessionFromDb(row) {
         createdAt: row.created_at,
         createdByUserId: row.created_by_user_id || null,
         backblastText: row.backblast_text || "",
+        unresolvedPax: row.unresolved_pax || [],
     };
 }
 
@@ -293,6 +294,7 @@ export async function insertSession(regionId, session) {
                 created_at: session.createdAt,
                 created_by_user_id: session.createdByUserId,
                 backblast_text: session.backblastText || "",
+                unresolved_pax: session.unresolvedPax || [],
             },
         ])
         .select()
@@ -318,6 +320,7 @@ export async function updateSessionInCloud(regionId, session) {
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
             created_at: session.createdAt,
             backblast_text: session.backblastText || "",
+            unresolved_pax: session.unresolvedPax || [],
         })
         .eq("id", session.id)
         .select()
@@ -413,6 +416,7 @@ export async function insertSessionsBatch(regionId, sessions) {
             workout: session.workout || null,
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
             created_at: session.createdAt,
+            unresolved_pax: session.unresolvedPax || [],
         };
     });
 
