@@ -1,7 +1,7 @@
 import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud, insertAdminFlags, mapMemberFromDb } from "./cloudData.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
-import { normalizePaxName } from "../utils/historicImport.js";
+import { normalizePaxName, normalizeImportPaxKey } from "../utils/historicImport.js";
 import { state } from "../modules/state.js";
 
 export async function importPaxMasterCsv(csvText) {
@@ -33,7 +33,7 @@ export async function importPaxMasterCsv(csvText) {
             const paxName = (row["Name"] || "").trim();
             if (!paxName) return;
     
-            const normalizedName = normalizePaxName(paxName);
+            const normalizedName = normalizeImportPaxKey(paxName);
             grouped[normalizedName] ||= [];
             grouped[normalizedName].push({
                 paxName,
@@ -70,7 +70,7 @@ export async function importPaxMasterCsv(csvText) {
         const paxName = (row["Name"] || "").trim();
         if (!paxName) continue;
 
-        const normalizedPaxName = normalizePaxName(paxName);
+        const normalizedPaxName = normalizeImportPaxKey(paxName);
         const existingMember = existingMemberMap[normalizedPaxName];
 
         if (existingMember) {
@@ -107,8 +107,8 @@ export async function importPaxMasterCsv(csvText) {
 
         if (!paxName || !invitedByName) continue;
 
-        const member = memberMap[normalizePaxName(paxName)];
-        const inviter = memberMap[normalizePaxName(invitedByName)];
+        const member = memberMap[normalizeImportPaxKey(paxName)];
+        const inviter = memberMap[normalizeImportPaxKey(invitedByName)];
 
         if (!member || !inviter) continue;
 

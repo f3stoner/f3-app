@@ -367,3 +367,15 @@ export function mapGroupedSessionsToAppFormat(groupedSessions, members) {
         missingPax: Array.from(missingPax).sort(),
     }
 }
+
+export function normalizeImportPaxKey(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/['’]/g, "")
+        .replace(/&/g, " and ")
+        .replace(/[^a-z0-9()]+/g, " ")
+        .replace(/[()]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}

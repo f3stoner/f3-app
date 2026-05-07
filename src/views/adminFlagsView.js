@@ -470,7 +470,7 @@ function createAmbiguousMemberMatchCard(flag, member) {
     useMemberButton.textContent = "Use This Member";
     useMemberButton.addEventListener("click", async (event) => {
         event.stopPropagation();
-        await assignAmbiguousReferenceToMember(flag, member);
+        await assignReferenceToMemberWithBulkOption(flag, member);
     });
 
     const mergeButton = document.createElement("button");
@@ -545,11 +545,35 @@ function unresolvedMatchesFlag(unresolved, flag) {
     );
 }
 
-async function assignAmbiguousReferenceToMember(flag, member) {
+function namesMatchForBulkResolution(flagA, flagB) {
+    return (
+        String(flagA.proposedPaxName || "").trim().toLowerCase() ===
+        String(flagB.proposedPaxName || "").trim().toLowerCase()
+    );
+}
+
+function isMemberReferenceFlag(flag) {
+    return (
+        flag.type === ADMIN_FLAG_TYPES.AMBIGUOUS_MEMBER_REFERENCE ||
+        flag.type === ADMIN_FLAG_TYPES.UNMATCHED_MEMBER_REFERENCE ||
+        flag.type === ADMIN_FLAG_TYPES.UNRESOLVED_PAX
+    );
+}
+
+function getMatchingOpenReferenceFlags(flag) {
+    return (state.adminFlags || []).filter(existingFlag =>
+        existingFlag.status === "open" &&
+        existingFlag.id !== flag.id &&
+        isMemberReferenceFlag(existingFlag) &&
+        namesMatchForBulkResolution(existingFlag, flag)
+    );
+}
+
+async function assignSingleReferenceToMember(flag, member, { shouldRender = true, skipConfirm = false } = {}) {
     const session = state.sessions.find(s => s.id === flag.sessionId);
     if (!session) {
         showToast("Session not found.", "error");
-        return;
+        return false;
     }
 
     const unresolvedPax = session.unresolvedPax || session.unresolved_pax || [];
@@ -567,11 +591,13 @@ async function assignAmbiguousReferenceToMember(flag, member) {
 
     if (!unresolvedEntry) {
         showToast("Unresolved PAX entry not found on session.", "error");
-        return;
+        return false;
     }
 
-    const confirmed = confirm(`Assign ${flag.proposedPaxName} to ${member.paxName}?`);
-    if (!confirmed) return;
+    if (!skipConfirm) {
+        const confirmed = confirm(`Assign ${flag.proposedPaxName} to ${member.paxName}?`);
+        if (!confirmed) return false;
+    }
 
     const rejectedCandidateIds = (unresolvedEntry.candidateMemberIds || [])
         .filter(id => id !== member.id);
@@ -601,18 +627,87 @@ async function assignAmbiguousReferenceToMember(flag, member) {
     try {
         await updateSession(session.id, updatedSession);
 
-        await updateAdminFlag(flag.id, {
+        const resolvedFlag = {
+            ...flag,
             status: "resolved",
             resolvedAt: Date.now(),
             resolvedByUserId: state.currentUserId,
             resolutionNotes: `Assigned "${flag.proposedPaxName}" to ${member.paxName}.`,
-        });
+        };
 
-        showToast(`${flag.proposedPaxName} assigned to ${member.paxName}.`, "success");
-        renderApp();
+        await updateAdminFlag(flag.id, resolvedFlag);
+
+        state.sessions = (state.sessions || []).map(existingSession =>
+            existingSession.id === session.id ? updatedSession : existingSession
+        );
+
+        state.adminFlags = (state.adminFlags || []).map(existingFlag =>
+            existingFlag.id === flag.id ? resolvedFlag : existingFlag
+        );
+
+        if (shouldRender) {
+            showToast(`${flag.proposedPaxName} assigned to ${member.paxName}.`, "success");
+            renderApp();
+        }
+
+        return true;
 
     } catch (error) {
         console.error("Failed to assign ambiguous member reference:", error);
         showToast("Failed to assign member.", "error");
+        return false;
     }
+}
+
+async function assignReferenceToMemberWithBulkOption(flag, member) {
+    const matchingFlags = getMatchingOpenReferenceFlags(flag);
+    const totalCount = matchingFlags.length + 1;
+
+    let applyAll = false;
+
+    if (matchingFlags.length > 0) {
+        applyAll = confirm(
+            `Assign "${flag.proposedPaxName}" to ${member.paxName}?\n\n` +
+            `Found ${totalCount} open flags for "${flag.proposedPaxName}".\n\n` +
+            `Press OK to apply to all ${totalCount} flags.\n` +
+            `Press Cancel to apply only this one.`
+        );
+    }
+
+    if (!applyAll) {
+        await assignSingleReferenceToMember(flag, member);
+        return;
+    }
+
+    const flagsToResolve = [flag, ...matchingFlags];
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const flagToResolve of flagsToResolve) {
+        try {
+            const wasAssigned = await assignSingleReferenceToMember(flagToResolve, member, {
+                shouldRender: false, 
+                skipConfirm: true,
+            });
+            
+            if (wasAssigned) {
+                successCount += 1;
+            } else {
+                failCount += 1;
+            }
+
+        } catch (error) {
+            console.error("Bulk assignment failed for flag:", flagToResolve, error);
+            failCount += 1;
+        }
+    }
+
+    showToast(
+        failCount
+            ? `Assigned ${successCount}. ${failCount} failed.`
+            : `Assigned ${successCount} flags for ${flag.proposedPaxName}.`,
+        failCount ? "error" : "success"
+    );
+
+    renderApp();
 }
