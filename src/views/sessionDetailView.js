@@ -271,11 +271,19 @@ export function renderSessionDetail() {
             newWorkout.notes = session.notes || "";
         }
 
+        newWorkout.id = crypto.randomUUID();
+        newWorkout.createdByUserId = state.currentUserId;
         newWorkout.sourceSessionId = session.id;
+        newWorkout.createdAt = Date.now();
         newWorkout.lastModifiedAt = Date.now();
 
         state.draftPlannedWorkout = newWorkout;
         state.editingPlannedWorkoutId = null;
+        state.selectedPlannedWorkoutId = null;
+        state.pendingPlannerDate = null;
+        state.pendingPlannerAoName = null;
+        state.plannedWorkoutLaunchMode = "planning";
+        
         navigateTo("workoutPlanner");
     });
 

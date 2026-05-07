@@ -137,7 +137,7 @@ export async function updateRegionWorkoutFieldLabels(regionId, labels) {
     return mapRegionFromDb(data);
 }
 
-function mapMemberFromDb(row) {
+export function mapMemberFromDb(row) {
     return {
         id: row.id,
         paxName: row.pax_name,
@@ -149,7 +149,7 @@ function mapMemberFromDb(row) {
     };
 }
 
-function mapSessionFromDb(row) {
+export function mapSessionFromDb(row) {
     return {
         id: row.id,
         date: row.date,

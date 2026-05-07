@@ -1,4 +1,4 @@
-import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud } from "./cloudData.js"
+import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud, insertAdminFlags, mapMemberFromDb } from "./cloudData.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
 import { normalizePaxName } from "../utils/historicImport.js";
@@ -19,6 +19,48 @@ export async function importPaxMasterCsv(csvText) {
     }
 
     console.log("Importing Pax Master:", rows.length);
+
+    const csvCollisions = findCsvPaxNameCollisions(rows);
+
+    if (csvCollisions.length) {
+        throwCsvCollisionError(csvCollisions, "Pax Master Import");
+    }
+
+    function findCsvPaxNameCollisions(rows) {
+        const grouped = {};
+    
+        rows.forEach(row => {
+            const paxName = (row["Name"] || "").trim();
+            if (!paxName) return;
+    
+            const normalizedName = normalizePaxName(paxName);
+            grouped[normalizedName] ||= [];
+            grouped[normalizedName].push({
+                paxName,
+                realName: row["Hospital Name"]?.trim() || null,
+                homeAo: row["First AO"]?.trim() || null,
+            });
+        });
+    
+        return Object.entries(grouped)
+            .filter(([, entries]) => entries.length > 1)
+            .map(([normalizedName, entries]) => ({
+                normalizedName,
+                entries,
+            }));
+    }
+    
+    function throwCsvCollisionError(collisions, context = "Pax Master import") {
+        console.table(collisions.map(collision => ({
+            normalizedName: collision.normalizedName,
+            matches: collision.entries.map(entry => entry.paxName).join(", "),
+        })));
+    
+        throw new Error(
+            `${context} blocked: ${collisions.length} duplicate PAX name(s) found in CSV. No data was imported.`
+        );
+    
+    }
 
     const existingMemberMap = await buildMemberNameToMemberMap(state.currentRegionId);
     
@@ -81,41 +123,9 @@ export async function importPaxMasterCsv(csvText) {
 }
 
 async function buildMemberNameToMemberMap(regionId = state.currentRegionId) {
-    const pageSize = 1000;
-    let from = 0;
-    let allMembers = [];
+    const lookup = await assertNoMemberNameCollisions(regionId, "Pax Master import");
 
-    while (true) {
-        const { data, error } = await supabase
-            .from("members")
-            .select("*")
-            .eq("region_id", regionId)
-            .range(from, from + pageSize - 1);
-
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        
-        allMembers = allMembers.concat(data);
-
-        if (data.length < pageSize) break;
-        from += pageSize;
-    }
-
-    const map = {};
-
-    for (const row of allMembers) {
-        map[normalizePaxName(row.pax_name)] = {
-            id: row.id,
-            paxName: row.pax_name,
-            realName: row.real_name,
-            homeAo: row.home_ao,
-            invitedById: row.invited_by_id,
-            firstPostDate: row.first_post_date,
-            status: row.status,
-        };
-    }
-
-    return map;
+    return lookup.memberByNormalizedName;
 }
 
 function normalizeDate(value) {
@@ -138,6 +148,138 @@ function normalizeDate(value) {
     if (isNaN(date)) return null;
 
     return date.toISOString().split("T")[0];
+}
+
+function createCollisionKey(memberIds) {
+    return [...memberIds].sort().join("|");
+}
+
+async function loadExistingOpenMemberCollisionFlags(regionId) {
+
+    const { data, error } = await supabase
+        .from("admin_flags")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("type", "member_name_collision")
+        .eq("status", "open");
+
+    if (error) throw error;
+
+    const existingKeys = new Set();
+
+    (data || []).forEach(flag => {
+        existingKeys.add(createCollisionKey(flag.matched_member_ids || []));
+    });
+
+    return existingKeys;
+}
+
+async function createMemberCollisionFlags(regionId, collisions, context = "import") {
+    if (!collisions.length) return [];
+
+    const existingFlagKeys = await loadExistingOpenMemberCollisionFlags(regionId);
+
+    const flagsToCreate = collisions
+        .filter(collision => {
+            const key = createCollisionKey(collision.members.map(member => member.id));
+
+            return !existingFlagKeys.has(key);
+        })
+        .map(collision => ({
+            id: crypto.randomUUID(),
+            type: "member_name_collision",
+            status: "open",
+            severity: "high",
+            createdAt: Date.now(),
+            createdByUserId: state.currentUserId || null,
+            sessionId: null,
+            proposedPaxName: collision.normalizedName,
+            matchedMemberIds: collision.members.map(member => member.id),
+            message: `${context} blocked: multiple members normalize to "${collision.normalizedName}": ${collision.members.map(member => member.paxName).join(", ")}`,
+            resolvedAt: null,
+            resolvedByUserId: null,
+            resolutionNotes: null,
+        }));
+
+    if (!flagsToCreate.length) return [];
+
+    return insertAdminFlags(regionId, flagsToCreate);
+}
+
+function throwMemberCollisionError(collisions, context = "Import") {
+    console.table(collisions.map(collision => ({
+        normalizedName: collision.normalizedName,
+        matches: collision.members.map(member => member.paxName).join(", "),
+        memberIds: collision.members.map(member => member.id).join(", "),
+    })));
+
+    throw new Error(
+        `${context} blocked: ${collisions.length} member name collision(s) require admin review. No data was imported.`
+    );
+}
+
+async function buildUniqueMemberLookup(regionId = state.currentRegionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let allMembers = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("members")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) break;
+
+        allMembers = allMembers.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
+
+    const grouped = {};
+
+    for (const row of allMembers) {
+        const member = mapMemberFromDb(row);
+        const normalizedName = normalizePaxName(member.paxName);
+        grouped[normalizedName] ||= [];
+        grouped[normalizedName].push(member);
+    }
+
+    const memberByNormalizedName = {};
+    const collisions = [];
+
+    Object.entries(grouped).forEach(([normalizedName, members]) => {
+        if (members.length === 1) {
+            memberByNormalizedName[normalizedName] = members[0];
+            return;
+        }
+
+        collisions.push({
+            normalizedName,
+            members,
+        });
+    });
+
+    return {
+        memberByNormalizedName,
+        collisions,
+    };
+}
+
+async function assertNoMemberNameCollisions(regionId, context) {
+    const lookup = await buildUniqueMemberLookup(regionId);
+
+    if (lookup.collisions.length) {
+
+        await createMemberCollisionFlags(regionId, lookup.collisions, context);
+        throwMemberCollisionError(lookup.collisions, context);
+    }
+
+    return lookup;
 }
 
 async function loadExistingSessionsByDeltaKey(regionId) {
@@ -573,34 +715,16 @@ export async function runAggielandDeltaAoImports({ dryRun = true, regionId = sta
 }
 
 async function buildMemberNameToIdMap(regionId = state.currentRegionId) {
-    const pageSize = 1000;
-    let from = 0;
-    let allMembers = [];
-
-    while (true) {
-        const { data, error } = await supabase
-            .from("members")
-            .select("id, pax_name")
-            .eq("region_id", regionId)
-            .range(from, from + pageSize - 1);
-
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-
-        allMembers = allMembers.concat(data);
-
-        if (data.length < pageSize) break;
-        from += pageSize;
-    }
+    const lookup = await assertNoMemberNameCollisions(regionId, "AO Log import");
 
     const map = {};
 
-    for (const row of allMembers) {
-        map[normalizePaxName(row.pax_name)] = row.id;
-    }
+    Object.entries(lookup.memberByNormalizedName).forEach(([normalizedName, member]) => {
+        map[normalizedName] = member.id;
+    });
 
     console.log("Import target region ID:", regionId);
-    console.log("Members loaded for import:", allMembers.length);
+    console.log("Members loaded for import:", Object.keys(map).length);
     console.log("Member map sample:", Object.keys(map).slice(0, 20));
 
     return map;

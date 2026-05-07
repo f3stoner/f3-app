@@ -332,15 +332,15 @@ export function renderWorkoutPlanner() {
 
     const configuredAoOptions = REGION_AOS[state.currentRegionId] || [];
 
-    const inferredAoOptions = [
-        ...(state.aos || []).map(ao => ao.name).filter(Boolean),
-        ...state.sessions.map(s => s.aoName).filter(Boolean),
-        ...state.plannedWorkouts.map(w => w.aoName).filter(Boolean),
-    ];
+    const cloudAoOptions = (state.aos || [])
+        .filter(ao => ao.isActive !== false)
+        .map(ao => ao.name)
+        .filter(Boolean);
+        
 
     const aoOptions = [...new Set([
         ...configuredAoOptions,
-        ...inferredAoOptions,
+        ...cloudAoOptions,
     ])]
         .filter(ao => ao && ao !== "DR")
         .sort();
@@ -513,8 +513,18 @@ export function renderWorkoutPlanner() {
         console.log("isEditing:", isEditing);
         console.log("editingPLannedWorkoutId:", state.editingPlannedWorkoutId);
         console.log("draftWorkout before save:", draftWorkout)
-        try{
+        try {
             draftWorkout.lastModifiedAt = Date.now();
+
+            if (!isEditing) {
+                draftWorkout.id ||= crypto.randomUUID();
+            }
+
+            draftWorkout.createdByUserId ||= state.currentUserId;
+            draftWorkout.regionId ||= state.currentRegionId;
+            draftWorkout.date ||= getTodayDate();
+            draftWorkout.aoName ||= "";
+            draftWorkout.isShared = Boolean(draftWorkout.isShared);
 
             if (isEditing) {
                 const workoutToSave = {
