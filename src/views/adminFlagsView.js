@@ -5,6 +5,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { updateAdminFlag, setMemberStatus, updateSession, updateMember } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
 import { getLastPostDate } from "../utils/memberStats.js";
+import { ADMIN_FLAG_TYPES } from "../modules/adminFlags.js";
 
 export function renderAdminFlagsView() {
     const app = document.getElementById("app");
@@ -47,6 +48,31 @@ export function renderAdminFlagsView() {
 }
 
 function createAdminFlagCard(flag) {
+
+    if (flag.type === ADMIN_FLAG_TYPES.DUPLICATE_FNG_NAME) {
+        return createDuplicateFngFlagCard(flag);
+    }
+
+    if (flag.type === ADMIN_FLAG_TYPES.UNRESOLVED_PAX ||
+        flag.type === ADMIN_FLAG_TYPES.UNMATCHED_MEMBER_REFERENCE
+    ) {
+        return createUnresolvedPaxFlagCard(flag);
+    }
+
+    if (flag.type === ADMIN_FLAG_TYPES.AMBIGUOUS_MEMBER_REFERENCE) {
+        return createAmbiguousMemberReferenceFlagCard(flag);
+    }
+
+    if (flag.type === ADMIN_FLAG_TYPES.MEMBER_NAME_COLLISION) {
+        return createMemberNameCollisionFlagCard(flag);
+    }
+
+    return createGenericAdminFlagCard(flag);
+
+}
+
+function createDuplicateFngFlagCard(flag) {
+
     let isExpanded = false;
 
     const card = document.createElement("div");
@@ -236,25 +262,7 @@ function createAdminFlagCard(flag) {
             }
         });
 
-    const resolveButton = document.createElement("button");
-    resolveButton.textContent = "Mark Resolved";
-
-    resolveButton.addEventListener("click", async () => {
-        try {
-            await updateAdminFlag(flag.id, {
-                status: "resolved",
-                resolvedAt: Date.now(),
-                resolvedByUserId: state.currentUserId,
-                resolutionNotes: "Manually marked resolved.",
-            });
-
-            showToast("Flag resolved.", "success");
-            renderApp();
-        } catch(error) {
-            console.error('Failed to resolve admin flag:', error);
-            showToast("Failed to resolve flag.", "error");
-        }
-    });
+    const resolveButton = createResolveFlagButton(flag);
 
     const severityDot = document.createElement("div");
     severityDot.classList.add("severity-dot", `severity-${flag.severity}`);
@@ -267,7 +275,344 @@ function createAdminFlagCard(flag) {
     return card;
 }
 
+function createUnresolvedPaxFlagCard(flag) {
+    const card = document.createElement("div");
+    card.classList.add("admin-flag-card");
+
+    const severityDot = document.createElement("div");
+    severityDot.classList.add("severity-dot", `severity-${flag.severity}`);
+
+    const type = document.createElement("div");
+    type.classList.add("detail-label");
+    type.textContent = formatFlagType(flag.type);
+
+    const message = document.createElement("div");
+    message.classList.add("admin-flag-message");
+    message.textContent = flag.message || "Imported PAX could not be matched to roster.";
+
+    const proposedName = document.createElement("div");
+    proposedName.classList.add("admin-flag-detail");
+    proposedName.textContent = `Unresolved PAX: ${flag.proposedPaxName || "Unknown"}`;
+
+    const session = state.sessions.find(s => s.id === flag.sessionId);
+
+    const sessionDetail = document.createElement("div");
+    sessionDetail.classList.add("admin-flag-detail");
+    sessionDetail.textContent = session
+        ? `${formatDate(session.date)} - ${session.aoName || "Unknown AO"}`
+        : "Session not found.";
+
+    const actions = document.createElement("div");
+    actions.classList.add("admin-flag-actions");
+
+    const viewSessionButton = document.createElement("button");
+    viewSessionButton.type = "button";
+    viewSessionButton.textContent = "View Session";
+
+    viewSessionButton.addEventListener("click", () => {
+        if (!session) return;
+        state.selectedSessionId = session.id;
+        navigateTo("sessionDetail");
+    });
+
+    const resolveButton = createResolveFlagButton(flag, "Manually resolved unresolved PAX flag.");
+
+    actions.append(viewSessionButton, resolveButton);
+    card.append(severityDot, type, message, proposedName, sessionDetail, actions);
+
+    return card;
+}
+
+function createGenericAdminFlagCard(flag) {
+    const card = document.createElement("div");
+    card.classList.add("admin-flag-card");
+
+    const severityDot = document.createElement("div");
+    severityDot.classList.add("severity-dot", `severity-${flag.severity || "low"}`);
+
+    const type = document.createElement("div");
+    type.classList.add("detail-label");
+    type.textContent = formatFlagType(flag.type);
+
+    const message = document.createElement("div");
+    message.classList.add("admin-flag-message");
+    message.textContent = flag.message || "Admin review needed";
+
+    const meta = document.createElement("div");
+    meta.classList.add("admin-flag-detail");
+    meta.textContent = `Created ${new Date(flag.createdAt).toLocaleString()}`;
+
+    const actions = document.createElement("div");
+    actions.classList.add("admin-flag-actions");
+
+    actions.append(createResolveFlagButton(flag));
+
+    card.append(severityDot, type, message, meta, actions);
+
+    return card;
+}
+
+function createAmbiguousMemberReferenceFlagCard(flag) {
+    let isExpanded = false;
+
+    const card = document.createElement("div");
+    card.classList.add("admin-flag-card");
+
+    const severityDot = document.createElement("div");
+    severityDot.classList.add("severity-dot", `severity-${flag.severity || "high"}`);
+
+    const type = document.createElement("div");
+    type.classList.add("detail-label");
+    type.textContent = formatFlagType(flag.type);
+
+    const message = document.createElement("div");
+    message.classList.add("admin-flag-message");
+    message.textContent = flag.message || "Could not safely assign imported PAX to a roster member.";
+
+    const session = state.sessions.find(s => s.id === flag.sessionId);
+
+    const sessionDetail = document.createElement("div");
+    sessionDetail.classList.add("admin-flag-detail");
+    sessionDetail.textContent = session
+        ? `${formatDate(session.date)} - ${session.aoName || "Unknown AO"}`
+        : "Session not found.";
+
+    const matchingMembers = (flag.matchedMemberIds || [])
+        .map(id => state.members.find(member => member.id === id))
+        .filter(Boolean);
+
+    const matchedToggle = document.createElement("div");
+    matchedToggle.classList.add("admin-flag-toggle");
+    matchedToggle.textContent = `Potential Matches (${matchingMembers.length}) ▾`;
+
+    const matchedSection = document.createElement("div");
+    matchedSection.classList.add("admin-flag-matches");
+    matchedSection.style.display = "none";
+
+    matchedToggle.addEventListener("click", () => {
+        isExpanded = !isExpanded;
+
+        matchedSection.style.display = isExpanded ? "flex" : "none";
+        matchedToggle.textContent = isExpanded
+            ? `Potential Matches (${matchingMembers.length}) ▴`
+            : `Potential Matches (${matchingMembers.length}) ▾`;
+    });
+
+    if (matchingMembers.length > 0) {
+        matchingMembers.forEach(member => {
+            matchedSection.appendChild(createAmbiguousMemberMatchCard(flag, member));
+        });
+    } else {
+        const noMatches = document.createElement("div");
+        noMatches.classList.add("admin-flag-detail");
+        noMatches.textContent = "No potential matches found.";
+        matchedSection.appendChild(noMatches);
+    }
+
+    const actions = document.createElement("div");
+    actions.classList.add("admin-flag-actions");
+
+    const viewSessionButton = document.createElement("button");
+    viewSessionButton.type = "button";
+    viewSessionButton.textContent = "View Session";
+
+    viewSessionButton.addEventListener("click", () => {
+        if (!session) return;
+        state.selectedSessionId = session.id;
+        navigateTo("sessionDetail");
+    });
+
+    actions.append(viewSessionButton, createResolveFlagButton(flag));
+
+    card.append(severityDot, type, message, sessionDetail, matchedToggle, matchedSection, actions);
+
+    return card;
+
+}
+
+function createAmbiguousMemberMatchCard(flag, member) {
+    const matchCard = document.createElement("div");
+    matchCard.classList.add("admin-flag-match-card");
+
+    const matchName = document.createElement("div");
+    matchName.classList.add("admin-flag-match-name");
+    matchName.textContent = member.paxName || "Unknown PAX";
+    const lastPostDate = getLastPostDate(member, state.sessions);
+
+    const details = document.createElement("div");
+    details.classList.add("admin-flag-detail");
+
+    const realNameRow = document.createElement("div");
+    realNameRow.textContent = `Real name: ${member.realName || "unknown"}`;
+
+    const statusRow = document.createElement("div");
+    statusRow.textContent = `Status: ${member.status || "unknown"}`;
+
+    const homeAoRow = document.createElement("div");
+    homeAoRow.textContent = `Home AO: ${member.homeAo || "unknown"}`;
+
+    const lastPostRow = document.createElement("div");
+    lastPostRow.textContent = `Last post: ${lastPostDate ? formatDate(lastPostDate) : "none found"}`;
+
+    details.append(realNameRow, statusRow, homeAoRow, lastPostRow);
+
+    const viewProfileButton = document.createElement("button");
+    viewProfileButton.type = "button";
+    viewProfileButton.textContent = "View Profile";
+    viewProfileButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        state.selectedMemberId = member.id;
+        navigateTo("memberDetail");
+    });
+
+    const useMemberButton = document.createElement("button");
+    useMemberButton.type = "button";
+    useMemberButton.textContent = "Use This Member";
+    useMemberButton.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        await assignAmbiguousReferenceToMember(flag, member);
+    });
+
+    const mergeButton = document.createElement("button");
+    mergeButton.type = "button";
+    mergeButton.textContent = "Merge Members";
+    mergeButton.classList.add("danger-button");
+
+    mergeButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        showToast("Next step: add guarded member merge flow.", "info");
+    });
+
+    matchCard.append(matchName, details, viewProfileButton, useMemberButton, mergeButton);
+
+    return matchCard;
+}
+
+function createMemberNameCollisionFlagCard(flag) {
+    return createAmbiguousMemberReferenceFlagCard(flag);
+}
+
+function createResolveFlagButton(flag, resolutionNotes = "Manually marked resolved.") {
+    const resolveButton = document.createElement("button");
+    resolveButton.textContent = "Mark Resolved";
+
+    resolveButton.addEventListener("click", async () => {
+        try {
+            await updateAdminFlag(flag.id, {
+                status: "resolved",
+                resolvedAt: Date.now(),
+                resolvedByUserId: state.currentUserId,
+                resolutionNotes,
+            });
+
+            showToast("Flag resolved.", "success");
+            renderApp();
+        } catch(error) {
+            console.error('Failed to resolve admin flag:', error);
+            showToast("Failed to resolve flag.", "error");
+        }
+    });
+
+    return resolveButton;
+}
+
 function formatFlagType(type) {
-    if (type ==="duplicate_fng_name") return "Duplicate FNG Name";
-    return type;
+    if (type === "duplicate_fng_name") return "Duplicate FNG Name";
+    if (type === "unresolved_pax") return "Unresolved PAX";
+    if (type === "unmatched_member_reference") return "Unmatched Member";
+    if (type === "ambiguous_member_reference") return "Ambiguous Member Match";
+    if (type === "member_name_collision") return "Member Name Collision";
+    
+    return type
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function isQCode(code) {
+    const normalizedCode = String(code || "").toUpperCase().replace(/[^A-Z]/g, "");
+    return normalizedCode.includes("Q");
+}
+
+function unresolvedMatchesFlag(unresolved, flag) {
+    return (
+        String(unresolved.rawName || "").trim().toLowerCase() ===
+            String(flag.proposedPaxName || "").trim().toLowerCase() &&
+        unresolved.reason === flag.type &&
+        (flag.matchedMemberIds || []).every(id =>
+            (unresolved.candidateMemberIds || []).includes(id)
+        )
+    );
+}
+
+async function assignAmbiguousReferenceToMember(flag, member) {
+    const session = state.sessions.find(s => s.id === flag.sessionId);
+    if (!session) {
+        showToast("Session not found.", "error");
+        return;
+    }
+
+    const unresolvedPax = session.unresolvedPax || session.unresolved_pax || [];
+
+    const unresolvedEntry = unresolvedPax.find(unresolved =>
+        unresolvedMatchesFlag(unresolved, flag)
+    );
+
+    console.log("Assign ambiguous reference:", {
+        flag,
+        member,
+        session,
+        unresolvedEntry,
+    });
+
+    if (!unresolvedEntry) {
+        showToast("Unresolved PAX entry not found on session.", "error");
+        return;
+    }
+
+    const confirmed = confirm(`Assign ${flag.proposedPaxName} to ${member.paxName}?`);
+    if (!confirmed) return;
+
+    const rejectedCandidateIds = (unresolvedEntry.candidateMemberIds || [])
+        .filter(id => id !== member.id);
+
+    const updatedAttendeeIds = Array.from(new Set([
+        ...(session.attendeeIds || []).filter(id => !rejectedCandidateIds.includes(id)),
+        member.id,
+    ]));
+
+    const updatedQIds = isQCode(unresolvedEntry.code)
+        ? Array.from(new Set(
+            [...(session.qIds || []).filter(id => !rejectedCandidateIds.includes(id)),
+            member.id]))
+        : (session.qIds || []).filter(id => !rejectedCandidateIds.includes(id));
+
+    const updatedUnresolvedPax = unresolvedPax.filter(unresolved =>
+        !unresolvedMatchesFlag(unresolved, flag)
+    );
+
+    const updatedSession = {
+        ...session,
+        attendeeIds: updatedAttendeeIds,
+        qIds: updatedQIds,
+        unresolvedPax: updatedUnresolvedPax,
+    };
+
+    try {
+        await updateSession(session.id, updatedSession);
+
+        await updateAdminFlag(flag.id, {
+            status: "resolved",
+            resolvedAt: Date.now(),
+            resolvedByUserId: state.currentUserId,
+            resolutionNotes: `Assigned "${flag.proposedPaxName}" to ${member.paxName}.`,
+        });
+
+        showToast(`${flag.proposedPaxName} assigned to ${member.paxName}.`, "success");
+        renderApp();
+
+    } catch (error) {
+        console.error("Failed to assign ambiguous member reference:", error);
+        showToast("Failed to assign member.", "error");
+    }
 }

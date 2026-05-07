@@ -3,6 +3,10 @@ import { showToast } from "../utils/toast.js";
 
 export const ADMIN_FLAG_TYPES = {
     DUPLICATE_FNG_NAME: "duplicate_fng_name",
+    UNRESOLVED_PAX: "unresolved_pax",
+    AMBIGUOUS_MEMBER_REFERENCE: "ambiguous_member_reference",
+    UNMATCHED_MEMBER_REFERENCE: "unmatched_member_reference",
+    MEMBER_NAME_COLLISION: "member_name_collision",
 };
 
 export const ADMIN_FLAG_STATUS = {
