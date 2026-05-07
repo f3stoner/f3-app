@@ -11,6 +11,7 @@ export function showToast(message, type = "info") {
     clearTimeout(toastTimeoutId);
 
     toastTimeoutId = setTimeout(() => {
+        console.log("Removing Toast");
         state.toastMessage = null;
         state.toastType = "info";
         renderToast();
@@ -19,6 +20,7 @@ export function showToast(message, type = "info") {
 
 function renderToast() {
     const existingToast = document.getElementById("toast");
+    console.log("Rendering Toast", state.toastMessage);
 
     if (existingToast) {
         existingToast.remove();
@@ -28,7 +30,7 @@ function renderToast() {
 
     const toast = document.createElement("div");
     toast.id = "toast";
-    toast.classList.add("toast", `toast-${state.toastType}`);
+    toast.classList.add("toast", state.toastType || "info");
     toast.textContent = state.toastMessage;
 
     document.body.appendChild(toast);

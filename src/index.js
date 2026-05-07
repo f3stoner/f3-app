@@ -205,16 +205,6 @@ function renderApp() {
 
         renderDashboard ();
     }
-    const existingToast = document.querySelector(".toast");
-    existingToast?.remove();
-
-    if (state.toastMessage) {
-        const toast = document.createElement("div");
-        toast.classList.add("toast", state.toastType || "info");
-        toast.textContent = state.toastMessage;
-
-        document.body.appendChild(toast);
-    }
 }
 
 function hideBootSplash() {
