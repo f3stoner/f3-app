@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { updateSession } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
+import { updateCustomTemplates } from "../services/cloudData.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -23,16 +24,117 @@ export function renderBackblastView () {
     helper.classList.add("detail-label");
     helper.textContent = "Edit before sharing";
 
+    const hasSavedOpener = Boolean(state.customTemplates?.backblastIntro);
+
+    let openerExpanded = false;
+
+    const templateSection = document.createElement("div");
+    templateSection.classList.add("card");
+
+    const templateTitle = document.createElement("h2");
+    templateTitle.textContent = "Backblast Opener";
+
+    const templateHelper = document.createElement("div");
+    templateHelper.classList.add("detail-label");
+    templateHelper.textContent = hasSavedOpener
+        ? "Saved opener is active for generated backblasts."
+        : "No saved opener yet. Supports {paxCount}, {aonName}, {date}, and {qNames}.";
+
+    const templateTextArea = document.createElement("textarea");
+    templateTextArea.classList.add("preblast-textarea");
+    templateTextArea.style.minHeight = "80px";
+    templateTextArea.style.maxHeight = "160px";
+    templateTextArea.style.overflowY = "auto";
+    templateTextArea.value = state.customTemplates?.backblastIntro || "";
+    templateTextArea.placeholder = "{paxCount} PAX including YHC joined together in the gloom this morning at {aoName}.";
+    templateTextArea.style.display = "none";
+
+
+    const saveTemplateButton = document.createElement("button");
+    saveTemplateButton.textContent = "Save Opener";
+    saveTemplateButton.style.display = "none";
+
+    const toggleTemplateButton = document.createElement("button");
+    toggleTemplateButton.textContent = hasSavedOpener ? "Edit" : "Add";
+
+    saveTemplateButton.addEventListener("click", async () => {
+        try {
+            const updatedTemplates = {
+                ...(state.customTemplates || {}),
+                backblastIntro: templateTextArea.value.trim(),
+            };
+
+            await updateCustomTemplates(state.currentUserId, updatedTemplates);
+
+            state.customTemplates = updatedTemplates;
+
+            showToast("Backblast opener saved.", "success");
+            renderApp();
+        } catch (error) {
+            console.error("Failed to save backblast opener:", error);
+            showToast("Failed to save opener.", "error");
+        }
+    });
+
+    toggleTemplateButton.addEventListener("click", () => {
+        openerExpanded = !openerExpanded;
+
+        templateTextArea.style.display = openerExpanded ? "block" : "none";
+        saveTemplateButton.style.display = openerExpanded ? "inline-block" : "none";
+
+        toggleTemplateButton.textContent = openerExpanded ? "Hide" : (hasSavedOpener ? "Edit" : "Add");
+
+        if (openerExpanded) {
+            autoResize(templateTextArea);
+        }
+    });
+
+    const applyTemplateButton = document.createElement("button");
+    applyTemplateButton.textContent = "Apply Saved Opener";
+    applyTemplateButton.disabled = !hasSavedOpener;
+
+    applyTemplateButton.addEventListener("click", () => {
+        if (!session) {
+            showToast("Could not apply opener. Session not found.", "error");
+            return;
+        }
+
+        const confirmed = confirm("Regenerate this backblast with your saved opener? This will replace your current draft.");
+        if (!confirmed) return;
+
+        session.backblastText = "";
+        state.draftBackblastText = generateBackblast(session, state.members);
+        renderApp();
+    });
+
+    templateSection.append(templateTitle, templateHelper, toggleTemplateButton, applyTemplateButton, templateTextArea, saveTemplateButton);
+
     const textArea = document.createElement("textarea");
     textArea.classList.add("preblast-textarea");
     textArea.value = state.draftBackblastText || "";
 
     function autoResize(textarea) {
         textarea.style.height = "auto";
-        textarea.style.height = textarea.scrollHeight + "px";
+    
+        const maxHeight = textarea === templateTextArea
+            ? 160
+            : 1000;
+    
+        textarea.style.height =
+            Math.min(textarea.scrollHeight, maxHeight) + "px";
+    
+        textarea.style.overflowY =
+            textarea.scrollHeight > maxHeight
+                ? "auto"
+                : "hidden";
     }
 
     autoResize(textArea);
+    autoResize(templateTextArea);
+
+    templateTextArea.addEventListener("input", () => {
+        autoResize(templateTextArea);
+    })
 
     textArea.addEventListener("input", () => {
         autoResize(textArea);
@@ -205,5 +307,5 @@ export function renderBackblastView () {
 
     actionRow.append(shareButton, copyButton, resetButton, doneButton);
 
-    app.append(title, helper, textArea, mediaSection, actionRow);
+    app.append(title, helper, textArea, templateSection, mediaSection, actionRow);
 }

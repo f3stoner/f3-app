@@ -12,7 +12,7 @@ import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 import { replacePersistedData } from "./services/appData.js";
 import { loadAllRegions, loadRegionData, getNotificationSettings } from "./services/cloudData.js";
-import { importPaxMasterCsv, repairAggielandDeltaSessions } from "./services/importAggieland.js";
+import { importPaxMasterCsv, repairAggielandDeltaSessions, auditPotentialMergedMembers, auditMergedMemberDetail, splitMergedMemberByRawName } from "./services/importAggieland.js";
 import { importAoLogCsv, runAggielandDeltaAoImports } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
@@ -39,6 +39,9 @@ window.renderApp = renderApp;
 window.runAggielandDeltaAoImports = runAggielandDeltaAoImports;
 window.importPaxMasterCsv = importPaxMasterCsv;
 window.repairAggielandDeltaSessions = repairAggielandDeltaSessions;
+window.auditPotentialMergedMembers = auditPotentialMergedMembers;
+window.auditMergedMemberDetail = auditMergedMemberDetail;
+window.splitMergedMemberByRawName = splitMergedMemberByRawName;
 }
 
 if ("serviceWorker" in navigator) {

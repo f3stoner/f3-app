@@ -2,6 +2,20 @@ import { formatDate } from "../utils/date.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { state } from "./state.js";
 
+function getBackblastIntroTemplate() {
+    return state.customTemplates?.backblastIntro || "";
+}
+
+function applyBackblastTemplate(template, values) {
+    if (!template) return "";
+
+    return template
+        .replaceAll("{paxCount}", values.paxCount)
+        .replaceAll("{aoName}", values.aoName)
+        .replaceAll("{date}", values.date)
+        .replaceAll("{qName}", values.qName)
+        .trim();
+}
 
 export function generateBackblast (session, members) {
     const attendeeIds = session.attendeeIds || [];
@@ -66,6 +80,20 @@ export function generateBackblast (session, members) {
 
     const totalAttendees = attendeeIds.length + fngs.length;
 
+    const qNamePlain = sortedQNames.length > 0
+        ? sortedQNames.map(name => name.replace(/^@/, "")).join(", ")
+        : "YHC";
+
+    const backblastIntro = applyBackblastTemplate(
+        getBackblastIntroTemplate(),
+        {
+            paxCount: String(totalAttendees),
+            aoName: session.aoName || "",
+            date: formatDate,
+            qName: qNamePlain,
+        }
+    );
+
     const workout = session.workout;
     let workoutText = session.notes ? session.notes : "-";
 
@@ -112,6 +140,8 @@ export function generateBackblast (session, members) {
     return [
         `#backblast ${aoHashtag}`.trim(),
         "",
+        backblastIntro,
+        backblastIntro ? "" : null,
         `AO: ${session.aoName}`,
         `Date: ${formattedDate}`,
         "",
@@ -125,5 +155,5 @@ export function generateBackblast (session, members) {
         `FNGs (${fngs.length}): ${fngText}`,
         "",
         workoutText,
-    ].join("\n");
+    ].filter(item => item !== null).join("\n");
 }

@@ -1,7 +1,7 @@
 import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud, insertAdminFlags, mapMemberFromDb } from "./cloudData.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
-import { normalizePaxName, normalizeImportPaxKey } from "../utils/historicImport.js";
+import { normalizePaxName, normalizeImportPaxKey, parseHistoricCsvText, parseHistoricRow } from "../utils/historicImport.js";
 import { state } from "../modules/state.js";
 
 export async function importPaxMasterCsv(csvText) {
@@ -844,4 +844,410 @@ async function createUnresolvedPaxFlagsForSessions(regionId, sessions) {
     if (!flags.length) return [];
 
     return insertAdminFlags(regionId, flags);
+}
+
+function normalizeLooseMergeRiskKey(value) {
+    return String(value || "")
+        .toLowerCase()
+        .replace(/^dr\.\s*/i, "")
+        .replace(/\(.*?\)/g, "")
+        .replace(/[^a-z0-9]/g, "")
+        .trim();
+}
+
+export async function auditPotentialMergedMembers({ regionId = state.currentRegionId } = {}) {
+
+    const paxMasterResponse = await fetch("/Pax_Master.csv");
+
+    if (!paxMasterResponse.ok) {
+        throw new Error("Could not fetch Pax_Master.csv");
+    }
+
+    const paxMasterCsvText = await paxMasterResponse.text();
+
+    const { data: paxRows, errors } = Papa.parse(paxMasterCsvText, {
+        header: true,
+        skipEmptyLines: true,
+    });
+
+    if (errors.length) {
+        console.error(errors);
+        throw new Error("Pax Master CSV parse failed");
+    }
+    const rosterGroups = {};
+
+    for (const row of paxRows) {
+        const paxName = (row["Name"] || "").trim();
+        if (!paxName) continue;
+        const looseKey = normalizeLooseMergeRiskKey(paxName);
+        rosterGroups[looseKey] ||= [];
+        rosterGroups[looseKey].push({
+            paxName,
+            realName: row["Hospital Name"]?.trim() || null,
+            homeAo: row["First AO"]?.trim() || null,
+        });
+    }
+
+    const riskyRosterGroups = Object.entries(rosterGroups)
+        .filter(([, entries]) => entries.length > 1)
+        .map(([looseKey, entries]) => ({
+            looseKey,
+            rosterEntries: entries,
+        }));
+
+    const currentMembersByLooseKey = {};
+
+    for (const member of state.members || []) {
+        const looseKey = normalizeLooseMergeRiskKey(member.paxName);
+        currentMembersByLooseKey[looseKey] ||= [];
+        currentMembersByLooseKey[looseKey].push(member);
+    }
+
+    const sessionCountsByMemberId = {};
+
+    for (const session of state.sessions || []) {
+        for (const memberId of session.attendeeIds || []) {
+            sessionCountsByMemberId[memberId] = (sessionCountsByMemberId[memberId] || 0) + 1;
+        }
+
+        for (const memberId of session.qIds || []) {
+            sessionCountsByMemberId[memberId] = (sessionCountsByMemberId[memberId] || 0) + 1;
+        }
+
+        for (const fng of session.fngs || []) {
+            if (!fng.memberId) continue;
+            sessionCountsByMemberId[fng.memberId] = (sessionCountsByMemberId[fng.memberId] || 0) + 1;
+        }
+    }
+
+    const auditRows = riskyRosterGroups.map(group => {
+        const currentMembers = currentMembersByLooseKey[group.looseKey] || [];
+
+        return {
+            looseKey: group.looseKey,
+            rosterNames: group.rosterEntries.map(entry => entry.paxName),
+            currentMembers: currentMembers.map(member => ({
+                id: member.id,
+                paxName: member.paxName,
+                realName: member.realName,
+                homeAo: member.homeAo,
+                status: member.status,
+                sessionRefs: sessionCountsByMemberId[member.id] || 0,
+            })),
+            rosterCount: group.rosterEntries.length,
+            currentMemberCount: currentMembers.length,
+            likelyMerged: currentMembers.length < group.rosterEntries.length,
+        };
+    });
+
+    console.table(auditRows.map(row => ({
+        looseKey: row.looseKey,
+        rosterNames: row.rosterNames.join(", "),
+        currentMembers: row.currentMembers.map(member => member.paxName).join(", "),
+        rosterCount: row.rosterCount,
+        currentMemberCount: row.currentMemberCount,
+        likelyMerged: row.likelyMerged,
+    })));
+    return auditRows;
+}
+
+export async function auditMergedMemberDetail(looseKeyToInspect) {
+    const aoFiles = [
+        ["Forest", "/Forest_Log.csv"],
+        ["Cave", "/Cave_Log.csv"],
+        ["Iron", "/Iron_Log.csv"],
+        ["Keep", "/Keep_Log.csv"],
+        ["Rock", "/Rock_Log.csv"],
+        ["Mine", "/Mine_Log.csv"],
+        ["Southie", "/Southie_Log.csv"],
+        ["Watch", "/Watch_Log.csv"],
+        ["Dads", "/Dads_Log.csv"],
+        ["BlackOps", "/BlackOps_Log.csv"],
+        ["CSAUP", "/CSAUP_Log.csv"],
+        ["Other", "/Other_Log.csv"],
+    ];
+
+    const paxMasterResponse = await fetch("/Pax_Master.csv");
+
+    if (!paxMasterResponse.ok) {
+        throw new Error("Could not fetch Pax_Master.csv");
+    }
+
+    const paxMasterCsvText = await paxMasterResponse.text();
+
+    const { data: paxRows } = Papa.parse(paxMasterCsvText, {
+        header: true,
+        skipEmptyLines: true,
+    });
+    const rosterEntries = paxRows
+        .map(row => ({
+            paxName: (row["Name"] || "").trim(),
+            realName: row["Hospital Name"]?.trim() || null,
+            homeAo: row["First AO"]?.trim() || null,
+        }))
+
+        .filter(entry =>
+            normalizeLooseMergeRiskKey(entry.paxName) === looseKeyToInspect
+        );
+
+    const currentMembers = (state.members || []).filter(member =>
+        normalizeLooseMergeRiskKey(member.paxName) === looseKeyToInspect
+    );
+
+    const rawAoRows = [];
+
+    for (const [aoName, path] of aoFiles) {
+        const response = await fetch(path);
+        if (!response.ok) continue;
+        const csvText = await response.text();
+        const cleanedCsvText = csvText.split("\n").slice(1).join("\n");
+        const { data: rows } = Papa.parse(cleanedCsvText, {
+            header: true,
+            skipEmptyLines: true,
+        });
+
+        rows.forEach(row => {
+            const paxName = (row["Pax"] || "").trim();
+            if (
+                normalizeLooseMergeRiskKey(paxName) === looseKeyToInspect
+            ) {
+                rawAoRows.push({
+                    aoName,
+                    date: normalizeDate(row["Date"]),
+                    rawPaxName: paxName,
+                    code: row["Code"] || "",
+                });
+            }
+        });
+    }
+
+    const historicRows = [];
+    const historicResponse = await fetch("/Historic_Log.csv");
+
+    if (historicResponse.ok) {
+        const historicCsvText = await historicResponse.text();
+        const rawHistoricRows = parseHistoricCsvText(historicCsvText);
+        const parsedHistoricRows = rawHistoricRows.map(parseHistoricRow);
+
+        parsedHistoricRows.forEach(row => {
+            if (row.skip) return;
+
+            if (normalizeLooseMergeRiskKey(row.paxName) === looseKeyToInspect) {
+                historicRows.push({
+                    aoName: row.decodedCode?.aoName || "Unknown",
+                    date: row.date,
+                    rawPaxName: row.paxName,
+                    code: row.rawCode || "",
+                });
+            }
+        });
+    }
+
+    const currentMemberIds = currentMembers.map(member => member.id);
+    const attachedSessions = (state.sessions || [])
+        .filter(session =>
+            (session.attendeeIds || []).some(id => currentMemberIds.includes(id)) ||
+            (session.qIds || []).some(id => currentMemberIds.includes(id)) ||
+            (session.fngs || []).some(fng => currentMemberIds.includes(fng.memberId))
+        )
+
+        .map(session => ({
+            id: session.id,
+            date: session.date,
+            aoName: session.aoName,
+            attendeeNames: (session.attendeeIds || [])
+                .filter(id => currentMemberIds.includes(id))
+                .map(id => state.members.find(m => m.id === id)?.paxName),
+            qNames: (session.qIds || [])
+                .filter(id => currentMemberIds.includes(id))
+                .map(id => state.members.find(m => m.id === id)?.paxName),
+        }));
+
+    const result = {
+        looseKey: looseKeyToInspect,
+        rosterEntries,
+        currentMembers,
+        rawAoRows,
+        historicRows,
+        attachedSessions,
+    };
+    console.log(result);
+    return result;
+}
+
+function getMemberByExactPaxName(paxName) {
+    return (state.members || []).find(member =>
+        String(member.paxName || "").trim().toLowerCase() ===
+        String(paxName || "").trim().toLowerCase()
+    );
+}
+
+function replaceMemberId(ids = [], fromMemberId, toMemberId) {
+    return Array.from(new Set(
+        ids.map(id => id === fromMemberId ? toMemberId : id)
+    ));
+}
+
+export async function splitMergedMemberByRawName({
+    looseKey,
+    sourcePaxName,
+    targetPaxName,
+    dryRun = true,
+    regionId = state.currentRegionId,
+    sessionKeysToMove = [],
+    useOnlySessionKeys = false,
+
+} = {}) {
+    if (!looseKey || !sourcePaxName || !targetPaxName) {
+        throw new Error("splitMergedMemberByRawName requires looseKey, sourcePaxName, and targetPaxName.");
+    }
+    const detail = await auditMergedMemberDetail(looseKey);
+    const sourceMember = getMemberByExactPaxName(sourcePaxName);
+
+    if (!sourceMember) {
+        throw new Error(`Source member not found: ${sourcePaxName}`);
+    }
+
+    let targetMember = getMemberByExactPaxName(targetPaxName);
+
+    const targetRosterEntry = detail.rosterEntries.find(entry =>
+        String(entry.paxName || "").trim().toLowerCase() ===
+        String(targetPaxName || "").trim().toLowerCase()
+    );
+
+    const sourceRosterEntry = detail.rosterEntries.find(entry =>
+        String(entry.paxName || "").trim().toLowerCase() ===
+        String(sourcePaxName || "").trim().toLowerCase()
+    );
+
+    if (!targetMember) {
+        if (!targetRosterEntry) {
+            throw new Error(`Target member not found and no Pax Master entry found for: ${targetPaxName}`);
+        }
+
+        targetMember = {
+            id: crypto.randomUUID(),
+            paxName: targetRosterEntry.paxName,
+            realName: targetRosterEntry.realName,
+            homeAo: targetRosterEntry.homeAo,
+            invitedById: null,
+            firstPostDate: null,
+            status: "active",
+        };
+    }
+
+    const repairedSourceMember = sourceRosterEntry
+            ? {
+                ...sourceMember,
+                paxName: sourceRosterEntry.paxName,
+                realName: sourceRosterEntry.realName,
+                homeAo: sourceRosterEntry.homeAo,
+            }
+            : sourceMember;
+
+    const targetRawRows = [
+        ...(detail.rawAoRows || []),
+        ...(detail.historicRows || []),
+    ].filter(row =>
+        String(row.rawPaxName || "").trim().toLowerCase() ===
+        String(targetPaxName || "").trim().toLowerCase()
+    );
+
+    function createRepairSessionKey(aoName, date) {
+        return `${normalizeAoName(aoName)}|${date}`;
+    }
+
+    const manualSessionKeys = sessionKeysToMove.map(key => {
+        const [aoName, date] = key.split("|");
+        return createRepairSessionKey(aoName, date);
+    });
+
+    const targetSessionKeys = new Set([
+        ...(useOnlySessionKeys
+            ? []
+            : targetRawRows.map(row => createRepairSessionKey(row.aoName, row.date))),
+        ...manualSessionKeys 
+    ]);
+
+    const sessionsToUpdate = (state.sessions || [])
+        .filter(session => targetSessionKeys.has(createRepairSessionKey(session.aoName, session.date)))
+        .filter(session =>
+            (session.attendeeIds || []).includes(sourceMember.id) ||
+            (session.qIds || []).includes(sourceMember.id) ||
+            (session.fngs || []).some(fng => fng.memberId === sourceMember.id)
+        )
+        .map(session => ({
+            ...session,
+            attendeeIds: replaceMemberId(session.attendeeIds || [], sourceMember.id, targetMember.id),
+            qIds: replaceMemberId(session.qIds || [], sourceMember.id, targetMember.id),
+            fngs: (session.fngs || []).map(fng =>
+                fng.memberId === sourceMember.id
+                    ? { ...fng, memberId: targetMember.id, paxName: targetMember.paxName }
+                    : fng
+            ),
+        }));
+
+    console.log("Split merged member preview:", {
+        dryRun,
+        looseKey,
+        sourceMember,
+        targetMember,
+        targetRawRows,
+        sessionsToUpdate: sessionsToUpdate.map(session => ({
+            id: session.id,
+            date: session.date,
+            aoName: session.aoName,
+            attendeeIds: session.attendeeIds,
+            qIds: session.qIds,
+            fngs: session.fngs,
+        })),
+    });
+
+    if (dryRun) {
+        return {
+            dryRun,
+            sourceMember,
+            targetMember,
+            targetRawRows,
+            sessionsToUpdate,
+        };
+    }
+
+    const targetAlreadyExists = Boolean(getMemberByExactPaxName(targetPaxName));
+
+    if (!targetAlreadyExists) {
+        const savedTargetMember = await insertMember(regionId, targetMember);
+        targetMember = savedTargetMember;
+    }
+
+    if (sourceRosterEntry) {
+        await updateMemberInCloud(regionId, repairedSourceMember);
+    }
+
+    for (const session of sessionsToUpdate) {
+        await updateSessionInCloud(regionId, session);
+    }
+
+    state.members = (state.members || []).map(member =>
+        member.id === repairedSourceMember.id ? repairedSourceMember : member
+    );
+
+    if (!targetAlreadyExists) {
+        state.members = [...state.members, targetMember];
+    }
+
+    state.sessions = (state.sessions || []).map(existingSession => {
+        const updated = sessionsToUpdate.find(session => session.id === existingSession.id);
+        return updated || existingSession;
+    });
+
+    console.log(`Split complete. Updated ${sessionsToUpdate.length} sessions.`);
+
+    return {
+        dryRun,
+        updated: sessionsToUpdate.length,
+        sourceMember,
+        targetMember,
+        sessionsToUpdate,
+    };
 }
