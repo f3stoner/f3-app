@@ -411,6 +411,43 @@ export function renderDashboard() {
         mySlots.forEach(slot => {
             const row = document.createElement("div");
             row.classList.add("selected-summary-row");
+            row.style.cursor = "pointer";
+
+            row.addEventListener("click", () => {
+                const matchingWorkout = findMatchingPlannedWorkoutForSlot(slot);
+                const ao = state.aos.find(a => a.id === slot.aoId);
+
+                if (!matchingWorkout) {
+                    state.draftPlannedWorkout = {
+                        id: crypto.randomUUID(),
+                        date: slot.date,
+                        aoName: ao?.name || "",
+                        title: "",
+                        introduction: "",
+                        warmorama: "",
+                        thangs: "",
+                        finisher: "",
+                        notes: "",
+                        sourceWorkoutId: null,
+                        sourceSessionId: null,
+                        createdAt: Date.now(),
+                        lastModifiedAt: null,
+                        createdByUserId: state.currentUserId,
+                        isShared: false,
+                        timers: [],
+                    };
+
+                    state.editingPlannedWorkoutId = null;
+                    state.selectedPlannedWorkoutId = null;
+                    navigateTo("workoutPlanner");
+                } else {
+                    state.selectedPlannedWorkoutId = matchingWorkout.id;
+                    state.plannedWorkoutLaunchMode =
+                        slot.date === today ? "execution" : null;
+
+                    navigateTo("plannedWorkoutDetail");
+                }
+            });
 
             const ao = state.aos.find(a => a.id === slot.aoId);
             const hasPlannedWorkout = state.plannedWorkouts.some(workout =>
