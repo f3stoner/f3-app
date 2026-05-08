@@ -42,3 +42,15 @@ function parseLocalDate(dateString) {
     const [year, month, day] = dateString.split("-").map(Number);
     return new Date(year, month - 1, day);
 }
+
+export function formatMonthDayYear(dateString) {
+    if (!dateString) return "";
+
+    const date = parseLocalDate(dateString);
+
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+}

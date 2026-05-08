@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { bootApp, renderApp } from "../index.js";
-import { formatShortDate, formatDate, getTodayDate } from "../utils/date.js";
+import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
 import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
@@ -14,6 +14,8 @@ import { getUpcomingReminders } from "../utils/upcomingReminders.js";
 import { subscribeToPush } from "../services/pushNotifications.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
+import { getMemberStats } from "../modules/stats.js";
+import { createIcon } from "../utils/icons.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -481,6 +483,81 @@ export function renderDashboard() {
 
     const myUpcomingQsSection = renderMyUpcomingQs();
 
+    function renderMyStatsSection() {
+        const memberId = state.currentUserMemberId;
+
+        if (!memberId) {
+            return null;
+        }
+
+        const stats = getMemberStats(memberId);
+
+        const section = document.createElement("div");
+        section.classList.add("section");
+
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = "My Stats";
+
+        const card = document.createElement("div");
+        card.classList.add("member-card");
+
+        const grid = document.createElement("div");
+        grid.classList.add("stats-grid");
+
+        const statItems = [
+            { label: "Posts", value: stats.posts, icon: "posts" },
+            { label: "Qs Led", value: stats.qs, icon: "qs" },
+            { label: "FNGs EH'd", value: stats.fngsEh, icon: "fngsEh" },
+            { label: "Favorite AO", value: stats.favoriteAo || "-", icon: "favoriteAo" },
+            { 
+                label: "Last Post",
+                value: stats.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "-",
+                type: "date",
+                icon: "lastPost"
+            },
+            { 
+                label: "FNG Date",
+                value: stats.firstPostDate ? formatMonthDayYear(stats.firstPostDate) : "-",
+                type: "date",
+                icon: "fngDate"
+            },
+        ];
+
+        statItems.forEach(item => {
+            const tile = document.createElement("div");
+            tile.classList.add("stat-tile");
+
+            const value = document.createElement("div");
+            value.classList.add("stat-value");
+            value.textContent = item.value;
+
+            const label = document.createElement("div");
+            label.classList.add("stat-label");
+            label.textContent = item.label;
+
+            if (item.type) {
+                tile.classList.add(`stat-tile-${item.type}`);
+            }
+
+            const icon = createIcon(item.icon);
+
+            const text = document.createElement("div");
+            text.classList.add("stat-text");
+
+            text.append(value, label);
+            tile.append(icon, text);
+            grid.append(tile);
+        });
+
+        card.append(grid);
+        section.append(heading, card);
+
+        return section;
+    }
+
+    const myStatsSection = renderMyStatsSection();
+
     const recentSessionsSection = document.createElement("div");
     const recentHeading = document.createElement("h2");
     const recentSessionList = document.createElement("div");
@@ -492,7 +569,7 @@ export function renderDashboard() {
 
         return (
             effectiveQIds.includes(state.currentUserMemberId) ||
-            session.attendeeIds.includes(state.currentUserMemberId)
+            session.attendeeIds?.includes(state.currentUserMemberId)
         );
     });
 
@@ -727,8 +804,9 @@ export function renderDashboard() {
         ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
         ...(regionSwitcher ? [regionSwitcher] : []),
         userRow,
-        notificationRow,
-        ...(nextQSection ? [nextQSection] : []), 
+        //notificationRow,
+        ...(nextQSection ? [nextQSection] : []),
+        ...(myStatsSection ? [myStatsSection] : []),
         quickAccessHeading, 
         quickAccessRow, 
         myUpcomingQsSection);
