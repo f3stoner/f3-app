@@ -373,7 +373,7 @@ select:focus,
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    padding: 10px 12px calc(22px + env(safe-area-inset-bottom));
     background: var(--surface);
     border-top: 1px solid var(--border);
     z-index: 1100;
@@ -387,7 +387,7 @@ select:focus,
 .global-fab {
     position: fixed;
     right: 20px;
-    bottom: calc(70px + env(safe-area-inset-bottom));
+    bottom: calc(92px + env(safe-area-inset-bottom));
 
     background: var(--accent);
     color: var(--text-inverse);
