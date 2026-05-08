@@ -12,6 +12,7 @@ import { goBack } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
 import { addAdminFlags } from "../services/appData.js";
+import { logSaveFailure } from "../services/appEvents.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -658,6 +659,18 @@ try {
 } catch (error) {
     console.error("Failed to save session:", error);
     showToast("Failed to save session.", "error");
+
+    logSaveFailure("sessionView.saveSession", error, {
+        editingSessionId: state.editingSessionId || null,
+        selectedSessionId: state.selectedSessionId || null,
+        draftSessionId: draftSession?.id || null,
+        sessionDate: draftSession?.date || null,
+        sessionAoName: draftSession?.aoName || null,
+        attendeeCount: draftSession?.attendeeIds?.length || 0,
+        qCount: draftSession?.qIds?.length || 0,
+        fngCount: draftSession?.fngs?.length || 0,
+        sourcePlannedWorkoutId: draftSession?.sourcePlannedWorkoutId || null,
+    });
 }
 
 });

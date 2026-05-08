@@ -10,6 +10,7 @@ import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../
 import { createSavedPlannerSection, getSavedSectionsByType } from "../utils/plannerSections.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { deleteSavedPlannerSectionFromCloud } from "../services/cloudData.js";
+import { logSaveFailure } from "../services/appEvents.js";
 
 
 export function renderWorkoutPlanner() {
@@ -557,6 +558,16 @@ export function renderWorkoutPlanner() {
         } catch (error) {
             console.error("Failed to save workout:", error);
             showToast("Failed to save workout.", "error")
+
+            logSaveFailure("workoutPlannerView.savePlannedWorkout", error, {
+                editingPlannedWorkoutId: state.editingPlannedWorkoutId || null,
+                selectedPlannedWorkoutId: state.selectedPlannedWorkoutId || null,
+                draftWorkoutId: draftWorkout?.id || null,
+                plannedWorkoutDate: draftWorkout?.date || null,
+                plannedWorkoutAoName: draftWorkout?.aoName || null,
+                plannedWorkoutTitle: draftWorkout?.title || null,
+                isShared: Boolean(draftWorkout?.isShared),
+            });
         }
 });
 

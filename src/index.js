@@ -32,6 +32,7 @@ import { renderResetPasswordView } from "./views/resetPasswordView.js";
 import { saveNavState, getRestoredNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
+import { logAppEvent } from "./services/appEvents.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -42,6 +43,7 @@ window.repairAggielandDeltaSessions = repairAggielandDeltaSessions;
 window.auditPotentialMergedMembers = auditPotentialMergedMembers;
 window.auditMergedMemberDetail = auditMergedMemberDetail;
 window.splitMergedMemberByRawName = splitMergedMemberByRawName;
+window.logAppEvent = logAppEvent;
 }
 
 if ("serviceWorker" in navigator) {
