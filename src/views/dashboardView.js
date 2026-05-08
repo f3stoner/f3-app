@@ -256,6 +256,9 @@ export function renderDashboard() {
                 };
 
                 state.editingPlannedWorkoutId = null;
+                state.selectedPlannedWorkoutId = null;
+                state.returnToViewAfterPlanner = "dashboard";
+                state.returnToLaunchModeAfterPlanner = null;
                 navigateTo("workoutPlanner");
             });
         } else if (isTodayQ) {
@@ -343,6 +346,9 @@ export function renderDashboard() {
                 };
 
                 state.editingPlannedWorkoutId = null;
+                state.selectedPlannedWorkoutId = null;
+                state.returnToViewAfterPlanner = "dashboard";
+                state.returnToLaunchModeAfterPlanner = null;
                 navigateTo("workoutPlanner");
             } else {
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
@@ -439,6 +445,8 @@ export function renderDashboard() {
 
                     state.editingPlannedWorkoutId = null;
                     state.selectedPlannedWorkoutId = null;
+                    state.returnToViewAfterPlanner = "dashboard";
+                    state.returnToLaunchModeAfterPlanner = null;
                     navigateTo("workoutPlanner");
                 } else {
                     state.selectedPlannedWorkoutId = matchingWorkout.id;

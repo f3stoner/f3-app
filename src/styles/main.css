@@ -1107,6 +1107,9 @@ select:focus,
     background: var(--bg);
     padding: 8px 0 12px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
 }
 
 .view-header .secondary-button {
@@ -1115,6 +1118,7 @@ select:focus,
 
 .view-header h1 {
     margin: 0;
+    flex: 1;
 }
 
 .session-nav-row {
@@ -1783,4 +1787,25 @@ select:focus,
 .view-myPlanner .quick-start-button,
 .view-myPlanner button {
     font-size: 15px;
+}
+
+.workout-detail-header {
+    display: block;
+}
+
+.view-header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.view-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.workout-detail-header h1 {
+    margin: 0;
 }

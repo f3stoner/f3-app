@@ -508,10 +508,9 @@ export function renderPlannedWorkoutDetail() {
             return;
         }
 
-        if (isExecutionMode) {
-            state.returnToViewAfterPlanner = "plannedWorkoutDetail";
-            state.returnToLaunchModeAfterPlanner = "execution";
-        }
+        state.returnToViewAfterPlanner = "plannedWorkoutDetail";
+        state.returnToLaunchModeAfterPlanner = isExecutionMode ? "execution" : null;
+        
 
         state.plannedWorkoutLaunchMode = null;
         state.editingPlannedWorkoutId = workout.id;
@@ -709,8 +708,29 @@ export function renderPlannedWorkoutDetail() {
     }
 
     const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
+    header.classList.add("view-header", "workout-detail-header");
+
+    const headerTopRow = document.createElement("div");
+    headerTopRow.classList.add("view-header-top-row");
+
+    const headerActions = document.createElement("div");
+    headerActions.classList.add("view-header-actions");
+
+    if (canEditWorkout) {
+        const headerEditButton = document.createElement("button");
+        headerEditButton.type = "button";
+        headerEditButton.classList.add("secondary-button");
+        headerEditButton.textContent = "Edit";
+
+        headerEditButton.addEventListener("click", () => {
+            editButton.click();
+        });
+
+        headerActions.appendChild(headerEditButton);
+    }
+
+    headerTopRow.append(backButton, headerActions)
+    header.append(headerTopRow, title);
 
     const activeTimerPanel = createActiveTimerPanel();
 
