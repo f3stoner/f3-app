@@ -145,6 +145,11 @@ let lastRenderedView = null;
 
 function renderApp() {
 
+    const app = document.getElementById("app");
+    if (app) {
+        app.classList.add(`view-${state.currentView}`); 
+    }
+
     saveNavState(state);
 
     if (state.currentView !== lastRenderedView) {

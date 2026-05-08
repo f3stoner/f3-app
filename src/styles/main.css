@@ -1,17 +1,29 @@
 :root {
-    --bg: #f7f7f7;
-    --surface: #ffffff;
-    --text: #222;
-    --muted: #666;
-    --border: #ddd;
-    --border-strong: #ccc;
-    --primary: #222;
-    --primary-hover: #333;
-    --accent: #ffcc00;
+    --bg: #000000;
+    --surface: #090a0b;
+    --surface-strong: #111315;
+    --surface-raised: #1a1d21;
+
+    --text: #f5f5f2;
+    --text-inverse: #050505;
+    --muted: #9a9a92;
+
+    --border: rgba(255, 255, 255, 0.16);
+    --border-strong: rgba(255, 255, 255, 0.28);
+
+    --primary: #f5f5f2;
+    --primary-hover: #ffffff;
+
+    --accent: #9aa3ad;
+    --accent-bright: #c2cad3;
+    --accent-muted: rgba(154, 163, 173, 0.18);
+
+    --danger: #ef4444;
+    --success: #55a868;
 
     --radius-sm: 8px;
-    --radius-md: 10px;
-    --radius-lg: 12px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
 
     --space-1: 8px;
     --space-2: 12px;
@@ -19,16 +31,31 @@
     --space-4: 20px;
     --space-5: 24px;
 
-    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.22);
+
+    --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-display: "Rajdhani", system-ui, sans-serif;
+     
 }
 
 body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: var(--font-body);
     margin: 0;
-    background: var(--bg);
+    background:var(--bg);
     color: var(--text);
+    font-weight: 500;
+}
+
+h1,
+h2,
+.detail-label,
+button,
+.quick-access-card,
+.global-nav button,
+.role-badge {
+    font-family: var(--font-display);
 }
 
 #app {
@@ -36,11 +63,26 @@ body {
     margin: 0 auto;
     padding: 20px 20px 140px;
     min-height: 100vh;
+    background: 
+        radial-gradient(circle at top center, rgba(194, 202, 211, 0.14), transparent 260px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent 180px),
+        var(--bg);
 }
 
 h1 {
     margin-top: 0;
     margin-bottom: 8px;
+    color: var(--text);
+    font-size: clamp(2.35rem, 9vw, 3.4rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-family: var(--font-display)
+}
+
+h2 {
+    letter-spacing: -0.03em;
 }
 
 p {
@@ -49,20 +91,20 @@ p {
 }
 
 .member-card.selected {
-    background-color: var(--primary);
-    color: var(--surface);
-    border-color: var(--primary);
+    background-color: var(--accent);
+    color: var(--text-inverse);
+    border-color: var(--accent);
     box-shadow: var(--shadow-sm);
 }
 
 .selected .member-name,
 .selected .stats-line {
-    color: var(--surface);
+    color: var(--text-inverse);
 }
 
 .q-button.q-selected {
     background: var(--accent);
-    color: var(--text);
+    color: var(--text-inverse);
     border-color: var(--accent);
 }
 
@@ -80,7 +122,8 @@ p {
 .attendance-toggle {
     padding: 4px 8px;
     border-radius: 999px;
-    background: #e9e9e9;
+    background: var(--surface-raised);
+    color: var(--muted);
     font-size: 11px;
     white-space: nowrap;
 }
@@ -99,17 +142,24 @@ button {
     padding: 10px 14px;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
-    background: var(--surface);
+    background: var(--surface-strong);
     color: var(--text);
     cursor: pointer;
     font-size: 14px;
+    font-weight: 700;
     margin-right: 8px;
     margin-bottom: 10px;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
 button:hover {
-    background: #f0f0f0;
+    background: #2b3038;
+    box-shadow: var(--shadow-md);
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 .member-card {
@@ -125,7 +175,7 @@ button:hover {
 }
 
 .member-card:hover {
-    background: #f0f0f0;
+    background: var(--surface-raised);
 }
 
 .member-card.selected:hover {
@@ -243,6 +293,13 @@ select {
     font: inherit;
     margin-bottom: 14px;
     box-sizing: border-box;
+    background: var(--surface-strong);
+    color: var(--text);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--muted);
 }
 
 input,
@@ -255,8 +312,8 @@ input:focus,
 select:focus,
 .notes:focus {
     outline: none;
-    border-color: #999;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-muted);
 }
 
 .sticky-action-bar {
@@ -332,8 +389,8 @@ select:focus,
     right: 20px;
     bottom: calc(70px + env(safe-area-inset-bottom));
 
-    background: var(--primary);
-    color: var(--surface);
+    background: var(--accent);
+    color: var(--text-inverse);
     border: none;
 
     font-size: 14px;
@@ -363,8 +420,10 @@ select:focus,
 }
 
 .global-nav .active-nav {
-    outline: 2px solid var(--primary);
-    outline-offset: -2px;
+    background: var(--accent);
+    color: var(--text-inverse);
+    border-color: var(--accent);
+    outline: none;
 }
 
 .button-row {
@@ -384,11 +443,11 @@ select:focus,
 .detail-label {
     margin-top: 12px;
     margin-bottom: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    color: rgba(194, 202, 182111, 0.72);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.16em;
 }
 
 .selected-summary-list {
@@ -442,7 +501,7 @@ select:focus,
     width: 100%;
     text-align: left;
     border: 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border);
     border-radius: 0;
     background: var(--surface);
     margin: 0;
@@ -454,7 +513,7 @@ select:focus,
 }
 
 .invited-by-item:hover {
-    background: #f5f5f5;
+    background: var(--surface-raised);
 }
 
 .detail-value {
@@ -553,7 +612,7 @@ select:focus,
 
 .user-name {
     font-size: 18px;
-    color: #222;
+    color: var(--text);
     font-weight: 600;
     line-height: 1.2;
 }
@@ -561,22 +620,24 @@ select:focus,
 .user-row button {
     font-size: 14px;
     padding: 8px 14px;
-    border: 1px solid #ddd;
-    background: #fafafa;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-strong);
+    color: var(--text);
 }
 
 .user-row button:hover {
-    background: #f0f0f0;
+    background: var(--surface-raised);
 }
 
 .role-badge[data-role="admin"] {
-    background: #6d28d9;
+    background: var(--accent);
+    color: var(--text-inverse);
 }
 
 .secondary-button {
     background: transparent;
     border: none;
-    color: #666;
+    color: var(--muted);
     padding: 6px 0;
     font-size: 13px;
     opacity: 0.7;
@@ -627,7 +688,7 @@ select:focus,
 }
 
 .quick-access-card:hover {
-    background: #f5f5f5;
+    background: var(--surface-raised);
 }
 
 .quick-access-card:active {
@@ -658,6 +719,10 @@ select:focus,
     align-items: flex-start;
     gap: 2px;
     padding: 14px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    padding: 18px;
 }
 
 .session-preview-line {
@@ -673,12 +738,13 @@ select:focus,
 .session-date-divider {
     margin-top: 18px;
     padding-top: 8px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-strong);
+    color: var(--muted);
     margin-bottom: 6px;
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    opacity: 0.6;
+    opacity: 0.85;
 }
 
 .session-detail-value {
@@ -885,6 +951,10 @@ select:focus,
 
 .planner-card {
     align-items: flex-start;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    padding: 18px;
 }
 
 .planner-card-content {
@@ -904,27 +974,29 @@ select:focus,
     align-items: center;
     width: fit-content;
     align-self: flex-start;
-    padding: 4px 8px;
+    padding: 5px 10px;
     border-radius: 999px;
-    background: #f0f0f0;
+    background: var(--accent-muted);
+    border: 1px solid var(--accent);
     font-size: 11px;
-    color: var(--muted);
-    font-weight: 700;
+    color: var(--accent-bright);
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.7;
-    margin-top: 6px;
+    letter-spacing: 0.08em;
+    opacity: 1;
+    margin-top: 8px;
 }
 
 .planner-title-line {
     font-size: 15px;
     color: var(--text);
-    font-weight: 500;
+    font-weight: 700;
     line-height: 1.35;
 }
 
 .planner-preview-line {
     font-size: 13px;
+    font-weight: 500;
     color: var(--muted);
     line-height: 1.35;
     opacity: 0.8;
@@ -984,34 +1056,39 @@ select:focus,
 }
 
 .preblast-media-helper {
-    margin-top: 8px;
-    margin-bottom: 4px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    opacity: 0.8;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted);
+    opacity: 0.75;
+    font-family: var(--font-display);
 }
 
 .media-input {
     width: 100%;
-    font: inherit;
-    color: var(--text-primary);
-    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface-strong);
+    color: var(--text);
+    box-sizing: border-box;
 }
 
 .media-input::file-selector-button {
     margin-right: 12px;
-    padding: 0.7rem 1rem;
-    border: none;
-    border-radius: 10px;
-    background: var(--primary);
-    color: white;
-    font: inherit;
-    font-weight: 600;
+    padding: 10px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface-raised);
+    color: var(--text);
+    font-family: var(--font-display, inherit);
+    font-weight: 800;
     cursor: pointer;
 }
 
 .media-input::file-selector-button:hover {
-    background: var(--primary-hover);
+    background: var(--accent);
+    color: var(--text-inverse);
+    border-color: var(--accent);
 }
 
 .view-header {
@@ -1131,18 +1208,20 @@ select:focus,
     flex: 0 0 auto;
     padding: 6px 10px;
     border-radius: 999px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
     font-size: 12px;
+    font-weight: 700;
     line-height: 1.2;
     white-space: nowrap;
 }
 
 .selected-pill-q {
     background: var(--accent);
-    border-color: var(--accent);
-    color: var(--text);
-    font-weight: 700;
+    border-color: var(--accent-bright);
+    color: var(--text-inverse);
+    font-weight: 800;
 }
 
 .q-slot-admin-actions {
@@ -1167,6 +1246,10 @@ select:focus,
 
 .q-slot-card {
     display: block;
+    background: var(--surface-raised);
+    border: 1px aolid var(--border-strong);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    padding: 18px;
 }
 
 .q-slot-card > .q-slot-actions {
@@ -1648,4 +1731,47 @@ select:focus,
 
 .modal-close-button:hover {
     opacity: 1;
+}
+
+.notes,
+.preblast-textarea {
+    background: var(--surface-strong);
+    color: var(--text);
+}
+
+.view-myPlanner .view-subtitle {
+    font-size: 18px;
+    line-height: 1.25;
+    color: var(--muted);
+    font-weight: 600;
+    max-width: 26rem;
+}
+
+.view-myPlanner h2 {
+    font-size: 28px;
+    line-height: 1;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    font-weight: 800;
+}
+
+.view-myPlanner .planner-title-line {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.view-myPlanner .planner-preview-line {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.view-myPlanner .planner-card .stats-line {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.view-myPlanner .quick-start-button,
+.view-myPlanner button {
+    font-size: 15px;
 }
