@@ -32,7 +32,7 @@ import { renderResetPasswordView } from "./views/resetPasswordView.js";
 import { saveNavState, getRestoredNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
-import { logAppEvent } from "./services/appEvents.js";
+import { logActionFailure, logAppEvent } from "./services/appEvents.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -353,6 +353,16 @@ async function bootApp() {
         hideBootSplash();
     } catch (error) {
         console.error("Failed to boot app:", error);
+
+        logActionFailure("bootApp", error, {
+            mode,
+            sharedWorkoutId: sharedWorkoutId || null,
+            currentView: state.currentView || null,
+            currentUserId: state.currentUserId || null,
+            currentRegionId: state.currentRegionId || null,
+            profileRegionId: state.profileRegionId || null,
+        });
+
         renderAuthView();
         hideBootSplash();
     }

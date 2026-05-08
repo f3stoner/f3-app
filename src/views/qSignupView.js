@@ -7,6 +7,7 @@ import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
+import { logActionFailure } from "../services/appEvents.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -333,6 +334,13 @@ export function renderQSignupView() {
         } catch (error) {
             console.error("Failed to claim Q slot:", error);
             showToast("Failed to claim Q slot.", "error");
+
+            logActionFailure("claimQSlot", error, {
+                qSlotId: slot?.id || null,
+                aoId: slot?.aoId || null,
+                date: slot?.date || null,
+                currentUserMemberId: state.currentUserMemberId || null,
+            });
         }
     }
 
@@ -507,8 +515,20 @@ export function renderQSignupView() {
 
                 unclaimButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
-                    await unclaimQSlot(slot);
-                    renderApp();
+                    try {
+                        await unclaimQSlot(slot);
+                        renderApp();
+                    } catch (error) {
+                        console.error("Failed to unclaim Q slot:", error);
+                        showToast("Failed to unclaim Q slot.", "error");
+
+                        logActionFailure("unclaimQSlot", error, {
+                            qSlotId: slot?.id || null,
+                            aoId: slot?.aoId || null,
+                            date: slot?.date || null,
+                            currentUserMemberId: state.currentUserMemberId || null,
+                        });
+                    }
                 });
 
                 actionWrap.append(workoutButton, unclaimButton);
@@ -535,8 +555,21 @@ export function renderQSignupView() {
 
                 clearButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
-                    await unclaimQSlot(slot, { bypassDropGuard: true });
-                    renderApp();
+                    
+                    try{
+                        await unclaimQSlot(slot, { bypassDropGuard: true });
+                        renderApp();
+                    } catch (error) {
+                        console.error("Failed to clear Q slot:", error);
+                        showToast("Failed to clear Q slot.", "error");
+
+                        logActionFailure("clearQSlot", error, {
+                            qSlotId: slot?.id || null,
+                            aoId: slot?.aoId || null,
+                            date: slot?.date || null,
+                            bypassDropGuard: true,
+                        });
+                    }
                 });
 
                 const deleteButton = document.createElement("button");

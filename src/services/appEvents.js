@@ -50,3 +50,17 @@ export function logSaveFailure(source, error, metadata = {}) {
         },
     });
 }
+
+export function logActionFailure(source, error, metadata = {}) {
+    return logAppEvent({
+        type: "action_failure",
+        severity: "error",
+        message: error?.message || "Action Failed",
+        metadata: {
+            source,
+            errorMessage: error?.message || null,
+            errorName: error?.name || null,
+            ...metadata,
+        },
+    });
+}

@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { saveState } from "../utils/storage.js";
 import { updateCustomTemplates } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
+import { logActionFailure } from "../services/appEvents.js";
 
 export function renderPreblastView() {
     const app = document.getElementById("app");
@@ -183,6 +184,12 @@ export function renderPreblastView() {
 
                 console.error("Share failed:", error);
                 showToast("Share failed.", "error");
+
+                logActionFailure("sharePreblast", error, {
+                    plannedWorkoutId: state.selectedPreblastWorkoutId || state.selectedPlannedWorkoutId || null,
+                    mediaFileCount: mediaFiles.length,
+                    usedFilesShare: Boolean(mediaFiles.length && navigator.canShare?.({ files: mediaFiles })),
+                });
             });
         });
     }

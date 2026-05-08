@@ -4,6 +4,7 @@ import { generateBackblast } from "../modules/backblast.js";
 import { updateSession } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
 import { updateCustomTemplates } from "../services/cloudData.js";
+import { logActionFailure } from "../services/appEvents.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -251,6 +252,15 @@ export function renderBackblastView () {
 
                     console.error("Share failed:", error);
                     showToast("Share failed.", "error");
+
+                    logActionFailure("shareBackblast", error, {
+                        sessionId: state.selectedSessionId || null,
+                        mediaFileCount: mediaFiles.length,
+                        imageFileCount: imageFiles.length,
+                        videoFileCount: videoFiles.length,
+                        sharedFileCount: filesToShare.length,
+                        usedFilesShare: Boolean(filesToShare.length && navigator.canShare?.({ files: filesToShare })),
+                    });
                 });
         });
     }

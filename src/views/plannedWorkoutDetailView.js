@@ -10,6 +10,7 @@ import { saveNavState } from "../utils/storage.js";
 import { showToast } from "../utils/toast.js";
 import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
+import { logActionFailure } from "../services/appEvents.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -660,6 +661,15 @@ export function renderPlannedWorkoutDetail() {
 
             console.error("Failed to share workout:", error);
             showToast("Failed to share workout.", "error");
+
+            logActionFailure("shareWorkout", error, {
+                plannedWorkoutId: workout?.id || null,
+                title: workout?.title || null,
+                workoutDate: workout?.date || null,
+                aoName: workout?.aoName || null,
+                isShared: Boolean(workout?.isShared),
+                usedNativeShare: Boolean(navigator.share),
+            });
         }
     });
 

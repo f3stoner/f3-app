@@ -8,6 +8,7 @@ import { addMember, deleteSession, updateSession } from "../services/appData.js"
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
+import { logActionFailure } from "../services/appEvents.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -354,62 +355,4 @@ export function renderSessionDetail() {
         nav
     );
     }
-}
-
-function renderBackblastModal(backblast) {
-    const overlay = document.createElement("div");
-    overlay.classList.add("modal-overlay");
-
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-
-    const title = document.createElement("h2");
-    title.textContent = "Backblast Preview";
-
-    const preview = document.createElement("pre");
-    preview.textContent = backblast;
-
-    const copyButton = document.createElement("button");
-    copyButton.textContent ="Copy Backblast";
-    copyButton.addEventListener("click", () => {
-        navigator.clipboard.writeText(backblast);
-        copyButton.textContent = "Copied!";
-        setTimeout(() => {
-            copyButton.textContent = "Copy Backblast";
-        }, 1500);
-    });
-
-    const shareButton = document.createElement("button");
-    shareButton.textContent = "Share Backblast";
-
-    if (typeof navigator.share !== "function") {
-        shareButton.disabled = true;
-        shareButton.textContent = "Share Not Available";
-    } else {
-        shareButton.addEventListener("click", async () => {
-            try {
-                await navigator.share({ text: backblast });
-            } catch (error) {
-                console.error("Share failed: ", error);
-            }
-        });
-    }
-
-    const closeButton = document.createElement("button");
-    closeButton.textContent = "Close";
-    closeButton.addEventListener("click", () => {
-        overlay.remove();
-    });
-
-    overlay.addEventListener("click", () => {
-        overlay.remove();
-    });
-
-    modal.addEventListener("click", (event) => {
-        event.stopPropagation();
-    })
-
-    modal.append(title, preview, copyButton, shareButton, closeButton);
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
 }

@@ -672,7 +672,6 @@ try {
         sourcePlannedWorkoutId: draftSession?.sourcePlannedWorkoutId || null,
     });
 }
-
 });
 
 const notes = document.createElement("textarea");
