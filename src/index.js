@@ -33,6 +33,7 @@ import { saveNavState, getRestoredNavState } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 import { logActionFailure, logAppEvent } from "./services/appEvents.js";
+import { renderTemplateHubView } from "./views/templateHubView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -207,6 +208,8 @@ function renderApp() {
         renderAdminFlagsView();
     } else if (state.currentView === "adminSettings") {
         renderAdminSettingsView();
+    } else if (state.currentView === "templateHub") {
+        renderTemplateHubView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

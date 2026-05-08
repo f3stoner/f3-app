@@ -395,7 +395,20 @@ export function renderDashboard() {
         renderApp();
     });
 
-    quickAccessRow.append(workoutLibraryButton, qSignupButton, rosterButton);
+    const templatesButton = document.createElement("button");
+    templatesButton.classList.add("quick-access-card");
+    templatesButton.textContent = "My Templates";
+
+    templatesButton.addEventListener("click", () => {
+        navigateTo("templateHub");
+    });
+
+    quickAccessRow.append(
+        workoutLibraryButton,
+        qSignupButton,
+        rosterButton,
+    templatesButton,
+);
 
     function renderMyUpcomingQs() {
         const mySlots = myUpcomingQSlots.slice(1);
