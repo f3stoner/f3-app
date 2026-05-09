@@ -1,9 +1,9 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { saveState } from "../utils/storage.js";
-import { updateCustomTemplates } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
 import { logActionFailure } from "../services/appEvents.js";
+import { ensureCustomTemplates } from "../utils/customTemplates.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderPreblastView() {
     const app = document.getElementById("app");
@@ -24,66 +24,52 @@ export function renderPreblastView() {
         state.draftPreblastText = event.target.value;
     });
 
+    state.customTemplates = ensureCustomTemplates(state.customTemplates);
+
     const templateButtonRow = document.createElement("div");
     templateButtonRow.classList.add("button-row");
 
-    const saveTemplateButton = document.createElement("button");
-    saveTemplateButton.textContent = "Save Template";
+    const templateSelect = document.createElement("select");
+    templateSelect.value = state.customTemplates.preblast.activeTemplateId || "";
 
-    saveTemplateButton.addEventListener("click", async () => {
-        state.customTemplates = state.customTemplates || {
-            preblast: {
-                activeTemplateId: "default",
-                savedTemplates: [],
-            },
-            backblast: {
-                activeTemplateId: "default",
-                savedTemplates: [],
-            },
-        };
-        const existingTemplate = state.customTemplates.preblast.savedTemplates[0];
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Select Preblast Template";
+    templateSelect.appendChild(defaultOption);
 
-        if (existingTemplate) {
-            existingTemplate.content = textInput.value;
-            existingTemplate.name = existingTemplate.name || "My Preblast Template";
-        } else {
-            state.customTemplates.preblast.savedTemplates.push({
-                id: crypto.randomUUID(),
-                name: "My Preblast Template",
-                content: textInput.value,
-            });
-        }
-
-        saveState(state);
-        try {
-            await updateCustomTemplates(state.currentUserId, state.customTemplates);
-
-            saveTemplateButton.textContent = "Template Saved";
-            setTimeout(() => {
-                saveTemplateButton.textContent = "Save Template";
-            }, 1500);
-        } catch (error) {
-            console.error("Template save failed:", error);
-            showToast("Template saved locally, but failed to save to your account.");
-        }
+    state.customTemplates.preblast.savedTemplates.forEach(template => {
+        const option = document.createElement("option");
+        option.value = template.id;
+        option.textContent = template.name || "Untitled Template";
+        templateSelect.appendChild(option);
     });
 
-    const useTemplateButton = document.createElement("button");
-    useTemplateButton.textContent = "Use Template";
+    templateSelect.addEventListener("change", (event) => {
+        const templateId = event.target.value;
 
-    useTemplateButton.addEventListener("click", () => {
-        const savedTemplate = state.customTemplates?.preblast?.savedTemplates?.[0];
+        state.customTemplates.preblast.activeTemplateId = templateId || null;
 
-        if (!savedTemplate) {
-            showToast("No saved preblast template yet.");
-            return;
-        }
+        const selectedTemplate = state.customTemplates.preblast.savedTemplates.find(
+            template => template.id === templateId
+        );
 
-        textInput.value = savedTemplate.content;
-        state.draftPreblastText = savedTemplate.content;
+        if (!selectedTemplate) return;
+
+        textInput.value = selectedTemplate.content;
+        state.draftPreblastText = selectedTemplate.content;
     });
 
-    templateButtonRow.append(useTemplateButton, saveTemplateButton);
+    const manageTemplateButton = document.createElement("button");
+    manageTemplateButton.type = "button";
+    manageTemplateButton.classList.add("secondary-button");
+    manageTemplateButton.textContent = "Manage Templates";
+
+    manageTemplateButton.addEventListener("click", () => {
+        state.activeTemplateHubSection = "preblast";
+        navigateTo("templateHub");
+    });
+
+    templateButtonRow.append(templateSelect, manageTemplateButton);
 
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");
