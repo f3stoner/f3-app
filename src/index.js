@@ -161,13 +161,13 @@ function renderApp() {
 
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
-        logAppEvent({
+        /*logAppEvent({
             type: APP_EVENTS.VIEW_OPENED,
             metadata: {
                 view: state.currentView,
                 previousView,
             },
-        });
+        });*/
 
         lastRenderedView = state.currentView;
     }
@@ -280,18 +280,11 @@ async function bootApp() {
     }
 
     try {
-        console.time("bootApp total");
-        console.log("bootApp starting");
-
-        console.time("getCurrentSession");
         let session = await getCurrentSession();
-        console.timeEnd("getCurrentSession");
-        console.log("bootApp session 1:", session);
 
         if (!session) {
             await new Promise(resolve => setTimeout(resolve, 500));
             session = await getCurrentSession();
-            console.log("bootApp session 2:", session);
         }
 
         if (!session) {
@@ -302,10 +295,7 @@ async function bootApp() {
             return;
         }
 
-        console.time("ensureMyProfile");
         const profile = await ensureMyProfile(session.user.id);
-        console.timeEnd("ensureMyProfile");
-        console.log("bootApp profile:", profile);
 
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
@@ -315,12 +305,10 @@ async function bootApp() {
         state.currentUserMemberId = profile.member_id || null;
         state.customTemplates = profile.custom_templates || state.customTemplates;
 
-        console.time("notificationSettings + regions");
         const [dbNotificationSettings, regions] = await Promise.all([
             getNotificationSettings(state.currentUserId),
             loadAllRegions(),
         ]);
-        console.timeEnd("notificationSettings + regions");
         
         state.notificationSettings = dbNotificationSettings
             ? {
@@ -336,16 +324,14 @@ async function bootApp() {
         
         state.availableRegions = regions || [];
 
-        console.time("loadActiveRegionData");
         const regionLoaded = await loadActiveRegionData(profile.region_id);
-        console.timeEnd("loadActiveRegionData");
 
         if (!regionLoaded) {
             hideBootSplash();
             return;
         }
 
-        logAppEvent({
+        await logAppEvent({
             type: APP_EVENTS.APP_OPENED,
             metadata: {
                 role: state.currentUserRole,
@@ -371,7 +357,6 @@ async function bootApp() {
         }
 
         renderApp();
-        console.timeEnd("bootApp total");
         hideBootSplash();
     } catch (error) {
         console.error("Failed to boot app:", error);
