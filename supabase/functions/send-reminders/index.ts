@@ -196,6 +196,45 @@ async function clearDeadSubscription(userId: string) {
   if (error) throw error;
 }
 
+async function logFunctionRun({
+  success,
+  summary,
+  error = null,
+}: {
+  success: boolean;
+  summary: Record<string, unknown>;
+  error?: string | null;
+}) {
+  const { error: insertError } = await supabase
+    .from("function_runs")
+    .insert({
+      function_name: "send-reminders",
+      success,
+      summary,
+      error,
+    });
+
+  if (insertError) {
+    console.error("Failed to log function run:", insertError);
+  }
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function getErrorStatusCode(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error
+  ) {
+    return Number((error as { statusCode?: unknown }).statusCode);
+  }
+
+  return null;
+}
+
 serve(async () => {
   const summary = {
     checkedUsers: 0,
@@ -283,19 +322,26 @@ serve(async () => {
           await logSent(settings.user_id, reminder);
 
         } catch (error) {
+          const statusCode = getErrorStatusCode(error);
+
           console.error(
             `Failed ${reminder.type} for ${settings.user_id}:`,
-            error?.statusCode || error
+            statusCode || error
           );
           summary.failed++;
 
-          if (error?.statusCode === 404 || error?.statusCode === 410) {
+          if (statusCode === 404 || statusCode === 410) {
             await clearDeadSubscription(settings.user_id);
             summary.disabledDeadSubscriptions++;
           }
         }
       }
     }
+
+    await logFunctionRun({
+      success: true,
+      summary,
+    });
 
     return new Response(
       JSON.stringify({
@@ -310,12 +356,20 @@ serve(async () => {
       }
     );
   } catch (error) {
+    const errorMessage = getErrorMessage(error);
+
     console.error("send-reminders failed:", error);
+
+    await logFunctionRun({
+      success: false,
+      summary,
+      error: errorMessage,
+    });
 
     return new Response(
       JSON.stringify({
         ok: false,
-        error: error?.message || String(error),
+        error: errorMessage,
         ranAt: new Date().toISOString(),
         summary,
       }),

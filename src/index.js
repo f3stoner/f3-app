@@ -34,6 +34,7 @@ import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 import { logActionFailure, logAppEvent } from "./services/appEvents.js";
 import { renderTemplateHubView } from "./views/templateHubView.js";
+import { APP_EVENTS } from "./constants/appEvents.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -156,12 +157,21 @@ function renderApp() {
     saveNavState(state);
 
     if (state.currentView !== lastRenderedView) {
+        const previousView = lastRenderedView;
+
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+        logAppEvent({
+            type: APP_EVENTS.VIEW_OPENED,
+            metadata: {
+                view: state.currentView,
+                previousView,
+            },
+        });
+
         lastRenderedView = state.currentView;
     }
     
-    console.log("SUPABASE URL:", process.env.SUPABASE_URL);
-
     if (state.currentView === "dashboard") { 
         renderDashboard();
     } else if (state.currentView === "auth") {
@@ -334,6 +344,15 @@ async function bootApp() {
             hideBootSplash();
             return;
         }
+
+        logAppEvent({
+            type: APP_EVENTS.APP_OPENED,
+            metadata: {
+                role: state.currentUserRole,
+                hasLinkedMember: Boolean(state.currentUserMemberId),
+                restoredFromSharedWorkout: Boolean(sharedWorkoutId),
+            },
+        });
 
         if (sharedWorkoutId) {
             state.selectedPlannedWorkoutId = sharedWorkoutId;

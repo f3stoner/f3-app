@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseClient.js";
 import { state } from "../modules/state.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
 
 export async function logAppEvent({
     type,
@@ -39,7 +40,7 @@ export async function logAppEvent({
 
 export function logSaveFailure(source, error, metadata = {}) {
     return logAppEvent({
-        type: "save_failure",
+        type: APP_EVENTS.SAVE_FAILURE,
         severity: "error",
         message: error?.message || "Save failed",
         metadata: {
@@ -53,7 +54,7 @@ export function logSaveFailure(source, error, metadata = {}) {
 
 export function logActionFailure(source, error, metadata = {}) {
     return logAppEvent({
-        type: "action_failure",
+        type: APP_EVENTS.ACTION_FAILURE,
         severity: "error",
         message: error?.message || "Action Failed",
         metadata: {
