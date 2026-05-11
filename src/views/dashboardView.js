@@ -158,14 +158,72 @@ export function renderDashboard() {
         );
     }
 
+    function findLoggedSessionForSlot(slot) {
+        const ao = state.aos.find(a => a.id === slot.aoId);
+
+        return state.sessions.find(session => {
+            const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+            return (
+                session.date === slot.date &&
+                session.aoName === ao?.name &&
+                effectiveQIds.includes(state.currentUserMemberId)
+            );
+        });
+    }
+
+    function isTodayQStillActionable(slot) {
+        const today = getTodayDate();
+
+        if (slot.date !== today) {
+            return true;
+        }
+
+        const ao = state.aos.find(a => a.id === slot.aoId);
+
+        if (!ao?.time) {
+            return true;
+        }
+
+        const [hourString, minuteString] = ao.time.split(":");
+        const hour = Number(hourString);
+        const minute = Number(minuteString || 0);
+
+        if (Number.isNaN(hour) || Number.isNaN(minute)) {
+            return true;
+        }
+
+        const cutoff = new Date();
+        cutoff.setHours(hour + 4, minute, 0, 0);
+
+        return new Date() < cutoff;
+    }
+
     function getMyUpcomingQSlots() {
         const today = getTodayDate();
 
         return state.qSlots
-            .filter(slot =>
-                slot.qUserId === state.currentUserMemberId &&
-                slot.date >= today
-            )
+            .filter(slot => {
+                if (slot.qUserId !== state.currentUserMemberId) {
+                    return false;
+                }
+
+                if (slot.date < today) {
+                    return false;
+                }
+
+                const loggedSession = findLoggedSessionForSlot(slot);
+
+                if (loggedSession) {
+                    return false;
+                }
+
+                if (!isTodayQStillActionable(slot)) {
+                    return false;
+                } 
+
+                return true;
+            })
             .sort((a, b) => a.date.localeCompare(b.date));
     }
 
