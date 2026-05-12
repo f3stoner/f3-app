@@ -128,17 +128,11 @@ export function renderSessionDetail() {
                 const text = document.createElement("span");
                 text.textContent = rowText;
 
-                const existingMember = state.members.find(m => 
-                    m.realName &&
-                    fng.realName &&
-                    m.realName.trim().toLowerCase() === fng.realName.trim().toLowerCase()
-                );
+                const existingMember = fng.memberId
+                    ? state.members.find(m => m.id === fng.memberId)
+                    : null;
 
-                if (existingMember && !fng.memberId) {
-                    fng.memberId = existingMember.id;
-                }
-
-                const alreadyOnRoster = Boolean(fng.memberId);
+                const alreadyOnRoster = Boolean(existingMember);
 
                 const addButton = document.createElement("button");
                 addButton.textContent = alreadyOnRoster ? "On Roster" : "Add to Roster";
