@@ -453,6 +453,14 @@ export function renderDashboard() {
         renderApp();
     });
 
+    const weeklyQButton = document.createElement("button");
+    weeklyQButton.classList.add("quick-access-card");
+    weeklyQButton.textContent = "Weekly Q Schedule";
+
+    weeklyQButton.addEventListener("click", () => {
+        navigateTo("weeklyQCalendar");
+    });
+
     const templatesButton = document.createElement("button");
     templatesButton.classList.add("quick-access-card");
     templatesButton.textContent = "My Templates";
@@ -464,8 +472,9 @@ export function renderDashboard() {
     quickAccessRow.append(
         workoutLibraryButton,
         qSignupButton,
+        weeklyQButton,
         rosterButton,
-    templatesButton,
+        templatesButton,
 );
 
     function renderMyUpcomingQs() {

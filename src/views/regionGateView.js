@@ -48,5 +48,14 @@ export function renderRegionGateView() {
         }
     });
 
-    app.append(title, subtitle, input, button);
+    const backButton = document.createElement("button");
+    backButton.classList.add("secondary-button");
+    backButton.textContent = "← Back";
+
+    backButton.addEventListener("click", () => {
+        state.currentView = "auth";
+        renderApp();
+    });
+
+    app.append(backButton, title, subtitle, input, button);
 }

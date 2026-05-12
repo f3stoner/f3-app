@@ -101,7 +101,8 @@ export const state = {
         startedAt: null,
         executionDate: null,
         allowSessionLogging: true,
-    }
+    },
+    weeklyQCalendarStartDate: null,
 };
 
 state.runHistoricImport = async function () {

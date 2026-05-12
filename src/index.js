@@ -35,6 +35,7 @@ import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 import { logActionFailure, logAppEvent } from "./services/appEvents.js";
 import { renderTemplateHubView } from "./views/templateHubView.js";
 import { APP_EVENTS } from "./constants/appEvents.js";
+import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -220,6 +221,8 @@ function renderApp() {
         renderAdminSettingsView();
     } else if (state.currentView === "templateHub") {
         renderTemplateHubView();
+    } else if (state.currentView === "weeklyQCalendar") {
+        renderWeeklyQCalendarView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

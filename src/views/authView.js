@@ -80,6 +80,7 @@ export function renderAuthView() {
     signInButton.textContent = "Sign In";
 
     signInButton.addEventListener("click", async () => {
+        let didBoot = false;
         if (isLoading) return;
 
         isLoading = true;
@@ -104,6 +105,7 @@ export function renderAuthView() {
                 }
 
                 await bootApp();
+                didBoot = true;
                 return;
             }
 
@@ -138,13 +140,18 @@ export function renderAuthView() {
             });
 
             await bootApp();
+            didBoot = true;
+            return;
+
         } catch (error) {
             console.error("Auth action failed:", error);
             showToast(getFriendlyAuthError(error), "error");
         } finally {
-            isLoading = false;
-            signInButton.disabled = false;
-            signInButton.textContent = isSignUpMode ? "Create Account" : "Sign In";
+            if (!didBoot) {
+                isLoading = false;
+                signInButton.disabled = false;
+                signInButton.textContent = isSignUpMode ? "Create Account" : "Sign In";
+            }
         }
     });
 
@@ -153,14 +160,7 @@ export function renderAuthView() {
 
     toggleModeButton.addEventListener("click", () => {
         isSignUpMode = !isSignUpMode;
-
-        title.textContent = isSignUpMode ? "Create Account" : "Welcome";
-        signInButton.textContent = isSignUpMode ? "Create Account" : "Sign In";
-        toggleModeButton.textContent = isSignUpMode ? "Back to Sign In" : "Create Account Instead";
-
-        displayNameInput.style.display = isSignUpMode ? "block" : "none";
-        regionSelect.style.display = isSignUpMode ? "block" : "none";
-        confirmPasswordInput.style.display = isSignUpMode ? "block" : "none";
+        renderAuthMode();
     });
 
     const forgotPasswordButton = document.createElement("button");
@@ -196,6 +196,19 @@ export function renderAuthView() {
         confirmPasswordInput.type = shouldShow ? "text" : "password";
         passwordToggle.textContent = shouldShow ? "Hide Password" : "Show Password";
     });
+
+    function renderAuthMode() {
+        title.textContent = isSignUpMode ? "Create Account" : "Welcome";
+        signInButton.textContent = isSignUpMode ? "Create Account" : "Sign In";
+        toggleModeButton.textContent = isSignUpMode ? "Back to Sign In" : "Create Account Instead";
+    
+        displayNameInput.style.display = isSignUpMode ? "block" : "none";
+        regionSelect.style.display = isSignUpMode ? "block" : "none";
+        confirmPasswordInput.style.display = isSignUpMode ? "block" : "none";
+        forgotPasswordButton.style.display = isSignUpMode ? "none" : "block";
+    }
+
+    renderAuthMode();
 
     card.append(
         title, 
