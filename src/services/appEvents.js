@@ -11,8 +11,8 @@ export async function logAppEvent({
     if (!type) return;
 
     try {
-        const user = await supabase.auth.getUser();
-        const userId = user?.data?.id || null;
+        const { data } = await supabase.auth.getUser();
+        const userId = state.currentUserId || data?.user?.id || null;
 
         const event = {
             region_id: state.currentRegionId || null,
