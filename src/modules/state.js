@@ -95,6 +95,13 @@ export const state = {
     workoutFieldLabels: savedState?.workoutFieldLabels || {},
     pendingPlannerDate: null,
     pendingPlannerAoName: null,
+    executionContext: {
+        plannedWorkoutId: null,
+        launchSource: null,
+        startedAt: null,
+        executionDate: null,
+        allowSessionLogging: true,
+    }
 };
 
 state.runHistoricImport = async function () {

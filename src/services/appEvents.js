@@ -15,7 +15,7 @@ export async function logAppEvent({
         const userId = user?.data?.id || null;
 
         const event = {
-            region_id: state.currentRegionId || state.regionId || null,
+            region_id: state.currentRegionId || null,
             user_id: userId,
             type,
             severity,

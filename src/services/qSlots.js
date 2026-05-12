@@ -2,6 +2,8 @@ import { updateQSlotInCloud } from "./cloudData.js";
 import { state } from "../modules/state.js";
 import { formatDate } from "../utils/date.js";
 import { getDropGuardMessage, isQSlotWithinDropGuard } from "../utils/qSlotGuards.js";
+import { logAppEvent } from "./appEvents.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
 
 export async function unclaimQSlot(slot, { bypassDropGuard = false } = []) {
     const ao = state.aos.find(a => a.id === slot.aoId);
@@ -29,6 +31,18 @@ export async function unclaimQSlot(slot, { bypassDropGuard = false } = []) {
     if (index !== -1) {
         state.qSlots[index] = updatedSlot;
     }
+
+    logAppEvent({
+        type: APP_EVENTS.Q_SLOT_UNCLAIMED,
+        metadata: {
+            qSlotId: slot.id,
+            aoId: slot.aoId || null,
+            aoName: ao?.name || null,
+            date: slot.date || null,
+            previousQUserId: slot.qUserId || null,
+            bypassDropGuard,
+        },
+    });
 
     return { success: true, slot: updatedSlot };
 }

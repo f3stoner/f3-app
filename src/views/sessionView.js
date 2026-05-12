@@ -571,6 +571,49 @@ if (isEditing && draftSession.fngs.length > 0) {
     draftSession.fngs.forEach(fng => addFngRow(fng));
 }
 
+let isSavingSession = false;
+
+function normalizeSessionForSave(session) {
+    const rawQIds = session.qIds || (session.qId ? [session.qId] : []);
+    const qIds = [...new Set(session.qIds || [])].filter(Boolean);
+    const attendeeIds = [...new Set([...(session.attendeeIds || []), ...qIds])].filter(Boolean);
+
+    return {
+        ...session,
+        date: session.date || getTodayDate(),
+        aoName: session.aoName || "",
+        attendeeIds,
+        qIds,
+        fngs: session.fngs || [],
+        notes: session.notes || "",
+    };
+}
+
+function validateSessionForSave(session) {
+    if (!session.date) return "Please select a date.";
+    if (!session.aoName) return "Please select an AO.";
+    if ((session.qIds || []).length === 0) return "Please select at least one Q.";
+
+    const attendeeCount = session.attendeeIds?.length || 0;
+    const fngCount = session.fngs?.length || 0;
+
+    if (attendeeCount + fngCount === 0) {
+        return "Please select at least one attendee or FNG.";
+    }
+
+    return null;
+}
+
+function findPotentialDuplicateSession(session) {
+    if (isEditing) return null;
+
+    return state.sessions.find(existingSession =>
+        existingSession.id !== session.id &&
+        existingSession.date === session.date &&
+        existingSession.aoName === session.aoName
+    ) || null;
+}
+
 const saveButton = document.createElement("button");
 saveButton.textContent = "Save";
 saveButton.addEventListener("click", async () => {
@@ -597,13 +640,30 @@ saveButton.addEventListener("click", async () => {
 
     draftSession.fngs = fngs;
     draftSession.notes = notes.value.trim();
-    draftSession.qIds = [...(draftSession.qIds || [])];
-    if (!draftSession.date) {
-        alert("Please select a date.");
+
+    draftSession = normalizeSessionForSave(draftSession);
+
+    const validationMessage = validateSessionForSave(draftSession);
+    if (validationMessage) {
+        alert(validationMessage);
         return;
     }
-try {
 
+    const duplicateSession = findPotentialDuplicateSession(draftSession);
+    if (duplicateSession) {
+        const confirmed = confirm(
+            `A session already exists for ${draftSession.aoName} on ${formatDate(draftSession.date)}. Save another one anyway?`
+        );
+
+        if (!confirmed) return;
+    }
+
+    if (isSavingSession) return;
+    isSavingSession = true;
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+
+try {
     let savedSession;
 
     if (isEditing) {
@@ -639,8 +699,6 @@ try {
     state.sessionSelectedExpanded = false;
     state.sessionQExpanded = false;
     state.draftSession = null;
-    
-
 
     if (isEditing) {
         state.currentView = "sessionDetail";
@@ -671,6 +729,10 @@ try {
         fngCount: draftSession?.fngs?.length || 0,
         sourcePlannedWorkoutId: draftSession?.sourcePlannedWorkoutId || null,
     });
+} finally {
+    isSavingSession = false;
+    saveButton.disabled = false;
+    saveButton.textContent = "Save";
 }
 });
 

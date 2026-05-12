@@ -8,7 +8,8 @@ import { addMember, deleteSession, updateSession } from "../services/appData.js"
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
-import { logActionFailure } from "../services/appEvents.js";
+import { logActionFailure, logAppEvent } from "../services/appEvents.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -242,11 +243,29 @@ export function renderSessionDetail() {
     const backblastButton = document.createElement("button");
     backblastButton.textContent = "Backblast";
     backblastButton.addEventListener("click", () => {
+        const usedSavedBackblast = Boolean(session.backblastText);
+
         state.draftBackblastText =
             session.backblastText ||
             generateBackblast(session, state.members);
 
         state.draftBackblastMediaFiles = [];
+
+        logAppEvent({
+            type: APP_EVENTS.BACKBLAST_GENERATED,
+            metadata: {
+                sessionId: session.id,
+                sessionDate: session.date || null,
+                aoName: session.aoName || null,
+                paxCount: session.attendeeIds?.length || 0,
+                fngCount: session.fngs?.length || 0,
+                qCount: session.qIds?.length || 0,
+                sourcePlannedWorkoutId: session.sourcePlannedWorkoutId || null,
+                hasWorkout: Boolean(session.workout),
+                usedSavedBackblast,
+            },
+        });
+
         navigateTo("backblast");
     })
 

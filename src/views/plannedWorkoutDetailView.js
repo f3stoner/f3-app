@@ -10,10 +10,10 @@ import { saveNavState } from "../utils/storage.js";
 import { showToast } from "../utils/toast.js";
 import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
-import { logActionFailure } from "../services/appEvents.js";
+import { logActionFailure, logAppEvent } from "../services/appEvents.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
 
 let activeTimerIntervalId = null;
-let timerAudio = null;
 
 const TIMER_SOUND_URL =
     `${window.location.origin}${process.env.NODE_ENV === "production" ? "/f3-app" : ""}/sounds/timer-complete.wav`;
@@ -29,6 +29,42 @@ function removeActiveTimerModal() {
     document.querySelectorAll(".timer-modal-overlay").forEach(modal => {
         modal.remove();
     });
+}
+
+function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") {
+    state.executionContext = {
+        plannedWorkoutId: workout.id,
+        launchSource,
+        startedAt: Date.now(),
+        executionDate: getTodayDate(),
+        allowSessionLogging: true,
+    };
+
+    logAppEvent({
+        type: APP_EVENTS.EXECUTION_STARTED,
+        metadata: {
+            plannedWorkoutId: workout.id,
+            launchSource,
+            workoutDate: workout.date || null,
+            aoName: workout.aoName || null,
+            isShared: Boolean(workout.isShared),
+            timerCount: workout.timers?.length || 0,
+            executionDate: state.executionContext.executionDate,
+        },
+    });
+
+    state.selectedPlannedWorkoutId = workout.id;
+    state.plannedWorkoutLaunchMode = "execution";
+
+    state.activeWorkoutTimerId = null;
+    state.activeWorkoutTimerStatus = null;
+    state.activeWorkoutTimerStartedAt = null;
+    state.activeWorkoutTimerRemainingSeconds = null;
+    state.activeWorkoutTimerPhase = null;
+    state.activeWorkoutTimerRound = null;
+
+    saveNavState(state);
+    renderApp();
 }
 
 export function renderPlannedWorkoutDetail() {
@@ -90,7 +126,25 @@ export function renderPlannedWorkoutDetail() {
             if (!confirmed) return;
     
             state.plannedWorkoutLaunchMode = null;
-            state.currentView = "dashboard";
+            state.executionContext = {
+                plannedWorkoutId: null,
+                launchSource: null,
+                startedAt: null,
+                executionDate: null,
+                allowSessionLogging: true,
+            }
+
+            clearActiveTimerInterval();
+
+            state.activeWorkoutTimerId = null;
+            state.activeWorkoutTimerStatus = "idle";
+            state.activeWorkoutTimerStartedAt = null;
+            state.activeWorkoutTimerRemainingSeconds = null;
+            state.activeWorkoutTimerPhase = null;
+            state.activeWorkoutTimerRound = null;
+
+            state.currentView = "plannedWorkoutDetail";
+            saveNavState(state);
             renderApp();
             return;
         }
@@ -110,7 +164,7 @@ export function renderPlannedWorkoutDetail() {
     if (isExecutionMode) {
         executionBanner = document.createElement("div");
         executionBanner.classList.add("loaded-workout-banner");
-        executionBanner.textContent = `You are Qing ${isTodayWorkout ? "today" : "this workout"} at ${workout.aoName}`;
+        executionBanner.textContent = `Running workout at ${workout.aoName || "AO"}`;
     }
 
     function createTimerButtonsForSection(section) {
@@ -222,18 +276,24 @@ export function renderPlannedWorkoutDetail() {
         function playTimerAlert() {
             navigator.vibrate?.([200, 100, 200]);
 
-            if (!timerAudio) {
-                timerAudio = new Audio(TIMER_SOUND_URL);
-                timerAudio.volume = 1;
-            }
+            const audio = new Audio(TIMER_SOUND_URL);
+            audio.volume = 1;
 
-            timerAudio.currentTime = 0;
-            timerAudio.play().catch((error) => {
+            audio.play().catch((error) => {
                 console.warn("Timer sound failed:", error);
+
+                logActionFailure("timerAudioPlay", error, {
+                    plannedWorkoutId: workout?.id || null,
+                    timerId: timer?.id || null,
+                    timerType: timer?.type || null,
+                    timerStatus: state.activeWorkoutTimerStatus || null,
+                    remainingSeconds: state.activeWorkoutTimerRemainingSeconds ?? null,
+                    currentView: state.currentView || null,
+                    launchMode: state.plannedWorkoutLaunchMode || null,
+                });
             });
         }
         
-
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
                 const currentRemaining = state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
@@ -322,15 +382,6 @@ export function renderPlannedWorkoutDetail() {
             const wasDone =
             state.activeWorkoutTimerStatus === "done" ||
             state.activeWorkoutTimerRemainingSeconds === 0;
-
-            if (!timerAudio) {
-                timerAudio = new Audio(TIMER_SOUND_URL);
-                timerAudio.volume = 1;
-                timerAudio.play().then(() => {
-                    timerAudio.pause();
-                    timerAudio.currentTime = 0;
-                }).catch(() => {});
-            }
             
             if (state.activeWorkoutTimerStatus === "running") {
                 state.activeWorkoutTimerStatus = "paused";
@@ -520,7 +571,12 @@ export function renderPlannedWorkoutDetail() {
     const logButton = document.createElement("button");
     logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
-        const session = createSession(workout.date || getTodayDate(), workout.aoName);
+        const sessionDate =
+            state.executionContext?.executionDate ||
+            workout.date ||
+            getTodayDate();
+
+        const session = createSession(sessionDate, workout.aoName);
 
         const currentMemberId = state.currentUserMemberId || null;
 
@@ -542,6 +598,14 @@ export function renderPlannedWorkoutDetail() {
         state.editingSessionId = null;
         state.plannedWorkoutLaunchMode = null;
         navigateTo("session");
+    });
+
+    const runWorkoutButton = document.createElement("button");
+    runWorkoutButton.classList.add("primary-button");
+    runWorkoutButton.textContent = "Run Workout";
+
+    runWorkoutButton.addEventListener("click", () => {
+        launchWorkoutExecution(workout);
     });
 
     function getNextClaimedQSlot() {
@@ -632,6 +696,18 @@ export function renderPlannedWorkoutDetail() {
     preblastButton.addEventListener("click", () => {
         state.selectedPreblastWorkoutId = workout.id;
         state.draftPreblastText = generatePreblast(workout, state.aos);
+
+        logAppEvent({
+            type: APP_EVENTS.PREBLAST_GENERATED,
+            metadata: {
+                plannedWorkoutId: workout.id,
+                workoutDate: workout.date || null,
+                aoName: workout.aoName || null,
+                title: workout.title || null,
+                isShared: Boolean(workout.isShared),
+            },
+        });
+
         state.currentView = "preblast";
         renderApp();
     });
@@ -690,16 +766,17 @@ export function renderPlannedWorkoutDetail() {
             secondaryActionsRow.append(editButton);
         }
     } else {
+        primaryActionsRow.append(runWorkoutButton);
+
         if (canEditWorkout) {
-            primaryActionsRow.append(editButton);
+            secondaryActionsRow.append(editButton);
         }
 
         if (isSharedViewer) {
             copyButton.textContent = "Save to My Planner";
-            primaryActionsRow.append(copyButton);
+            secondaryActionsRow.append(copyButton);
         } else {
-        primaryActionsRow.append(logButton, preblastButton);
-        secondaryActionsRow.append(shareButton, copyButton);
+            secondaryActionsRow.append(logButton, preblastButton, shareButton, copyButton);
         }
 
         if (canDeleteWorkout && deleteButton) {

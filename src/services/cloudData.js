@@ -1,4 +1,6 @@
+import { APP_EVENTS } from "../constants/appEvents.js";
 import { generateBackblast } from "../modules/backblast.js";
+import { logAppEvent } from "./appEvents.js";
 import { supabase } from "./supabaseClient.js";
 
 export async function loadAllSessions(regionId) {
@@ -301,7 +303,23 @@ export async function insertSession(regionId, session) {
         .single();
     if (error) throw error;
 
-    return mapSessionFromDb(data);
+    const savedSession = mapSessionFromDb(data);
+
+    logAppEvent({
+        type: APP_EVENTS.SESSION_LOGGED,
+        metadata: {
+            sessionId: savedSession.id,
+            sessionDate: savedSession.date || null,
+            aoName: savedSession.aoName || null,
+            paxCount: savedSession.attendeeIds?.length || 0,
+            fngCount: savedSession.fngs?.length || 0,
+            qCount: savedSession.qIds?.length || 0,
+            sourcePlannedWorkoutId: savedSession.sourcePlannedWorkoutId || null,
+            hasWorkout: Boolean(savedSession.workout),
+        },
+    });
+
+    return savedSession;
 }
 
 export async function updateSessionInCloud(regionId, session) {
@@ -359,7 +377,23 @@ export async function insertPlannedWorkout(regionId, workout) {
 
     if (error) throw error;
 
-    return mapPlannedWorkoutFromDb(data);
+    const savedWorkout = mapPlannedWorkoutFromDb(data);
+
+    logAppEvent({
+        type: APP_EVENTS.PLANNED_WORKOUT_CREATED,
+        metadata: {
+            plannedWorkoutId: savedWorkout.id,
+            workoutDate: savedWorkout.date || null,
+            aoName: savedWorkout.aoName || null,
+            title: savedWorkout.title || null,
+            isShared: Boolean(savedWorkout.isShared),
+            timerCount: savedWorkout.timers?.length || 0,
+            sourceWorkoutId: savedWorkout.sourceWorkoutId || null,
+            sourceSessionId: savedWorkout.sourceSessionId || null,
+        },
+    });
+
+    return savedWorkout;
 }
 
 export async function updatePlannedWorkoutInCloud(regionId, workout) {
@@ -394,7 +428,23 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
 
     if (error) throw error;
 
-    return mapPlannedWorkoutFromDb(data);
+    const updatedWorkout = mapPlannedWorkoutFromDb(data);
+
+    logAppEvent({
+        type: APP_EVENTS.PLANNED_WORKOUT_UPDATED,
+        metadata: {
+            plannedWorkoutId: updatedWorkout.id,
+            workoutDate: updatedWorkout.date || null,
+            aoName: updatedWorkout.aoName || null,
+            title: updatedWorkout.title || null,
+            isShared: Boolean(updatedWorkout.isShared),
+            timerCount: updatedWorkout.timers?.length || 0,
+            sourceWorkoutId: updatedWorkout.sourceWorkoutId || null,
+            sourceSessionId: updatedWorkout.sourceSessionId || null,
+        },
+    });
+
+    return updatedWorkout;
 }
 
 export async function insertSessionsBatch(regionId, sessions) {

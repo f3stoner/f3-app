@@ -7,7 +7,8 @@ import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
-import { logActionFailure } from "../services/appEvents.js";
+import { logActionFailure, logAppEvent } from "../services/appEvents.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -320,6 +321,8 @@ export function renderQSignupView() {
                 throw new Error("No active region id");
             }
 
+            const ao = state.aos.find(a => a.id === slot.aoId);
+
             const updatedSlot = await updateQSlotInCloud(activeRegionId, {
                 ...slot,
                 qUserId: state.currentUserMemberId,
@@ -329,6 +332,17 @@ export function renderQSignupView() {
             if (index !== -1) {
                 state.qSlots[index] = updatedSlot;
             }
+
+            logAppEvent({
+                type: APP_EVENTS.Q_SLOT_CLAIMED,
+                metadata: {
+                    qSlotId: slot.id,
+                    aoId: slot.aoId || null,
+                    aoName: ao?.name || null,
+                    date: slot.date || null,
+                    qUserId: state.currentUserMemberId || null,
+                },
+            });
 
             renderApp();
         } catch (error) {

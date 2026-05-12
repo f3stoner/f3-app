@@ -2,9 +2,10 @@ export const APP_EVENTS = {
     APP_OPENED: "app_opened",
     VIEW_OPENED: "view-opened",
 
-    WORKOUT_CREATED: "workout_created",
-    WORKOUT_UPDATED: "workout_updated",
-    WORKOUT_STARTED: "workout_started",
+    PLANNED_WORKOUT_CREATED: "planned_workout_created",
+    PLANNED_WORKOUT_UPDATED: "planned_workout_updated",
+
+    EXECUTION_STARTED: "execution_started",
 
     SESSION_LOGGED: "session_logged",
 
