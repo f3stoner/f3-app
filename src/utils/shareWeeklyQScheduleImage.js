@@ -2,7 +2,7 @@ import html2canvas from "html2canvas";
 import { state } from "../modules/state.js";
 import { formatDate } from "./date.js";
 import { getWorkoutEmphasisForSlot } from "./workoutEmphasis.js";
-import { createIcon } from "./icons.js";
+import { createIcon, createWeatherIcon } from "./icons.js";
 
 function getMemberName(memberId) {
     const member = state.members.find(m => m.id === memberId);
@@ -11,6 +11,31 @@ function getMemberName(memberId) {
 
 function getAo(slot) {
     return state.aos.find(ao => ao.id === slot.aoId) || null;
+}
+
+function getWeatherTargetDateTime(date, ao) {
+    if (!date || !ao?.time) {
+        return null;
+    }
+
+    return `${date}T${ao.time}:00-05:00`;
+}
+
+function getWeatherForExport(date, ao) {
+    const targetDateTime = getWeatherTargetDateTime(date, ao);
+
+    if (!ao?.id || !targetDateTime) {
+        return null;
+    }
+
+    const cacheKey = `${ao.id}__${targetDateTime}`;
+    const weather = state.weatherByAoDate?.[cacheKey];
+
+    if (!weather || weather.isLoading || weather.weatherUnavailable) {
+        return null;
+    }
+
+    return weather;
 }
 
 function createScheduleExportCard({ weekStart, weekEnd, weekDates }) {
@@ -54,6 +79,8 @@ function createScheduleExportCard({ weekStart, weekEnd, weekDates }) {
                 const ao = getAo(slot);
                 const emphasis = getWorkoutEmphasisForSlot(slot, ao);
 
+                const weather = getWeatherForExport(slot.date, ao);
+
                 const row = document.createElement("div");
                 row.classList.add("weekly-q-export-slot");
 
@@ -87,7 +114,27 @@ function createScheduleExportCard({ weekStart, weekEnd, weekDates }) {
                 timeRow.classList.add("weekly-q-export-slot-time");
                 timeRow.textContent = ao?.time || "";
 
-                left.append(topRow, timeRow);                
+                const metaWrap = document.createElement("div");
+                metaWrap.classList.add("weekly-q-export-meta-wrap");
+                metaWrap.appendChild(timeRow);
+
+                if (weather) {
+                    const weatherRow = document.createElement("div");
+                    weatherRow.classList.add("weekly-q-export-weather");
+
+                    const icon = createWeatherIcon(weather.icon, {
+                        size: 11,
+                        className: "weekly-q-export-weather-icon",
+                    });
+
+                    const text = document.createElement("span");
+                    text.textContent = `${weather.temp}° · ${weather.precipChance}%`;
+
+                    weatherRow.append(icon, text);
+                    metaWrap.appendChild(weatherRow);
+                }
+
+                left.append(topRow, metaWrap);                
                 
                 const right = document.createElement("div");
                 right.classList.add(slot.qUserId ? "filled" : "open");
