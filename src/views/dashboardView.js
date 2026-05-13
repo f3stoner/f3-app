@@ -635,7 +635,26 @@ export function renderDashboard() {
             const status = document.createElement("div");
             status.classList.add("stats-line");
             status.textContent = hasPlannedWorkout ? "BD Ready" : "No workout planned";
-            row.append(title, status);
+
+            const rowText = document.createElement("div");
+            rowText.classList.add("upcoming-q-row-text");
+            rowText.append(title, status);
+
+            const unclaimButton = document.createElement("button");
+            unclaimButton.classList.add("secondary-button", "small-action-button");
+            unclaimButton.textContent = "Unclaim";
+
+            unclaimButton.addEventListener("click", async (event) => {
+                event.stopPropagation();
+
+                const result = await unclaimQSlot(slot);
+
+                if (result?.success) {
+                    renderApp();
+                }
+            });
+
+            row.append(rowText, unclaimButton);
 
             section.appendChild(row);
         });

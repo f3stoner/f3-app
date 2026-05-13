@@ -2259,3 +2259,15 @@ select:focus,
     color: var(--muted);
     text-align: right;
 }
+
+.upcoming-q-row-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.small-action-button {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
