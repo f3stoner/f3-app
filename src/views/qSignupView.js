@@ -211,7 +211,7 @@ export function renderQSignupView() {
             }
 
             if (
-                q.qSelect.value &&
+                qSelect.value &&
                 userAlreadyHasQOnDate(dateInput.value, qSelect.value)
             ) {
                 showToast("That PAX already has a Q scheduled that day.", "error");
