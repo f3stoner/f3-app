@@ -70,55 +70,68 @@ function roundNumber(value: unknown) {
 }
 
 function getTargetParts(targetDateTime?: string) {
-  const target = targetDateTime ? new Date(targetDateTime) : new Date();
+  const fallback = new Date();
 
-  if (Number.isNaN(target.getTime())) {
-    const fallback = new Date();
+  if (!targetDateTime) {
+    const fallbackDate = fallback.toISOString().slice(0, 10);
+    const fallbackHour = fallback.getHours();
 
     return {
-      target: fallback,
-      forecastDate: fallback.toISOString().slice(0, 10),
-      forecastHour: fallback.getHours(),
+      forecastDate: fallbackDate,
+      forecastHour: fallbackHour,
+      targetHourKey: `${fallbackDate}T${String(fallbackHour).padStart(2, "0")}`,
     };
   }
+  let forecastDate = targetDateTime.slice(0, 10);
+  let forecastHour = Number(targetDateTime.slice(11, 13));
 
+  const minute = Number(targetDateTime.slice(14, 16));
+
+  if (Number.isNaN(forecastHour)) {
+    forecastHour = fallback.getHours();
+  }
+
+  if (!Number.isNaN(minute) && minute >= 30) {
+    forecastHour += 1;
+  }
+
+  if (forecastHour >= 24) {
+    const rollover = new Date(`${forecastDate}T12:00:00`);
+    rollover.setDate(rollover.getDate() + 1);
+    forecastDate = rollover.toISOString().slice(0, 10);
+    forecastHour = 0;
+  }
   return {
-    target,
-    forecastDate: target.toISOString().slice(0, 10),
-    forecastHour: target.getHours(),
+    forecastDate,
+    forecastHour,
+    targetHourKey: `${forecastDate}T${String(forecastHour).padStart(2, "0")}`,
   };
 }
 
-function getCacheExpiration(target: Date) {
+function getCacheExpiration(forecastDate: string) {
   const now = new Date();
-  const isToday = target.toDateString() === now.toDateString();
+  const today = now.toISOString().slice(0, 10);
+  const isToday = forecastDate === today;
   const minutes = isToday ? 30 : 120;
   return new Date(now.getTime() + minutes * 60 * 1000);
 }
 
-function findClosestHourlyIndex(hourlyTimes: string[], targetDateTime?: string) {
+function findHourlyIndex(hourlyTimes: string[], targetHourKey: string) {
   if (!hourlyTimes?.length) return 0;
-  const target = targetDateTime ? new Date(targetDateTime) : new Date();
-  const targetMs = target.getTime();
-  let bestIndex = 0;
-  let bestDiff = Infinity;
 
-  hourlyTimes.forEach((time, index) => {
-    const diff = Math.abs(new Date(time).getTime() - targetMs);
+  const exactIndex = hourlyTimes.findIndex(time =>
+    time.startsWith(targetHourKey)
+  );
 
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      bestIndex = index;
-    }
-  });
-  return bestIndex;
+  return exactIndex >= 0 ? exactIndex : 0;
 }
 
-function normalizeWeather(raw: any, ao: AoRecord, targetDateTime?: string) {
+function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
   const hourly = raw.hourly ?? {};
   const daily = raw.daily ?? {};
   const current = raw.current ?? {};
-  const hourlyIndex = findClosestHourlyIndex(hourly.time ?? [], targetDateTime);
+
+  const hourlyIndex = findHourlyIndex(hourly.time ?? [], targetHourKey);
 
   const weatherCode =
     hourly.weather_code?.[hourlyIndex] ??
@@ -143,6 +156,7 @@ function normalizeWeather(raw: any, ao: AoRecord, targetDateTime?: string) {
     aoName: ao.name,
     locationLabel: ao.weather_location_label ?? ao.name,
     targetTime: hourly.time?.[hourlyIndex] ?? null,
+    targetHourKey,
     temp: roundNumber(hourly.temperature_2m?.[hourlyIndex] ?? current.temperature_2m),
     feelsLike: roundNumber(hourly.apparent_temperature?.[hourlyIndex] ?? current.apparent_temperature),
     condition: codeInfo.condition,
@@ -183,7 +197,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Missing Supabase function secrets" }, 500);
     }
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { target, forecastDate, forecastHour } = getTargetParts(targetDateTime);
+    const { forecastDate, forecastHour, targetHourKey } = getTargetParts(targetDateTime);
 
     const { data: ao, error: aoError } = await supabase
       .from("aos")
@@ -246,8 +260,8 @@ Deno.serve(async (req) => {
     }
 
     const rawWeather = await weatherResponse.json();
-    const normalizedWeather = normalizeWeather(rawWeather, ao, targetDateTime);
-    const expiresAt = getCacheExpiration(target);
+    const normalizedWeather = normalizeWeather(rawWeather, ao, targetHourKey);
+    const expiresAt = getCacheExpiration(forecastDate);
 
     const { error: cacheError } = await supabase
       .from("ao_weather_cache")
