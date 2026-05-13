@@ -16,6 +16,7 @@ import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
 import { getMemberStats } from "../modules/stats.js";
 import { createIcon } from "../utils/icons.js";
+import { getAoWeather } from "../services/weather.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -199,6 +200,50 @@ export function renderDashboard() {
         return new Date() < cutoff;
     }
 
+    function getNextQTargetDateTime(slot, ao) {
+        if (!slot || !ao?.time) {
+            return null;
+        }
+
+        return `${slot.date}T${ao.time}:00`;
+    }
+
+    function getWeatherCacheKey(slot, ao) {
+        const targetDateTime = getNextQTargetDateTime(slot, ao);
+
+        if (!slot || !ao || !targetDateTime) {
+            return null;
+        }
+
+        return `${ao.id}__${targetDateTime}`;
+    }
+
+    async function loadNextQWeather(slot, ao) {
+        const targetDateTime = getNextQTargetDateTime(slot, ao);
+        const cacheKey = getWeatherCacheKey(slot, ao);
+
+        if (!ao?.id || !targetDateTime || !cacheKey) {
+            return;
+        }
+
+        if (state.weatherByAoDate?.[cacheKey]) {
+            return;
+        }
+
+        state.weatherByAoDate = state.weatherByAoDate || {};
+        state.weatherByAoDate[cacheKey] = {
+            isLoading: true,
+        };
+
+        const weather = await getAoWeather(ao.id, targetDateTime);
+
+        state.weatherByAoDate[cacheKey] = weather;
+
+        if (state.currentView === "dashboard") {
+            renderApp();
+        }
+    }
+
     function getMyUpcomingQSlots() {
         const today = getTodayDate();
 
@@ -244,6 +289,10 @@ export function renderDashboard() {
 
     if (nextQSlot) {
         const ao = state.aos.find(a => a.id === nextQSlot.aoId);
+        const weatherCacheKey = getWeatherCacheKey(nextQSlot, ao);
+        const nextQWeather = weatherCacheKey
+            ? state.weatherByAoDate?.[weatherCacheKey]
+            : null;
         const matchingWorkout = findMatchingPlannedWorkoutForSlot(nextQSlot);
         const hasPlannedWorkout = Boolean(matchingWorkout);
         const isTodayQ = nextQSlot.date === today;
@@ -285,7 +334,33 @@ export function renderDashboard() {
             ? "BD Ready"
             : "No workout planned";
 
+        const nextQWeatherLine = document.createElement("div");
+        nextQWeatherLine.classList.add("stats-line", "next-q-weather-line");
+
+        if (nextQWeather?.isLoading) {
+            nextQWeatherLine.textContent = "Loading weather...";
+        } else if (nextQWeather && !nextQWeather.weatherUnavailable) {
+            const rainLabel =
+                typeof nextQWeather.precipChance === "number"
+                    ? `${nextQWeather.precipChance}% rain`
+                    : "Rain chance unavailable";
+
+            const windLabel =
+                typeof nextQWeather.windMph === "number"
+                    ? `${nextQWeather.windMph} mph wind`
+                    : "Wind unavailable";
+
+            nextQWeatherLine.textContent =
+                `${nextQWeather.temp}° · ${nextQWeather.condition} · ${rainLabel} · ${windLabel}`;
+        } else if (nextQWeather?.weatherUnavailable) {
+            nextQWeatherLine.textContent = "Weather unavailable";
+        }
+
         nextQCardContent.append(nextQTitle, nextQSubtitle, nextQPreview);
+
+        if (nextQWeather || ao?.latitude) {
+            nextQCardContent.appendChild(nextQWeatherLine);
+        }
 
         const actionButton = document.createElement("button");
         actionButton.classList.add("primary-button");
@@ -420,6 +495,7 @@ export function renderDashboard() {
         nextQActions.prepend(actionButton);
         nextQCard.append(nextQCardContent, nextQActions);
         nextQSection.append(nextQHeading, nextQCard);
+        loadNextQWeather(nextQSlot, ao);
     }
 
     const quickAccessHeading = document.createElement("div");

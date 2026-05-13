@@ -103,6 +103,7 @@ export const state = {
         allowSessionLogging: true,
     },
     weeklyQCalendarStartDate: null,
+    weatherByAoDate: {},
 };
 
 state.runHistoricImport = async function () {

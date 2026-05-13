@@ -2185,3 +2185,7 @@ select:focus,
     color: var(--muted);
     text-align: right;
 }
+
+.next-q-weather-line {
+    margin-top: 0.35rem;
+}
