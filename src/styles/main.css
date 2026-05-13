@@ -2031,10 +2031,17 @@ select:focus,
 .weekly-q-export-slot {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     gap: 24px;
     padding: 12px 0;
     border-bottom: 1px solid rgba(255,255,255,0.16);
     font-size: 24px;
+}
+
+.weekly-q-export-slot .filled,
+.weekly-q-export-slot .open {
+    white-space: nowrap;
+    padding-top: 2px;
 }
 
 .weekly-q-export-slot.empty {
@@ -2049,4 +2056,80 @@ select:focus,
 .weekly-q-export-slot .open {
     font-weight: 900;
     color: #ffcc66;
+}
+
+.workout-emphasis-line {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: rgba(143, 211, 255, 0.14);
+    color: #8fd3ff;
+}
+
+.weekly-q-export-slot-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.weekly-q-export-slot-top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.weekly-q-export-ao-name {
+    font-weight: 800;
+}
+
+.weekly-q-export-emphasis-badge {
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 800;
+    background: rgba(143, 211, 255, 0.16);
+    color: #8fd3ff;
+    white-space: nowrap;
+}
+
+.weekly-q-export-slot-time {
+    font-size: 18px;
+    opacity: 0.78;
+}
+
+.weekly-q-slot-ao-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.weekly-q-slot-ao-row .member-name {
+    flex: 0 1 auto;
+}
+
+.weekly-q-slot-ao-row .workout-emphasis-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: auto;
+
+    margin-top: 0;
+    padding: 3px 8px;
+
+    border-radius: 999px;
+
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1;
+
+    background: rgba(143, 211, 255, 0.14);
+    color: #8fd3ff;
+
+    white-space: nowrap;
 }

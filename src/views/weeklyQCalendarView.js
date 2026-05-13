@@ -9,6 +9,7 @@ import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleIMage.js";
+import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -155,6 +156,7 @@ export function renderWeeklyQCalendarView() {
         } else {
             daySlots.forEach(slot => {
                 const ao = getAoForSlot(slot);
+                const emphasis = getWorkoutEmphasisForSlot(slot, ao);
                 const isMine = slot.qUserId === state.currentUserMemberId;
                 const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
 
@@ -162,10 +164,22 @@ export function renderWeeklyQCalendarView() {
                 slotRow.classList.add("q-slot-card", "weekly-q-slot-row");
 
                 const slotMain = document.createElement("div");
+
+                const aoRow = document.createElement("div");
+                aoRow.classList.add("weekly-q-slot-ao-row");
                 
                 const aoLine = document.createElement("div");
                 aoLine.classList.add("member-name");
                 aoLine.textContent = ao?.name || "Unknown AO";
+
+                aoRow.appendChild(aoLine);
+
+                if (emphasis) {
+                    const emphasisBadge = document.createElement("div");
+                    emphasisBadge.classList.add("workout-emphasis-line");
+                    emphasisBadge.textContent = emphasis.label;
+                    aoRow.appendChild(emphasisBadge);
+                }
 
                 const qLine = document.createElement("div");
                 qLine.classList.add("stats-line");
@@ -179,7 +193,11 @@ export function renderWeeklyQCalendarView() {
                 metaLine.classList.add("stats-line");
                 metaLine.textContent = ao?.time ? `Start: ${ao.time}` : "No time set";
 
-                slotMain.append(aoLine, qLine, metaLine);
+                slotMain.append(
+                    aoRow,
+                    qLine,
+                    metaLine
+                );
 
                 const actions = document.createElement("div");
                 actions.classList.add("q-slot-actions");

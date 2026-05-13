@@ -1,6 +1,7 @@
 import html2canvas from "html2canvas";
 import { state } from "../modules/state.js";
 import { formatDate } from "./date.js";
+import { getWorkoutEmphasisForSlot } from "./workoutEmphasis.js";
 
 function getMemberName(memberId) {
     const member = state.members.find(m => m.id === memberId);
@@ -50,10 +51,37 @@ function createScheduleExportCard({ weekStart, weekEnd, weekDates }) {
         } else {
             daySlots.forEach(slot => {
                 const ao = getAo(slot);
+                const emphasis = getWorkoutEmphasisForSlot(slot, ao);
+
                 const row = document.createElement("div");
                 row.classList.add("weekly-q-export-slot");
+                
                 const left = document.createElement("div");
-                left.textContent = `${ao?.name || "Unknown AO"}${ao?.time ? ` · ${ao.time}` : ""}`;
+                left.classList.add("weekly-q-export-slot-left");
+                
+                const topRow = document.createElement("div");
+                topRow.classList.add("weekly-q-export-slot-top-row");
+                
+                const aoName = document.createElement("div");
+                aoName.classList.add("weekly-q-export-ao-name");
+                aoName.textContent = ao?.name || "Unknown AO";
+                
+                topRow.appendChild(aoName);
+                
+                if (emphasis) {
+                    const badge = document.createElement("div");
+                    badge.classList.add("weekly-q-export-emphasis-badge");
+                    badge.textContent = emphasis.label;
+
+                    topRow.appendChild(badge);
+                }
+                
+                const timeRow = document.createElement("div");
+                timeRow.classList.add("weekly-q-export-slot-time");
+                timeRow.textContent = ao?.time || "";
+
+                left.append(topRow, timeRow);                
+                
                 const right = document.createElement("div");
                 right.classList.add(slot.qUserId ? "filled" : "open");
                 right.textContent = slot.qUserId ? getMemberName(slot.qUserId) : "OPEN";
