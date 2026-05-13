@@ -9,6 +9,7 @@ import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
+import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 
 export function renderQSignupView() {
     const app = document.getElementById("app");
@@ -209,6 +210,14 @@ export function renderQSignupView() {
                 return;
             }
 
+            if (
+                q.qSelect.value &&
+                userAlreadyHasQOnDate(dateInput.value, qSelect.value)
+            ) {
+                showToast("That PAX already has a Q scheduled that day.", "error");
+                return;
+            }
+
             const newSlot = {
                 id: crypto.randomUUID(),
                 aoId: aoSelect.value,
@@ -321,6 +330,11 @@ export function renderQSignupView() {
                 throw new Error("No active region id");
             }
 
+            if (userAlreadyHasQOnDate(slot.date, state.currentUserMemberId, slot.id)) {
+                showToast("You already have a Q scheduled that day.", "error");
+                return;
+            }
+
             const ao = state.aos.find(a => a.id === slot.aoId);
 
             const updatedSlot = await updateQSlotInCloud(activeRegionId, {
@@ -363,6 +377,11 @@ export function renderQSignupView() {
             const activeRegionId = state.currentRegionId;
             if(!activeRegionId) {
                 throw new Error("No active region id");
+            }
+
+            if (userAlreadyHasQOnDate(slot.date, memberId, slot.id)) {
+                showToast("That PAX already has a Q scheduled that day.", "error");
+                return;
             }
 
             const updatedSlot = await updateQSlotInCloud(activeRegionId, {

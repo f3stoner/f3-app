@@ -7,6 +7,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
+import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -143,7 +144,7 @@ export function renderWeeklyQCalendarView() {
                 const slotMain = document.createElement("div");
                 
                 const aoLine = document.createElement("div");
-                aoLine.classList.add("stats-line");
+                aoLine.classList.add("member-name");
                 aoLine.textContent = ao?.name || "Unknown AO";
 
                 const qLine = document.createElement("div");
@@ -175,6 +176,11 @@ export function renderWeeklyQCalendarView() {
 
                     claimButton.addEventListener("click", async () => {
                         try {
+                            if (userAlreadyHasQOnDate(slot.date, state.currentUserMemberId, slot.id)) {
+                                showToast("You already have a Q scheduled that day.", "error");
+                                return;
+                            }
+
                             const updatedSlot = await updateQSlotInCloud(state.currentRegionId, {
                                 ...slot,
                                 qUserId: state.currentUserMemberId,
