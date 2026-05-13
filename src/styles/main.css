@@ -1985,3 +1985,68 @@ select:focus,
     font-size: 0.8rem;
     line-height: 1;
 }
+
+.weekly-q-export-wrap {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 900px;
+    pointer-events: none;
+}
+
+.weekly-q-export-card {
+    width: 900px;
+    padding: 48px;
+    background: #101820;
+    color: white;
+    font-family: Arial, sans-serif;
+    border-radius: 28px;
+    box-sizing: border-box;
+}
+
+.weekly-q-export-title {
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.weekly-q-export-subtitle {
+    font-size: 24px;
+    opacity: 0.85;
+    margin-bottom: 36px;
+}
+
+.weekly-q-export-day {
+    margin-top: 24px;
+}
+
+.weekly-q-export-day-title {
+    font-size: 24px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #8fd3ff;
+    margin-bottom: 10px;
+}
+
+.weekly-q-export-slot {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.16);
+    font-size: 24px;
+}
+
+.weekly-q-export-slot.empty {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.weekly-q-export-slot .filled {
+    font-weight: 800;
+}
+
+.weekly-q-export-slot .open {
+    font-weight: 900;
+    color: #ffcc66;
+}

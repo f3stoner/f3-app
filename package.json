@@ -35,6 +35,7 @@
     "@supabase/supabase-js": "^2.101.1",
     "csv-parse": "^6.2.1",
     "dotenv-webpack": "^9.0.0",
+    "html2canvas": "^1.4.1",
     "lucide": "^1.14.0",
     "papaparse": "^5.5.3",
     "web-push": "^3.6.7"

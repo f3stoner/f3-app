@@ -8,6 +8,7 @@ import { showToast } from "../utils/toast.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
+import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleIMage.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -76,6 +77,25 @@ export function renderWeeklyQCalendarView() {
 
     const weekControls = document.createElement("div");
     weekControls.classList.add("button-row");
+
+    const shareButton = document.createElement("button");
+    shareButton.classList.add("secondary-button");
+    shareButton.textContent = "Share Week";
+
+    shareButton.addEventListener("click", async () => {
+        try {
+            await shareWeeklyQScheduleImage({
+                weekStart,
+                weekEnd,
+                weekDates,
+            });
+        } catch (error) {
+            console.error("Failed to share weekly schedule:", error);
+            showToast("Failed to share weekly schedule.", "error");
+        }
+    });
+
+    weekControls.append(shareButton);
 
     const previousButton = document.createElement("button");
     previousButton.classList.add("secondary-button");
