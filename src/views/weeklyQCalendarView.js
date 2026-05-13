@@ -10,6 +10,7 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleIMage.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
+import { createIcon } from "../utils/icons.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -175,9 +176,16 @@ export function renderWeeklyQCalendarView() {
                 aoRow.appendChild(aoLine);
 
                 if (emphasis) {
-                    const emphasisBadge = document.createElement("div");
+                    const emphasisBadge = document.createElement("span");
                     emphasisBadge.classList.add("workout-emphasis-line");
-                    emphasisBadge.textContent = emphasis.label;
+
+                    const icon = createIcon(emphasis.icon);
+                    icon.classList.add("workout-emphasis-icon");
+
+                    const label = document.createElement("div");
+                    label.textContent = emphasis.label;
+
+                    emphasisBadge.append(icon, label);
                     aoRow.appendChild(emphasisBadge);
                 }
 

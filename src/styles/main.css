@@ -1997,23 +1997,30 @@ select:focus,
 .weekly-q-export-card {
     width: 900px;
     padding: 48px;
-    background: #101820;
-    color: white;
-    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(194, 202, 211, 0.14), transparent 280px),
+        #090a0b;
+    color: var(--text);
+    font-family: var(--font-body);
     border-radius: 28px;
     box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.16);
 }
 
 .weekly-q-export-title {
-    font-size: 44px;
+    font-family: var(--font-display);
+    font-size: 56px;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     font-weight: 800;
-    margin-bottom: 8px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
 }
 
 .weekly-q-export-subtitle {
-    font-size: 24px;
-    opacity: 0.85;
-    margin-bottom: 36px;
+    font-size: 22px;
+    color: var(--muted);
+    margin-bottom: 34px;
 }
 
 .weekly-q-export-day {
@@ -2021,10 +2028,12 @@ select:focus,
 }
 
 .weekly-q-export-day-title {
-    font-size: 24px;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 900;
     text-transform: uppercase;
-    color: #8fd3ff;
+    letter-spacing: 0.12em;
+    color: var(--accent-bright);
     margin-bottom: 10px;
 }
 
@@ -2040,8 +2049,11 @@ select:focus,
 
 .weekly-q-export-slot .filled,
 .weekly-q-export-slot .open {
+    font-family: var(--font-display);
+    font-size: 25px;
+    font-weight: 900;
     white-space: nowrap;
-    padding-top: 2px;
+    padding-top: 1px;
 }
 
 .weekly-q-export-slot.empty {
@@ -2083,22 +2095,33 @@ select:focus,
 }
 
 .weekly-q-export-ao-name {
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
 }
 
 .weekly-q-export-emphasis-badge {
-    padding: 3px 9px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
     border-radius: 999px;
+    font-family: var(--font-display);
     font-size: 15px;
-    font-weight: 800;
-    background: rgba(143, 211, 255, 0.16);
-    color: #8fd3ff;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--accent-muted);
+    border: 1px solid rgba(194, 202, 211, 0.22);
+    color: var(--accent-bright);
     white-space: nowrap;
 }
 
 .weekly-q-export-slot-time {
-    font-size: 18px;
-    opacity: 0.78;
+    font-size: 17px;
+    color: var(--muted);
+    opacity: 1;
 }
 
 .weekly-q-slot-ao-row {
@@ -2132,4 +2155,33 @@ select:focus,
     color: #8fd3ff;
 
     white-space: nowrap;
+}
+
+.workout-emphasis-line {
+    gap: 4px;
+}
+
+.workout-emphasis-icon {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.5;
+}
+
+.weekly-q-export-emphasis-icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.8;
+}
+
+.weekly-q-export-footer {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
 }

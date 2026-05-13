@@ -6,6 +6,15 @@ import {
     MapPin,
     CalendarDays,
     Sparkles,
+    BicepsFlexed,
+    Footprints,
+    HeartPulse,
+    Backpack,
+    Badge,
+    Zap,
+    TrendingUp,
+    Circle,
+    ClipboardList,
 } from "lucide";
 
 const ICONS = {
@@ -15,6 +24,16 @@ const ICONS = {
     favoriteAo: MapPin,
     lastPost: CalendarDays,
     fngDate: Sparkles,
+    dumbbell: Dumbbell,
+    bicepsFlexed: BicepsFlexed,
+    footprints: Footprints,
+    heartPulse: HeartPulse,
+    backpack: Backpack,
+    badge: Badge,
+    zap: Zap,
+    trendingUp: TrendingUp,
+    circle: Circle,
+    clipboardList: ClipboardList,
 };
 
 export function createIcon(name, className = "stat-icon") {

@@ -75,17 +75,16 @@ Count-O-Rama -`,
 }
 
 export const WORKOUT_EMPHASIS = {
-    heavy: { label: "Heavy", icon: "Dumbbell" },
-    upper: { label: "Upper", icon: "BicepsFlexed" },
-    lower: { label: "Lower", icon: "Footprints" },
-    cardio: { label: "Cardio", icon: "HeartPulse" },
-    ruck: { label: "Ruck", icon: "Backpack" },
-    core: { label: "Core", icon: "Badge" },
-    "30/30": { label: "30/30", icon: "Zap" },
-    stairs: { label: "Stairs", icon: "TrendingUp" },
-    other: { label: "Other", icon: "Circle" },
-    benchmark: { label: "Benchmark", icon: "ClipboardList"},
-
+    heavy: { label: "Heavy", icon: "dumbbell" },
+    upper: { label: "Upper", icon: "bicepsFlexed" },
+    lower: { label: "Lower", icon: "footprints" },
+    cardio: { label: "Cardio", icon: "heartPulse" },
+    ruck: { label: "Ruck", icon: "backpack" },
+    core: { label: "Core", icon: "badge" },
+    "30/30": { label: "30/30", icon: "zap" },
+    stairs: { label: "Stairs", icon: "trendingUp" },
+    other: { label: "Other", icon: "circle" },
+    benchmark: { label: "Benchmark", icon: "clipboardList"},
 };
 
 export const AO_WORKOUT_EMPHASIS_RULES = [
