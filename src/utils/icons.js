@@ -15,6 +15,14 @@ import {
     TrendingUp,
     Circle,
     ClipboardList,
+    Sun,
+    CloudSun,
+    Cloud,
+    CloudRain,
+    CloudLightning,
+    CloudFog,
+    Snowflake,
+    CloudDrizzle,
 } from "lucide";
 
 const ICONS = {
@@ -36,6 +44,20 @@ const ICONS = {
     clipboardList: ClipboardList,
 };
 
+const weatherIconMap = {
+    clear: Sun,
+    "mostly-clear": CloudSun,
+    "partly-cloudy": CloudSun,
+    cloudy: Cloud,
+    rain: CloudRain,
+    storm: CloudLightning,
+    fog: CloudFog,
+    snow: Snowflake,
+    "freezing-rain": CloudRain,
+    drizzle: CloudDrizzle,
+    unknown: Cloud,
+};
+
 export function createIcon(name, className = "stat-icon") {
     const iconNode = ICONS[name];
 
@@ -46,5 +68,16 @@ export function createIcon(name, className = "stat-icon") {
         height: 20,
         strokeWidth: 2,
         class: className,
+    });
+}
+
+export function createWeatherIcon(iconName, options = {}) {
+    const Icon = weatherIconMap[iconName] || Cloud;
+
+    return createElement(Icon, {
+        width: options.size || 14,
+        height: options.size || 14,
+        strokeWidth: options.strokeWidth || 2.2,
+        class: options.className || "weather-icon",
     });
 }

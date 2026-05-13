@@ -2187,5 +2187,40 @@ select:focus,
 }
 
 .next-q-weather-line {
-    margin-top: 0.35rem;
+    margin-top: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: fit-content;
+    padding: 0.28rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.1;
+}
+
+.weather-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.weekly-q-weather {
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+.weekly-q-weather-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    opacity: 0.85;
 }

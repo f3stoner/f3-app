@@ -15,7 +15,7 @@ import { subscribeToPush } from "../services/pushNotifications.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
 import { getMemberStats } from "../modules/stats.js";
-import { createIcon } from "../utils/icons.js";
+import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
 
 export function renderDashboard() {
@@ -350,8 +350,14 @@ export function renderDashboard() {
                     ? `${nextQWeather.windMph} mph wind`
                     : "Wind unavailable";
 
-            nextQWeatherLine.textContent =
-                `${nextQWeather.temp}° · ${nextQWeather.condition} · ${rainLabel} · ${windLabel}`;
+            const weatherIcon = createWeatherIcon(nextQWeather.icon);
+
+            const weatherText = document.createElement("span");
+            weatherText.textContent =
+                `${nextQWeather.temp}° · ${nextQWeather.condition} · ${rainLabel}`;
+
+            nextQWeatherLine.append(weatherIcon, weatherText);
+
         } else if (nextQWeather?.weatherUnavailable) {
             nextQWeatherLine.textContent = "Weather unavailable";
         }

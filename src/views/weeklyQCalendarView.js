@@ -10,7 +10,8 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleIMage.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
-import { createIcon } from "../utils/icons.js";
+import { createIcon, createWeatherIcon } from "../utils/icons.js";
+import { getAoWeather } from "../services/weather.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -46,6 +47,51 @@ function getMemberName(memberId) {
 
 function getAoForSlot(slot) {
     return state.aos.find(ao => ao.id === slot.aoId) || null;
+}
+
+function getWeatherTargetDateTime(date, ao) {
+    if (!date || !ao?.time) {
+        return null;
+    }
+
+    return `${date}T${ao.time}:00-05:00`;
+}
+
+function getWeatherCacheKey(date, ao) {
+    const targetDateTime = getWeatherTargetDateTime(date, ao);
+
+    if (!ao?.id || !targetDateTime) {
+        return null;
+    }
+
+    return `${ao.id}__${targetDateTime}`;
+}
+
+async function loadWeeklyWeather(date, ao) {
+    const targetDateTime = getWeatherTargetDateTime(date, ao);
+    const cacheKey = getWeatherCacheKey(date, ao);
+
+    if (!ao?.id || !targetDateTime || !cacheKey) {
+        return;
+    }
+
+    state.weatherByAoDate = state.weatherByAoDate || {};
+
+    if (state.weatherByAoDate[cacheKey]) {
+        return;
+    }
+
+    state.weatherByAoDate[cacheKey] = {
+        isLoading: true,
+    };
+
+    const weather = await getAoWeather(ao.id, targetDateTime);
+
+    state.weatherByAoDate[cacheKey] = weather;
+
+    if (state.currentView === "weeklyQCalendar") {
+        renderApp();
+    }
 }
 
 function findMatchingPlannedWorkout(slot, ao) {
@@ -161,6 +207,12 @@ export function renderWeeklyQCalendarView() {
                 const isMine = slot.qUserId === state.currentUserMemberId;
                 const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
 
+                const weatherCacheKey = getWeatherCacheKey(slot.date, ao);
+
+                const weather = weatherCacheKey
+                    ? state.weatherByAoDate?.[weatherCacheKey]
+                    : null;
+
                 const slotRow = document.createElement("div");
                 slotRow.classList.add("q-slot-card", "weekly-q-slot-row");
 
@@ -206,6 +258,25 @@ export function renderWeeklyQCalendarView() {
                     qLine,
                     metaLine
                 );
+
+                if (weather && !weather.isLoading && !weather.weatherUnavailable) {
+                    const weatherRow = document.createElement("div");
+                    weatherRow.classList.add("weekly-q-weather");
+
+                    const weatherIcon = createWeatherIcon(weather.icon, {
+                        size: 12,
+                        className: "weekly-q-weather-icon",
+                    });
+
+                    const weatherText = document.createElement("span");
+
+                    weatherText.textContent =
+                        `${weather.temp}° · ${weather.precipChance}%`;
+
+                    weatherRow.append(weatherIcon, weatherText);
+
+                    slotMain.appendChild(weatherRow);
+                }
 
                 const actions = document.createElement("div");
                 actions.classList.add("q-slot-actions");
@@ -302,6 +373,8 @@ export function renderWeeklyQCalendarView() {
 
                     actions.appendChild(workoutButton);
                 }
+
+                loadWeeklyWeather(slot.date, ao);
 
                 slotRow.append(slotMain, actions);
                 dayCard.appendChild(slotRow);
