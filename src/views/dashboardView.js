@@ -235,13 +235,68 @@ export function renderDashboard() {
             isLoading: true,
         };
 
-        const weather = await getAoWeather(ao.id, targetDateTime);
+        patchNextQWeather(cacheKey);
 
-        state.weatherByAoDate[cacheKey] = weather;
+        try {
+            const weather = await getAoWeather(ao.id, targetDateTime);
+
+            state.weatherByAoDate[cacheKey] = weather;
+        } catch (error) {
+            console.error("failed to load next Q weather:", error);
+
+            state.weatherByAoDate[cacheKey] = {
+                weatherUnavailable: true,
+            };
+        }
 
         if (state.currentView === "dashboard") {
-            renderApp();
+            patchNextQWeather(cacheKey);
         }
+    }
+
+    function renderNextQWeatherLine(weatherLine, weather) {
+        weatherLine.textContent = "";
+
+        if (!weather) {
+            weatherLine.textContent = "Loading weather...";
+            return;
+        }
+
+        if (weather.isLoading) {
+            weatherLine.textContent = "Loading weather...";
+            return;
+        }
+
+        if (weather.weatherUnavailable) {
+            weatherLine.textContent = "Weather unavailable";
+            return;
+        }
+
+        const rainLabel =
+            typeof weather.precipChance === "number"
+                ? `${weather.precipChance}% rain`
+                : "Rain chance unavailable";
+
+        const weatherIcon = createWeatherIcon(weather.icon);
+
+        const weatherText = document.createElement("span");
+        weatherText.textContent =
+            `${weather.temp}° · ${weather.condition} · ${rainLabel}`;
+
+        weatherLine.append(weatherIcon, weatherText);
+    }
+
+    function patchNextQWeather(cacheKey) {
+        const weatherLine = document.querySelector(
+            `[data-next-q-weather-key="${cacheKey}"]`
+        );
+
+        if (!weatherLine) return;
+
+        renderNextQWeatherLine(
+            weatherLine,
+            state.weatherByAoDate?.[cacheKey]
+        );
     }
 
     function getMyUpcomingQSlots() {
@@ -337,34 +392,15 @@ export function renderDashboard() {
         const nextQWeatherLine = document.createElement("div");
         nextQWeatherLine.classList.add("stats-line", "next-q-weather-line");
 
-        if (nextQWeather?.isLoading) {
-            nextQWeatherLine.textContent = "Loading weather...";
-        } else if (nextQWeather && !nextQWeather.weatherUnavailable) {
-            const rainLabel =
-                typeof nextQWeather.precipChance === "number"
-                    ? `${nextQWeather.precipChance}% rain`
-                    : "Rain chance unavailable";
-
-            const windLabel =
-                typeof nextQWeather.windMph === "number"
-                    ? `${nextQWeather.windMph} mph wind`
-                    : "Wind unavailable";
-
-            const weatherIcon = createWeatherIcon(nextQWeather.icon);
-
-            const weatherText = document.createElement("span");
-            weatherText.textContent =
-                `${nextQWeather.temp}° · ${nextQWeather.condition} · ${rainLabel}`;
-
-            nextQWeatherLine.append(weatherIcon, weatherText);
-
-        } else if (nextQWeather?.weatherUnavailable) {
-            nextQWeatherLine.textContent = "Weather unavailable";
+        if (weatherCacheKey) {
+            nextQWeatherLine.dataset.nextQWeatherKey = weatherCacheKey;
         }
+
+        renderNextQWeatherLine(nextQWeatherLine, nextQWeather);
 
         nextQCardContent.append(nextQTitle, nextQSubtitle, nextQPreview);
 
-        if (nextQWeather || ao?.latitude) {
+        if (weatherCacheKey) {
             nextQCardContent.appendChild(nextQWeatherLine);
         }
 
