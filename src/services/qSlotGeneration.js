@@ -2,9 +2,9 @@ import { insertQSlot } from "./cloudData.js";
 import { state } from "../modules/state.js";
 import { formatDateForInput } from "../utils/date.js";
 
-const DEFAULT_DAYS_AHEAD = 84;
+export const Q_SLOT_GENERATION_DAYS = 365;
 
-export function buildMissingQSlots(aos, existingQSlots, daysAhead = DEFAULT_DAYS_AHEAD) {
+export function buildMissingQSlots(aos, existingQSlots, daysAhead = Q_SLOT_GENERATION_DAYS) {
     const activeAos = aos.filter(ao => ao.isActive);
 
     const existingKeys = new Set(
@@ -43,7 +43,7 @@ export function buildMissingQSlots(aos, existingQSlots, daysAhead = DEFAULT_DAYS
     return newSlots;
 }
 
-export async function generateQSlotsForCurrentRegion(daysAhead = DEFAULT_DAYS_AHEAD) {
+export async function generateQSlotsForCurrentRegion(daysAhead = Q_SLOT_GENERATION_DAYS) {
     const activeRegionId = state.currentRegionId;
     if (!activeRegionId) {
         throw new Error("No active region id");

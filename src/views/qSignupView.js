@@ -12,6 +12,8 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 
 export function renderQSignupView() {
+    const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
+
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -85,18 +87,29 @@ export function renderQSignupView() {
 
     if (state.currentUserRole === "admin") {
         generateButton = document.createElement("button");
-        generateButton.textContent = "Generate Next 12 Weeks";
+        generateButton.textContent = isGeneratingQSlots
+            ? "Generating..."
+            : "Generate Next 365 Days";
+        generateButton.disabled = isGeneratingQSlots;
+
         manageAosButton = document.createElement("button");
         manageAosButton.textContent = "Manage AOs";
 
         generateButton.addEventListener("click", async () => {
+            if (state.isGeneratingQSlots) return;
+
+            state.isGeneratingQSlots = true;
+            renderApp();
+
             try {
                 const result = await generateQSlotsForCurrentRegion();
                 showToast(`Created ${result.createdCount} Q Slots.`, "success");
-                renderApp();
             } catch (error) {
                 console.error("Failed to generate Q slots:", error);
                 showToast("Failed to generate Q slots.", "error");
+            } finally {
+                state.isGeneratingQSlots = false;
+                renderApp();
             }
         });
 
@@ -120,6 +133,32 @@ export function renderQSignupView() {
     if (addSlotButton) adminRow.appendChild(addSlotButton);
 
     const listContainer = document.createElement("div");
+
+    if (
+        state.currentUserRole === "admin" &&
+        !state.isGeneratingQSlots &&
+        !state.hasAutoHealedQSlots
+    ) {
+        state.hasAutoHealedQSlots = true;
+        state.isGeneratingQSlots = true;
+
+        generateQSlotsForCurrentRegion()
+            .then(result => {
+                if (result.createdCount > 0) {
+                    showToast(`Added ${result.createdCount} future Q slots.`, "success");
+                }
+            })
+            .catch(error => {
+                console.error("failed to auto-heal Q slots:", error);
+            })
+            .finally(() => {
+                state.isGeneratingQSlots = false;
+
+                if (state.currentView === "qSignup") {
+                    renderApp();
+                }
+            });
+    }
 
     function openAddSlotModal() {
         const overlay = document.createElement("div");
@@ -431,7 +470,46 @@ export function renderQSignupView() {
     }
 
     const today = getTodayDate();
-    const futureSlots = state.qSlots.filter(slot => slot.date >= today);
+
+    function getMonthKeyFromDateString(dateString) {
+        return dateString.slice(0, 7);
+    }
+
+    function getCurrentMonthKey() {
+        return getMonthKeyFromDateString(getTodayDate());
+    }
+
+    function getMonthLabel(monthKey) {
+        const [year, month] = monthKey.split("-").map(Number);
+        const date = new Date(year, month - 1, 1);
+
+        return date.toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric",
+        });
+    }
+
+    function shiftMonthKey(monthKey, offset) {
+        const [year, month] = monthKey.split("-").map(Number);
+        const date = new Date(year, month - 1 + offset, 1);
+
+        const nextYear = date.getFullYear();
+        const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+
+        return `${nextYear}-${nextMonth}`;
+    }
+
+    if (!state.qSignupMonth) {
+        state.qSignupMonth = getCurrentMonthKey();
+    }
+
+    const selectedMonth = state.qSignupMonth || getCurrentMonthKey();
+    const isCurrentMonth = selectedMonth === getCurrentMonthKey();
+
+    const futureSlots = state.qSlots.filter(slot =>
+        slot.date >= today &&
+        getMonthKeyFromDateString(slot.date) === selectedMonth
+    );
 
     const aoFilteredSlots = state.qSignupAoFilter === "all"
         ? futureSlots
@@ -636,6 +714,38 @@ export function renderQSignupView() {
 
     const nav = createGlobalNav();
 
+    const monthNavRow = document.createElement("div");
+    monthNavRow.classList.add("q-signup-month-row");
+
+    const previousMonthButton = document.createElement("button");
+    previousMonthButton.classList.add("month-nav-button");
+    previousMonthButton.textContent = "←";
+    previousMonthButton.disabled = isCurrentMonth;
+
+    previousMonthButton.addEventListener("click", () => {
+        state.qSignupMonth = shiftMonthKey(selectedMonth, -1);
+        renderApp();
+    });
+
+    const monthLabel = document.createElement("div");
+    monthLabel.classList.add("q-signup-month-label");
+    monthLabel.textContent = getMonthLabel(selectedMonth);
+
+    const nextMonthButton = document.createElement("button");
+    nextMonthButton.classList.add("month-nav-button");
+    nextMonthButton.textContent = "→";
+
+    nextMonthButton.addEventListener("click", () => {
+        state.qSignupMonth = shiftMonthKey(selectedMonth, 1);
+        renderApp();
+    });
+
+    monthNavRow.append(
+        previousMonthButton,
+        monthLabel,
+        nextMonthButton,
+    );
+
     const controlsRow = document.createElement("div");
     controlsRow.classList.add("q-signup-controls-row");
     controlsRow.append(aoFilterSelect, openOnlyWrap);
@@ -644,6 +754,7 @@ export function renderQSignupView() {
         title,
         subtitle,
         ...(adminRow.children.length ? [adminRow] : []),
+        monthNavRow,
         aoFilterLabel,
         controlsRow,
         listContainer,
