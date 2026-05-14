@@ -21,7 +21,7 @@ const backButton = document.createElement("button");
 backButton.classList.add("secondary-button");
 backButton.textContent = "← Back";
 backButton.addEventListener("click", () => {
-    goBack("dashboard");
+    goBack("adminSettings");
 })
 
 const actionRow = document.createElement("div");

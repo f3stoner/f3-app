@@ -16,7 +16,7 @@ export function renderAdminFlagsView() {
     backButton.classList.add("secondary-button");
 
     backButton.addEventListener("click", () => {
-        goBack("dashboard");
+        goBack("adminSettings");
     });
 
     const title = document.createElement("h1");

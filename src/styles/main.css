@@ -2316,3 +2316,29 @@ select:focus,
     opacity: 0.28;
     cursor: not-allowed;
 }
+
+.admin-hub-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.admin-hub-card {
+    width: 100%;
+    margin: 0;
+    padding: 1rem;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-hub-card .member-name {
+    margin-bottom: 0.25rem;
+}
+
+.admin-hub-card .stats-line {
+    line-height: 1.35;
+}

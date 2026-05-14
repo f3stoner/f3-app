@@ -175,7 +175,7 @@ export function renderStalePaxView() {
     backButton.textContent = "← Back";
     backButton.classList.add("secondary-button");
     backButton.addEventListener("click", () => {
-        goBack("dashboard");
+        goBack("adminSettings");
     });
 
     const nav = createGlobalNav();

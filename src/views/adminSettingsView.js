@@ -1,10 +1,11 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { goBack } from "../utils/navigation.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 import { getWorkoutFieldLabels } from "../utils/workoutLabels.js";
 import { showToast } from "../utils/toast.js";
 import { updateRegionWorkoutFieldLabels } from "../services/cloudData.js";
+import { createElement } from "lucide";
 
 export function renderAdminSettingsView() {
     const app = document.getElementById("app");
@@ -13,7 +14,7 @@ export function renderAdminSettingsView() {
     const labels = getWorkoutFieldLabels(state) || {};
 
     const title = document.createElement("h1");
-    title.textContent = "Admin Settings";
+    title.textContent = "Admin";
 
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
@@ -26,8 +27,45 @@ export function renderAdminSettingsView() {
     header.classList.add("view-header");
     header.append(backButton, title);
 
+    function createAdminCard(titleText, subtitleText, view) {
+        const card = document.createElement("button");
+        card.classList.add("admin-hub-card");
+
+        const title = document.createElement("div");
+        title.classList.add("member-name");
+        title.textContent = titleText;
+
+        const subtitle = document.createElement("div");
+        subtitle.classList.add("stats-line");
+        subtitle.textContent = subtitleText;
+
+        card.append(title, subtitle);
+
+        card.addEventListener("click", () => {
+            navigateTo(view);
+        });
+
+        return card;
+    }
+
+    const adminHubGrid = document.createElement("div");
+    adminHubGrid.classList.add("admin-hub-grid");
+
+    const openFlagsCount = (state.adminFlags || [])
+        .filter(flag => flag.status === "open").length;
+
+    adminHubGrid.append(
+        createAdminCard("Manage AOs", "Create, edit, and activate workout locations.", "aoManagement"),
+        createAdminCard("Admin Flags", `${openFlagsCount} open issue${openFlagsCount === 1 ? "" : "s"} to review.`, "adminFlags"),
+        createAdminCard("Review Stale PAX", "Find inactive or outdated roster records.", "stalePax")
+    );
+
     const sectionTitle = document.createElement("h2");
-    sectionTitle.textContent = "Workout Field Labels";
+    sectionTitle.textContent = "Region Settings";
+
+    const labelsHeading = document.createElement("div");
+    labelsHeading.classList.add("detail-label");
+    labelsHeading.textContent = "Workout Field Labels";
 
     function createLabelInput(key, fallbackLabel) {
         const label = document.createElement("div");
@@ -88,7 +126,9 @@ export function renderAdminSettingsView() {
 
     app.append(
         header,
+        adminHubGrid,
         sectionTitle,
+        labelsHeading,
 
         intro.label,
         intro.input,

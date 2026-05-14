@@ -587,12 +587,21 @@ export function renderDashboard() {
         navigateTo("templateHub");
     });
 
+    const adminButton = document.createElement("button");
+    adminButton.classList.add("quick-access-card");
+    adminButton.textContent = "Admin";
+
+    adminButton.addEventListener("click", () => {
+        navigateTo("adminSettings");
+    });
+
     quickAccessRow.append(
-        workoutLibraryButton,
         qSignupButton,
+        workoutLibraryButton,
         weeklyQButton,
-        rosterButton,
         templatesButton,
+        rosterButton,
+        ...(isAdmin ? [adminButton] : [])
 );
 
     function renderMyUpcomingQs() {
@@ -1023,13 +1032,15 @@ export function renderDashboard() {
         userRow,
         //notificationRow,
         ...(nextQSection ? [nextQSection] : []),
+        myUpcomingQsSection,
+        quickAccessHeading,
+        quickAccessRow,
         ...(myStatsSection ? [myStatsSection] : []),
-        quickAccessHeading, 
-        quickAccessRow, 
-        myUpcomingQsSection);
+        recentSessionsSection,
+        nav
+    );
 
-    if (isAdmin) {
+   /* if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput, testNotificationButton);
-    }
-    app.append(recentSessionsSection, nav);
+    }*/
 }
