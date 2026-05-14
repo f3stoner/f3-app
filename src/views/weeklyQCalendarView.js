@@ -67,6 +67,48 @@ function getWeatherCacheKey(date, ao) {
     return `${ao.id}__${targetDateTime}`;
 }
 
+function renderWeeklyWeatherRow(weatherRow, weather) {
+    weatherRow.textContent = "";
+
+    if (!weather) {
+        weatherRow.textContent = "Loading weather...";
+        return;
+    }
+
+    if (weather.isLoading) {
+        weatherRow.textContent = "Loading weather...";
+        return;
+    }
+
+    if (weather.weatherUnavailable) {
+        weatherRow.textContent = "Weather unavailable";
+        return;
+    }
+
+    const weatherIcon = createWeatherIcon(weather.icon, {
+        size: 12,
+        className: "weekly-q-weather-icon",
+    });
+
+    const weatherText = document.createElement("span");
+    weatherText.textContent = `${weather.temp}° · ${weather.precipChance}%`;
+
+    weatherRow.append(weatherIcon, weatherText);
+}
+
+function patchWeeklyWeather(cacheKey) {
+    const weatherRow = document.querySelector(
+        `[data-weekly-weather-key="${cacheKey}"]`
+    );
+
+    if (!weatherRow) return;
+
+    renderWeeklyWeatherRow(
+        weatherRow,
+        state.weatherByAoDate?.[cacheKey]
+    );
+}
+
 async function loadWeeklyWeather(date, ao) {
     const targetDateTime = getWeatherTargetDateTime(date, ao);
     const cacheKey = getWeatherCacheKey(date, ao);
@@ -85,12 +127,21 @@ async function loadWeeklyWeather(date, ao) {
         isLoading: true,
     };
 
-    const weather = await getAoWeather(ao.id, targetDateTime);
+    patchWeeklyWeather(cacheKey);
 
-    state.weatherByAoDate[cacheKey] = weather;
+    try {
+        const weather = await getAoWeather(ao.id, targetDateTime);
+        state.weatherByAoDate[cacheKey] = weather;
+    } catch (error) {
+        console.error("Failed to load weekly weather:", error);
+
+        state.weatherByAoDate[cacheKey] = {
+            weatherUnavailable: true,
+        };
+    }
 
     if (state.currentView === "weeklyQCalendar") {
-        renderApp();
+        patchWeeklyWeather(cacheKey);
     }
 }
 
@@ -259,22 +310,13 @@ export function renderWeeklyQCalendarView() {
                     metaLine
                 );
 
-                if (weather && !weather.isLoading && !weather.weatherUnavailable) {
+                if (weatherCacheKey) {
                     const weatherRow = document.createElement("div");
                     weatherRow.classList.add("weekly-q-weather");
+                    weatherRow.dataset.weeklyWeatherKey = weatherCacheKey;
 
-                    const weatherIcon = createWeatherIcon(weather.icon, {
-                        size: 12,
-                        className: "weekly-q-weather-icon",
-                    });
-
-                    const weatherText = document.createElement("span");
-
-                    weatherText.textContent =
-                        `${weather.temp}° · ${weather.precipChance}%`;
-
-                    weatherRow.append(weatherIcon, weatherText);
-
+                    renderWeeklyWeatherRow(weatherRow, weather);
+                    
                     slotMain.appendChild(weatherRow);
                 }
 
