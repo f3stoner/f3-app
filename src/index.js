@@ -36,6 +36,7 @@ import { logActionFailure, logAppEvent } from "./services/appEvents.js";
 import { renderTemplateHubView } from "./views/templateHubView.js";
 import { APP_EVENTS } from "./constants/appEvents.js";
 import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
+import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -241,6 +242,28 @@ function hideBootSplash() {
     setTimeout(() => splash.remove(), 220);
 }
 
+function autoHealQSlotsForAdmin() {
+    if (state.currentUserRole !== "admin") return;
+    if (state.isGeneratingQSlots) return;
+    if (state.autoHealedQSlotsRegionId === state.currentRegionId) return;
+    if (!state.currentRegionId) return;
+
+    state.autoHealedQSlotsRegionId = state.currentRegionId;
+    state.isGeneratingQSlots = true;
+
+    generateQSlotsForCurrentRegion()
+        .catch(error => {
+            console.error("Failed to auto-heal Q slots:", error);
+        })
+        .finally(() => {
+            state.isGeneratingQSlots = false;
+
+            if (state.currentView !== "auth" && state.currentView !== "regionGate") {
+                renderApp();
+            }
+        });
+}
+
 async function loadActiveRegionData(profileRegionId) {
     const activeRegionId = profileRegionId;
 
@@ -258,6 +281,9 @@ async function loadActiveRegionData(profileRegionId) {
     const cloudData = await loadRegionData(activeRegionId);
     replacePersistedData(cloudData);
     state.currentRegionId = activeRegionId;
+
+    autoHealQSlotsForAdmin();
+
     return true;
 }
 

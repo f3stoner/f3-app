@@ -134,32 +134,6 @@ export function renderQSignupView() {
 
     const listContainer = document.createElement("div");
 
-    if (
-        state.currentUserRole === "admin" &&
-        !state.isGeneratingQSlots &&
-        !state.hasAutoHealedQSlots
-    ) {
-        state.hasAutoHealedQSlots = true;
-        state.isGeneratingQSlots = true;
-
-        generateQSlotsForCurrentRegion()
-            .then(result => {
-                if (result.createdCount > 0) {
-                    showToast(`Added ${result.createdCount} future Q slots.`, "success");
-                }
-            })
-            .catch(error => {
-                console.error("failed to auto-heal Q slots:", error);
-            })
-            .finally(() => {
-                state.isGeneratingQSlots = false;
-
-                if (state.currentView === "qSignup") {
-                    renderApp();
-                }
-            });
-    }
-
     function openAddSlotModal() {
         const overlay = document.createElement("div");
         overlay.classList.add("modal-overlay");
