@@ -120,15 +120,13 @@ export function renderBackblastView () {
     
         const maxHeight = textarea === templateTextArea
             ? 160
-            : 1000;
+            : Math.floor(window.innerHeight * 0.65);
     
         textarea.style.height =
             Math.min(textarea.scrollHeight, maxHeight) + "px";
     
-        textarea.style.overflowY =
-            textarea.scrollHeight > maxHeight
-                ? "auto"
-                : "hidden";
+        textarea.style.overflowY = auto;
+        textarea.style.webkitOverflowScrolling = "touch";
     }
 
     autoResize(textArea);

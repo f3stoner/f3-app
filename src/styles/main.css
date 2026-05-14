@@ -1019,6 +1019,7 @@ select:focus,
 .preblast-textarea {
     width: 100%;
     min-height: 400px;
+    max-height: 70vh;
     padding: 14px;
     border: 1px solid var(--border-strong);
     border-radius: 10px;
@@ -1028,7 +1029,12 @@ select:focus,
     box-sizing: border-box;
     outline: none;
     background: var(--surface);
+    color: var(--text);
     font-size: 15px;
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .preblast-textarea:focus {
