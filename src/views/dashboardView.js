@@ -17,8 +17,19 @@ import { unclaimQSlot } from "../services/qSlots.js";
 import { getMemberStats } from "../modules/stats.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
+import { buildRegionInsights } from "../modules/insights.js";
 
 export function renderDashboard() {
+const insights = buildRegionInsights({
+    sessions: state.sessions,
+    members: state.members,
+    startDate: "2026-04-01",
+    endDate: "2026-04-30",
+});
+
+console.log("REGION INSIGHTS:", insights);
+console.table(insights.summary);
+
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -447,6 +458,18 @@ export function renderDashboard() {
                 event.stopPropagation();
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = "execution";
+
+                logAppEvent({                
+                    type: APP_EVENTS.EXECUTION_STARTED,
+
+                    metadata: {
+                        plannedWorkoutId: matchingWorkout.id,
+                        source: "dashboard_next_q",
+                        aoName: matchingWorkout.aoName || null,
+                        workoutDate: matchingWorkout.date || null,
+                    },
+                });
+                
                 navigateTo("plannedWorkoutDetail");
             });
         } else {
@@ -598,13 +621,22 @@ export function renderDashboard() {
         navigateTo("adminSettings");
     });
 
+    const insightsButton = document.createElement("button");
+    insightsButton.classList.add("quick-access-card");
+    insightsButton.textContent = "Region Insights";
+
+    insightsButton.addEventListener("click", () => {
+        navigateTo("regionInsights");
+    });
+
     quickAccessRow.append(
         qSignupButton,
         workoutLibraryButton,
         weeklyQButton,
         templatesButton,
         rosterButton,
-        ...(isAdmin ? [adminButton] : [])
+        ...(isAdmin ? [adminButton] : []),
+        ...(isAdmin ? [insightsButton] : []),
 );
 
     function renderMyUpcomingQs() {

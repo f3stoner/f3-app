@@ -37,6 +37,7 @@ import { renderTemplateHubView } from "./views/templateHubView.js";
 import { APP_EVENTS } from "./constants/appEvents.js";
 import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
 import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
+import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -73,6 +74,7 @@ const RESTORABLE_VIEWS = new Set([
     "qSignup",
     "session",
     "adminSettings",
+    "regionInsights",
 ]);
 
 function restoreNavState(nav) {
@@ -224,6 +226,8 @@ function renderApp() {
         renderTemplateHubView();
     } else if (state.currentView === "weeklyQCalendar") {
         renderWeeklyQCalendarView();
+    } else if (state.currentView === "regionInsights") {
+        renderRegionInsightsView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 
