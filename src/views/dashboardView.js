@@ -358,10 +358,10 @@ export function renderDashboard() {
 
         const nextQHeading = document.createElement("div");
         nextQHeading.classList.add("detail-label");
-        nextQHeading.textContent = "Your Next Q";
+        nextQHeading.textContent = "My Next Q";
 
         const nextQCard = document.createElement("div");
-        nextQCard.classList.add("member-card");
+        nextQCard.classList.add("member-card", "dashboard-next-q-card");
 
         const nextQCardContent = document.createElement("div");
 
@@ -541,7 +541,7 @@ export function renderDashboard() {
     }
 
     const quickAccessHeading = document.createElement("div");
-    quickAccessHeading.textContent = "Quick Access";
+    quickAccessHeading.textContent = "Plan & Manage";
     quickAccessHeading.classList.add("detail-label");
 
     const quickAccessRow = document.createElement("div");
@@ -611,7 +611,7 @@ export function renderDashboard() {
         section.classList.add("section");
 
         const heading = document.createElement("div");
-        heading.textContent = "My Upcoming Qs";
+        heading.textContent = "My Qs";
         heading.classList.add("detail-label");
         section.appendChild(heading); 
 
@@ -678,12 +678,18 @@ export function renderDashboard() {
             title.textContent = `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
 
             const status = document.createElement("div");
-            status.classList.add("stats-line");
-            status.textContent = hasPlannedWorkout ? "BD Ready" : "No workout planned";
+            status.classList.add(
+                "dashboard-status-pill",
+                hasPlannedWorkout ? "status-ready" : "status-needs"
+            );
+            status.textContent = hasPlannedWorkout ? "BD Ready" : "Needs BD";
 
             const rowText = document.createElement("div");
             rowText.classList.add("upcoming-q-row-text");
-            rowText.append(title, status);
+            rowText.append(title);
+
+            const rowActions = document.createElement("div");
+            rowActions.classList.add("upcoming-q-row-actions");
 
             const unclaimButton = document.createElement("button");
             unclaimButton.classList.add("secondary-button", "small-action-button");
@@ -699,7 +705,8 @@ export function renderDashboard() {
                 }
             });
 
-            row.append(rowText, unclaimButton);
+            rowActions.append(status, unclaimButton);
+            row.append(rowText, rowActions);
 
             section.appendChild(row);
         });
@@ -726,7 +733,7 @@ export function renderDashboard() {
         heading.textContent = "My Stats";
 
         const card = document.createElement("div");
-        card.classList.add("member-card");
+        card.classList.add("member-card", "dashboard-stats-card");
 
         const grid = document.createElement("div");
         grid.classList.add("stats-grid");
@@ -812,7 +819,7 @@ export function renderDashboard() {
     if (sortedSessions.length === 0) {
         recentSessionList.textContent = "No recent activity.";
     } else {
-        sortedSessions.slice(0, 3).forEach((session) => {
+        sortedSessions.slice(0, 2).forEach((session) => {
             const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
             const qNames = effectiveQIds
@@ -822,7 +829,7 @@ export function renderDashboard() {
             
             const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
             const sessionDetail = document.createElement("div");
-            sessionDetail.classList.add("member-card", "session-history-card");
+            sessionDetail.classList.add("member-card", "session-history-card", "dashboard-activity-card");
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
@@ -870,7 +877,17 @@ export function renderDashboard() {
             })
 
             recentSessionList.appendChild(sessionDetail);
-        })
+        });
+
+        const viewAllActivityButton = document.createElement("button");
+        viewAllActivityButton.classList.add("secondary-button", "view-all-activity-button");
+        viewAllActivityButton.textContent = "View All Activity";
+
+        viewAllActivityButton.addEventListener("click", () => {
+            navigateTo("sessionHistory");
+        });
+
+        recentSessionList.appendChild(viewAllActivityButton);
     }
     recentSessionsSection.append(recentSessionList);
 
