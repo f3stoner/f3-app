@@ -140,7 +140,9 @@ export function renderSessionHistory() {
             const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
             const isQ = effectiveQIds.includes(state.currentUserMemberId);
-            const isAttended = session.attendeeIds.includes(state.currentUserMemberId);
+            const isAttended = 
+                session.attendeeIds.includes(state.currentUserMemberId) &&
+                !isQ;
 
             if (state.sessionHistoryFilterType === "q" && !isQ) return false;
             if (state.sessionHistoryFilterType === "attended" && !isAttended) return false;

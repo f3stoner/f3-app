@@ -2454,3 +2454,17 @@ select:focus,
     font-size: 0.9rem;
     text-decoration: none;
 }
+
+.clickable-stat-tile {
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.clickable-stat-tile:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--border-strong);
+}
+
+.clickable-stat-tile:active {
+    transform: scale(0.98);
+}

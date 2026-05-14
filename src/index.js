@@ -333,6 +333,7 @@ async function bootApp() {
         state.regionOverrideId = null;
         state.currentUserMemberId = profile.member_id || null;
         state.customTemplates = profile.custom_templates || state.customTemplates;
+        state.hasInitializedQSignupFilter = false;
 
         const [dbNotificationSettings, regions] = await Promise.all([
             getNotificationSettings(state.currentUserId),

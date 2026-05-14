@@ -78,6 +78,8 @@ export function renderDashboard() {
             state.editingSessionId = null;
             state.selectedSessionId = null;
             state.plannedWorkoutLaunchMode = null;
+            state.qSignupAoFilter = null;
+            state.hasInitializedQSignupFilter = false;
 
             localStorage.removeItem("draftPlannedWorkout");
             
@@ -739,21 +741,23 @@ export function renderDashboard() {
         grid.classList.add("stats-grid");
 
         const statItems = [
-            { label: "Posts", value: stats.posts, icon: "posts" },
-            { label: "Qs Led", value: stats.qs, icon: "qs" },
+            { label: "Posts", value: stats.posts, icon: "posts", action: "posts" },
+            { label: "Qs Led", value: stats.qs, icon: "qs", action: "qs" },
             { label: "FNGs EH'd", value: stats.fngsEh, icon: "fngsEh" },
-            { label: "Favorite AO", value: stats.favoriteAo || "-", icon: "favoriteAo" },
+            { label: "Favorite AO", value: stats.favoriteAo || "-", icon: "favoriteAo", action:"favoriteAo" },
             { 
                 label: "Last Post",
                 value: stats.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "-",
                 type: "date",
-                icon: "lastPost"
+                icon: "lastPost",
+                action: "lastPost"
             },
             { 
-                label: "FNG Date",
+                label: "First Post",
                 value: stats.firstPostDate ? formatMonthDayYear(stats.firstPostDate) : "-",
                 type: "date",
-                icon: "fngDate"
+                icon: "fngDate",
+                action: "firstPost"
             },
         ];
 
@@ -780,6 +784,70 @@ export function renderDashboard() {
 
             text.append(value, label);
             tile.append(icon, text);
+
+            if (item.action === "posts") {
+                tile.classList.add("clickable-stat-tile");
+
+                tile.addEventListener("click", () => {
+                    state.sessionHistoryFilterType = "attended";
+                    state.sessionHistoryAoFilter = "";
+                    state.sessionHistorySearchTerm = "";
+                    navigateTo("sessionHistory");
+                });
+            }
+
+            if (item.action === "qs") {
+                tile.classList.add("clickable-stat-tile");
+
+                tile.addEventListener("click", () => {
+                    state.sessionHistoryFilterType = "q";
+                    state.sessionHistoryAoFilter = "";
+                    state.sessionHistorySearchTerm = "";
+                    navigateTo("sessionHistory");
+                });
+            }
+
+            if (item.action === "favoriteAo") {
+                tile.classList.add("clickable-stat-tile");
+                
+                tile.addEventListener("click", () => {
+                    state.sessionHistoryFilterType = "all";
+                    state.sessionHistoryAoFilter = stats.favoriteAo || "";
+                    state.sessionHistorySearchTerm = "";
+                    navigateTo("sessionHistory");
+                });
+            }
+
+            if (item.action === "lastPost") {
+                tile.classList.add("clickable-state-tile");
+
+                tile.addEventListener("click", () => {
+                    const session = [...state.sessions]
+                        .filter(session => session.attendeeIds?.includes(memberId))
+                        .sort((a, b) => b.date.localeCompare(a.date))[0];
+
+                    if (!session) return;
+
+                    state.selectedSessionId = session.id;
+                    navigateTo("sessionDetail");
+                });
+            }
+
+            if (item.action === "firstPost") {
+                tile.classList.add("clickable-stat-tile");
+
+                tile.addEventListener("click", () => {
+                const session = [...state.sessions]
+                    .filter(session => session.attendeeIds?.includes(memberId))
+                    .sort((a, b) => a.date.localeCompare(b.date))[0];
+
+                    if (!session) return;
+
+                    state.selectedSessionId = session.id;
+                    navigateTo("sessionDetail");
+                });
+            }
+
             grid.append(tile);
         });
 

@@ -56,8 +56,9 @@ export function renderQSignupView() {
         aoFilterSelect.appendChild(option);
     });
 
-    if (!state.qSignupAoFilter) {
+    if (!state.hasInitializedQSignupFilter) {
         state.qSignupAoFilter = homeAo ? homeAo.id : "all";
+        state.hasInitializedQSignupFilter = true;
     }
 
     aoFilterSelect.value = state.qSignupAoFilter || "";
