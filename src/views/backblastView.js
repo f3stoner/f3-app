@@ -124,9 +124,6 @@ export function renderBackblastView () {
     
         textarea.style.height =
             Math.min(textarea.scrollHeight, maxHeight) + "px";
-    
-        textarea.style.overflowY = auto;
-        textarea.style.webkitOverflowScrolling = "touch";
     }
 
     autoResize(textArea);
