@@ -480,6 +480,7 @@ export function renderDashboard() {
                     state.draftPreblastText = generatePreblast(fallbackWorkout, state.aos);
                 }
 
+                state.hasAddedPreblastForecast = false;
                 state.currentView = "preblast";
                 renderApp();
             });

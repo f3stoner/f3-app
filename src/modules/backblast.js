@@ -17,6 +17,22 @@ function applyBackblastTemplate(template, values) {
         .trim();
 }
 
+function buildConditionsLine(weather) {
+    if (!weather) return null;
+
+    const rainLabel =
+        typeof weather.precipChance === "number"
+            ? `${weather.precipChance}% rain`
+            : "rain chance unavailable";
+
+    const windLabel =
+        typeof weather.windMph === "number"
+            ? `${weather.windMph} mph wind`
+            : "wind unavailable";
+
+    return `Conditions: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}.`;
+}
+
 export function generateBackblast (session, members) {
     const attendeeIds = session.attendeeIds || [];
     const fngs = session.fngs || [];
@@ -89,7 +105,7 @@ export function generateBackblast (session, members) {
         {
             paxCount: String(totalAttendees),
             aoName: session.aoName || "",
-            date: formatDate,
+            date: formattedDate,
             qName: qNamePlain,
         }
     );
@@ -144,6 +160,7 @@ export function generateBackblast (session, members) {
         backblastIntro ? "" : null,
         `AO: ${session.aoName}`,
         `Date: ${formattedDate}`,
+        buildConditionsLine(session.weatherSnapshot),
         "",
         `Total Attendees: ${totalAttendees}`,
         "",

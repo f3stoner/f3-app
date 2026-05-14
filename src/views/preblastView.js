@@ -4,6 +4,7 @@ import { showToast } from "../utils/toast.js";
 import { logActionFailure } from "../services/appEvents.js";
 import { ensureCustomTemplates } from "../utils/customTemplates.js";
 import { navigateTo } from "../utils/navigation.js";
+import { getAoWeather } from "../services/weather.js";
 
 export function renderPreblastView() {
     const app = document.getElementById("app");
@@ -23,6 +24,26 @@ export function renderPreblastView() {
     textInput.addEventListener("input", (event) => {
         state.draftPreblastText = event.target.value;
     });
+
+    const preblastWorkout = getPreblastWorkout();
+    const preblastAo = state.aos.find(ao => ao.name === preblastWorkout?.aoName);
+    const targetDateTime = getTargetDateTime(preblastWorkout, preblastAo);
+
+    if (preblastAo?.id && targetDateTime && !state.hasAddedPreblastForecast) {
+        state.hasAddedPreblastForecast = true;
+
+        upsertForecastLine();
+
+        getAoWeather(preblastAo.id, targetDateTime)
+            .then(weather => {
+                const forecastLine = buildForecastLine(weather);
+                upsertForecastLine(forecastLine);
+            })
+            .catch(error => {
+                console.error("Failed to load preblast forecast:", error);
+                upsertForecastLine("Forecast: weather unavailable.");
+            });
+    }
 
     state.customTemplates = ensureCustomTemplates(state.customTemplates);
 
@@ -70,6 +91,53 @@ export function renderPreblastView() {
     });
 
     templateButtonRow.append(templateSelect, manageTemplateButton);
+
+    function getPreblastWorkout() {
+        return state.plannedWorkouts.find(
+            workout => workout.id === state.selectedPreblastWorkoutId
+        );
+    }
+
+    function getTargetDateTime(workout, ao) {
+        if (!workout?.date || !ao?.time) return null;
+        return `${workout.date}T${ao.time}:00`;
+    }
+
+    function buildForecastLine(weather) {
+        if (!weather || weather.weatherUnavailable) {
+            return "Forecast: weather unavailable.";
+        };
+
+        const rainLabel = 
+            typeof weather.precipChance === "number"
+                ? `${weather.precipChance}% rain`
+                : "rain chance unavailable";
+
+        const windLabel =
+            typeof weather.windMph === "number"
+                ? `${weather.windMph} mph wind`
+                : "wind unavailable";
+
+        return `Forecast: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}.`;
+    }
+
+    function upsertForecastLine(forecastLine = "Forecast: checking conditions...") {
+        const currentText = state.draftPreblastText || "";
+
+        let nextText;
+
+        if (/^Forecast:.*$/im.test(currentText)) {
+            nextText = currentText.replace(/^Forecast:.*$/im, forecastLine);
+        } else {
+            nextText = currentText.replace(
+                /What to bring: Water/i,
+                `${forecastLine}\n\nWhat to bring: Water`
+            );
+        }
+
+        state.draftPreblastText = nextText;
+        textInput.value = nextText;
+    }
 
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");

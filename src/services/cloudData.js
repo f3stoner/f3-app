@@ -166,6 +166,7 @@ export function mapSessionFromDb(row) {
         createdByUserId: row.created_by_user_id || null,
         backblastText: row.backblast_text || "",
         unresolvedPax: row.unresolved_pax || [],
+        weatherSnapshot: row.weather_snapshot || null,
     };
 }
 
@@ -297,6 +298,7 @@ export async function insertSession(regionId, session) {
                 created_by_user_id: session.createdByUserId,
                 backblast_text: session.backblastText || "",
                 unresolved_pax: session.unresolvedPax || [],
+                weather_snapshot: session.weatherSnapshot || null,
             },
         ])
         .select()
@@ -339,6 +341,7 @@ export async function updateSessionInCloud(regionId, session) {
             created_at: session.createdAt,
             backblast_text: session.backblastText || "",
             unresolved_pax: session.unresolvedPax || [],
+            weather_snapshot: session.weatherSnapshot || null,
         })
         .eq("id", session.id)
         .select()

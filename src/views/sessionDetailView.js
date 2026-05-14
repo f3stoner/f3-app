@@ -77,7 +77,32 @@ export function renderSessionDetail() {
     summaryQ.classList.add("stats-line", "q-line");
     summaryQ.textContent = `Q: ${qLabel}`;
 
-    summaryCard.append(summaryTitle, summaryMeta, summaryQ);
+    const summaryWeather = document.createElement("div");
+    summaryWeather.classList.add("stats-line");
+
+    if (session.weatherSnapshot) {
+        const weather = session.weatherSnapshot;
+
+        const rainLabel =
+            typeof weather.precipChance === "number"
+                ? `${weather.precipChance}% rain`
+                : "rain chance unavailable";
+
+        const windLabel =
+            typeof weather.windMph === "number"
+                ? `${weather.windMph} mph wind`
+                : "wind unavailable";
+
+        summaryWeather.textContent =
+            `Conditions: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}`;
+    }
+
+    summaryCard.append(
+        summaryTitle,
+        summaryMeta,
+        summaryQ,
+        ...(session.weatherSnapshot ? [summaryWeather] : [])
+    );
 
     function createDetailSection (labelText, valueText) {
         const section = document.createElement("div");
@@ -250,6 +275,7 @@ export function renderSessionDetail() {
             generateBackblast(session, state.members);
 
         state.draftBackblastMediaFiles = [];
+        state.hasAddedBackblastWeather = false;
 
         logAppEvent({
             type: APP_EVENTS.BACKBLAST_GENERATED,

@@ -13,6 +13,7 @@ import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
 import { addAdminFlags } from "../services/appData.js";
 import { logSaveFailure } from "../services/appEvents.js";
+import { getAoWeather } from "../services/weather.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -614,6 +615,38 @@ function findPotentialDuplicateSession(session) {
     ) || null;
 }
 
+async function attachWeatherSnapshot(session) {
+    const ao = state.aos.find(a => a.name === session.aoName);
+
+    if (!ao?.id || !ao?.time || !session.date) {
+        return session;
+    }
+
+    try {
+        const targetDateTime = `${session.date}T${ao.time}:00`;
+        const weather = await getAoWeather(ao.id, targetDateTime);
+
+        if (!weather || weather.weatherUnavailable) {
+            return session;
+        }
+
+        return {
+            ...session,
+            weatherSnapshot: {
+                temp: weather.temp ?? null,
+                condition: weather.condition ?? null,
+                precipChance: weather.precipChance ?? null,
+                windMph: weather.windMph ?? null,
+                icon: weather.icon ?? null,
+                capturedAt: new Date().toISOString(),
+            },
+        };
+    } catch (error) {
+        console.error("Failed to capture session weather:", error);
+        return session;
+    }
+}
+
 const saveButton = document.createElement("button");
 saveButton.textContent = "Save";
 saveButton.addEventListener("click", async () => {
@@ -674,7 +707,8 @@ try {
             ...draftSession,
             createdByUserId: state.currentUserId,
         };
-        savedSession = await addSession(sessionToCreate);
+        const sessionWithWeather = await attachWeatherSnapshot(sessionToCreate);
+        savedSession = await addSession(sessionWithWeather);
     }
 
     const flags = createDuplicateFngNameFlags(
@@ -711,6 +745,7 @@ try {
             generateBackblast(sessionForBackblast, state.members);
 
         state.draftBackblastMediaFiles = [];
+        state.hasAddedBackblastWeather = false;
         state.currentView = "backblast";
         renderApp();
     }

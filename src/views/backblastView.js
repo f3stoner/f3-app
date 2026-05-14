@@ -18,6 +18,7 @@ export function renderBackblastView () {
         state.draftBackblastText = generateBackblast(session, state.members);
     }
 
+
     const title = document.createElement("h1");
     title.textContent = "Backblast";
 
@@ -290,6 +291,7 @@ export function renderBackblastView () {
 
         state.draftBackblastMediaFiles = [];
         state.draftBackblastText = "";
+        state.hasAddedBackblastWeather = false;
         state.currentView = "sessionDetail";
         renderApp();
     });
@@ -308,6 +310,7 @@ export function renderBackblastView () {
             return;
         }
         session.backblastText = "";
+        state.hasAddedBackblastWeather = false;
         state.draftBackblastText = generateBackblast(session, state.members);
         renderApp();
     });

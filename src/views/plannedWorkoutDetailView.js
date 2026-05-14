@@ -708,6 +708,7 @@ export function renderPlannedWorkoutDetail() {
             },
         });
 
+        state.hasAddedPreblastForecast = false;
         state.currentView = "preblast";
         renderApp();
     });
