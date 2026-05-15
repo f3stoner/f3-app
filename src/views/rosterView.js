@@ -67,6 +67,108 @@ function renderRosterList(rosterContainer, members) {
 
 }
 
+function memberMatchesRosterFilter(member) {
+  if (!state.rosterFilter) return true;
+
+  if (state.rosterFilter.type === "active-pax") {
+    return state.sessions.some(session => {
+      const isInRange =
+        session.date >= state.rosterFilter.startDate &&
+        session.date <= state.rosterFilter.endDate;
+
+        const attended =
+          Array.isArray(session.attendeeIds) &&
+          session.attendeeIds.includes(member.id);
+
+        return isInRange && attended;
+    });
+  }
+
+  if (state.rosterFilter.type === "active-qs") {
+    return state.sessions.some(session => {
+      const isInRange =
+        session.date >= state.rosterFilter.startDate &&
+        session.date <= state.rosterFilter.endDate;
+
+      const qIds = Array.isArray(session.qIds)
+       ? session.qIds
+       : session.qId
+        ? [session.qId]
+        : [];
+
+      return isInRange && qIds.includes(member.id);
+    });
+  }
+
+  if (state.rosterFilter.type === "posting-frequency") {
+    const posts = state.sessions.filter(session => {
+      const isInRange =
+          session.date >= state.rosterFilter.startDate &&
+          session.date <= state.rosterFilter.endDate;
+      const attended =
+          Array.isArray(session.attendeeIds) &&
+          session.attendeeIds.includes(member.id);
+      return isInRange && attended;
+  }).length;
+
+    switch (state.rosterFilter.bucket) {
+      case "1":
+      case "one":
+      case "1 Post":
+        return posts === 1;
+      case "2-4":
+      case "2-4 Posts":
+        return posts >= 2 && posts <= 4;
+      case "5-9":
+      case "5-9 Posts":
+        return posts >= 5 && posts <= 9;
+      case "10-19":
+      case "10-19 Posts":
+        return posts >= 10 && posts <= 19;
+      case "20+":
+      case "20+ Posts":
+      case "20-plus":
+        return posts >= 20;
+      default:
+        return true;
+    }
+  }
+
+  return true;
+}
+
+function getVisibleRosterMembers() {
+  const searchTerm = (state.rosterSearchTerm || "").trim().toLowerCase();
+
+  const filteredMembers = state.members.filter((member) => {
+    if (!memberMatchesRosterFilter(member)) return false;
+
+    if (!searchTerm) return true;
+
+    const displayName = getMemberDisplayName(member).toLowerCase();
+    const realName = (member.realName || "").toLowerCase();
+    const homeAo = (member.homeAo || "").toLowerCase();
+
+    return (
+      displayName.includes(searchTerm) ||
+      realName.includes(searchTerm) ||
+      homeAo.includes(searchTerm)
+    );
+  });
+
+  return [...filteredMembers].sort((a, b) => {
+    if (a.status !== b.status) {
+      if (a.status === "active") return -1;
+      if (b.status === "active") return 1;
+    }
+
+    const aName = getMemberDisplayName(a).toLowerCase();
+    const bName = getMemberDisplayName(b).toLowerCase();
+
+    return aName.localeCompare(bName);
+  });
+}
+
 export function renderRoster() {
   const app = document.getElementById("app");
   app.textContent = "";
@@ -84,67 +186,10 @@ export function renderRoster() {
 
   searchInput.addEventListener("input", (event) => {
     state.rosterSearchTerm = event.target.value;
-
-    const searchTerm = (state.rosterSearchTerm || "").trim().toLowerCase();
-
-  const filteredMembers = state.members.filter((member) => {
-    if (!searchTerm) return true;
-
-    const displayName = getMemberDisplayName(member).toLowerCase();
-    const realName = (member.realName || "").toLowerCase();
-    const homeAo = (member.homeAo || "").toLowerCase();
-
-    return (
-        displayName.includes(searchTerm) ||
-        realName.includes(searchTerm) ||
-        homeAo.includes(searchTerm)
-    );
+    renderRosterList(rosterContainer, getVisibleRosterMembers());
   });
 
-  const sortedMembers = [...filteredMembers].sort((a, b) => {
-    if (a.status !== b.status) {
-        if (a.status === "active") return -1;
-        if (b.status === "active") return 1;
-    }
-
-    const aName = getMemberDisplayName(a).toLowerCase();
-    const bName = getMemberDisplayName(b).toLowerCase();
-
-    return aName.localeCompare(bName);
-  });
-
-    renderRosterList(rosterContainer, sortedMembers);
-  });
-
-  const searchTerm = (state.rosterSearchTerm || "").trim().toLowerCase();
-
-  const filteredMembers = state.members.filter((member) => {
-    if (!searchTerm) return true;
-
-    const displayName = getMemberDisplayName(member).toLowerCase();
-    const realName = (member.realName || "").toLowerCase();
-    const homeAo = (member.homeAo || "").toLowerCase();
-
-    return (
-        displayName.includes(searchTerm) ||
-        realName.includes(searchTerm) ||
-        homeAo.includes(searchTerm)
-    );
-  });
-
-  const sortedMembers = [...filteredMembers].sort((a, b) => {
-    if (a.status !== b.status) {
-        if (a.status === "active") return -1;
-        if (b.status === "active") return 1;
-    }
-
-    const aName = getMemberDisplayName(a).toLowerCase();
-    const bName = getMemberDisplayName(b).toLowerCase();
-
-    return aName.localeCompare(bName);
-  });
-
-  renderRosterList(rosterContainer, sortedMembers);
+  renderRosterList(rosterContainer, getVisibleRosterMembers());
 
   const backButton = document.createElement("button");
   backButton.textContent = "Back to Dashboard";
@@ -155,5 +200,37 @@ export function renderRoster() {
 
   const nav = createGlobalNav();
 
-  app.append(title, searchInput, rosterContainer, backButton, nav);
+  let activeFilterNotice = null;
+
+  if (state.rosterFilter) {
+    activeFilterNotice = document.createElement("div");
+    activeFilterNotice.classList.add("section");
+
+    const filterText = document.createElement("div");
+    filterText.classList.add("detail-value");
+
+    if (state.rosterFilter.type === "posting-frequency") {
+      filterText.textContent = `Showing PAX in posting bucket: ${state.rosterFilter.label || state.rosterFilter.bucket}`;
+    } else {
+      filterText.textContent = state.rosterFilter.label;
+    }
+
+    const clearButton = document.createElement("button");
+    clearButton.classList.add("secondary-button");
+    clearButton.textContent = "Clear Filter";
+
+    clearButton.addEventListener("click", () => {
+      state.rosterFilter = null;
+      renderRoster();
+    });
+
+    activeFilterNotice.append(filterText, clearButton);
+  }
+
+  if (activeFilterNotice) {
+    app.append(title, activeFilterNotice, searchInput, rosterContainer, backButton, nav);
+  } else {
+    app.append(title, searchInput, rosterContainer, backButton, nav);
+  }
+
 }

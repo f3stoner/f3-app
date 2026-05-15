@@ -55,7 +55,7 @@ function getMonthLabel(monthKey) {
     });
 }
 
-function createMetricCard(label, value) {
+function createMetricCard(label, value, onClick) {
     const card = document.createElement("div");
     card.classList.add("stat-tile");
 
@@ -66,6 +66,11 @@ function createMetricCard(label, value) {
     const labelEl = document.createElement("div");
     labelEl.classList.add("stat-label");
     labelEl.textContent = label;
+
+    if (onClick) {
+        card.classList.add("clickable");
+        card.addEventListener("click", onClick);
+    }
 
     card.append(valueEl, labelEl);
 
@@ -128,7 +133,7 @@ function createExpandableListSection({
     return section;
 }
 
-function createInsightsRow({ title, subtitle, value }) {
+function createInsightsRow({ title, subtitle, value, onClick }) {
     const row = document.createElement("div");
     row.classList.add("insights-row");
 
@@ -148,6 +153,11 @@ function createInsightsRow({ title, subtitle, value }) {
     const valueEl = document.createElement("div");
     valueEl.classList.add("insights-row-value");
     valueEl.textContent = value;
+
+    if (onClick) {
+        row.classList.add("clickable");
+        row.addEventListener("click", onClick);
+    }
 
     row.append(left, valueEl);
 
@@ -186,11 +196,19 @@ function buildLeadershipSnapshot(insights) {
 
     const momentum = [];
 
-    if (topQs[0]) {
+    if (insights.summary.uniqueQs > 0) {
         momentum.push({
-            title: `${topQs[0].paxName} led Q count`,
-            subtitle: `${topQs[0].averageAttendance} avg attendance • ${topQs[0].fngsBrought} FNGs EH'd`,
-            value: topQs[0].qCount,
+            title: "Q leadership active",
+            subtitle: `${insights.summary.uniqueQs} different PAX led workouts this month`,
+            value: insights.summary.uniqueQs,
+        });
+    }
+
+    if (insights.summary.totalSessions > 0) {
+        momentum.push({
+            title: "Region activity logged",
+            subtitle: `${insights.summary.totalSessions} sessions captured this month`,
+            value: insights.summary.totalSessions,
         });
     }
 
@@ -458,8 +476,33 @@ export function renderRegionInsightsView() {
     overviewGrid.append(
         createMetricCard("Total Posts", snapshot.summary.totalAttendance),
         createMetricCard("Avg Attendance", snapshot.summary.averageAttendance),
-        createMetricCard("Active PAX", snapshot.summary.uniquePax),
-        createMetricCard("active Qs", snapshot.summary.uniqueQs),
+        createMetricCard(
+            "Active PAX",
+            snapshot.summary.uniquePax,
+            () => {
+                state.rosterFilter = {
+                    type: "active-pax",
+                    label: "Active PAX",
+                    startDate,
+                    endDate,
+                };
+                navigateTo("roster");
+            }
+        ),
+
+        createMetricCard(
+            "Active Qs",
+            snapshot.summary.uniqueQs,
+            () => {
+                state.rosterFilter = {
+                    type: "active-qs",
+                    label: "Active Qs",
+                    startDate,
+                    endDate,
+                };
+                navigateTo("roster");
+            }
+        ),
     );
 
     overviewSection.append(overviewHeading, overviewGrid);
@@ -484,6 +527,15 @@ export function renderRegionInsightsView() {
             title: ao.aoName,
             subtitle: `${ao.sessions} sessions • ${ao.averageAttendance} avg • ${ao.fngs} FNGs`,
             value: ao.attendance,
+            onClick: () => {
+                state.sessionHistoryAoFilter = {
+                    aoName: ao.aoName,
+                    startDate,
+                    endDate,
+                    label: ao.aoName,
+                };
+                navigateTo("sessionHistory");
+            },
         }),
     });
 
@@ -495,17 +547,31 @@ export function renderRegionInsightsView() {
             title: q.paxName,
             subtitle: `${q.averageAttendance} avg attendance • ${q.fngsBrought} FNGs EH'd`,
             value: q.qCount,
-        }),
+            onClick: () => {
+                state.selectedMemberId = q.memberId;
+                navigateTo("memberDetail");
+            },
+        }), 
     });
 
     const postingFrequencySection = createExpandableListSection({
         title: "Posting Frequency",
         items: snapshot.postingFrequency,
-        intialCount: 5,
+        initialCount: 5,
         renderRow: bucket => createInsightsRow({
             title: bucket.label,
             subtitle: "PAX in this range",
             value: bucket.count,
+            onClick: () => {
+                state.rosterFilter = {
+                    type: "posting-frequency",
+                    bucket: bucket.label,
+                    label: bucket.label,
+                    startDate,
+                    endDate,
+                };
+                navigateTo("roster");
+            },
         }),
     });
 
@@ -522,7 +588,18 @@ export function renderRegionInsightsView() {
     fngGrid.append(
         createMetricCard("Total FNGs", snapshot.fngStats.totalFngs),
         createMetricCard("Rostered", snapshot.fngStats.rosteredFngs),
-        createMetricCard("Unrostered", snapshot.fngStats.unrosteredFngs),
+        createMetricCard(
+            "Unrostered",
+            snapshot.fngStats.unrosteredFngs,
+        () => {
+            state.rosterFilter = {
+                type: "unrostered-fngs",
+                label: "Unrostered FNGs",
+                startDate,
+                endDate,
+            };
+            navigateTo("roster");
+        }),
         createMetricCard("Capture Rate", `${snapshot.fngStats.rosterCaptureRate}%`),
     );
 

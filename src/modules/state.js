@@ -104,6 +104,7 @@ export const state = {
     },
     weeklyQCalendarStartDate: null,
     weatherByAoDate: {},
+    rosterFilter: null,
 };
 
 state.runHistoricImport = async function () {

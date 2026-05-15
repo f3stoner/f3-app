@@ -59,10 +59,13 @@ export function renderSessionHistory() {
             aoSelect.appendChild(option);
         });
 
-    aoSelect.value = state.sessionHistoryAoFilter || "";
+    aoSelect.value = state.sessionHistoryAoFilter?.aoName || "";
 
     aoSelect.addEventListener("change", (event) => {
-        state.sessionHistoryAoFilter = event.target.value;
+        state.sessionHistoryAoFilter = event.target.value
+            ? { aoName: event.target.value }
+            : null;
+
         renderSessionList();
     });
 
@@ -74,6 +77,23 @@ export function renderSessionHistory() {
     controlsRow.append(typeFilterRow, aoSelect);
 
     filterSection.append(controlsRow);
+
+    if (state.sessionHistoryAoFilter?.startDate || state.sessionHistoryAoFilter?.endDate) {
+        const activeFilterNotice = document.createElement("div");
+        activeFilterNotice.classList.add("detail-value");
+        activeFilterNotice.textContent = `Showing ${state.sessionHistoryAoFilter.label || state.sessionHistoryAoFilter.aoName} for selected month`;
+    
+        const clearButton = document.createElement("button");
+        clearButton.classList.add("secondary-button");
+        clearButton.textContent = "Clear Insight Filter";
+    
+        clearButton.addEventListener("click", () => {
+            state.sessionHistoryAoFilter = null;
+            renderSessionHistory();
+        });
+
+        filterSection.append(activeFilterNotice, clearButton);
+    }
 
     const searchInput = document.createElement("input");
     searchInput.type = "text";
@@ -147,8 +167,21 @@ export function renderSessionHistory() {
             if (state.sessionHistoryFilterType === "q" && !isQ) return false;
             if (state.sessionHistoryFilterType === "attended" && !isAttended) return false;
 
-            if (state.sessionHistoryAoFilter && session.aoName !== state.sessionHistoryAoFilter) {
-                return false;
+            if (state.sessionHistoryAoFilter) {
+                const matchesAo =
+                    !state.sessionHistoryAoFilter.aoName ||
+                    session.aoName === state.sessionHistoryAoFilter.aoName;
+            
+                const matchesDate =
+                    (!state.sessionHistoryAoFilter.startDate ||
+                        session.date >= state.sessionHistoryAoFilter.startDate) &&
+            
+                    (!state.sessionHistoryAoFilter.endDate ||
+                        session.date <= state.sessionHistoryAoFilter.endDate);
+            
+                if (!matchesAo || !matchesDate) {
+                    return false;
+                }
             }
 
             if (!searchTerm) return true;
