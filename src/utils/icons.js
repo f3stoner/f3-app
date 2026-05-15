@@ -23,6 +23,9 @@ import {
     CloudFog,
     Snowflake,
     CloudDrizzle,
+    ChevronRightCircle,
+    ChartColumnIncreasing,
+    ArrowUpRight,
 } from "lucide";
 
 const ICONS = {
@@ -42,6 +45,9 @@ const ICONS = {
     trendingUp: TrendingUp,
     circle: Circle,
     clipboardList: ClipboardList,
+    chevronRight: ChevronRightCircle,
+    chartColumn: ChartColumnIncreasing,
+    arrowUpRight: ArrowUpRight,
 };
 
 const weatherIconMap = {

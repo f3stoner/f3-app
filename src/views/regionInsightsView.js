@@ -2,6 +2,8 @@ import { state } from "../modules/state.js";
 import { buildRegionInsights } from "../modules/insights.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
+import { createIcon } from "../utils/icons.js";
+import { ArrowUpRight } from "lucide";
 
 function getCurrentMonthRange() {
     const now = new Date();
@@ -68,7 +70,7 @@ function createMetricCard(label, value, onClick) {
     labelEl.textContent = label;
 
     if (onClick) {
-        card.classList.add("clickable");
+        card.classList.add("clickable-stat-tile");
         card.addEventListener("click", onClick);
     }
 
@@ -155,12 +157,15 @@ function createInsightsRow({ title, subtitle, value, onClick }) {
     valueEl.textContent = value;
 
     if (onClick) {
-        row.classList.add("clickable");
+        row.classList.add("clickable-row");
         row.addEventListener("click", onClick);
-    }
 
+        const icon = createIcon("arrowUpRight", "insights-row-icon");
+
+        row.append(left, valueEl, icon);
+    } else {
     row.append(left, valueEl);
-
+    }
     return row;
 }
 
@@ -318,154 +323,6 @@ export function renderRegionInsightsView() {
     const overviewSection = document.createElement("div");
     overviewSection.classList.add("section");
 
-    /*const attendanceByDaySection = document.createElement("div");
-    attendanceByDaySection.classList.add("section");
-
-    const attendanceByDayHeading = document.createElement("div");
-    attendanceByDayHeading.classList.add("insights-section-title");
-    attendanceByDayHeading.textContent = "Attendance by Day";
-
-    attendanceByDaySection.appendChild(attendanceByDayHeading);
-
-    const attendanceList = document.createElement("div");
-    attendanceList.classList.add("insights-list");
-
-    insights.attendanceByDay.forEach(day => {
-        const row = document.createElement("div");
-        row.classList.add("insights-row");
-
-        const left = document.createElement("div");
-        left.classList.add("insights-row-left");
-        
-        const title = document.createElement("div");
-        title.classList.add("insights-row-title");
-        title.textContent = day.day;
-
-        const subtitle = document.createElement("div");
-        subtitle.classList.add("insights-row-subtitle");
-        subtitle.textContent = 
-            `${day.sessions} sessions • ${day.averageAttendance} avg attendance`;
-
-        left.append(title, subtitle);
-
-        const value = document.createElement("div");
-        value.classList.add("insights-row-value");
-        value.textContent = day.attendance;
-
-        row.append(left, value);
-
-        attendanceList.appendChild(row);
-    });
-
-    attendanceByDaySection.appendChild(attendanceList);
-
-    const attendanceByAoSection = document.createElement("div");
-    attendanceByAoSection.classList.add("section");
-
-    const attendanceByAoHeading = document.createElement("div");
-    attendanceByAoHeading.classList.add("insights-section-title");
-    attendanceByAoHeading.textContent = "Attendance by AO";
-
-    const attendanceByAoList = document.createElement("div");
-    attendanceByAoList.classList.add("insights-list");
-
-    insights.attendanceByAo.forEach(ao => {
-        const row = document.createElement("div");
-        row.classList.add("insights-row");
-
-        const left = document.createElement("div");
-        left.classList.add("insights-row-left");
-
-        const title = document.createElement("div");
-        title.classList.add("insights-row-title");
-        title.textContent = ao.aoName;
-
-        const subtitle = document.createElement("div");
-        subtitle.classList.add("insights-row-subtitle");
-        subtitle.textContent =
-            `${ao.sessions} sessions • ${ao.averageAttendance} avg • ${ao.fngs} FNGs`;
-
-        left.append(title, subtitle);
-
-        const value = document.createElement("div");
-        value.classList.add("insights-row-value");
-        value.textContent = ao.attendance;
-
-        row.append(left, value);
-
-        attendanceByAoList.appendChild(row);
-    });
-
-    attendanceByAoSection.append(attendanceByAoHeading, attendanceByAoList);
-
-    const qFrequencySection = createExpandableListSection({
-        title: "Q Frequency",
-        items: insights.qFrequency,
-        initialCount: 8,
-        renderRow: q => createInsightsRow({
-            title: q.paxName,
-            subtitle: `${q.averageAttendance} avg attendance • ${q.fngsBrought} FNGS EH'd`,
-            value: q.qCount,
-        }),
-    });
-
-    const postingFrequencySection = document.createElement("div");
-    postingFrequencySection.classList.add("section");
-
-    const postingFrequencyHeading = document.createElement("div");
-    postingFrequencyHeading.classList.add("insights-section-title");
-    postingFrequencyHeading.textContent = "Posting Frequency";
-
-    const postingFrequencyList = document.createElement("div");
-    postingFrequencyList.classList.add("insights-list");
-
-    insights.postingFrequency.forEach(bucket => {
-        const row = document.createElement("div");
-        row.classList.add("insights-row");
-
-        const left = document.createElement("div");
-        left.classList.add("insights-row-left");
-
-        const title = document.createElement("div");
-        title.classList.add("insights-row-title");
-        title.textContent = bucket.label;
-
-        const subtitle = document.createElement("div");
-        subtitle.classList.add("insights-row-subtitle");
-        subtitle.textContent = "PAX in this range";
-
-        left.append(title, subtitle);
-
-        const value = document.createElement("div");
-        value.classList.add("insights-row-value");
-        value.textContent = bucket.count;
-
-        row.append(left, value);
-
-        postingFrequencyList.appendChild(row);
-    });
-
-    postingFrequencySection.append(postingFrequencyHeading, postingFrequencyList);
-
-    const fngSection = document.createElement("div");
-    fngSection.classList.add("section");
-
-    const fngHeading = document.createElement("div");
-    fngHeading.classList.add("insights-section-title");
-    fngHeading.textContent = "FNG Pipeline";
-
-    const fngGrid = document.createElement("div");
-    fngGrid.classList.add("stats-grid");
-
-    fngGrid.append(
-        createMetricCard("Total FNGs", insights.fngStats.totalFngs),
-        createMetricCard("Rostered", insights.fngStats.rosteredFngs),
-        createMetricCard("Unrostered", insights.fngStats.unrosteredFngs),
-        createMetricCard("Capture Rate", `${insights.fngStats.rosterCaptureRate}%`),
-    );
-
-    fngSection.append(fngHeading, fngGrid);*/
-
     const overviewHeading = document.createElement("div");
     overviewHeading.classList.add("insights-section-title");
     overviewHeading.textContent = "Leadership Snapshot";
@@ -514,9 +371,9 @@ export function renderRegionInsightsView() {
     );
 
     const momentumSection = createSimpleListSection(
-        "Momentum",
+        "Region Pulse",
         snapshot.momentum,
-        "No momentum highlights yet."
+        "No Region Pulse highlights yet."
     );
 
     const topAoSection = createExpandableListSection({

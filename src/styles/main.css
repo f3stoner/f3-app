@@ -2490,39 +2490,6 @@ select:focus,
     gap: 12px;
 }
 
-.insights-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 12px 14px;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-}
-
-.insights-row-left {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.insights-row-title {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.insights-row-subtitle {
-    font-size: 0.85rem;
-    color: var(--muted);
-}
-
-.insights-row-value {
-    font-size: 1.1rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
 .insights-section-header {
     display: flex;
     align-items: center;
@@ -2543,11 +2510,75 @@ select:focus,
     opacity: 0.75;
 }
 
+.clickable-row {
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    position: relative;
+}
+
+.clickable-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.clickable-row:active {
+    transform: scale(0.99);
+}
+
+.insights-row-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--muted);
+    flex-shrink: 0;
+    opacity: 0.75;
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease,
+        color 0.15s ease;
+}
+
+.clickable-row:hover .insights-row-icon {
+    transform: translate(2px, -2px);
+    opacity: 1;
+    color: var(--text);
+}
+
 .insights-row {
-    min-height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.insights-row-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.insights-row-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.15;
+}
+
+.insights-row-subtitle {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.15;
 }
 
 .insights-row-value {
-    min-width: 42px;
+    min-width: 2rem;
     text-align: right;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
