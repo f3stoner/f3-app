@@ -154,6 +154,91 @@ function createInsightsRow({ title, subtitle, value }) {
     return row;
 }
 
+function buildLeadershipSnapshot(insights) {
+    const topAos = insights.attendanceByAo.slice(0, 5);
+    const topQs = insights.qFrequency.slice(0, 5);
+
+    const needsAttention = [];
+
+    const lowCaptureRate =
+        Number(insights.fngStats.rosterCaptureRate) < 80 &&
+        insights.fngStats.totalFngs > 0;
+
+    if (lowCaptureRate) {
+        needsAttention.push({
+            title: "FNG roster capture needs attention",
+            subtitle: `${insights.fngStats.rosteredFngs} of ${insights.fngStats.totalFngs} FNGs rostered`,
+            value: `${insights.fngStats.rosterCaptureRate}%`,
+        });
+    }
+
+    const lowAttendanceAos = insights.attendanceByAo
+        .filter(ao => Number(ao.averageAttendance) < 5 && ao.sessions >= 2)
+        .slice(0, 3);
+
+    lowAttendanceAos.forEach(ao => {
+        needsAttention.push({
+            title: `${ao.aoName} attendance is light`,
+            subtitle: `${ao.sessions} sessions this month`,
+            value: `${ao.averageAttendance} avg`,
+        });
+    });
+
+    const momentum = [];
+
+    if (topQs[0]) {
+        momentum.push({
+            title: `${topQs[0].paxName} led Q count`,
+            subtitle: `${topQs[0].averageAttendance} avg attendance • ${topQs[0].fngsBrought} FNGs EH'd`,
+            value: topQs[0].qCount,
+        });
+    }
+
+    if (insights.summary.totalFngs > 0) {
+        momentum.push({
+            title: "FNG pipeline active",
+            subtitle: `${insights.fngStats.rosteredFngs} rostered • ${insights.fngStats.unrosteredFngs} unrostered`,
+            value: insights.summary.totalFngs,
+        });
+    }
+
+    return {
+        summary: insights.summary,
+        fngStats: insights.fngStats,
+        needsAttention,
+        momentum,
+        topAos,
+        topQs,
+        postingFrequency: insights.postingFrequency,
+    };
+}
+
+function createSimpleListSection(title, items, emptyMessage = "Nothing to show yet.") {
+    const section = document.createElement("div");
+    section.classList.add("section");
+
+    const heading = document.createElement("div");
+    heading.classList.add("insights-section-title");
+    heading.textContent = title;
+
+    const list = document.createElement("div");
+    list.classList.add("insights-list");
+
+    if (!items.length) {
+        const empty = document.createElement("div");
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+        list.appendChild(empty);
+    } else {
+        items.forEach(item => {
+            list.appendChild(createInsightsRow(item));
+        });
+    }
+
+    section.append(heading, list);
+    return section;
+}
+
 export function renderRegionInsightsView() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -207,13 +292,15 @@ export function renderRegionInsightsView() {
         endDate,
     });
 
+    const snapshot = buildLeadershipSnapshot(insights);
+
     console.log("REGION INSIGHTS:", insights);
     console.table(insights.summary);
 
     const overviewSection = document.createElement("div");
     overviewSection.classList.add("section");
 
-    const attendanceByDaySection = document.createElement("div");
+    /*const attendanceByDaySection = document.createElement("div");
     attendanceByDaySection.classList.add("section");
 
     const attendanceByDayHeading = document.createElement("div");
@@ -359,25 +446,87 @@ export function renderRegionInsightsView() {
         createMetricCard("Capture Rate", `${insights.fngStats.rosterCaptureRate}%`),
     );
 
-    fngSection.append(fngHeading, fngGrid);
+    fngSection.append(fngHeading, fngGrid);*/
 
     const overviewHeading = document.createElement("div");
     overviewHeading.classList.add("insights-section-title");
-    overviewHeading.textContent = "Overview";
+    overviewHeading.textContent = "Leadership Snapshot";
 
     const overviewGrid = document.createElement("div");
     overviewGrid.classList.add("stats-grid");
 
     overviewGrid.append(
-        createMetricCard("Total Attendance", insights.summary.totalAttendance),
-        createMetricCard("Avg Attendance", insights.summary.averageAttendance),
-        createMetricCard("Unique PAX", insights.summary.uniquePax),
-        createMetricCard("FNGs", insights.summary.totalFngs),
-        createMetricCard("Sessions", insights.summary.totalSessions),
-        createMetricCard("Unique Qs", insights.summary.uniqueQs),
+        createMetricCard("Total Posts", snapshot.summary.totalAttendance),
+        createMetricCard("Avg Attendance", snapshot.summary.averageAttendance),
+        createMetricCard("Active PAX", snapshot.summary.uniquePax),
+        createMetricCard("active Qs", snapshot.summary.uniqueQs),
     );
 
     overviewSection.append(overviewHeading, overviewGrid);
+
+    const needsAttentionSection = createSimpleListSection(
+        "Needs Attention",
+        snapshot.needsAttention,
+        "No major issues deteced for this month."
+    );
+
+    const momentumSection = createSimpleListSection(
+        "Momentum",
+        snapshot.momentum,
+        "No momentum highlights yet."
+    );
+
+    const topAoSection = createExpandableListSection({
+        title: "AO Activity",
+        items: snapshot.topAos,
+        initialCount: 5,
+        renderRow: ao => createInsightsRow({
+            title: ao.aoName,
+            subtitle: `${ao.sessions} sessions • ${ao.averageAttendance} avg • ${ao.fngs} FNGs`,
+            value: ao.attendance,
+        }),
+    });
+
+    const topQSection = createExpandableListSection({
+        title: "Q Leadership",
+        items: snapshot.topQs,
+        initialCount: 5,
+        renderRow: q => createInsightsRow({
+            title: q.paxName,
+            subtitle: `${q.averageAttendance} avg attendance • ${q.fngsBrought} FNGs EH'd`,
+            value: q.qCount,
+        }),
+    });
+
+    const postingFrequencySection = createExpandableListSection({
+        title: "Posting Frequency",
+        items: snapshot.postingFrequency,
+        intialCount: 5,
+        renderRow: bucket => createInsightsRow({
+            title: bucket.label,
+            subtitle: "PAX in this range",
+            value: bucket.count,
+        }),
+    });
+
+    const fngSection = document.createElement("div");
+    fngSection.classList.add("section");
+
+    const fngHeading = document.createElement("div");
+    fngHeading.classList.add("insights-section-title");
+    fngHeading.textContent = "FNG Pipeline";
+
+    const fngGrid = document.createElement("div");
+    fngGrid.classList.add("stats-grid");
+
+    fngGrid.append(
+        createMetricCard("Total FNGs", snapshot.fngStats.totalFngs),
+        createMetricCard("Rostered", snapshot.fngStats.rosteredFngs),
+        createMetricCard("Unrostered", snapshot.fngStats.unrosteredFngs),
+        createMetricCard("Capture Rate", `${snapshot.fngStats.rosterCaptureRate}%`),
+    );
+
+    fngSection.append(fngHeading, fngGrid);
 
     const nav = createGlobalNav();
 
@@ -386,9 +535,10 @@ export function renderRegionInsightsView() {
         subtitle,
         monthNavRow,
         overviewSection,
-        attendanceByDaySection,
-        attendanceByAoSection,
-        qFrequencySection,
+        needsAttentionSection,
+        momentumSection,
+        topAoSection,
+        topQSection,
         postingFrequencySection,
         fngSection,
         nav,
