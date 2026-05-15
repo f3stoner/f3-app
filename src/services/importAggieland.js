@@ -1,7 +1,7 @@
 import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud, insertAdminFlags, mapMemberFromDb } from "./cloudData.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
-import { normalizePaxName, normalizeImportPaxKey, parseHistoricCsvText, parseHistoricRow } from "../utils/historicImport.js";
+import { normalizeImportPaxKey, parseHistoricCsvText, parseHistoricRow } from "../utils/historicImport.js";
 import { state } from "../modules/state.js";
 
 export async function importPaxMasterCsv(csvText) {
@@ -243,7 +243,7 @@ async function buildUniqueMemberLookup(regionId = state.currentRegionId) {
 
     for (const row of allMembers) {
         const member = mapMemberFromDb(row);
-        const normalizedName = normalizePaxName(member.paxName);
+        const normalizedName = normalizeImportPaxKey(member.paxName);
         grouped[normalizedName] ||= [];
         grouped[normalizedName].push(member);
     }
@@ -415,7 +415,7 @@ export async function repairAggielandDeltaSessions({ dryRun = true, regionId = s
             for (const fng of parsedFngs) {
                 const alreadyExists = mergedFngs.some(existingFng =>
                     existingFng.memberId === fng.memberId ||
-                    normalizePaxName(existingFng.paxName) === normalizePaxName(fng.paxName)
+                    normalizeImportPaxKey(existingFng.paxName) === normalizeImportPaxKey(fng.paxName)
                 );
 
                 if (!alreadyExists) {
@@ -452,7 +452,7 @@ export async function repairAggielandDeltaSessions({ dryRun = true, regionId = s
                 addedFngs: parsedFngs
                     .filter(fng => !existingFngs.some(existingFng =>
                         existingFng.memberId === fng.memberId ||
-                        normalizePaxName(existingFng.paxName) === normalizePaxName(fng.paxName)
+                        normalizeImportPaxKey(existingFng.paxName) === normalizeImportPaxKey(fng.paxName)
                     ))
                     .map(fng => fng.paxName),
                 repairedSession,
@@ -531,7 +531,7 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
 
         if (!normalizedDate) continue;
 
-        const normalizedPaxName = normalizePaxName(paxName);
+        const normalizedPaxName = normalizeImportPaxKey(paxName);
         const memberId = memberIdByName[normalizedPaxName];
         const ambiguousMembers = ambiguousMembersByName[normalizedPaxName] || [];
 

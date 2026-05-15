@@ -39,6 +39,7 @@ import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
 import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 import { renderAoInsightsView } from "./views/aoInsightsView.js";
+import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -50,6 +51,7 @@ window.auditPotentialMergedMembers = auditPotentialMergedMembers;
 window.auditMergedMemberDetail = auditMergedMemberDetail;
 window.splitMergedMemberByRawName = splitMergedMemberByRawName;
 window.logAppEvent = logAppEvent;
+window.triagePotentialMemberMisassignments = triagePotentialMemberMisassignments;
 }
 
 if ("serviceWorker" in navigator) {
