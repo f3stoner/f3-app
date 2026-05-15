@@ -2582,3 +2582,19 @@ select:focus,
     white-space: nowrap;
     flex-shrink: 0;
 }
+
+.insights-row-watch {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.insights-row-high {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.insights-row-critical {
+    border-color: rgba(239, 68, 68, 0.8);
+    background: rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+}

@@ -38,6 +38,7 @@ import { APP_EVENTS } from "./constants/appEvents.js";
 import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
 import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 import { renderRegionInsightsView } from "./views/regionInsightsView.js";
+import { renderAoInsightsView } from "./views/aoInsightsView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -228,6 +229,8 @@ function renderApp() {
         renderWeeklyQCalendarView();
     } else if (state.currentView === "regionInsights") {
         renderRegionInsightsView();
+    } else if (state.currentView === "aoInsights") {
+        renderAoInsightsView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

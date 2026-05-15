@@ -317,9 +317,6 @@ export function renderRegionInsightsView() {
 
     const snapshot = buildLeadershipSnapshot(insights);
 
-    console.log("REGION INSIGHTS:", insights);
-    console.table(insights.summary);
-
     const overviewSection = document.createElement("div");
     overviewSection.classList.add("section");
 
@@ -367,7 +364,7 @@ export function renderRegionInsightsView() {
     const needsAttentionSection = createSimpleListSection(
         "Needs Attention",
         snapshot.needsAttention,
-        "No major issues deteced for this month."
+        "No major issues detected for this month."
     );
 
     const momentumSection = createSimpleListSection(
@@ -385,13 +382,12 @@ export function renderRegionInsightsView() {
             subtitle: `${ao.sessions} sessions • ${ao.averageAttendance} avg • ${ao.fngs} FNGs`,
             value: ao.attendance,
             onClick: () => {
-                state.sessionHistoryAoFilter = {
+                state.selectedAoInsights = {
                     aoName: ao.aoName,
                     startDate,
                     endDate,
-                    label: ao.aoName,
                 };
-                navigateTo("sessionHistory");
+                navigateTo("aoInsights");
             },
         }),
     });
@@ -445,18 +441,7 @@ export function renderRegionInsightsView() {
     fngGrid.append(
         createMetricCard("Total FNGs", snapshot.fngStats.totalFngs),
         createMetricCard("Rostered", snapshot.fngStats.rosteredFngs),
-        createMetricCard(
-            "Unrostered",
-            snapshot.fngStats.unrosteredFngs,
-        () => {
-            state.rosterFilter = {
-                type: "unrostered-fngs",
-                label: "Unrostered FNGs",
-                startDate,
-                endDate,
-            };
-            navigateTo("roster");
-        }),
+        createMetricCard("Unrostered", snapshot.fngStats.unrosteredFngs),
         createMetricCard("Capture Rate", `${snapshot.fngStats.rosterCaptureRate}%`),
     );
 
