@@ -1,10 +1,93 @@
 FOREST,,,,,
 Date,Pax,Code,DD Only,DR Only,Weekday
+5/14/26,8 Mile,,FALSE,,Thu
+5/14/26,Babel,DD,FALSE,,Thu
+5/14/26,Beaver,,FALSE,,Thu
+5/14/26,Eraser,,FALSE,,Thu
+5/14/26,Firestarter,QDD,FALSE,,Thu
+5/14/26,Frodo,,FALSE,,Thu
+5/14/26,Skin Graft,,FALSE,,Thu
+5/14/26,Whistleblower,,FALSE,,Thu
+5/13/26,Anakin,DD,FALSE,,Wed
+5/13/26,Wolfie,QDD,FALSE,,Wed
+5/13/26,Frodo,,FALSE,,Wed
+5/13/26,Skin Graft,,FALSE,,Wed
+5/13/26,8 Mile,,FALSE,,Wed
+5/12/26,8 Mile,,FALSE,,Tue
+5/12/26,Beaver,,FALSE,,Tue
+5/12/26,Dodgeball,,FALSE,,Tue
+5/12/26,Eraser,,FALSE,,Tue
+5/12/26,Frodo,Q,FALSE,,Tue
+5/12/26,Nickels,,FALSE,,Tue
+5/12/26,Shingles,,FALSE,,Tue
+5/12/26,Skin Graft,,FALSE,,Tue
+5/12/26,Whistleblower,,FALSE,,Tue
+5/11/26,Abacus,,FALSE,,Mon
+5/11/26,Anakin,,FALSE,,Mon
+5/11/26,Boomer,,FALSE,,Mon
+5/11/26,Buttercream,,FALSE,,Mon
+5/11/26,Circuit,,FALSE,,Mon
+5/11/26,Cuatro,,FALSE,,Mon
+5/11/26,Dial-Up,,FALSE,,Mon
+5/11/26,Dodgeball,,FALSE,,Mon
+5/11/26,Frodo,,FALSE,,Mon
+5/11/26,Hacksaw,DD,FALSE,,Mon
+5/11/26,Jake,Q,FALSE,,Mon
+5/11/26,Meatloaf,,FALSE,,Mon
+5/11/26,Thermostat,,FALSE,,Mon
+5/7/26,Babel,,FALSE,,Thu
+5/7/26,Frodo,,FALSE,,Thu
+5/7/26,Skin Graft,,FALSE,,Thu
+5/7/26,Whistleblower,Q,FALSE,,Thu
+5/6/26,Anakin,DD,FALSE,,Wed
+5/6/26,Babel,,FALSE,,Wed
+5/6/26,Burgundy,,FALSE,,Wed
+5/6/26,Frodo,,FALSE,,Wed
+5/6/26,8 Mile,,FALSE,,Wed
+5/6/26,Whistleblower,,FALSE,,Wed
+5/6/26,Twinkle,,FALSE,,Wed
+5/6/26,Shaggy,,FALSE,,Wed
+5/6/26,Skin Graft,,FALSE,,Wed
+5/6/26,Siesta,Q,FALSE,,Wed
+5/5/26,Anakin,,FALSE,,Tue
+5/5/26,Boomer,,FALSE,,Tue
+5/5/26,Skin Graft,,FALSE,,Tue
+5/5/26,Frodo,,FALSE,,Tue
+5/5/26,Meatloaf,,FALSE,,Tue
+5/5/26,Dial-Up,,FALSE,,Tue
+5/5/26,Nickels,,FALSE,,Tue
+5/5/26,Beaver,,FALSE,,Tue
+5/5/26,Johnny 5,,FALSE,,Tue
+5/5/26,Thermostat,,FALSE,,Tue
+5/5/26,Siesta,,FALSE,,Tue
+5/5/26,Cuatro,,FALSE,,Tue
+5/5/26,Rosetta,,FALSE,,Tue
+5/5/26,Shaggy,,FALSE,,Tue
+5/5/26,Abacus,,FALSE,,Tue
+5/5/26,Jake,Q,FALSE,,Tue
+5/4/26,Cadillac,,FALSE,,Mon
+5/4/26,Lt. Dangle,DD,FALSE,,Mon
+5/4/26,Wolfie,QDD,FALSE,,Mon
+4/30/26,Anakin,,FALSE,,Thu
+4/30/26,Frodo,,FALSE,,Thu
+4/30/26,Johnny 5,,FALSE,,Thu
+4/30/26,Rosetta,,FALSE,,Thu
+4/30/26,Shaggy,Q,FALSE,,Thu
+4/30/26,Whistleblower,,FALSE,,Thu
+4/29/26,Anakin,DD,FALSE,,Wed
+4/29/26,Boomer,,FALSE,,Wed
+4/29/26,Eraser,,FALSE,,Wed
+4/29/26,Frodo,,FALSE,,Wed
+4/29/26,K-Pop,,FALSE,,Wed
+4/29/26,Skin Graft,Q,FALSE,,Wed
+4/29/26,Slide Show,,FALSE,,Wed
+4/29/26,Valero,,FALSE,,Wed
 4/28/26,Anakin,,FALSE,,Tue
-4/28/26,8-Mile,QDD,FALSE,,Tue
+4/28/26,8 Mile,QDD,FALSE,,Tue
 4/28/26,Siesta,,FALSE,,Tue
 4/28/26,Skin Graft,,FALSE,,Tue
 4/28/26,Whistleblower,,FALSE,,Tue
+4/28/26,8 Mile,Q,FALSE,,Tue
 4/27/26,Dodgeball,Q,FALSE,,Mon
 4/27/26,Skin Graft,,FALSE,,Mon
 4/27/26,Wolfie,DD,FALSE,,Mon

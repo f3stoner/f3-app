@@ -1,824 +1,945 @@
 ROCK,,,,,
-Date,Pax,Code,DD Only,DR Only,#REF!
-4/28/26,Xena,QDD,FALSE,,
-4/28/26,O-Ring,DD,FALSE,,
-4/28/26,Squatter,DD,FALSE,,
-4/28/26,Elmer,DD,FALSE,,
-4/28/26,Tropic Thunder,DD,FALSE,,
-4/28/26,Narc,,FALSE,,
-4/28/26,Juice,,FALSE,,
-4/28/26,Lazarus,,FALSE,,
-4/28/26,Muy Caliente,,FALSE,,
-4/28/26,Lobsta,,FALSE,,
-4/27/26,Elmer,Q,FALSE,,
-4/27/26,Wemby,,FALSE,,
-4/27/26,Mix-A-Lot,,FALSE,,
-4/27/26,Lazarus,,FALSE,,
-4/27/26,Dial-Up,,FALSE,,
-4/27/26,Buttercream,,FALSE,,
-4/27/26,Muy Caliente,,FALSE,,
-4/27/26,Tropic Thunder,,FALSE,,
-4/27/26,Xena,,FALSE,,
-4/27/26,Fertile,,FALSE,,
-4/27/26,EVAC,DD,FALSE,,
-4/27/26,Narc,DD,FALSE,,
-4/27/26,Cobbler,,FALSE,,
-4/24/26,Cobbler,Q,FALSE,,
-4/24/26,Squatter,,FALSE,,
-4/24/26,Xena,,FALSE,,
-4/24/26,O-Ring,,FALSE,,
-4/24/26,Tropic Thunder,,FALSE,,
-4/24/26,EVAC,,FALSE,,
-4/24/26,Lazarus,,FALSE,,
-4/24/26,SCUBA Steve,,FALSE,,
-4/23/26,Muy Caliente,Q,FALSE,,
-4/23/26,Narc,,TRUE,,
-4/23/26,EVAC,DD,FALSE,,
-4/23/26,Squatter,,FALSE,,
-4/23/26,Lobsta,,FALSE,,
-4/23/26,Cobbler,,FALSE,,
-4/23/26,O-Ring,,FALSE,,
-4/23/26,Tropic Thunder,,FALSE,,
-4/23/26,Dial-Up,,FALSE,,
-4/23/26,Lazarus,,FALSE,,
-4/23/26,Elmer,,FALSE,,
-4/23/26,Juice,,FALSE,,
-4/23/26,Thermostat,,FALSE,,
-4/21/26,Squatter,Q,FALSE,,
-4/21/26,Narc,,TRUE,,
-4/21/26,Cobbler,,FALSE,,
-4/21/26,O-Ring,,FALSE,,
-4/21/26,Muy Caliente,,FALSE,,
-4/21/26,Lazarus,,FALSE,,
-4/20/26,Elmer,Q,FALSE,,
-4/20/26,Muy Caliente,,FALSE,,
-4/20/26,EVAC,,FALSE,,
-4/20/26,Lazarus,,FALSE,,
-4/20/26,Wemby,,FALSE,,
-4/20/26,Narc,,FALSE,,
-4/20/26,Cobbler,,FALSE,,
-4/18/26,Tony Hawk,DD,FALSE,,
-4/18/26,Hippo,,FALSE,,
-4/18/26,Moses,,FALSE,,
-4/18/26,Juice,,FALSE,,
-4/18/26,Lazarus,,FALSE,,
-4/18/26,Squatter,,FALSE,,
-4/18/26,Hancock (DR),,FALSE,,
-4/18/26,Mario,,FALSE,,
-4/18/26,Boomer,,FALSE,,
-4/18/26,Tinkerbell,,FALSE,,
-4/18/26,Jake,,FALSE,,
-4/18/26,Muy Caliente,,FALSE,,
-4/18/26,Super Soaker,,FALSE,,
-4/18/26,Frodo,,FALSE,,
-4/18/26,Cobbler,,FALSE,,
-4/18/26,Shaggy,DD,FALSE,,
-4/18/26,Cindy,,FALSE,,
-4/18/26,Dial-Up,,FALSE,,
-4/18/26,Circuit,,FALSE,,
-4/18/26,Burgundy,,FALSE,,
-4/18/26,Maple (DR),,FALSE,,
-4/18/26,Anakin,DD,FALSE,,
-4/18/26,Johnny 5,,FALSE,,
-4/18/26,Blitz (2.0),FNG,FALSE,,
-4/18/26,LinkedIn,Q,FALSE,,
-4/18/26,Scooter,,TRUE,,
-4/17/26,Cuatro,,FALSE,,
-4/17/26,Kookaburra,,FALSE,,
-4/17/26,Muy Caliente,,FALSE,,
-4/17/26,Dial-Up,,FALSE,,
-4/17/26,Huevos,,FALSE,,
-4/17/26,Snooki,,FALSE,,
-4/17/26,Jake,,FALSE,,
-4/17/26,LinkedIn,,FALSE,,
-4/17/26,Squatter,,FALSE,,
-4/17/26,Elmer,,FALSE,,
-4/17/26,Mario,,FALSE,,
-4/17/26,Sack,,FALSE,,
-4/17/26,Xena,,FALSE,,
-4/17/26,Cobbler,Q,FALSE,,
-4/17/26,O-Ring,Q,FALSE,,
-4/16/26,Mario,Q,FALSE,,
-4/16/26,LinkedIn,DD,FALSE,,
-4/16/26,Cobbler,DD,FALSE,,
-4/16/26,Wemby,,FALSE,,
-4/16/26,Dial-Up,,FALSE,,
-4/16/26,Mix-A-Lot,,FALSE,,
-4/16/26,TeaTime,,FALSE,,
-4/16/26,Werner,,FALSE,,
-4/16/26,Lazarus,,FALSE,,
-4/16/26,Muy Caliente,,FALSE,,
-4/16/26,Narc,,FALSE,,
-4/16/26,Jake,,FALSE,,
-4/16/26,Squatter,,FALSE,,
-4/16/26,O-Ring,,FALSE,,
-4/16/26,Snooki,,FALSE,,
-4/16/26,Sack,,FALSE,,
-4/15/26,Jake,Q,FALSE,,
-4/15/26,Cobbler,DD,FALSE,,
-4/15/26,LinkedIn,DD,FALSE,,
-4/15/26,Wemby,,FALSE,,
-4/15/26,Mario,,FALSE,,
-4/15/26,Elmer,,FALSE,,
-4/15/26,Snooki,,FALSE,,
-4/15/26,Muy Caliente,,FALSE,,
-4/15/26,Lazarus,,FALSE,,
-4/15/26,Juice,,FALSE,,
-4/15/26,Narc,,FALSE,,
-4/15/26,Dial-Up,,FALSE,,
-4/15/26,O-Ring,,FALSE,,
-4/15/26,Buttercream,FNG,FALSE,,
-4/15/26,Fertile,,FALSE,,
-4/15/26,Cuatro,,FALSE,,
-4/15/26,Squatter,,FALSE,,
-4/14/26,Xena,Q,FALSE,,
-4/14/26,LinkedIn,,FALSE,,
-4/14/26,Cobbler,,FALSE,,
-4/14/26,Jake,,FALSE,,
-4/14/26,Mario,,FALSE,,
-4/14/26,Lazarus,,FALSE,,
-4/14/26,Muy Caliente,,FALSE,,
-4/14/26,Dial-Up,,FALSE,,
-4/14/26,O-Ring,,FALSE,,
-4/14/26,Narc,,FALSE,,
-4/14/26,Elmer,,FALSE,,
-4/14/26,Wemby,,FALSE,,
-4/14/26,Juice,,FALSE,,
-4/14/26,Sack,,FALSE,,
-4/14/26,Snooki,,FALSE,,
-4/13/26,Wemby,Q,FALSE,,
-4/13/26,LinkedIn,,FALSE,,
-4/13/26,Cobbler,,FALSE,,
-4/13/26,Mario,,FALSE,,
-4/13/26,Elmer,,FALSE,,
-4/13/26,Snooki,,FALSE,,
-4/13/26,Muy Caliente,,FALSE,,
-4/13/26,Lazarus,,FALSE,,
-4/13/26,Jake,,FALSE,,
-4/13/26,Huevos,FNG,FALSE,,
-4/10/26,EVAC,Q,FALSE,,
-4/10/26,Cobbler,,FALSE,,
-4/10/26,Wemby,,FALSE,,
-4/10/26,Burgundy,,FALSE,,
-4/10/26,Kookaburra,,FALSE,,
-4/10/26,O-Ring,,FALSE,,
-4/10/26,Narc,,FALSE,,
-4/9/26,Juice,Q,FALSE,,
-4/9/26,Cobbler,DD,FALSE,,
-4/9/26,Squatter,DD,FALSE,,
-4/9/26,O-Ring,DD,FALSE,,
-4/9/26,Narc,,FALSE,,
-4/9/26,Muy Caliente,,FALSE,,
-4/9/26,Lazarus,,FALSE,,
-4/7/26,LinkedIn,QDD,FALSE,,
-4/7/26,Cobbler,DD,FALSE,,
-4/7/26,Squatter,DD,FALSE,,
-4/7/26,O-Ring,DD,FALSE,,
-4/7/26,Momma's Boy,DD,FALSE,,
-4/7/26,Gridlock,DD,FALSE,,
-4/7/26,Narc,,FALSE,,
-4/6/26,Cobbler,QDD,FALSE,,
-4/6/26,Squatter,DD,FALSE,,
-4/6/26,Juice,,FALSE,,
-4/6/26,Narc,,FALSE,,
-4/3/26,LinkedIn,QDD,FALSE,,
-4/3/26,Cobbler,DD,FALSE,,
-4/3/26,Squatter,DD,FALSE,,
-4/3/26,O-Ring,DD,FALSE,,
-4/3/26,Hippo,,FALSE,,
-4/3/26,Narc,,FALSE,,
-4/2/26,Narc,Q,FALSE,,
-4/2/26,O-Ring,,FALSE,,
-4/2/26,Cobbler,,FALSE,,
-4/2/26,Mountie,,FALSE,,
-4/2/26,Search Party,,FALSE,,
-4/2/26,Fertile,,FALSE,,
-3/31/26,Squatter,QDD,FALSE,,
-3/31/26,LinkedIn,DD,FALSE,,
-3/31/26,Cobbler,DD,FALSE,,
-3/31/26,O-Ring,DD,FALSE,,
-3/31/26,Narc,,FALSE,,
-3/30/26,Tropic Thunder,Q,FALSE,,
-3/30/26,Gridlock,,FALSE,,
-3/30/26,Wemby,,FALSE,,
-3/30/26,Narc,,FALSE,,
-3/30/26,EVAC,,FALSE,,
-3/30/26,McConaughey (DR),,FALSE,,
-3/27/26,Cobbler,Q,FALSE,,
-3/27/26,Elmer,,FALSE,,
-3/27/26,Sack,,FALSE,,
-3/27/26,O-Ring,,FALSE,,
-3/27/26,Tinkerbell,,FALSE,,
-3/26/26,Thermostat,QDD,FALSE,,
-3/26/26,Cobbler,DD,FALSE,,
-3/26/26,Squatter,DD,FALSE,,
-3/26/26,Wemby,DD,FALSE,,
-3/26/26,O-Ring,DD,FALSE,,
-3/26/26,Elmer,DD,FALSE,,
-3/26/26,D20,,FALSE,,
-3/26/26,Momma's Boy,,FALSE,,
-3/26/26,Sack,,FALSE,,
-3/26/26,Narc,,FALSE,,
-3/26/26,Dial-Up,,FALSE,,
-3/26/26,Kookaburra,,FALSE,,
-3/24/26,EVAC,Q,FALSE,,
-3/24/26,Squatter,DD,FALSE,,
-3/24/26,LinkedIn,DD,FALSE,,
-3/24/26,Cobbler,DD,FALSE,,
-3/24/26,Fertile,DD,FALSE,,
-3/24/26,O-Ring,DD,FALSE,,
-3/24/26,Narc,,FALSE,,
-3/23/26,Narc,Q,FALSE,,
-3/23/26,LinkedIn,DD,FALSE,,
-3/23/26,Cobbler,DD,FALSE,,
-3/23/26,Squatter,DD,FALSE,,
-3/23/26,Elmer,DD,FALSE,,
-3/23/26,Juice,,FALSE,,
-3/23/26,Momma's Boy,,FALSE,,
-3/23/26,EVAC,,FALSE,,
-3/20/26,EVAC,Q,FALSE,,
-3/20/26,Narc,,FALSE,,
-3/20/26,Squatter,DD,FALSE,,
-3/20/26,Wemby,DD,FALSE,,
-3/20/26,Cobbler,DD,FALSE,,
-3/20/26,O-Ring,DD,FALSE,,
-3/20/26,Juice,,FALSE,,
-3/17/26,D20,Q,FALSE,,
-3/17/26,Narc,,TRUE,,
-3/17/26,Cobbler,,FALSE,,
-3/17/26,LinkedIn,,FALSE,,
-3/17/26,Momma's Boy,,FALSE,,
-3/17/26,Squatter,,FALSE,,
-3/16/26,Redbull,Q,FALSE,,
-3/16/26,Cobbler,,FALSE,,
-3/16/26,Elmer,,FALSE,,
-3/16/26,Thelma,,FALSE,,
-3/16/26,Narc,,FALSE,,
-3/13/26,Wemby,Q,FALSE,,
-3/13/26,O-Ring,,FALSE,,
-3/13/26,Narc,,FALSE,,
-3/12/26,Mario,Q,FALSE,,
-3/12/26,Wemby,DD,FALSE,,
-3/12/26,Dr. Frasier Crane,DD,FALSE,,
-3/12/26,Squatter,DD,FALSE,,
-3/12/26,Dial-Up,,FALSE,,
-3/12/26,Thermostat,,FALSE,,
-3/12/26,Lobsta,,FALSE,,
-3/12/26,Narc,,FALSE,,
-3/12/26,D20,,FALSE,,
-3/10/26,O-Ring,QVQDD,FALSE,,
-3/10/26,Wemby,DD,FALSE,,
-3/10/26,Squatter,DD,FALSE,,
-3/10/26,Thermostat,DD,FALSE,,
-3/10/26,Tropic Thunder,DD,FALSE,,
-3/10/26,Lobsta,,FALSE,,
-3/10/26,Shaggy,,FALSE,,
-3/10/26,Juice,,FALSE,,
-3/9/26,Cobbler,Q,FALSE,,
-3/9/26,Momma's Boy,,FALSE,,
-3/9/26,Wemby,,FALSE,,
-3/6/26,Xena,Q,FALSE,,
-3/6/26,Cobbler,,FALSE,,
-3/6/26,Hippo,,FALSE,,
-3/6/26,Narc,,FALSE,,
-3/6/26,O-Ring,,FALSE,,
-3/6/26,Motorboat (DR),,FALSE,,
-3/5/26,Tropic Thunder,Q,FALSE,,
-3/5/26,Cobbler,DD,FALSE,,
-3/5/26,Squatter,DD,FALSE,,
-3/5/26,Lobsta,,FALSE,,
-3/5/26,O-Ring,,FALSE,,
-3/5/26,Elmer,,FALSE,,
-3/5/26,Narc,,FALSE,,
-3/3/26,Gridlock,QDD,FALSE,,
-3/3/26,LinkedIn,DD,FALSE,,
-3/3/26,Cobbler,DD,FALSE,,
-3/3/26,O-Ring,DD,FALSE,,
-3/3/26,Tropic Thunder,DD,FALSE,,
-3/3/26,Narc,,FALSE,,
-3/3/26,Hippo,,FALSE,,
-3/3/26,Muy Caliente,,FALSE,,
-3/3/26,Lazarus,,FALSE,,
-3/2/26,EVAC,VQDD,FALSE,,
-3/2/26,Wolfie,QDD,FALSE,,
-3/2/26,Chip,,FALSE,,
-3/2/26,LinkedIn,DD,FALSE,,
-3/2/26,Cobbler,DD,FALSE,,
-3/2/26,Wemby,DD,FALSE,,
-3/2/26,Gridlock,DD,FALSE,,
-3/2/26,Xena,DD,FALSE,,
-3/2/26,Mix-A-Lot,,FALSE,,
-3/2/26,TeaTime,,FALSE,,
-3/2/26,Narc,,FALSE,,
-3/2/26,Jake,,FALSE,,
-3/2/26,Elmer,DD,FALSE,,
-3/2/26,Squatter,DD,FALSE,,
-3/2/26,Tropic Thunder,DD,FALSE,,
-2/27/26,Tinkerbell,QDD,FALSE,,
-2/27/26,Cobbler,DD,FALSE,,
-2/27/26,Lobsta,DD,FALSE,,
-2/27/26,O-Ring,DD,FALSE,,
-2/27/26,Tropic Thunder,DD,FALSE,,
-2/27/26,Xena,DD,FALSE,,
-2/27/26,Wemby,DD,FALSE,,
-2/27/26,Squatter,DD,FALSE,,
-2/26/26,Narc,Q,FALSE,,
-2/26/26,Crevasse,,FALSE,,
-2/26/26,Cobbler,,FALSE,,
-2/26/26,Elmer,,FALSE,,
-2/26/26,EVAC,,FALSE,,
-2/26/26,Lobsta,,FALSE,,
-2/26/26,O-Ring,,FALSE,,
-2/26/26,Tropic Thunder,,FALSE,,
-2/26/26,Capriati,,FALSE,,
-2/26/26,Kookaburra,,FALSE,,
-2/26/26,Sack,,FALSE,,
-2/24/26,Snooki,Q,FALSE,,
-2/24/26,Squatter,,FALSE,,
-2/24/26,O-Ring,,FALSE,,
-2/24/26,Lobsta,,FALSE,,
-2/24/26,Narc,,FALSE,,
-2/24/26,Muy Caliente,,FALSE,,
-2/24/26,Lazarus,FNG,FALSE,,
-2/23/26,Tropic Thunder,Q,FALSE,,
-2/23/26,EVAC,,FALSE,,
-2/23/26,Narc,,FALSE,,
-2/23/26,Squatter,,FALSE,,
-2/23/26,Elmer,,FALSE,,
-2/23/26,Juice,,FALSE,,
-2/20/26,Wemby,Q,FALSE,,
-2/20/26,Juice,,FALSE,,
-2/20/26,EVAC,,FALSE,,
-2/20/26,O-Ring,,FALSE,,
-2/19/26,Elmer,Q,FALSE,,
-2/19/26,LinkedIn,DD,FALSE,,
-2/19/26,Capriati,,FALSE,,
-2/19/26,Narc,,FALSE,,
-2/19/26,Sack,,FALSE,,
-2/19/26,O-Ring,DD,FALSE,,
-2/19/26,Mix-A-Lot,,FALSE,,
-2/19/26,TeaTime,,FALSE,,
-2/19/26,Kookaburra,,FALSE,,
-2/19/26,Squatter,DD,FALSE,,
-2/19/26,Xena,DD,FALSE,,
-2/19/26,EVAC,DD,FALSE,,
-2/17/26,Squatter,Q,FALSE,FALSE,
-2/17/26,O-Ring,,FALSE,FALSE,
-2/17/26,EVAC,,FALSE,FALSE,
-2/17/26,Pivot,,FALSE,FALSE,
-2/17/26,Narc,,FALSE,FALSE,
-2/16/26,Narc,Q,FALSE,FALSE,
-2/16/26,Elmer,DD,FALSE,FALSE,
-2/16/26,Squatter,DD,FALSE,FALSE,
-2/16/26,Capriati,DDFNG,FALSE,FALSE,
-2/13/26,Shaggy,QDD,FALSE,FALSE,
-2/13/26,Chip,,FALSE,FALSE,
-2/13/26,Cobbler,DD,FALSE,FALSE,
-2/13/26,Elmer,DD,FALSE,FALSE,
-2/13/26,Frodo,,FALSE,FALSE,
-2/13/26,O-Ring,DD,FALSE,FALSE,
-2/13/26,Squatter,DD,FALSE,FALSE,
-2/13/26,Xena,DD,FALSE,FALSE,
-2/12/26,Kookaburra,QVQ,FALSE,FALSE,
-2/12/26,Tinkerbell,DD,FALSE,FALSE,
-2/12/26,Cobbler,DD,FALSE,FALSE,
-2/12/26,Tropic Thunder,DD,FALSE,FALSE,
-2/12/26,Squatter,DD,FALSE,FALSE,
-2/12/26,O-Ring,DD,FALSE,FALSE,
-2/12/26,EVAC,DD,FALSE,FALSE,
-2/12/26,Narc,DD,FALSE,FALSE,
-2/12/26,Fertile,,FALSE,FALSE,
-2/12/26,Lobsta,,FALSE,FALSE,
-2/10/26,Squatter,QDD,FALSE,FALSE,
-2/10/26,LinkedIn,DD,FALSE,FALSE,
-2/10/26,Cobbler,DD,FALSE,FALSE,
-2/10/26,Tropic Thunder,,FALSE,FALSE,
-2/10/26,Chip,,FALSE,FALSE,
-2/10/26,Lobsta,,FALSE,FALSE,
-2/10/26,O-Ring,DD,FALSE,FALSE,
-2/9/26,Tropic Thunder,Q,FALSE,FALSE,
-2/9/26,Narc,,FALSE,FALSE,
-2/9/26,Cobbler,,FALSE,FALSE,
-2/9/26,Ottoman Empire,,FALSE,FALSE,
-2/9/26,EVAC,,FALSE,FALSE,
-2/6/26,Thermostat,QDD,FALSE,FALSE,
-2/6/26,LinkedIn,DD,FALSE,FALSE,
-2/6/26,Squatter,DD,FALSE,FALSE,
-2/6/26,Wemby,DD,FALSE,FALSE,
-2/6/26,Tinkerbell,DD,FALSE,FALSE,
-2/6/26,O-Ring,DD,FALSE,FALSE,
-2/6/26,Dealer,DD,FALSE,FALSE,
-2/6/26,Jake,DD,FALSE,FALSE,
-2/6/26,Tropic Thunder,DD,FALSE,FALSE,
-2/6/26,Werner,,FALSE,FALSE,
+Date,Pax,Code,DD Only,DR Only,Weekday
+5/15/26,Lazarus,QDD,FALSE,,Fri
+5/15/26,Muy Caliente,,FALSE,,Fri
+5/15/26,Xena,,FALSE,,Fri
+5/15/26,Cobbler,,FALSE,,Fri
+5/15/26,Squatter,DD,FALSE,,Fri
+5/15/26,Kookaburra,,FALSE,,Fri
+5/15/26,Elmer,,FALSE,,Fri
+5/15/26,Narc,,FALSE,,Thu
+5/14/26,Squatter,QDD,FALSE,,Thu
+5/14/26,Cobbler,DD,FALSE,,Thu
+5/14/26,Elmer,,FALSE,,Thu
+5/14/26,EVAC,DD,FALSE,,Thu
+5/14/26,Juice,DD,FALSE,,Thu
+5/14/26,Muy Caliente,,FALSE,,Thu
+5/14/26,Grover,DD,FALSE,,Thu
+5/14/26,O-Ring,DD,FALSE,,Thu
+5/14/26,Lazarus,,FALSE,,Thu
+5/14/26,TeaTime,,FALSE,,Thu
+5/14/26,Mix-A-Lot,,FALSE,,Thu
+5/14/26,Narc,,FALSE,,Tue
+5/12/26,Narc,Q,FALSE,,Tue
+5/12/26,Squatter,VQ,FALSE,,Tue
+5/12/26,O-Ring,VQ,FALSE,,Tue
+5/12/26,Liver King,,FALSE,,Tue
+5/12/26,Slab,FNG,FALSE,,Tue
+5/12/26,Juice,,FALSE,,Tue
+5/12/26,Cobbler,,FALSE,,Tue
+5/12/26,Elmer,,FALSE,,Tue
+5/12/26,Lazarus,,FALSE,,Mon
+5/11/26,EVAC,Q,FALSE,,Mon
+5/11/26,LinkedIn,,FALSE,,Mon
+5/11/26,Liver King,,FALSE,,Mon
+5/11/26,Cobbler,,FALSE,,Mon
+5/11/26,Squatter,,FALSE,,Mon
+5/11/26,Wemby,,FALSE,,Mon
+5/11/26,Grover,,FALSE,,Mon
+5/11/26,Lazarus,,FALSE,,Mon
+5/11/26,Muy Caliente,,FALSE,,Mon
+5/11/26,Narc,,FALSE,,Fri
+5/8/26,Tropic Thunder,Q,FALSE,,Fri
+5/8/26,Victory Lap,,FALSE,,Fri
+5/8/26,Cobbler,,FALSE,,Fri
+5/8/26,Elmer,,FALSE,,Fri
+5/8/26,Wemby,,FALSE,,Fri
+5/8/26,Muy Caliente,,FALSE,,Fri
+5/8/26,Kookaburra,,FALSE,,Fri
+5/8/26,O-Ring,,FALSE,,Fri
+5/8/26,Narc,,FALSE,,Fri
+5/8/26,Juice,,FALSE,,Thu
+5/7/26,Jake,Q,FALSE,,Thu
+5/7/26,LinkedIn,DD,FALSE,,Thu
+5/7/26,Cobbler,DD,FALSE,,Thu
+5/7/26,Shaggy,DD,FALSE,,Thu
+5/7/26,Nickels,,FALSE,,Thu
+5/7/26,O-Ring,DD,FALSE,,Thu
+5/7/26,Cuatro,DD,FALSE,,Thu
+5/7/26,Elmer,DD,FALSE,,Thu
+5/7/26,Meatloaf,DD,FALSE,,Thu
+5/7/26,Lazarus,DD,FALSE,,Thu
+5/7/26,Grover,DD,FALSE,,Thu
+5/7/26,Anakin,,FALSE,,Thu
+5/7/26,Thermostat,,FALSE,,Thu
+5/7/26,Cobbler,,FALSE,,Thu
+5/7/26,Cowbell,,FALSE,,Thu
+5/7/26,Johnny 5,,FALSE,,Thu
+5/7/26,Dial-Up,DD,FALSE,,Thu
+5/7/26,Buttercream,DD,FALSE,,Thu
+5/7/26,Tropic Thunder,,FALSE,,Thu
+5/7/26,Narc,,FALSE,,Thu
+5/7/26,Squatter,DD,FALSE,,Tue
+5/5/26,Lazarus,Q,FALSE,,Tue
+5/5/26,Squatter,,FALSE,,Tue
+5/5/26,Tropic Thunder,,FALSE,,Tue
+5/5/26,Lobsta,,FALSE,,Tue
+5/5/26,Muy Caliente,,FALSE,,Tue
+5/5/26,Sinko,,FALSE,,Tue
+5/5/26,Narc,,FALSE,,Tue
+5/5/26,Grover,,FALSE,,Mon
+5/4/26,Narc,Q,FALSE,,Mon
+5/4/26,Lazarus,,FALSE,,Mon
+5/4/26,Tropic Thunder,,FALSE,,Mon
+5/4/26,Squatter,,FALSE,,Mon
+5/4/26,Juice,,FALSE,,Mon
+5/4/26,Blue Screen,,FALSE,,Fri
+5/1/26,Lazarus,VQ,FALSE,,Fri
+5/1/26,Muy Caliente,,FALSE,,Fri
+5/1/26,O-Ring,DD,FALSE,,Fri
+5/1/26,Xena,DD,FALSE,,Fri
+5/1/26,LinkedIn,DD,FALSE,,Fri
+5/1/26,Elmer,DD,FALSE,,Fri
+5/1/26,Wemby,DD,FALSE,,Fri
+5/1/26,Squatter,DD,FALSE,,Fri
+5/1/26,EVAC,DD,FALSE,,Fri
+5/1/26,Grover,,FALSE,,Fri
+5/1/26,Tinkerbell,DD,FALSE,,Fri
+5/1/26,Tropic Thunder,DD,FALSE,,Fri
+5/1/26,Narc,,FALSE,,Fri
+5/1/26,Wolfie,DD,FALSE,,Thu
+4/30/26,EVAC,Q,FALSE,,Thu
+4/30/26,Narc,,FALSE,,Thu
+4/30/26,Lobsta,,FALSE,,Thu
+4/30/26,Elmer,,FALSE,,Thu
+4/30/26,O-Ring,,FALSE,,Thu
+4/30/26,Lazarus,,FALSE,,Thu
+4/30/26,Grover,FNG,FALSE,,Thu
+4/30/26,Jamba,FNG,FALSE,,Thu
+4/30/26,Tropic Thunder,,FALSE,,Tue
+4/28/26,Xena,QDD,FALSE,,Tue
+4/28/26,O-Ring,DD,FALSE,,Tue
+4/28/26,Squatter,DD,FALSE,,Tue
+4/28/26,Elmer,DD,FALSE,,Tue
+4/28/26,Tropic Thunder,DD,FALSE,,Tue
+4/28/26,Narc,,FALSE,,Tue
+4/28/26,Juice,,FALSE,,Tue
+4/28/26,Lazarus,,FALSE,,Tue
+4/28/26,Muy Caliente,,FALSE,,Tue
+4/28/26,Lobsta,,FALSE,,Mon
+4/27/26,Elmer,Q,FALSE,,Mon
+4/27/26,Wemby,,FALSE,,Mon
+4/27/26,Mix-A-Lot,,FALSE,,Mon
+4/27/26,Lazarus,,FALSE,,Mon
+4/27/26,Dial-Up,,FALSE,,Mon
+4/27/26,Buttercream,,FALSE,,Mon
+4/27/26,Muy Caliente,,FALSE,,Mon
+4/27/26,Tropic Thunder,,FALSE,,Mon
+4/27/26,Xena,,FALSE,,Mon
+4/27/26,Fertile,,FALSE,,Mon
+4/27/26,EVAC,DD,FALSE,,Mon
+4/27/26,Narc,DD,FALSE,,Mon
+4/27/26,Cobbler,,FALSE,,Fri
+4/24/26,Cobbler,Q,FALSE,,Fri
+4/24/26,Squatter,,FALSE,,Fri
+4/24/26,Xena,,FALSE,,Fri
+4/24/26,O-Ring,,FALSE,,Fri
+4/24/26,Tropic Thunder,,FALSE,,Fri
+4/24/26,EVAC,,FALSE,,Fri
+4/24/26,Lazarus,,FALSE,,Fri
+4/24/26,SCUBA Steve,,FALSE,,Thu
+4/23/26,Muy Caliente,Q,FALSE,,Thu
+4/23/26,Narc,,TRUE,,Thu
+4/23/26,EVAC,DD,FALSE,,Thu
+4/23/26,Squatter,,FALSE,,Thu
+4/23/26,Lobsta,,FALSE,,Thu
+4/23/26,Cobbler,,FALSE,,Thu
+4/23/26,O-Ring,,FALSE,,Thu
+4/23/26,Tropic Thunder,,FALSE,,Thu
+4/23/26,Dial-Up,,FALSE,,Thu
+4/23/26,Lazarus,,FALSE,,Thu
+4/23/26,Elmer,,FALSE,,Thu
+4/23/26,Juice,,FALSE,,Thu
+4/23/26,Thermostat,,FALSE,,Tue
+4/21/26,Squatter,Q,FALSE,,Tue
+4/21/26,Narc,,TRUE,,Tue
+4/21/26,Cobbler,,FALSE,,Tue
+4/21/26,O-Ring,,FALSE,,Tue
+4/21/26,Muy Caliente,,FALSE,,Tue
+4/21/26,Lazarus,,FALSE,,Mon
+4/20/26,Elmer,Q,FALSE,,Mon
+4/20/26,Muy Caliente,,FALSE,,Mon
+4/20/26,EVAC,,FALSE,,Mon
+4/20/26,Lazarus,,FALSE,,Mon
+4/20/26,Wemby,,FALSE,,Mon
+4/20/26,Narc,,FALSE,,Mon
+4/20/26,Cobbler,,FALSE,,Sat
+4/18/26,Tony Hawk,DD,FALSE,,Sat
+4/18/26,Hippo,,FALSE,,Sat
+4/18/26,Moses,,FALSE,,Sat
+4/18/26,Juice,,FALSE,,Sat
+4/18/26,Lazarus,,FALSE,,Sat
+4/18/26,Squatter,,FALSE,,Sat
+4/18/26,Hancock (DR),,FALSE,,Sat
+4/18/26,Mario,,FALSE,,Sat
+4/18/26,Boomer,,FALSE,,Sat
+4/18/26,Tinkerbell,,FALSE,,Sat
+4/18/26,Jake,,FALSE,,Sat
+4/18/26,Muy Caliente,,FALSE,,Sat
+4/18/26,Super Soaker,,FALSE,,Sat
+4/18/26,Frodo,,FALSE,,Sat
+4/18/26,Cobbler,,FALSE,,Sat
+4/18/26,Shaggy,DD,FALSE,,Sat
+4/18/26,Cindy,,FALSE,,Sat
+4/18/26,Dial-Up,,FALSE,,Sat
+4/18/26,Circuit,,FALSE,,Sat
+4/18/26,Burgundy,,FALSE,,Sat
+4/18/26,Maple (DR),,FALSE,,Sat
+4/18/26,Anakin,DD,FALSE,,Sat
+4/18/26,Johnny 5,,FALSE,,Sat
+4/18/26,Blitz (2.0),FNG,FALSE,,Sat
+4/18/26,LinkedIn,Q,FALSE,,Sat
+4/18/26,Scooter,,TRUE,,Fri
+4/17/26,Cuatro,,FALSE,,Fri
+4/17/26,Kookaburra,,FALSE,,Fri
+4/17/26,Muy Caliente,,FALSE,,Fri
+4/17/26,Dial-Up,,FALSE,,Fri
+4/17/26,Huevos,,FALSE,,Fri
+4/17/26,Snooki,,FALSE,,Fri
+4/17/26,Jake,,FALSE,,Fri
+4/17/26,LinkedIn,,FALSE,,Fri
+4/17/26,Squatter,,FALSE,,Fri
+4/17/26,Elmer,,FALSE,,Fri
+4/17/26,Mario,,FALSE,,Fri
+4/17/26,Sack,,FALSE,,Fri
+4/17/26,Xena,,FALSE,,Fri
+4/17/26,Cobbler,Q,FALSE,,Fri
+4/17/26,O-Ring,Q,FALSE,,Thu
+4/16/26,Mario,Q,FALSE,,Thu
+4/16/26,LinkedIn,DD,FALSE,,Thu
+4/16/26,Cobbler,DD,FALSE,,Thu
+4/16/26,Wemby,,FALSE,,Thu
+4/16/26,Dial-Up,,FALSE,,Thu
+4/16/26,Mix-A-Lot,,FALSE,,Thu
+4/16/26,TeaTime,,FALSE,,Thu
+4/16/26,Werner,,FALSE,,Thu
+4/16/26,Lazarus,,FALSE,,Thu
+4/16/26,Muy Caliente,,FALSE,,Thu
+4/16/26,Narc,,FALSE,,Thu
+4/16/26,Jake,,FALSE,,Thu
+4/16/26,Squatter,,FALSE,,Thu
+4/16/26,O-Ring,,FALSE,,Thu
+4/16/26,Snooki,,FALSE,,Thu
+4/16/26,Sack,,FALSE,,Wed
+4/15/26,Jake,Q,FALSE,,Wed
+4/15/26,Cobbler,DD,FALSE,,Wed
+4/15/26,LinkedIn,DD,FALSE,,Wed
+4/15/26,Wemby,,FALSE,,Wed
+4/15/26,Mario,,FALSE,,Wed
+4/15/26,Elmer,,FALSE,,Wed
+4/15/26,Snooki,,FALSE,,Wed
+4/15/26,Muy Caliente,,FALSE,,Wed
+4/15/26,Lazarus,,FALSE,,Wed
+4/15/26,Juice,,FALSE,,Wed
+4/15/26,Narc,,FALSE,,Wed
+4/15/26,Dial-Up,,FALSE,,Wed
+4/15/26,O-Ring,,FALSE,,Wed
+4/15/26,Buttercream,FNG,FALSE,,Wed
+4/15/26,Fertile,,FALSE,,Wed
+4/15/26,Cuatro,,FALSE,,Wed
+4/15/26,Squatter,,FALSE,,Tue
+4/14/26,Xena,Q,FALSE,,Tue
+4/14/26,LinkedIn,,FALSE,,Tue
+4/14/26,Cobbler,,FALSE,,Tue
+4/14/26,Jake,,FALSE,,Tue
+4/14/26,Mario,,FALSE,,Tue
+4/14/26,Lazarus,,FALSE,,Tue
+4/14/26,Muy Caliente,,FALSE,,Tue
+4/14/26,Dial-Up,,FALSE,,Tue
+4/14/26,O-Ring,,FALSE,,Tue
+4/14/26,Narc,,FALSE,,Tue
+4/14/26,Elmer,,FALSE,,Tue
+4/14/26,Wemby,,FALSE,,Tue
+4/14/26,Juice,,FALSE,,Tue
+4/14/26,Sack,,FALSE,,Tue
+4/14/26,Snooki,,FALSE,,Mon
+4/13/26,Wemby,Q,FALSE,,Mon
+4/13/26,LinkedIn,,FALSE,,Mon
+4/13/26,Cobbler,,FALSE,,Mon
+4/13/26,Mario,,FALSE,,Mon
+4/13/26,Elmer,,FALSE,,Mon
+4/13/26,Snooki,,FALSE,,Mon
+4/13/26,Muy Caliente,,FALSE,,Mon
+4/13/26,Lazarus,,FALSE,,Mon
+4/13/26,Jake,,FALSE,,Mon
+4/13/26,Huevos,FNG,FALSE,,Fri
+4/10/26,EVAC,Q,FALSE,,Fri
+4/10/26,Cobbler,,FALSE,,Fri
+4/10/26,Wemby,,FALSE,,Fri
+4/10/26,Burgundy,,FALSE,,Fri
+4/10/26,Kookaburra,,FALSE,,Fri
+4/10/26,O-Ring,,FALSE,,Fri
+4/10/26,Narc,,FALSE,,Thu
+4/9/26,Juice,Q,FALSE,,Thu
+4/9/26,Cobbler,DD,FALSE,,Thu
+4/9/26,Squatter,DD,FALSE,,Thu
+4/9/26,O-Ring,DD,FALSE,,Thu
+4/9/26,Narc,,FALSE,,Thu
+4/9/26,Muy Caliente,,FALSE,,Thu
+4/9/26,Lazarus,,FALSE,,Tue
+4/7/26,LinkedIn,QDD,FALSE,,Tue
+4/7/26,Cobbler,DD,FALSE,,Tue
+4/7/26,Squatter,DD,FALSE,,Tue
+4/7/26,O-Ring,DD,FALSE,,Tue
+4/7/26,Momma's Boy,DD,FALSE,,Tue
+4/7/26,Gridlock,DD,FALSE,,Tue
+4/7/26,Narc,,FALSE,,Mon
+4/6/26,Cobbler,QDD,FALSE,,Mon
+4/6/26,Squatter,DD,FALSE,,Mon
+4/6/26,Juice,,FALSE,,Mon
+4/6/26,Narc,,FALSE,,Fri
+4/3/26,LinkedIn,QDD,FALSE,,Fri
+4/3/26,Cobbler,DD,FALSE,,Fri
+4/3/26,Squatter,DD,FALSE,,Fri
+4/3/26,O-Ring,DD,FALSE,,Fri
+4/3/26,Hippo,,FALSE,,Fri
+4/3/26,Narc,,FALSE,,Thu
+4/2/26,Narc,Q,FALSE,,Thu
+4/2/26,O-Ring,,FALSE,,Thu
+4/2/26,Cobbler,,FALSE,,Thu
+4/2/26,Mountie,,FALSE,,Thu
+4/2/26,Search Party,,FALSE,,Thu
+4/2/26,Fertile,,FALSE,,Tue
+3/31/26,Squatter,QDD,FALSE,,Tue
+3/31/26,LinkedIn,DD,FALSE,,Tue
+3/31/26,Cobbler,DD,FALSE,,Tue
+3/31/26,O-Ring,DD,FALSE,,Tue
+3/31/26,Narc,,FALSE,,Mon
+3/30/26,Tropic Thunder,Q,FALSE,,Mon
+3/30/26,Gridlock,,FALSE,,Mon
+3/30/26,Wemby,,FALSE,,Mon
+3/30/26,Narc,,FALSE,,Mon
+3/30/26,EVAC,,FALSE,,Mon
+3/30/26,McConaughey (DR),,FALSE,,Fri
+3/27/26,Cobbler,Q,FALSE,,Fri
+3/27/26,Elmer,,FALSE,,Fri
+3/27/26,Sack,,FALSE,,Fri
+3/27/26,O-Ring,,FALSE,,Fri
+3/27/26,Tinkerbell,,FALSE,,Thu
+3/26/26,Thermostat,QDD,FALSE,,Thu
+3/26/26,Cobbler,DD,FALSE,,Thu
+3/26/26,Squatter,DD,FALSE,,Thu
+3/26/26,Wemby,DD,FALSE,,Thu
+3/26/26,O-Ring,DD,FALSE,,Thu
+3/26/26,Elmer,DD,FALSE,,Thu
+3/26/26,D20,,FALSE,,Thu
+3/26/26,Momma's Boy,,FALSE,,Thu
+3/26/26,Sack,,FALSE,,Thu
+3/26/26,Narc,,FALSE,,Thu
+3/26/26,Dial-Up,,FALSE,,Thu
+3/26/26,Kookaburra,,FALSE,,Tue
+3/24/26,EVAC,Q,FALSE,,Tue
+3/24/26,Squatter,DD,FALSE,,Tue
+3/24/26,LinkedIn,DD,FALSE,,Tue
+3/24/26,Cobbler,DD,FALSE,,Tue
+3/24/26,Fertile,DD,FALSE,,Tue
+3/24/26,O-Ring,DD,FALSE,,Tue
+3/24/26,Narc,,FALSE,,Mon
+3/23/26,Narc,Q,FALSE,,Mon
+3/23/26,LinkedIn,DD,FALSE,,Mon
+3/23/26,Cobbler,DD,FALSE,,Mon
+3/23/26,Squatter,DD,FALSE,,Mon
+3/23/26,Elmer,DD,FALSE,,Mon
+3/23/26,Juice,,FALSE,,Mon
+3/23/26,Momma's Boy,,FALSE,,Mon
+3/23/26,EVAC,,FALSE,,Fri
+3/20/26,EVAC,Q,FALSE,,Fri
+3/20/26,Narc,,FALSE,,Fri
+3/20/26,Squatter,DD,FALSE,,Fri
+3/20/26,Wemby,DD,FALSE,,Fri
+3/20/26,Cobbler,DD,FALSE,,Fri
+3/20/26,O-Ring,DD,FALSE,,Fri
+3/20/26,Juice,,FALSE,,Tue
+3/17/26,D20,Q,FALSE,,Tue
+3/17/26,Narc,,TRUE,,Tue
+3/17/26,Cobbler,,FALSE,,Tue
+3/17/26,LinkedIn,,FALSE,,Tue
+3/17/26,Momma's Boy,,FALSE,,Tue
+3/17/26,Squatter,,FALSE,,Mon
+3/16/26,Redbull,Q,FALSE,,Mon
+3/16/26,Cobbler,,FALSE,,Mon
+3/16/26,Elmer,,FALSE,,Mon
+3/16/26,Thelma,,FALSE,,Mon
+3/16/26,Narc,,FALSE,,Fri
+3/13/26,Wemby,Q,FALSE,,Fri
+3/13/26,O-Ring,,FALSE,,Fri
+3/13/26,Narc,,FALSE,,Thu
+3/12/26,Mario,Q,FALSE,,Thu
+3/12/26,Wemby,DD,FALSE,,Thu
+3/12/26,Dr. Frasier Crane,DD,FALSE,,Thu
+3/12/26,Squatter,DD,FALSE,,Thu
+3/12/26,Dial-Up,,FALSE,,Thu
+3/12/26,Thermostat,,FALSE,,Thu
+3/12/26,Lobsta,,FALSE,,Thu
+3/12/26,Narc,,FALSE,,Thu
+3/12/26,D20,,FALSE,,Tue
+3/10/26,O-Ring,QVQDD,FALSE,,Tue
+3/10/26,Wemby,DD,FALSE,,Tue
+3/10/26,Squatter,DD,FALSE,,Tue
+3/10/26,Thermostat,DD,FALSE,,Tue
+3/10/26,Tropic Thunder,DD,FALSE,,Tue
+3/10/26,Lobsta,,FALSE,,Tue
+3/10/26,Shaggy,,FALSE,,Tue
+3/10/26,Juice,,FALSE,,Mon
+3/9/26,Cobbler,Q,FALSE,,Mon
+3/9/26,Momma's Boy,,FALSE,,Mon
+3/9/26,Wemby,,FALSE,,Fri
+3/6/26,Xena,Q,FALSE,,Fri
+3/6/26,Cobbler,,FALSE,,Fri
+3/6/26,Hippo,,FALSE,,Fri
+3/6/26,Narc,,FALSE,,Fri
+3/6/26,O-Ring,,FALSE,,Fri
+3/6/26,Motorboat (DR),,FALSE,,Thu
+3/5/26,Tropic Thunder,Q,FALSE,,Thu
+3/5/26,Cobbler,DD,FALSE,,Thu
+3/5/26,Squatter,DD,FALSE,,Thu
+3/5/26,Lobsta,,FALSE,,Thu
+3/5/26,O-Ring,,FALSE,,Thu
+3/5/26,Elmer,,FALSE,,Thu
+3/5/26,Narc,,FALSE,,Tue
+3/3/26,Gridlock,QDD,FALSE,,Tue
+3/3/26,LinkedIn,DD,FALSE,,Tue
+3/3/26,Cobbler,DD,FALSE,,Tue
+3/3/26,O-Ring,DD,FALSE,,Tue
+3/3/26,Tropic Thunder,DD,FALSE,,Tue
+3/3/26,Narc,,FALSE,,Tue
+3/3/26,Hippo,,FALSE,,Tue
+3/3/26,Muy Caliente,,FALSE,,Tue
+3/3/26,Lazarus,,FALSE,,Mon
+3/2/26,EVAC,VQDD,FALSE,,Mon
+3/2/26,Wolfie,QDD,FALSE,,Mon
+3/2/26,Chip,,FALSE,,Mon
+3/2/26,LinkedIn,DD,FALSE,,Mon
+3/2/26,Cobbler,DD,FALSE,,Mon
+3/2/26,Wemby,DD,FALSE,,Mon
+3/2/26,Gridlock,DD,FALSE,,Mon
+3/2/26,Xena,DD,FALSE,,Mon
+3/2/26,Mix-A-Lot,,FALSE,,Mon
+3/2/26,TeaTime,,FALSE,,Mon
+3/2/26,Narc,,FALSE,,Mon
+3/2/26,Jake,,FALSE,,Mon
+3/2/26,Elmer,DD,FALSE,,Mon
+3/2/26,Squatter,DD,FALSE,,Mon
+3/2/26,Tropic Thunder,DD,FALSE,,Fri
+2/27/26,Tinkerbell,QDD,FALSE,,Fri
+2/27/26,Cobbler,DD,FALSE,,Fri
+2/27/26,Lobsta,DD,FALSE,,Fri
+2/27/26,O-Ring,DD,FALSE,,Fri
+2/27/26,Tropic Thunder,DD,FALSE,,Fri
+2/27/26,Xena,DD,FALSE,,Fri
+2/27/26,Wemby,DD,FALSE,,Fri
+2/27/26,Squatter,DD,FALSE,,Thu
+2/26/26,Narc,Q,FALSE,,Thu
+2/26/26,Crevasse,,FALSE,,Thu
+2/26/26,Cobbler,,FALSE,,Thu
+2/26/26,Elmer,,FALSE,,Thu
+2/26/26,EVAC,,FALSE,,Thu
+2/26/26,Lobsta,,FALSE,,Thu
+2/26/26,O-Ring,,FALSE,,Thu
+2/26/26,Tropic Thunder,,FALSE,,Thu
+2/26/26,Capriati,,FALSE,,Thu
+2/26/26,Kookaburra,,FALSE,,Thu
+2/26/26,Sack,,FALSE,,Tue
+2/24/26,Snooki,Q,FALSE,,Tue
+2/24/26,Squatter,,FALSE,,Tue
+2/24/26,O-Ring,,FALSE,,Tue
+2/24/26,Lobsta,,FALSE,,Tue
+2/24/26,Narc,,FALSE,,Tue
+2/24/26,Muy Caliente,,FALSE,,Tue
+2/24/26,Lazarus,FNG,FALSE,,Mon
+2/23/26,Tropic Thunder,Q,FALSE,,Mon
+2/23/26,EVAC,,FALSE,,Mon
+2/23/26,Narc,,FALSE,,Mon
+2/23/26,Squatter,,FALSE,,Mon
+2/23/26,Elmer,,FALSE,,Mon
+2/23/26,Juice,,FALSE,,Fri
+2/20/26,Wemby,Q,FALSE,,Fri
+2/20/26,Juice,,FALSE,,Fri
+2/20/26,EVAC,,FALSE,,Fri
+2/20/26,O-Ring,,FALSE,,Thu
+2/19/26,Elmer,Q,FALSE,,Thu
+2/19/26,LinkedIn,DD,FALSE,,Thu
+2/19/26,Capriati,,FALSE,,Thu
+2/19/26,Narc,,FALSE,,Thu
+2/19/26,Sack,,FALSE,,Thu
+2/19/26,O-Ring,DD,FALSE,,Thu
+2/19/26,Mix-A-Lot,,FALSE,,Thu
+2/19/26,TeaTime,,FALSE,,Thu
+2/19/26,Kookaburra,,FALSE,,Thu
+2/19/26,Squatter,DD,FALSE,,Thu
+2/19/26,Xena,DD,FALSE,,Thu
+2/19/26,EVAC,DD,FALSE,,Tue
+2/17/26,Squatter,Q,FALSE,FALSE,Tue
+2/17/26,O-Ring,,FALSE,FALSE,Tue
+2/17/26,EVAC,,FALSE,FALSE,Tue
+2/17/26,Pivot,,FALSE,FALSE,Tue
+2/17/26,Narc,,FALSE,FALSE,Mon
+2/16/26,Narc,Q,FALSE,FALSE,Mon
+2/16/26,Elmer,DD,FALSE,FALSE,Mon
+2/16/26,Squatter,DD,FALSE,FALSE,Mon
+2/16/26,Capriati,DDFNG,FALSE,FALSE,Fri
+2/13/26,Shaggy,QDD,FALSE,FALSE,Fri
+2/13/26,Chip,,FALSE,FALSE,Fri
+2/13/26,Cobbler,DD,FALSE,FALSE,Fri
+2/13/26,Elmer,DD,FALSE,FALSE,Fri
+2/13/26,Frodo,,FALSE,FALSE,Fri
+2/13/26,O-Ring,DD,FALSE,FALSE,Fri
+2/13/26,Squatter,DD,FALSE,FALSE,Fri
+2/13/26,Xena,DD,FALSE,FALSE,Thu
+2/12/26,Kookaburra,QVQ,FALSE,FALSE,Thu
+2/12/26,Tinkerbell,DD,FALSE,FALSE,Thu
+2/12/26,Cobbler,DD,FALSE,FALSE,Thu
+2/12/26,Tropic Thunder,DD,FALSE,FALSE,Thu
+2/12/26,Squatter,DD,FALSE,FALSE,Thu
+2/12/26,O-Ring,DD,FALSE,FALSE,Thu
+2/12/26,EVAC,DD,FALSE,FALSE,Thu
+2/12/26,Narc,DD,FALSE,FALSE,Thu
+2/12/26,Fertile,,FALSE,FALSE,Thu
+2/12/26,Lobsta,,FALSE,FALSE,Tue
+2/10/26,Squatter,QDD,FALSE,FALSE,Tue
+2/10/26,LinkedIn,DD,FALSE,FALSE,Tue
+2/10/26,Cobbler,DD,FALSE,FALSE,Tue
+2/10/26,Tropic Thunder,,FALSE,FALSE,Tue
+2/10/26,Chip,,FALSE,FALSE,Tue
+2/10/26,Lobsta,,FALSE,FALSE,Tue
+2/10/26,O-Ring,DD,FALSE,FALSE,Mon
+2/9/26,Tropic Thunder,Q,FALSE,FALSE,Mon
+2/9/26,Narc,,FALSE,FALSE,Mon
+2/9/26,Cobbler,,FALSE,FALSE,Mon
+2/9/26,Ottoman Empire,,FALSE,FALSE,Mon
+2/9/26,EVAC,,FALSE,FALSE,Fri
+2/6/26,Thermostat,QDD,FALSE,FALSE,Fri
+2/6/26,LinkedIn,DD,FALSE,FALSE,Fri
+2/6/26,Squatter,DD,FALSE,FALSE,Fri
+2/6/26,Wemby,DD,FALSE,FALSE,Fri
+2/6/26,Tinkerbell,DD,FALSE,FALSE,Fri
+2/6/26,O-Ring,DD,FALSE,FALSE,Fri
+2/6/26,Dealer,DD,FALSE,FALSE,Fri
+2/6/26,Jake,DD,FALSE,FALSE,Fri
+2/6/26,Tropic Thunder,DD,FALSE,FALSE,Fri
+2/6/26,Werner,,FALSE,FALSE,Fri
 2/6/26,Wad,DDFNG,FALSE,FALSE,Fri
-2/6/26,Narc,,FALSE,FALSE,
-2/5/26,Fertile,QDD,FALSE,FALSE,
-2/5/26,Xena,DD,FALSE,FALSE,
-2/5/26,Squatter,DD,FALSE,FALSE,
-2/5/26,Gridlock,,FALSE,FALSE,
-2/5/26,O-Ring,DD,FALSE,FALSE,
-2/5/26,Cobbler,DD,FALSE,FALSE,
-2/5/26,Kookaburra,,FALSE,FALSE,
-2/5/26,Narc,,FALSE,FALSE,
-2/5/26,Lobsta,FNG,FALSE,FALSE,
-2/5/26,Tropic Thunder,DD,FALSE,FALSE,
-2/5/26,Elmer,DD,FALSE,FALSE,
-2/5/26,Dr scholl's,,FALSE,FALSE,
-2/5/26,Ottoman Empire,,FALSE,FALSE,
-2/5/26,Hippo,,FALSE,FALSE,
-2/3/26,Cobbler,,FALSE,FALSE,
-2/3/26,Juice,,FALSE,FALSE,
-2/3/26,Ottoman Empire,,FALSE,FALSE,
-2/3/26,Squatter,,FALSE,FALSE,
-2/3/26,Tropic Thunder,Q,FALSE,FALSE,
-2/3/26,Spike,,FALSE,FALSE,
-2/2/26,Cobbler,QDD,FALSE,FALSE,
-2/2/26,LinkedIn,DD,FALSE,FALSE,
-2/2/26,Squatter,DD,FALSE,FALSE,
-2/2/26,Mix-A-Lot,DD,FALSE,FALSE,
-2/2/26,Elmer,DD,FALSE,FALSE,
-2/2/26,Narc,,FALSE,FALSE,
-2/2/26,Xena,DD,FALSE,FALSE,
-2/2/26,Sack,,FALSE,FALSE,
-2/2/26,Tropic Thunder,,FALSE,FALSE,
-2/2/26,Chip,,FALSE,FALSE,
-1/30/26,Hippo,,FALSE,FALSE,
-1/30/26,Squatter,DD,FALSE,FALSE,
-1/30/26,Mario,QDD,FALSE,FALSE,
-1/30/26,LinkedIn,DD,FALSE,FALSE,
-1/30/26,Thermostat,DD,FALSE,FALSE,
-1/30/26,Cobbler,DD,FALSE,FALSE,
-1/30/26,Ottoman Empire,DD,FALSE,FALSE,
-1/30/26,Narc,,FALSE,FALSE,
-1/30/26,Kookaburra,,FALSE,FALSE,
-1/30/26,Tinkerbell,DD,FALSE,FALSE,
-1/30/26,Juice,,FALSE,FALSE,
-1/30/26,Tropic Thunder,DD,FALSE,FALSE,
-1/30/26,Wemby,DD,FALSE,FALSE,
-1/30/26,Fab,FNG,FALSE,FALSE,
-1/29/26,Squatter,QDD,FALSE,FALSE,
-1/29/26,LinkedIn,DD,FALSE,FALSE,
-1/29/26,O-Ring,DD,FALSE,FALSE,
-1/29/26,Ding Dong,DD,FALSE,FALSE,
-1/29/26,Fertile,,FALSE,FALSE,
-1/29/26,Narc,,FALSE,FALSE,
-1/29/26,Juice,,FALSE,FALSE,
-1/29/26,Super Soaker,,FALSE,FALSE,
-1/29/26,Whistleblower,,FALSE,FALSE,
-1/29/26,Johnny 5,,FALSE,FALSE,
-1/27/26,Narc,Q,FALSE,FALSE,
-1/27/26,Ottoman Empire,FNG,FALSE,FALSE,
-1/27/26,LinkedIn,,FALSE,FALSE,
-1/27/26,Cobbler,,FALSE,FALSE,
-1/27/26,D20,,FALSE,FALSE,
-1/27/26,Juice,,FALSE,FALSE,
-1/27/26,Freedom,,FALSE,FALSE,
-1/27/26,Squatter,,FALSE,FALSE,
-1/27/26,Fertile,,FALSE,FALSE,
-1/26/26,LinkedIn,Q,FALSE,FALSE,
-1/26/26,Squatter,,FALSE,FALSE,
-1/26/26,Narc,,FALSE,FALSE,
-1/23/26,LinkedIn,QDD,FALSE,FALSE,
-1/23/26,Narc,,FALSE,FALSE,
-1/23/26,Cobbler,DD,FALSE,FALSE,
-1/23/26,Wrench,DD,FALSE,FALSE,
-1/23/26,Thermostat,DD,FALSE,FALSE,
-1/23/26,Wemby,DD,FALSE,FALSE,
-1/23/26,O-Ring,DD,FALSE,FALSE,
-1/23/26,Elmer,DD,FALSE,FALSE,
-1/23/26,Kookaburra,,FALSE,FALSE,
-1/23/26,Ding Dong,DD,FALSE,FALSE,
-1/23/26,Dealer,DD,FALSE,FALSE,
-1/23/26,Dial-Up,,FALSE,FALSE,
-1/23/26,Xena,DD,FALSE,FALSE,
-1/23/26,Gridlock,,FALSE,FALSE,
-1/23/26,Snare,DD,FALSE,FALSE,
-1/22/26,LinkedIn,QDD,FALSE,FALSE,
-1/22/26,Cobbler,DD,FALSE,FALSE,
-1/22/26,Elmer,,FALSE,FALSE,
-1/22/26,Narc,,FALSE,FALSE,
-1/22/26,Tinkerbell,DD,FALSE,FALSE,
-1/22/26,O-Ring,DD,FALSE,FALSE,
-1/22/26,Wrench,FNG,FALSE,FALSE,
-1/20/26,Narc,Q,FALSE,FALSE,
-1/20/26,Cobbler,,FALSE,FALSE,
-1/20/26,Fertile,,FALSE,FALSE,
-1/19/26,Wemby,Q,FALSE,FALSE,
-1/19/26,Narc,,FALSE,FALSE,
-1/19/26,Cobbler,,FALSE,FALSE,
-1/16/26,Thermostat,QDD,FALSE,FALSE,
-1/16/26,Tropic Thunder,,TRUE,FALSE,
-1/16/26,Narc,,FALSE,FALSE,
-1/16/26,Mario,,FALSE,FALSE,
-1/16/26,Dial-Up,,FALSE,FALSE,
-1/16/26,Dealer,DD,FALSE,FALSE,
-1/16/26,LinkedIn,DD,FALSE,FALSE,
-1/16/26,Cobbler,DD,FALSE,FALSE,
-1/16/26,O-Ring,,FALSE,FALSE,
-1/16/26,Wazowski,,FALSE,FALSE,
-1/16/26,Jake,,FALSE,FALSE,
-1/16/26,Kookaburra,,FALSE,FALSE,
-1/15/26,Elmer,QDD,FALSE,FALSE,
-1/15/26,Siesta,DD,FALSE,FALSE,
-1/15/26,LinkedIn,DD,FALSE,FALSE,
-1/15/26,Werner,,FALSE,FALSE,
-1/15/26,Narc,,FALSE,FALSE,
-1/15/26,D20,,FALSE,FALSE,
-1/15/26,Squatter,DD,FALSE,FALSE,
-1/15/26,Tropic Thunder,DD,FALSE,FALSE,
-1/15/26,Juice,,FALSE,FALSE,
-1/15/26,Xena,DD,FALSE,FALSE,
-1/15/26,Muy Caliente,,FALSE,FALSE,
-1/13/26,Cobbler,,FALSE,FALSE,
-1/13/26,Gridlock,,FALSE,FALSE,
-1/13/26,Elmer,,FALSE,FALSE,
-1/13/26,O-Ring,,FALSE,FALSE,
-1/13/26,Momma's Boy,,FALSE,FALSE,
-1/13/26,Narc,,FALSE,FALSE,
-1/13/26,Squatter,,FALSE,FALSE,
-1/13/26,Tropic Thunder,Q,FALSE,FALSE,
-1/13/26,Juice,,FALSE,FALSE,
-1/13/26,Hector,,FALSE,FALSE,
-1/12/26,Wemby,QDD,FALSE,FALSE,
-1/12/26,LinkedIn,DD,FALSE,FALSE,
-1/12/26,Cobbler,DD,FALSE,FALSE,
-1/12/26,Squatter,DD,FALSE,FALSE,
-1/12/26,Kookaburra,DD,FALSE,FALSE,
-1/12/26,Tropic Thunder,DD,FALSE,FALSE,
-1/12/26,Muy Caliente,,FALSE,FALSE,
-1/12/26,Narc,,FALSE,FALSE,
-1/9/26,Cobbler,,FALSE,FALSE,
-1/9/26,Muy Caliente,,FALSE,FALSE,
-1/9/26,O-Ring,,FALSE,FALSE,
-1/9/26,Shaggy,Q,FALSE,FALSE,
-1/9/26,Squatter,,FALSE,FALSE,
-1/9/26,Tropic Thunder,,FALSE,FALSE,
-1/9/26,Wemby,,FALSE,FALSE,
-1/8/26,Beaver,,FALSE,FALSE,
-1/8/26,Cobbler,DD,FALSE,FALSE,
-1/8/26,O-Ring,,FALSE,FALSE,
-1/8/26,Fertile,,FALSE,FALSE,
-1/8/26,Tropic Thunder,,FALSE,FALSE,
-1/8/26,Johnny 5,,FALSE,FALSE,
-1/8/26,Narc,Q,FALSE,FALSE,
-1/8/26,Juice,,FALSE,FALSE,
-1/8/26,Muy Caliente,,FALSE,FALSE,
-1/8/26,Squatter,,FALSE,FALSE,
-1/8/26,Rawhide,DD,FALSE,FALSE,
-1/6/26,LinkedIn,Q,FALSE,FALSE,
-1/6/26,Muy Caliente,,FALSE,FALSE,
-1/6/26,O-Ring,DD,FALSE,FALSE,
-1/6/26,Thermostat,DD,FALSE,FALSE,
-1/6/26,Dealer,DD,FALSE,FALSE,
-1/6/26,Juice,,FALSE,FALSE,
-1/6/26,Narc,,FALSE,FALSE,
-1/6/26,Cobbler,DD,FALSE,FALSE,
-1/6/26,Xena,DD,FALSE,FALSE,
-1/6/26,Squatter,DD,FALSE,FALSE,
-1/6/26,Tropic Thunder,DD,FALSE,FALSE,
-1/6/26,Dial-Up,DD,FALSE,FALSE,
-1/6/26,Sistine,,FALSE,FALSE,
-1/5/26,D20,,FALSE,FALSE,
-1/5/26,Gridlock,DD,FALSE,FALSE,
-1/5/26,LinkedIn,DD,FALSE,FALSE,
-1/5/26,Muy Caliente,,FALSE,FALSE,
-1/5/26,Narc,,FALSE,FALSE,
-1/5/26,Sistine,Q,FALSE,FALSE,
-1/5/26,Squatter,DD,FALSE,FALSE,
-1/5/26,Tropic Thunder,VQDD,FALSE,FALSE,
-1/5/26,Wemby,DD,FALSE,FALSE,
-1/5/26,Xena,DD,FALSE,FALSE,
-1/5/26,Safari,FNG,FALSE,FALSE,
-1/2/26,Kookaburra,,FALSE,FALSE,
-1/2/26,Mountie,Q,FALSE,FALSE,
-1/2/26,Narc,,FALSE,FALSE,
-1/2/26,Tropic Thunder,,FALSE,FALSE,
-1/1/26,Cobbler,DD,FALSE,FALSE,
-1/1/26,D20,,FALSE,FALSE,
-1/1/26,Freedom,DD,FALSE,FALSE,
-1/1/26,Jake,DD,FALSE,FALSE,
-1/1/26,Judge Judy,DD,FALSE,FALSE,
-1/1/26,Rawhide,DD,FALSE,FALSE,
-1/1/26,Search Party,DD,FALSE,FALSE,
-1/1/26,Tropic Thunder,,FALSE,FALSE,
-1/1/26,LinkedIn,QDD,FALSE,FALSE,
-12/30/25,Narc,,FALSE,FALSE,
-12/30/25,O-Ring,,FALSE,FALSE,
-12/30/25,Sistine,,FALSE,FALSE,
-12/30/25,Squatter,Q,FALSE,FALSE,
-12/30/25,Tropic Thunder,,FALSE,FALSE,
-12/29/25,Cobbler,,FALSE,FALSE,
-12/29/25,Dial-Up,,FALSE,FALSE,
-12/29/25,Elmer,,FALSE,FALSE,
-12/29/25,Narc,Q,FALSE,FALSE,
-12/29/25,Squatter,,FALSE,FALSE,
-12/29/25,Tropic Thunder,,FALSE,FALSE,
-12/26/25,Kookaburra,,FALSE,FALSE,
-12/26/25,Elmer,,FALSE,FALSE,
-12/26/25,Xena,,FALSE,FALSE,
-12/26/25,Fertile,Q,FALSE,FALSE,
-12/25/25,Rawhide,DD,FALSE,FALSE,
-12/25/25,LinkedIn,QDD,FALSE,FALSE,
-12/23/25,Squatter,,FALSE,FALSE,
-12/23/25,Tropic Thunder,,FALSE,FALSE,
-12/23/25,Juice,,FALSE,FALSE,
-12/23/25,Rawhide,Q,FALSE,FALSE,
-12/22/25,Elmer,Q,FALSE,FALSE,
-12/22/25,Fertile,,FALSE,FALSE,
-12/22/25,Squatter,,FALSE,FALSE,
-12/22/25,Tropic Thunder,,FALSE,FALSE,
-12/19/25,Narc,,FALSE,FALSE,
-12/19/25,O-Ring,DD,FALSE,FALSE,
-12/19/25,Squatter,QDD,FALSE,FALSE,
-12/19/25,Trex (2.0),,FALSE,FALSE,
-12/19/25,Tropic Thunder,DD,FALSE,FALSE,
-12/19/25,Wemby,DD,FALSE,FALSE,
-12/18/25,Dial-Up,,FALSE,FALSE,
-12/18/25,Elmer,DD,FALSE,FALSE,
-12/18/25,Fertile,,FALSE,FALSE,
-12/18/25,Narc,,FALSE,FALSE,
-12/18/25,Xena,DD,FALSE,FALSE,
-12/18/25,Redbull,,FALSE,FALSE,
-12/18/25,Cena,,FALSE,FALSE,
-12/18/25,Mountie,DD,FALSE,FALSE,
-12/18/25,Carabiner,DD,FALSE,FALSE,
-12/18/25,Tinkerbell,DD,FALSE,FALSE,
-12/18/25,Squatter,DD,FALSE,FALSE,
-12/18/25,Johnny 5,,FALSE,FALSE,
-12/18/25,Tropic Thunder,,FALSE,FALSE,
-12/18/25,Singlet,,FALSE,FALSE,
-12/18/25,Thermostat,Q,FALSE,FALSE,
-12/16/25,Dealer,,FALSE,FALSE,
-12/16/25,Dial-Up,Q,FALSE,FALSE,
-12/16/25,Elmer,,FALSE,FALSE,
-12/16/25,Narc,,FALSE,FALSE,
-12/16/25,Singlet,,FALSE,FALSE,
-12/16/25,Squatter,,FALSE,FALSE,
-12/16/25,Thermostat,,FALSE,FALSE,
-12/16/25,Tropic Thunder,,FALSE,FALSE,
-12/16/25,Xena,,FALSE,FALSE,
-12/15/25,LinkedIn,,FALSE,FALSE,
-12/15/25,Narc,Q,FALSE,FALSE,
-12/15/25,Tropic Thunder,,FALSE,FALSE,
-12/15/25,Wemby,,FALSE,FALSE,
-12/12/25,Blue Screen,,FALSE,FALSE,
-12/12/25,Cobbler,,FALSE,FALSE,
-12/12/25,Juice,,FALSE,FALSE,
-12/12/25,LinkedIn,,FALSE,FALSE,
-12/12/25,Mario,,FALSE,FALSE,
-12/12/25,Narc,Q,FALSE,FALSE,
-12/12/25,Thermostat,,FALSE,FALSE,
-12/11/25,Cobbler,QDD,FALSE,FALSE,
-12/11/25,Kookaburra,,FALSE,FALSE,
-12/11/25,LinkedIn,DD,FALSE,FALSE,
-12/11/25,Narc,,FALSE,FALSE,
-12/11/25,Search Party,DD,FALSE,FALSE,
-12/9/25,Elmer,Q,FALSE,FALSE,
-12/9/25,Gridlock,,FALSE,FALSE,
-12/9/25,Narc,,FALSE,FALSE,
-12/9/25,Squatter,,FALSE,FALSE,
-12/9/25,Xena,,FALSE,FALSE,
-12/8/25,Cobbler,DD,FALSE,FALSE,
-12/8/25,Elmer,,FALSE,FALSE,
-12/8/25,Narc,,FALSE,FALSE,
-12/8/25,Rawhide,Q,FALSE,FALSE,
-12/8/25,Squatter,,FALSE,FALSE,
-12/8/25,Xena,,FALSE,FALSE,
-12/5/25,Shaggy,,TRUE,FALSE,
-12/5/25,Cobbler,,FALSE,FALSE,
-12/5/25,Juice,,FALSE,FALSE,
-12/5/25,Narc,,FALSE,FALSE,
-12/5/25,O-Ring,,FALSE,FALSE,
-12/5/25,Wolfie,QDD,FALSE,FALSE,
-12/4/25,Airtag,DD,FALSE,FALSE,
-12/4/25,Bart,DDFNG,FALSE,FALSE,
-12/4/25,Cena,,FALSE,FALSE,
-12/4/25,Cobbler,DD,FALSE,FALSE,
-12/4/25,D20,DD,FALSE,FALSE,
-12/4/25,Dealer,DD,FALSE,FALSE,
-12/4/25,Dial-Up,DD,FALSE,FALSE,
-12/4/25,Elmer,DD,FALSE,FALSE,
-12/4/25,Fertile,,FALSE,FALSE,
-12/4/25,Hippo,,FALSE,FALSE,
-12/4/25,Hot Pants,DD,FALSE,FALSE,
-12/4/25,Meatloaf,DD,FALSE,FALSE,
-12/4/25,Narc,,FALSE,FALSE,
-12/4/25,O-Ring,DD,FALSE,FALSE,
-12/4/25,Redbull,,FALSE,FALSE,
-12/4/25,Squatter,DD,FALSE,FALSE,
-12/4/25,Thermostat,DD,FALSE,FALSE,
-12/4/25,Wemby,,FALSE,FALSE,
-12/4/25,LinkedIn,Q,FALSE,FALSE,
-12/2/25,Elmer,Q,FALSE,FALSE,
-12/2/25,Juice,,FALSE,FALSE,
-12/2/25,Narc,,FALSE,FALSE,
-12/2/25,O-Ring,,FALSE,FALSE,
-12/2/25,Squatter,,FALSE,FALSE,
-12/1/25,Cobbler,Q,FALSE,FALSE,
-12/1/25,Wemby,,FALSE,FALSE,
-12/1/25,Narc,,FALSE,FALSE,
-12/1/25,Squatter,,FALSE,FALSE,
-12/1/25,Kookaburra,FNG,FALSE,FALSE,
-11/28/25,Anakin,,FALSE,FALSE,
-11/28/25,Babel,,FALSE,FALSE,
-11/28/25,Fertile,,FALSE,FALSE,
-11/28/25,Keyser (DR),,FALSE,FALSE,
-11/28/25,Cobbler,Q,FALSE,FALSE,
-11/27/25,Acme,,,FALSE,
-11/27/25,Anakin,,,FALSE,
-11/27/25,Babel,,,FALSE,
-11/27/25,Boogy,FNG,,FALSE,
-11/27/25,Brick (2.0),,,FALSE,
-11/27/25,C Battery (DR),DD,,FALSE,
-11/27/25,Cena,FNG,,FALSE,
-11/27/25,Circuit,,,FALSE,
-11/27/25,Cowbell,,,FALSE,
-11/27/25,Dodgeball,,,FALSE,
-11/27/25,Dr scholl's,,,FALSE,
-11/27/25,Echo,,,FALSE,
-11/27/25,Eraser,,,FALSE,
-11/27/25,Fertile,,,FALSE,
-11/27/25,Frodo,,,FALSE,
-11/27/25,Hacksaw,,,FALSE,
-11/27/25,Jake,DD,,FALSE,
-11/27/25,Johnny 5,,,FALSE,
-11/27/25,Juice,,,FALSE,
-11/27/25,Keyser (DR),,,FALSE,
-11/27/25,LinkedIn,DD,,FALSE,
-11/27/25,Mountie,DD,,FALSE,
-11/27/25,Moses,,,FALSE,
-11/27/25,Mr. T (2.0),,,FALSE,
-11/27/25,Pacemaker,,,FALSE,
-11/27/25,Redbull,,,FALSE,
-11/27/25,Recurve,,,FALSE,
-11/27/25,Rosetta,,,FALSE,
-11/27/25,SeaDoo,FNG,,FALSE,
-11/27/25,Search Party,DD,,FALSE,
-11/27/25,Shingles,Q,,FALSE,
-11/27/25,Skillet,,,FALSE,
-11/27/25,Socrates (2.0),FNG,,FALSE,
-11/27/25,Spider Gwen (2.0),,,FALSE,
-11/27/25,Squatter,DD,,FALSE,
-11/27/25,Steelix (2.0),,,FALSE,
-11/27/25,Tikka,FNG,,FALSE,
-11/27/25,Tinkerbell,DD,,FALSE,
-11/27/25,Tony Hawk,,,FALSE,
-11/27/25,Wolfie,DD,FALSE,FALSE,
-11/27/25,Cobbler,,TRUE,FALSE,
-11/26/25,Cobbler,,,FALSE,
-11/26/25,Jake,,,FALSE,
-11/26/25,LinkedIn,,,FALSE,
-11/26/25,Xena,,,FALSE,
-11/26/25,Squatter,Q,,FALSE,
-11/25/25,Buddy Bucks,,,FALSE,
-11/25/25,Elmer,,,FALSE,
-11/25/25,Juice,,,FALSE,
-11/25/25,Narc,Q,,FALSE,
-11/25/25,O-Ring,,,FALSE,
-11/25/25,Trex (2.0),,,FALSE,
-11/24/25,Cobbler,DD,FALSE,FALSE,
-11/24/25,Elmer,DD,FALSE,FALSE,
-11/24/25,Gridlock,DD,FALSE,FALSE,
-11/24/25,Narc,,FALSE,FALSE,
-11/24/25,Rawhide,QDD,FALSE,FALSE,
-11/24/25,Squatter,DD,FALSE,FALSE,
-11/24/25,Xena,DD,FALSE,FALSE,
-11/21/25,Elmer,DD,FALSE,FALSE,
-11/21/25,Gridlock,QDD,FALSE,FALSE,
-11/21/25,LinkedIn,DD,FALSE,FALSE,
-11/21/25,O-Ring,DD,FALSE,FALSE,
-11/21/25,Sistine,DD,FALSE,FALSE,
-11/21/25,Thermostat,DD,FALSE,FALSE,
-11/21/25,Xena,DD,FALSE,FALSE,
-11/20/25,Cobbler,DD,FALSE,FALSE,
-11/20/25,D20,,FALSE,FALSE,
-11/20/25,Elmer,DD,FALSE,FALSE,
-11/20/25,Gridlock,DD,FALSE,FALSE,
-11/20/25,Juice,,FALSE,FALSE,
-11/20/25,Squatter,DD,FALSE,FALSE,
-11/20/25,Thermostat,DD,FALSE,FALSE,
-11/20/25,Tropic Thunder,DD,FALSE,FALSE,
-11/20/25,Xena,DD,FALSE,FALSE,
-11/18/25,Cobbler,,FALSE,FALSE,
-11/18/25,Gridlock,,FALSE,FALSE,
-11/18/25,Hippo,,FALSE,FALSE,
-11/18/25,Narc,,FALSE,FALSE,
-11/18/25,Squatter,Q,FALSE,FALSE,
-11/18/25,Tropic Thunder,DD,FALSE,FALSE,
-11/17/25,Elmer,,FALSE,FALSE,
-11/17/25,Juice,,FALSE,FALSE,
-11/17/25,Pivot,,FALSE,FALSE,
-11/17/25,Squatter,,FALSE,FALSE,
-11/17/25,Tropic Thunder,,FALSE,FALSE,
-11/17/25,Wolfie,Q,FALSE,FALSE,
-11/17/25,Xena,,FALSE,FALSE,
-11/17/25,Buddy Bucks,FNG,FALSE,FALSE,
-4/22/26,Narc,Q,FALSE,,
-4/22/26,Cobbler,,FALSE,,
-4/22/26,Mountie,,FALSE,,
-4/22/26,O-Ring,,FALSE,,
-4/22/26,Fertile,,FALSE,,
+2/6/26,Narc,,FALSE,FALSE,Thu
+2/5/26,Fertile,QDD,FALSE,FALSE,Thu
+2/5/26,Xena,DD,FALSE,FALSE,Thu
+2/5/26,Squatter,DD,FALSE,FALSE,Thu
+2/5/26,Gridlock,,FALSE,FALSE,Thu
+2/5/26,O-Ring,DD,FALSE,FALSE,Thu
+2/5/26,Cobbler,DD,FALSE,FALSE,Thu
+2/5/26,Kookaburra,,FALSE,FALSE,Thu
+2/5/26,Narc,,FALSE,FALSE,Thu
+2/5/26,Lobsta,FNG,FALSE,FALSE,Thu
+2/5/26,Tropic Thunder,DD,FALSE,FALSE,Thu
+2/5/26,Elmer,DD,FALSE,FALSE,Thu
+2/5/26,Dr scholl's,,FALSE,FALSE,Thu
+2/5/26,Ottoman Empire,,FALSE,FALSE,Thu
+2/5/26,Hippo,,FALSE,FALSE,Tue
+2/3/26,Cobbler,,FALSE,FALSE,Tue
+2/3/26,Juice,,FALSE,FALSE,Tue
+2/3/26,Ottoman Empire,,FALSE,FALSE,Tue
+2/3/26,Squatter,,FALSE,FALSE,Tue
+2/3/26,Tropic Thunder,Q,FALSE,FALSE,Tue
+2/3/26,Spike,,FALSE,FALSE,Mon
+2/2/26,Cobbler,QDD,FALSE,FALSE,Mon
+2/2/26,LinkedIn,DD,FALSE,FALSE,Mon
+2/2/26,Squatter,DD,FALSE,FALSE,Mon
+2/2/26,Mix-A-Lot,DD,FALSE,FALSE,Mon
+2/2/26,Elmer,DD,FALSE,FALSE,Mon
+2/2/26,Narc,,FALSE,FALSE,Mon
+2/2/26,Xena,DD,FALSE,FALSE,Mon
+2/2/26,Sack,,FALSE,FALSE,Mon
+2/2/26,Tropic Thunder,,FALSE,FALSE,Mon
+2/2/26,Chip,,FALSE,FALSE,Fri
+1/30/26,Hippo,,FALSE,FALSE,Fri
+1/30/26,Squatter,DD,FALSE,FALSE,Fri
+1/30/26,Mario,QDD,FALSE,FALSE,Fri
+1/30/26,LinkedIn,DD,FALSE,FALSE,Fri
+1/30/26,Thermostat,DD,FALSE,FALSE,Fri
+1/30/26,Cobbler,DD,FALSE,FALSE,Fri
+1/30/26,Ottoman Empire,DD,FALSE,FALSE,Fri
+1/30/26,Narc,,FALSE,FALSE,Fri
+1/30/26,Kookaburra,,FALSE,FALSE,Fri
+1/30/26,Tinkerbell,DD,FALSE,FALSE,Fri
+1/30/26,Juice,,FALSE,FALSE,Fri
+1/30/26,Tropic Thunder,DD,FALSE,FALSE,Fri
+1/30/26,Wemby,DD,FALSE,FALSE,Fri
+1/30/26,Fab,FNG,FALSE,FALSE,Thu
+1/29/26,Squatter,QDD,FALSE,FALSE,Thu
+1/29/26,LinkedIn,DD,FALSE,FALSE,Thu
+1/29/26,O-Ring,DD,FALSE,FALSE,Thu
+1/29/26,Ding Dong,DD,FALSE,FALSE,Thu
+1/29/26,Fertile,,FALSE,FALSE,Thu
+1/29/26,Narc,,FALSE,FALSE,Thu
+1/29/26,Juice,,FALSE,FALSE,Thu
+1/29/26,Super Soaker,,FALSE,FALSE,Thu
+1/29/26,Whistleblower,,FALSE,FALSE,Thu
+1/29/26,Johnny 5,,FALSE,FALSE,Tue
+1/27/26,Narc,Q,FALSE,FALSE,Tue
+1/27/26,Ottoman Empire,FNG,FALSE,FALSE,Tue
+1/27/26,LinkedIn,,FALSE,FALSE,Tue
+1/27/26,Cobbler,,FALSE,FALSE,Tue
+1/27/26,D20,,FALSE,FALSE,Tue
+1/27/26,Juice,,FALSE,FALSE,Tue
+1/27/26,Freedom,,FALSE,FALSE,Tue
+1/27/26,Squatter,,FALSE,FALSE,Tue
+1/27/26,Fertile,,FALSE,FALSE,Mon
+1/26/26,LinkedIn,Q,FALSE,FALSE,Mon
+1/26/26,Squatter,,FALSE,FALSE,Mon
+1/26/26,Narc,,FALSE,FALSE,Fri
+1/23/26,LinkedIn,QDD,FALSE,FALSE,Fri
+1/23/26,Narc,,FALSE,FALSE,Fri
+1/23/26,Cobbler,DD,FALSE,FALSE,Fri
+1/23/26,Wrench,DD,FALSE,FALSE,Fri
+1/23/26,Thermostat,DD,FALSE,FALSE,Fri
+1/23/26,Wemby,DD,FALSE,FALSE,Fri
+1/23/26,O-Ring,DD,FALSE,FALSE,Fri
+1/23/26,Elmer,DD,FALSE,FALSE,Fri
+1/23/26,Kookaburra,,FALSE,FALSE,Fri
+1/23/26,Ding Dong,DD,FALSE,FALSE,Fri
+1/23/26,Dealer,DD,FALSE,FALSE,Fri
+1/23/26,Dial-Up,,FALSE,FALSE,Fri
+1/23/26,Xena,DD,FALSE,FALSE,Fri
+1/23/26,Gridlock,,FALSE,FALSE,Fri
+1/23/26,Snare,DD,FALSE,FALSE,Thu
+1/22/26,LinkedIn,QDD,FALSE,FALSE,Thu
+1/22/26,Cobbler,DD,FALSE,FALSE,Thu
+1/22/26,Elmer,,FALSE,FALSE,Thu
+1/22/26,Narc,,FALSE,FALSE,Thu
+1/22/26,Tinkerbell,DD,FALSE,FALSE,Thu
+1/22/26,O-Ring,DD,FALSE,FALSE,Thu
+1/22/26,Wrench,FNG,FALSE,FALSE,Tue
+1/20/26,Narc,Q,FALSE,FALSE,Tue
+1/20/26,Cobbler,,FALSE,FALSE,Tue
+1/20/26,Fertile,,FALSE,FALSE,Mon
+1/19/26,Wemby,Q,FALSE,FALSE,Mon
+1/19/26,Narc,,FALSE,FALSE,Mon
+1/19/26,Cobbler,,FALSE,FALSE,Fri
+1/16/26,Thermostat,QDD,FALSE,FALSE,Fri
+1/16/26,Tropic Thunder,,TRUE,FALSE,Fri
+1/16/26,Narc,,FALSE,FALSE,Fri
+1/16/26,Mario,,FALSE,FALSE,Fri
+1/16/26,Dial-Up,,FALSE,FALSE,Fri
+1/16/26,Dealer,DD,FALSE,FALSE,Fri
+1/16/26,LinkedIn,DD,FALSE,FALSE,Fri
+1/16/26,Cobbler,DD,FALSE,FALSE,Fri
+1/16/26,O-Ring,,FALSE,FALSE,Fri
+1/16/26,Wazowski,,FALSE,FALSE,Fri
+1/16/26,Jake,,FALSE,FALSE,Fri
+1/16/26,Kookaburra,,FALSE,FALSE,Thu
+1/15/26,Elmer,QDD,FALSE,FALSE,Thu
+1/15/26,Siesta,DD,FALSE,FALSE,Thu
+1/15/26,LinkedIn,DD,FALSE,FALSE,Thu
+1/15/26,Werner,,FALSE,FALSE,Thu
+1/15/26,Narc,,FALSE,FALSE,Thu
+1/15/26,D20,,FALSE,FALSE,Thu
+1/15/26,Squatter,DD,FALSE,FALSE,Thu
+1/15/26,Tropic Thunder,DD,FALSE,FALSE,Thu
+1/15/26,Juice,,FALSE,FALSE,Thu
+1/15/26,Xena,DD,FALSE,FALSE,Thu
+1/15/26,Muy Caliente,,FALSE,FALSE,Tue
+1/13/26,Cobbler,,FALSE,FALSE,Tue
+1/13/26,Gridlock,,FALSE,FALSE,Tue
+1/13/26,Elmer,,FALSE,FALSE,Tue
+1/13/26,O-Ring,,FALSE,FALSE,Tue
+1/13/26,Momma's Boy,,FALSE,FALSE,Tue
+1/13/26,Narc,,FALSE,FALSE,Tue
+1/13/26,Squatter,,FALSE,FALSE,Tue
+1/13/26,Tropic Thunder,Q,FALSE,FALSE,Tue
+1/13/26,Juice,,FALSE,FALSE,Tue
+1/13/26,Hector,,FALSE,FALSE,Mon
+1/12/26,Wemby,QDD,FALSE,FALSE,Mon
+1/12/26,LinkedIn,DD,FALSE,FALSE,Mon
+1/12/26,Cobbler,DD,FALSE,FALSE,Mon
+1/12/26,Squatter,DD,FALSE,FALSE,Mon
+1/12/26,Kookaburra,DD,FALSE,FALSE,Mon
+1/12/26,Tropic Thunder,DD,FALSE,FALSE,Mon
+1/12/26,Muy Caliente,,FALSE,FALSE,Mon
+1/12/26,Narc,,FALSE,FALSE,Fri
+1/9/26,Cobbler,,FALSE,FALSE,Fri
+1/9/26,Muy Caliente,,FALSE,FALSE,Fri
+1/9/26,O-Ring,,FALSE,FALSE,Fri
+1/9/26,Shaggy,Q,FALSE,FALSE,Fri
+1/9/26,Squatter,,FALSE,FALSE,Fri
+1/9/26,Tropic Thunder,,FALSE,FALSE,Fri
+1/9/26,Wemby,,FALSE,FALSE,Thu
+1/8/26,Beaver,,FALSE,FALSE,Thu
+1/8/26,Cobbler,DD,FALSE,FALSE,Thu
+1/8/26,O-Ring,,FALSE,FALSE,Thu
+1/8/26,Fertile,,FALSE,FALSE,Thu
+1/8/26,Tropic Thunder,,FALSE,FALSE,Thu
+1/8/26,Johnny 5,,FALSE,FALSE,Thu
+1/8/26,Narc,Q,FALSE,FALSE,Thu
+1/8/26,Juice,,FALSE,FALSE,Thu
+1/8/26,Muy Caliente,,FALSE,FALSE,Thu
+1/8/26,Squatter,,FALSE,FALSE,Thu
+1/8/26,Rawhide,DD,FALSE,FALSE,Tue
+1/6/26,LinkedIn,Q,FALSE,FALSE,Tue
+1/6/26,Muy Caliente,,FALSE,FALSE,Tue
+1/6/26,O-Ring,DD,FALSE,FALSE,Tue
+1/6/26,Thermostat,DD,FALSE,FALSE,Tue
+1/6/26,Dealer,DD,FALSE,FALSE,Tue
+1/6/26,Juice,,FALSE,FALSE,Tue
+1/6/26,Narc,,FALSE,FALSE,Tue
+1/6/26,Cobbler,DD,FALSE,FALSE,Tue
+1/6/26,Xena,DD,FALSE,FALSE,Tue
+1/6/26,Squatter,DD,FALSE,FALSE,Tue
+1/6/26,Tropic Thunder,DD,FALSE,FALSE,Tue
+1/6/26,Dial-Up,DD,FALSE,FALSE,Tue
+1/6/26,Sistine,,FALSE,FALSE,Mon
+1/5/26,D20,,FALSE,FALSE,Mon
+1/5/26,Gridlock,DD,FALSE,FALSE,Mon
+1/5/26,LinkedIn,DD,FALSE,FALSE,Mon
+1/5/26,Muy Caliente,,FALSE,FALSE,Mon
+1/5/26,Narc,,FALSE,FALSE,Mon
+1/5/26,Sistine,Q,FALSE,FALSE,Mon
+1/5/26,Squatter,DD,FALSE,FALSE,Mon
+1/5/26,Tropic Thunder,VQDD,FALSE,FALSE,Mon
+1/5/26,Wemby,DD,FALSE,FALSE,Mon
+1/5/26,Xena,DD,FALSE,FALSE,Mon
+1/5/26,Safari,FNG,FALSE,FALSE,Fri
+1/2/26,Kookaburra,,FALSE,FALSE,Fri
+1/2/26,Mountie,Q,FALSE,FALSE,Fri
+1/2/26,Narc,,FALSE,FALSE,Fri
+1/2/26,Tropic Thunder,,FALSE,FALSE,Thu
+1/1/26,Cobbler,DD,FALSE,FALSE,Thu
+1/1/26,D20,,FALSE,FALSE,Thu
+1/1/26,Freedom,DD,FALSE,FALSE,Thu
+1/1/26,Jake,DD,FALSE,FALSE,Thu
+1/1/26,Judge Judy,DD,FALSE,FALSE,Thu
+1/1/26,Rawhide,DD,FALSE,FALSE,Thu
+1/1/26,Search Party,DD,FALSE,FALSE,Thu
+1/1/26,Tropic Thunder,,FALSE,FALSE,Thu
+1/1/26,LinkedIn,QDD,FALSE,FALSE,Tue
+12/30/25,Narc,,FALSE,FALSE,Tue
+12/30/25,O-Ring,,FALSE,FALSE,Tue
+12/30/25,Sistine,,FALSE,FALSE,Tue
+12/30/25,Squatter,Q,FALSE,FALSE,Tue
+12/30/25,Tropic Thunder,,FALSE,FALSE,Mon
+12/29/25,Cobbler,,FALSE,FALSE,Mon
+12/29/25,Dial-Up,,FALSE,FALSE,Mon
+12/29/25,Elmer,,FALSE,FALSE,Mon
+12/29/25,Narc,Q,FALSE,FALSE,Mon
+12/29/25,Squatter,,FALSE,FALSE,Mon
+12/29/25,Tropic Thunder,,FALSE,FALSE,Fri
+12/26/25,Kookaburra,,FALSE,FALSE,Fri
+12/26/25,Elmer,,FALSE,FALSE,Fri
+12/26/25,Xena,,FALSE,FALSE,Fri
+12/26/25,Fertile,Q,FALSE,FALSE,Thu
+12/25/25,Rawhide,DD,FALSE,FALSE,Thu
+12/25/25,LinkedIn,QDD,FALSE,FALSE,Tue
+12/23/25,Squatter,,FALSE,FALSE,Tue
+12/23/25,Tropic Thunder,,FALSE,FALSE,Tue
+12/23/25,Juice,,FALSE,FALSE,Tue
+12/23/25,Rawhide,Q,FALSE,FALSE,Mon
+12/22/25,Elmer,Q,FALSE,FALSE,Mon
+12/22/25,Fertile,,FALSE,FALSE,Mon
+12/22/25,Squatter,,FALSE,FALSE,Mon
+12/22/25,Tropic Thunder,,FALSE,FALSE,Fri
+12/19/25,Narc,,FALSE,FALSE,Fri
+12/19/25,O-Ring,DD,FALSE,FALSE,Fri
+12/19/25,Squatter,QDD,FALSE,FALSE,Fri
+12/19/25,Trex (2.0),,FALSE,FALSE,Fri
+12/19/25,Tropic Thunder,DD,FALSE,FALSE,Fri
+12/19/25,Wemby,DD,FALSE,FALSE,Thu
+12/18/25,Dial-Up,,FALSE,FALSE,Thu
+12/18/25,Elmer,DD,FALSE,FALSE,Thu
+12/18/25,Fertile,,FALSE,FALSE,Thu
+12/18/25,Narc,,FALSE,FALSE,Thu
+12/18/25,Xena,DD,FALSE,FALSE,Thu
+12/18/25,Redbull,,FALSE,FALSE,Thu
+12/18/25,Cena,,FALSE,FALSE,Thu
+12/18/25,Mountie,DD,FALSE,FALSE,Thu
+12/18/25,Carabiner,DD,FALSE,FALSE,Thu
+12/18/25,Tinkerbell,DD,FALSE,FALSE,Thu
+12/18/25,Squatter,DD,FALSE,FALSE,Thu
+12/18/25,Johnny 5,,FALSE,FALSE,Thu
+12/18/25,Tropic Thunder,,FALSE,FALSE,Thu
+12/18/25,Singlet,,FALSE,FALSE,Thu
+12/18/25,Thermostat,Q,FALSE,FALSE,Tue
+12/16/25,Dealer,,FALSE,FALSE,Tue
+12/16/25,Dial-Up,Q,FALSE,FALSE,Tue
+12/16/25,Elmer,,FALSE,FALSE,Tue
+12/16/25,Narc,,FALSE,FALSE,Tue
+12/16/25,Singlet,,FALSE,FALSE,Tue
+12/16/25,Squatter,,FALSE,FALSE,Tue
+12/16/25,Thermostat,,FALSE,FALSE,Tue
+12/16/25,Tropic Thunder,,FALSE,FALSE,Tue
+12/16/25,Xena,,FALSE,FALSE,Mon
+12/15/25,LinkedIn,,FALSE,FALSE,Mon
+12/15/25,Narc,Q,FALSE,FALSE,Mon
+12/15/25,Tropic Thunder,,FALSE,FALSE,Mon
+12/15/25,Wemby,,FALSE,FALSE,Fri
+12/12/25,Blue Screen,,FALSE,FALSE,Fri
+12/12/25,Cobbler,,FALSE,FALSE,Fri
+12/12/25,Juice,,FALSE,FALSE,Fri
+12/12/25,LinkedIn,,FALSE,FALSE,Fri
+12/12/25,Mario,,FALSE,FALSE,Fri
+12/12/25,Narc,Q,FALSE,FALSE,Fri
+12/12/25,Thermostat,,FALSE,FALSE,Thu
+12/11/25,Cobbler,QDD,FALSE,FALSE,Thu
+12/11/25,Kookaburra,,FALSE,FALSE,Thu
+12/11/25,LinkedIn,DD,FALSE,FALSE,Thu
+12/11/25,Narc,,FALSE,FALSE,Thu
+12/11/25,Search Party,DD,FALSE,FALSE,Tue
+12/9/25,Elmer,Q,FALSE,FALSE,Tue
+12/9/25,Gridlock,,FALSE,FALSE,Tue
+12/9/25,Narc,,FALSE,FALSE,Tue
+12/9/25,Squatter,,FALSE,FALSE,Tue
+12/9/25,Xena,,FALSE,FALSE,Mon
+12/8/25,Cobbler,DD,FALSE,FALSE,Mon
+12/8/25,Elmer,,FALSE,FALSE,Mon
+12/8/25,Narc,,FALSE,FALSE,Mon
+12/8/25,Rawhide,Q,FALSE,FALSE,Mon
+12/8/25,Squatter,,FALSE,FALSE,Mon
+12/8/25,Xena,,FALSE,FALSE,Fri
+12/5/25,Shaggy,,TRUE,FALSE,Fri
+12/5/25,Cobbler,,FALSE,FALSE,Fri
+12/5/25,Juice,,FALSE,FALSE,Fri
+12/5/25,Narc,,FALSE,FALSE,Fri
+12/5/25,O-Ring,,FALSE,FALSE,Fri
+12/5/25,Wolfie,QDD,FALSE,FALSE,Thu
+12/4/25,Airtag,DD,FALSE,FALSE,Thu
+12/4/25,Bart,DDFNG,FALSE,FALSE,Thu
+12/4/25,Cena,,FALSE,FALSE,Thu
+12/4/25,Cobbler,DD,FALSE,FALSE,Thu
+12/4/25,D20,DD,FALSE,FALSE,Thu
+12/4/25,Dealer,DD,FALSE,FALSE,Thu
+12/4/25,Dial-Up,DD,FALSE,FALSE,Thu
+12/4/25,Elmer,DD,FALSE,FALSE,Thu
+12/4/25,Fertile,,FALSE,FALSE,Thu
+12/4/25,Hippo,,FALSE,FALSE,Thu
+12/4/25,Hot Pants,DD,FALSE,FALSE,Thu
+12/4/25,Meatloaf,DD,FALSE,FALSE,Thu
+12/4/25,Narc,,FALSE,FALSE,Thu
+12/4/25,O-Ring,DD,FALSE,FALSE,Thu
+12/4/25,Redbull,,FALSE,FALSE,Thu
+12/4/25,Squatter,DD,FALSE,FALSE,Thu
+12/4/25,Thermostat,DD,FALSE,FALSE,Thu
+12/4/25,Wemby,,FALSE,FALSE,Thu
+12/4/25,LinkedIn,Q,FALSE,FALSE,Tue
+12/2/25,Elmer,Q,FALSE,FALSE,Tue
+12/2/25,Juice,,FALSE,FALSE,Tue
+12/2/25,Narc,,FALSE,FALSE,Tue
+12/2/25,O-Ring,,FALSE,FALSE,Tue
+12/2/25,Squatter,,FALSE,FALSE,Mon
+12/1/25,Cobbler,Q,FALSE,FALSE,Mon
+12/1/25,Wemby,,FALSE,FALSE,Mon
+12/1/25,Narc,,FALSE,FALSE,Mon
+12/1/25,Squatter,,FALSE,FALSE,Mon
+12/1/25,Kookaburra,FNG,FALSE,FALSE,Fri
+11/28/25,Anakin,,FALSE,FALSE,Fri
+11/28/25,Babel,,FALSE,FALSE,Fri
+11/28/25,Fertile,,FALSE,FALSE,Fri
+11/28/25,Keyser (DR),,FALSE,FALSE,Fri
+11/28/25,Cobbler,Q,FALSE,FALSE,Thu
+11/27/25,Acme,,,FALSE,Thu
+11/27/25,Anakin,,,FALSE,Thu
+11/27/25,Babel,,,FALSE,Thu
+11/27/25,Boogy,FNG,,FALSE,Thu
+11/27/25,Brick (2.0),,,FALSE,Thu
+11/27/25,C Battery (DR),DD,,FALSE,Thu
+11/27/25,Cena,FNG,,FALSE,Thu
+11/27/25,Circuit,,,FALSE,Thu
+11/27/25,Cowbell,,,FALSE,Thu
+11/27/25,Dodgeball,,,FALSE,Thu
+11/27/25,Dr scholl's,,,FALSE,Thu
+11/27/25,Echo,,,FALSE,Thu
+11/27/25,Eraser,,,FALSE,Thu
+11/27/25,Fertile,,,FALSE,Thu
+11/27/25,Frodo,,,FALSE,Thu
+11/27/25,Hacksaw,,,FALSE,Thu
+11/27/25,Jake,DD,,FALSE,Thu
+11/27/25,Johnny 5,,,FALSE,Thu
+11/27/25,Juice,,,FALSE,Thu
+11/27/25,Keyser (DR),,,FALSE,Thu
+11/27/25,LinkedIn,DD,,FALSE,Thu
+11/27/25,Mountie,DD,,FALSE,Thu
+11/27/25,Moses,,,FALSE,Thu
+11/27/25,Mr. T (2.0),,,FALSE,Thu
+11/27/25,Pacemaker,,,FALSE,Thu
+11/27/25,Redbull,,,FALSE,Thu
+11/27/25,Recurve,,,FALSE,Thu
+11/27/25,Rosetta,,,FALSE,Thu
+11/27/25,SeaDoo,FNG,,FALSE,Thu
+11/27/25,Search Party,DD,,FALSE,Thu
+11/27/25,Shingles,Q,,FALSE,Thu
+11/27/25,Skillet,,,FALSE,Thu
+11/27/25,Socrates (2.0),FNG,,FALSE,Thu
+11/27/25,Spider Gwen (2.0),,,FALSE,Thu
+11/27/25,Squatter,DD,,FALSE,Thu
+11/27/25,Steelix (2.0),,,FALSE,Thu
+11/27/25,Tikka,FNG,,FALSE,Thu
+11/27/25,Tinkerbell,DD,,FALSE,Thu
+11/27/25,Tony Hawk,,,FALSE,Thu
+11/27/25,Wolfie,DD,FALSE,FALSE,Thu
+11/27/25,Cobbler,,TRUE,FALSE,Wed
+11/26/25,Cobbler,,,FALSE,Wed
+11/26/25,Jake,,,FALSE,Wed
+11/26/25,LinkedIn,,,FALSE,Wed
+11/26/25,Xena,,,FALSE,Wed
+11/26/25,Squatter,Q,,FALSE,Tue
+11/25/25,Buddy Bucks,,,FALSE,Tue
+11/25/25,Elmer,,,FALSE,Tue
+11/25/25,Juice,,,FALSE,Tue
+11/25/25,Narc,Q,,FALSE,Tue
+11/25/25,O-Ring,,,FALSE,Tue
+11/25/25,Trex (2.0),,,FALSE,Mon
+11/24/25,Cobbler,DD,FALSE,FALSE,Mon
+11/24/25,Elmer,DD,FALSE,FALSE,Mon
+11/24/25,Gridlock,DD,FALSE,FALSE,Mon
+11/24/25,Narc,,FALSE,FALSE,Mon
+11/24/25,Rawhide,QDD,FALSE,FALSE,Mon
+11/24/25,Squatter,DD,FALSE,FALSE,Mon
+11/24/25,Xena,DD,FALSE,FALSE,Fri
+11/21/25,Elmer,DD,FALSE,FALSE,Fri
+11/21/25,Gridlock,QDD,FALSE,FALSE,Fri
+11/21/25,LinkedIn,DD,FALSE,FALSE,Fri
+11/21/25,O-Ring,DD,FALSE,FALSE,Fri
+11/21/25,Sistine,DD,FALSE,FALSE,Fri
+11/21/25,Thermostat,DD,FALSE,FALSE,Fri
+11/21/25,Xena,DD,FALSE,FALSE,Thu
+11/20/25,Cobbler,DD,FALSE,FALSE,Thu
+11/20/25,D20,,FALSE,FALSE,Thu
+11/20/25,Elmer,DD,FALSE,FALSE,Thu
+11/20/25,Gridlock,DD,FALSE,FALSE,Thu
+11/20/25,Juice,,FALSE,FALSE,Thu
+11/20/25,Squatter,DD,FALSE,FALSE,Thu
+11/20/25,Thermostat,DD,FALSE,FALSE,Thu
+11/20/25,Tropic Thunder,DD,FALSE,FALSE,Thu
+11/20/25,Xena,DD,FALSE,FALSE,Tue
+11/18/25,Cobbler,,FALSE,FALSE,Tue
+11/18/25,Gridlock,,FALSE,FALSE,Tue
+11/18/25,Hippo,,FALSE,FALSE,Tue
+11/18/25,Narc,,FALSE,FALSE,Tue
+11/18/25,Squatter,Q,FALSE,FALSE,Tue
+11/18/25,Tropic Thunder,DD,FALSE,FALSE,Mon
+11/17/25,Elmer,,FALSE,FALSE,Mon
+11/17/25,Juice,,FALSE,FALSE,Mon
+11/17/25,Pivot,,FALSE,FALSE,Mon
+11/17/25,Squatter,,FALSE,FALSE,Mon
+11/17/25,Tropic Thunder,,FALSE,FALSE,Mon
+11/17/25,Wolfie,Q,FALSE,FALSE,Mon
+11/17/25,Xena,,FALSE,FALSE,Mon
+11/17/25,Buddy Bucks,FNG,FALSE,FALSE,Wed
+5/12/26,Lazarus,VQ,FALSE,,Wed
+5/12/26,Muy Caliente,,FALSE,,Wed
+5/12/26,O-Ring,DD,FALSE,,Wed
+5/12/26,Wemby,DD,FALSE,,Wed
+5/12/26,Elmer,DD,FALSE,,Wed
+5/12/26,LinkedIn,DD,FALSE,,Wed
+5/12/26,Tropic Thunder,,FALSE,,Wed
+5/12/26,Grover,,FALSE,,Wed
+5/12/26,Tinkerbell,DD,FALSE,,Wed
+5/12/26,Xena,DD,FALSE,,Wed
+5/12/26,EVAC,DD,FALSE,,Wed
+5/12/26,Narc,,FALSE,,Wed
+5/12/26,Wolfie,DD,FALSE,,Wed
+5/12/26,Squatter,DD,FALSE,,Thu
+4/22/26,Narc,Q,FALSE,,Thu
+4/22/26,Cobbler,,FALSE,,Thu
+4/22/26,Mountie,,FALSE,,Thu
+4/22/26,O-Ring,,FALSE,,Thu
+4/22/26,Fertile,,FALSE,,Thu
 4/22/26,Search Party,,FALSE,,
 ,,,FALSE,FALSE,
 ,,,FALSE,FALSE,
