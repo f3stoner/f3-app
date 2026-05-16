@@ -301,6 +301,13 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
 
         function playTimerAlert() {
+            console.log("playTimerAlert fired", {
+                timerId: timer?.id,
+                timerType: timer?.type,
+                remaining: state.activeWorkoutTimerRemainingSeconds,
+                url: TIMER_SOUND_URL,
+            });
+
             navigator.vibrate?.([200, 100, 200]);
 
             const audio = getTimerAudio();
@@ -309,7 +316,6 @@ export function renderPlannedWorkoutDetail() {
 
             audio.play().catch((error) => {
                 console.warn("Timer sound failed:", error);
-
                 logActionFailure("timerAudioPlay", error, {
                     plannedWorkoutId: workout?.id || null,
                     timerId: timer?.id || null,
@@ -321,7 +327,6 @@ export function renderPlannedWorkoutDetail() {
                 });
             });
         }
-        
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
                 const currentRemaining = state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
@@ -353,9 +358,7 @@ export function renderPlannedWorkoutDetail() {
                         return;
                     }
 
-                    if (timer.type === "emom") {
-                        playTimerAlert();
-                    }
+                   playTimerAlert();
 
                     state.activeWorkoutTimerRemainingSeconds = 0;
                     state.activeWorkoutTimerStatus = "done";
