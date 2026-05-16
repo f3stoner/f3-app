@@ -5,9 +5,13 @@ import { normalizeImportPaxKey, parseHistoricCsvText, parseHistoricRow } from ".
 import { state } from "../modules/state.js";
 import { triagePotentialMemberMisassignments } from "../utils/memberIdentityAudit.js";
 
-export async function importPaxMasterCsv(csvText) {
+export async function importPaxMasterCsv(
+    csvText,
+    { dryRun = false, regionId = state.currentRegionId } = {}
+) {
     let reusedCount = 0;
     let insertedCount = 0;
+    let invitedByUpdateCount = 0;
 
     const { data: rows, errors } = Papa.parse(csvText, {
         header: true,
@@ -63,7 +67,7 @@ export async function importPaxMasterCsv(csvText) {
     
     }
 
-    const existingMemberMap = await buildMemberNameToMemberMap(state.currentRegionId);
+    const existingMemberMap = await buildMemberNameToMemberMap(regionId);
     
     const memberMap = {};
 
@@ -90,8 +94,13 @@ export async function importPaxMasterCsv(csvText) {
             status: "active",
         };
 
-        const saved = await insertMember(state.currentRegionId, member);
-        memberMap[normalizedPaxName] = saved;
+        if (dryRun) {
+            memberMap[normalizedPaxName] = member;
+        } else {
+            const saved = await insertMember(regionId, member);
+            memberMap[normalizedPaxName] = saved;
+        }
+
         insertedCount += 1;
 
     }
@@ -116,33 +125,59 @@ export async function importPaxMasterCsv(csvText) {
         if (member.invitedById === inviter.id) continue;
 
         member.invitedById = inviter.id;
+        invitedByUpdateCount += 1;
 
-        await updateMemberInCloud(state.currentRegionId, member);
+        if (!dryRun) {
+            await updateMemberInCloud(regionId, member);
+        }
     }
 
     console.log("Pass 2 complete (invitedBy)");
 
-    return memberMap;
+    return {
+        dryRun,
+        memberMap,
+        reusedCount,
+        insertedCount,
+        invitedByUpdateCount,
+    };
 }
 
 function resolveImportedAoName(aoName, weekday) {
     const normalizedAo = normalizeAoName(aoName);
-
-    if (normalizedAo !== "watch") return aoName;
-
     const normalizedWeekday = String(weekday || "")
         .trim()
         .toLowerCase();
 
-    if (normalizedWeekday.startsWith("tue")) {
-        return "Watch (D)";
+    if (normalizedAo === "watch") {
+        if (normalizedWeekday.startsWith("tue")) {
+            return "Watch (D)";
+        }
+
+        if (normalizedWeekday.startsWith("fri")) {
+            return "Watch (W)";
+        }
+
+        return "Watch";
     }
 
-    if (normalizedWeekday.startsWith("fri")) {
-        return "Watch (W)";
+    if (normalizedAo === "dads") {
+        return "Dads (The Mine)";
     }
 
-    return "Watch";
+    if (normalizedAo === "cave" && normalizedWeekday.startsWith("sat")) {
+        return "Convergence (Cave)";
+    }
+
+    return aoName;
+}
+
+function getWeekdayNameFromDate(dateString) {
+    const date = new Date(`${dateString}T12:00:00`);
+
+    return date.toLocaleDateString("en-US", {
+        weekday: "short",
+    });
 }
 
 async function buildMemberNameToMemberMap(regionId = state.currentRegionId) {
@@ -328,7 +363,9 @@ async function loadExistingSessionsByDeltaKey(regionId) {
     const map = {};
 
     for (const row of existingSessions) {
-        const key = `${normalizeAoName(row.ao_name)}|${row.date}`;
+        const weekday = getWeekdayNameFromDate(row.date);
+        const resolvedAoName = resolveImportedAoName(row.ao_name, weekday);
+        const key = `${normalizeAoName(resolvedAoName)}|${row.date}`;
 
         map[key] = {
             id: row.id,
@@ -645,7 +682,10 @@ function normalizeAoName(value) {
 }
 
 function sessionDeltaKey(session) {
-    return `${normalizeAoName(session.aoName)}|${session.date}`;
+    const weekday = session.weekday || getWeekdayNameFromDate(session.date);
+    const resolvedAoName = resolveImportedAoName(session.aoName, weekday);
+
+    return `${normalizeAoName(resolvedAoName)}|${session.date}`;
 }
 
 async function loadExistingSessionKeysForRegion(regionId) {
@@ -672,7 +712,10 @@ async function loadExistingSessionKeysForRegion(regionId) {
     const keys = new Set();
 
     for (const row of existingSessions) {
-        keys.add(`${normalizeAoName(row.ao_name)}|${row.date}`);
+        const weekday = getWeekdayNameFromDate(row.date);
+        const resolvedAoName = resolveImportedAoName(row.ao_name, weekday);
+
+        keys.add(`${normalizeAoName(resolvedAoName)}|${row.date}`);
     }
 
     return keys;
@@ -1289,7 +1332,10 @@ export async function runAggielandSync({ apply = false } = {}) {
     const paxMasterCsvText = await paxMasterResponse.text();
 
     console.log("Step 1: Importing Pax Master...");
-    const memberMap = await importPaxMasterCsv(paxMasterCsvText);
+    const paxMasterResult = await importPaxMasterCsv(paxMasterCsvText, {
+        dryRun: !apply,
+        regionId: state.currentRegionId,
+    });
 
     console.log("Step 2: Running delta AO import preview...");
     const preview = await runAggielandDeltaAoImports({
@@ -1308,7 +1354,10 @@ export async function runAggielandSync({ apply = false } = {}) {
         }));
 
     console.log("Aggieland sync preview summary:", {
-        totalMembersMapped: Object.keys(memberMap || {}).length,
+        totalMembersMapped: Object.keys(paxMasterResult.memberMap || {}).length,
+        paxMasterInserted: paxMasterResult.insertedCount,
+        paxMasterReused: paxMasterResult.reusedCount,
+        paxMasterInvitedByUpdates: paxMasterResult.invitedByUpdateCount,
         totalParsed: preview.totalParsed,
         totalDuplicates: preview.totalDuplicates,
         totalNewSessions: preview.totalNewSessions,
@@ -1323,7 +1372,7 @@ export async function runAggielandSync({ apply = false } = {}) {
         console.log("Dry run complete. No sessions inserted.");
         return {
             applied: false,
-            memberMap,
+            paxMasterResult,
             preview,
             unresolvedSessions,
         };
@@ -1342,7 +1391,7 @@ export async function runAggielandSync({ apply = false } = {}) {
 
     return {
         applied: true,
-        memberMap,
+        paxMasterResult,
         preview,
         unresolvedSessions,
         appliedResult,
