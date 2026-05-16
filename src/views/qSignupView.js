@@ -10,6 +10,9 @@ import { unclaimQSlot } from "../services/qSlots.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
+import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
+import { createQReminderPrompt } from "../components/qReminderPrompt.js";
+import { createQReminderPromptModal } from "../components/qReminderPromptModal.js";
 
 export function renderQSignupView() {
     const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
@@ -372,7 +375,12 @@ export function renderQSignupView() {
                 },
             });
 
+            showToast("Q claimed.", "success");
             renderApp();
+
+            if (shouldShowQReminderPrompt()) {
+                document.body.appendChild(createQReminderPromptModal());
+            }
         } catch (error) {
             console.error("Failed to claim Q slot:", error);
             showToast("Failed to claim Q slot.", "error");

@@ -18,18 +18,10 @@ import { getMemberStats } from "../modules/stats.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
 import { buildRegionInsights } from "../modules/insights.js";
+import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
+import { createQReminderPrompt } from "../components/qReminderPrompt.js";
 
 export function renderDashboard() {
-const insights = buildRegionInsights({
-    sessions: state.sessions,
-    members: state.members,
-    startDate: "2026-04-01",
-    endDate: "2026-04-30",
-});
-
-console.log("REGION INSIGHTS:", insights);
-console.table(insights.summary);
-
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -1141,6 +1133,20 @@ console.table(insights.summary);
         });
 
         console.log("sent keys:", state.sentNotificationKeys);
+    });
+
+    console.log("Reminder prompt check:", {
+
+        shouldShow: shouldShowQReminderPrompt(),
+    
+        currentUserId: state.currentUserId,
+    
+        pushEnabled: state.notificationSettings?.pushEnabled,
+    
+        notificationPermission: "Notification" in window ? Notification.permission : "unsupported",
+    
+        dismissed: localStorage.getItem("theQNotificationPromptDismissed"),
+    
     });
 
     app.append(

@@ -2598,3 +2598,74 @@ select:focus,
     background: rgba(239, 68, 68, 0.1);
     box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
 }
+
+.q-reminder-prompt {
+    margin: 18px 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.q-reminder-prompt-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    text-align: left;
+}
+
+.q-reminder-prompt-copy {
+    line-height: 1.4;
+    text-align: left;
+}
+
+.q-reminder-prompt-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.q-reminder-prompt-actions .primary-button {
+    min-width: 190px;
+}
+
+.q-reminder-prompt-actions .secondary-button {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    min-height: auto;
+    width: auto;
+    opacity: 0.65;
+}
+
+.q-reminder-modal {
+    max-width: 420px;
+}
+
+.q-reminder-modal-copy {
+    margin: 8px 0 18px;
+    line-height: 1.45;
+}
+
+.q-reminder-modal .q-reminder-prompt-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+}
+
+.q-reminder-modal .q-reminder-prompt-actions .primary-button {
+    min-width: 190px;
+}
+
+.q-reminder-modal .q-reminder-prompt-actions .secondary-button {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    min-height: auto;
+    width: auto;
+    opacity: 0.65;
+}
