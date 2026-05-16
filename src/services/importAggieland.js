@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
 import { normalizeImportPaxKey, parseHistoricCsvText, parseHistoricRow } from "../utils/historicImport.js";
 import { state } from "../modules/state.js";
+import { triagePotentialMemberMisassignments } from "../utils/memberIdentityAudit.js";
 
 export async function importPaxMasterCsv(csvText) {
     let reusedCount = 0;
@@ -112,6 +113,8 @@ export async function importPaxMasterCsv(csvText) {
 
         if (!member || !inviter) continue;
 
+        if (member.invitedById === inviter.id) continue;
+
         member.invitedById = inviter.id;
 
         await updateMemberInCloud(state.currentRegionId, member);
@@ -120,6 +123,26 @@ export async function importPaxMasterCsv(csvText) {
     console.log("Pass 2 complete (invitedBy)");
 
     return memberMap;
+}
+
+function resolveImportedAoName(aoName, weekday) {
+    const normalizedAo = normalizeAoName(aoName);
+
+    if (normalizedAo !== "watch") return aoName;
+
+    const normalizedWeekday = String(weekday || "")
+        .trim()
+        .toLowerCase();
+
+    if (normalizedWeekday.startsWith("tue")) {
+        return "Watch (D)";
+    }
+
+    if (normalizedWeekday.startsWith("fri")) {
+        return "Watch (W)";
+    }
+
+    return "Watch";
 }
 
 async function buildMemberNameToMemberMap(regionId = state.currentRegionId) {
@@ -524,6 +547,7 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
         const rawDate = (row["Date"] || "").trim();
         const paxName = (row["Pax"] || "").trim();
         const code = (row["Code"] || "").trim().toUpperCase();
+        const weekday = (row["Weekday"] || "").trim();
 
         if (!rawDate || !paxName) continue;
 
@@ -541,7 +565,7 @@ export async function parseAoLogCsvToSessions(csvText, aoName, regionId = state.
             grouped[key] = {
                 id: crypto.randomUUID(),
                 date: normalizedDate,
-                aoName,
+                aoName: resolveImportedAoName(aoName, weekday),
                 attendeeIds: [],
                 qIds: [],
                 fngs: [],
@@ -1249,5 +1273,79 @@ export async function splitMergedMemberByRawName({
         sourceMember,
         targetMember,
         sessionsToUpdate,
+    };
+}
+
+export async function runAggielandSync({ apply = false } = {}) {
+    console.log("Aggieland sync starting...");
+    console.log(`Mode: ${apply ? "APPLY" : "DRY RUN"}`);
+
+    const paxMasterResponse = await fetch("/Pax_Master.csv");
+
+    if (!paxMasterResponse.ok) {
+        throw new Error("Could not fetch Pax_Master.csv");
+    }
+
+    const paxMasterCsvText = await paxMasterResponse.text();
+
+    console.log("Step 1: Importing Pax Master...");
+    const memberMap = await importPaxMasterCsv(paxMasterCsvText);
+
+    console.log("Step 2: Running delta AO import preview...");
+    const preview = await runAggielandDeltaAoImports({
+        dryRun: true,
+        regionId: state.currentRegionId,
+    });
+
+    const unresolvedSessions = (preview.newSessions || [])
+        .filter(session => session.unresolvedPax?.length)
+        .map(session => ({
+            date: session.date,
+            aoName: session.aoName,
+            unresolved: session.unresolvedPax
+                .map(pax => `${pax.rawName} (${pax.code || "no code"}) - ${pax.reason}`)
+                .join(" | "),
+        }));
+
+    console.log("Aggieland sync preview summary:", {
+        totalMembersMapped: Object.keys(memberMap || {}).length,
+        totalParsed: preview.totalParsed,
+        totalDuplicates: preview.totalDuplicates,
+        totalNewSessions: preview.totalNewSessions,
+        unresolvedSessionCount: unresolvedSessions.length,
+    });
+
+    if (unresolvedSessions.length) {
+        console.table(unresolvedSessions);
+    }
+
+    if (!apply) {
+        console.log("Dry run complete. No sessions inserted.");
+        return {
+            applied: false,
+            memberMap,
+            preview,
+            unresolvedSessions,
+        };
+    }
+
+    console.log("Step 3: Applying delta AO import...");
+    const appliedResult = await runAggielandDeltaAoImports({
+        dryRun: false,
+        regionId: state.currentRegionId,
+    });
+
+    console.log("Step 4: Running member identity triage...");
+    const triage = await triagePotentialMemberMisassignments();
+
+    console.log("Aggieland sync complete.");
+
+    return {
+        applied: true,
+        memberMap,
+        preview,
+        unresolvedSessions,
+        appliedResult,
+        triage,
     };
 }
