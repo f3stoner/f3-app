@@ -180,6 +180,10 @@ function resolveImportedAoName(aoName, weekday) {
     return aoName;
 }
 
+const IGNORED_AGGIELAND_SESSION_KEYS = new Set([
+    "blackops|2026-05-11",
+]);
+
 function getWeekdayNameFromDate(dateString) {
     const date = new Date(`${dateString}T12:00:00`);
 
@@ -769,6 +773,11 @@ export async function runAggielandDeltaAoImports({ dryRun = true, regionId = sta
 
         for (const session of sessions) {
             const key = sessionDeltaKey(session);
+
+            if (IGNORED_AGGIELAND_SESSION_KEYS.has(key)) {
+                duplicateSessions.push(session);
+                continue;
+            }
 
             if (existingKeys.has(key)) {
                 duplicateSessions.push(session);
