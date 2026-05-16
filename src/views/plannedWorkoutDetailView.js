@@ -14,9 +14,36 @@ import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 
 let activeTimerIntervalId = null;
+let timerAudio = null;
 
 const TIMER_SOUND_URL =
     `${window.location.origin}${process.env.NODE_ENV === "production" ? "/f3-app" : ""}/sounds/timer-complete.wav`;
+
+function getTimerAudio() {
+    if (!timerAudio) {
+        timerAudio = new Audio(TIMER_SOUND_URL);
+        timerAudio.preload = "auto";
+        timerAudio.volume = 1;
+    }
+
+    return timerAudio;
+}
+
+async function unlockTimerAudio() {
+    try {
+        const audio = getTimerAudio();
+        audio.currentTime = 0;
+        audio.volume = 0;
+
+        await audio.play();
+
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 1;
+    } catch (error) {
+        console.warn("Timer audio unlock failed:", error);
+    }
+}
 
 function clearActiveTimerInterval() {
     if (activeTimerIntervalId) {
@@ -276,7 +303,8 @@ export function renderPlannedWorkoutDetail() {
         function playTimerAlert() {
             navigator.vibrate?.([200, 100, 200]);
 
-            const audio = new Audio(TIMER_SOUND_URL);
+            const audio = getTimerAudio();
+            audio.currentTime = 0;
             audio.volume = 1;
 
             audio.play().catch((error) => {
@@ -378,7 +406,9 @@ export function renderPlannedWorkoutDetail() {
                 ? "Restart"
                 : "Start";
 
-        startButton.addEventListener("click", () => {
+        startButton.addEventListener("click", async () => {
+            await unlockTimerAudio();
+
             const wasDone =
             state.activeWorkoutTimerStatus === "done" ||
             state.activeWorkoutTimerRemainingSeconds === 0;
