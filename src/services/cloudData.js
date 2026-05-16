@@ -882,3 +882,22 @@ function mapRegionFromDb(row) {
         workoutFieldLabels: row.workout_field_labels || null,
     };
 }
+
+export async function insertImportRun(regionId, importRun) {
+    const { data, error } = await supabase
+        .from("import_runs")
+        .insert({
+            region_id: regionId,
+            type: importRun.type,
+            mode: importRun.mode,
+            status: importRun.status,
+            summary: importRun.summary || {},
+            error: importRun.error || null,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}

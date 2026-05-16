@@ -1,4 +1,12 @@
-import { insertMember, updateMemberInCloud, insertSessionsBatch, updateSessionInCloud, insertAdminFlags, mapMemberFromDb } from "./cloudData.js"
+import { 
+    insertMember,
+    updateMemberInCloud,
+    insertSessionsBatch,
+    updateSessionInCloud,
+    insertAdminFlags,
+    mapMemberFromDb,
+    insertImportRun,
+} from "./cloudData.js"
 import Papa from "papaparse";
 import { supabase } from "./supabaseClient.js";
 import { normalizeImportPaxKey, parseHistoricCsvText, parseHistoricRow } from "../utils/historicImport.js";
@@ -1353,7 +1361,7 @@ export async function runAggielandSync({ apply = false } = {}) {
                 .join(" | "),
         }));
 
-    console.log("Aggieland sync preview summary:", {
+    const summary = {
         totalMembersMapped: Object.keys(paxMasterResult.memberMap || {}).length,
         paxMasterInserted: paxMasterResult.insertedCount,
         paxMasterReused: paxMasterResult.reusedCount,
@@ -1362,7 +1370,9 @@ export async function runAggielandSync({ apply = false } = {}) {
         totalDuplicates: preview.totalDuplicates,
         totalNewSessions: preview.totalNewSessions,
         unresolvedSessionCount: unresolvedSessions.length,
-    });
+    };
+
+    console.log("Aggieland sync preview summary:", summary);
 
     if (unresolvedSessions.length) {
         console.table(unresolvedSessions);
@@ -1370,6 +1380,14 @@ export async function runAggielandSync({ apply = false } = {}) {
 
     if (!apply) {
         console.log("Dry run complete. No sessions inserted.");
+
+        await insertImportRun(state.currentRegionId, {
+            type: "aggieland_sync",
+            mode: apply ? "apply" : "dry_run",
+            status: "success",
+            summary,
+        });
+
         return {
             applied: false,
             paxMasterResult,
@@ -1384,10 +1402,23 @@ export async function runAggielandSync({ apply = false } = {}) {
         regionId: state.currentRegionId,
     });
 
+    const finalSummary = {
+        ...summary,
+        inserted: appliedResult.inserted || 0,
+        appliedTotalNewSessions: appliedResult.totalNewSessions || 0,
+    };
+
     console.log("Step 4: Running member identity triage...");
     const triage = await triagePotentialMemberMisassignments();
 
     console.log("Aggieland sync complete.");
+
+    await insertImportRun(state.currentRegionId, {
+        type: "aggieland_sync",
+        mode: apply ? "apply" : "dry_run",
+        status: "success",
+        summary: finalSummary,
+    });
 
     return {
         applied: true,
