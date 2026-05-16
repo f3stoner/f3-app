@@ -54,6 +54,32 @@ export async function loadAllMembers(regionId) {
     return allMembers;
 }
 
+export async function loadAllQSlots(regionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let allQSlots = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("q_slots")
+            .select("*")
+            .eq("region_id", regionId)
+            .order("date", { ascending: true })
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allQSlots= allQSlots.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return allQSlots;
+}
+
 export async function loadRegionData(regionId) {
     const [
         regionResult,
@@ -85,10 +111,7 @@ export async function loadRegionData(regionId) {
             .select("*")
             .eq("region_id", regionId),
 
-        supabase
-            .from("q_slots")
-            .select("*")
-            .eq("region_id", regionId),
+        loadAllQSlots(regionId),
 
         loadAdminFlags(regionId),
 
@@ -104,7 +127,6 @@ export async function loadRegionData(regionId) {
     if (sessionResult.error) throw sessionResult.error;
     if (plannedWorkoutResult.error) throw plannedWorkoutResult.error;
     if (aoResult.error) throw aoResult.error;
-    if (qSlotResult.error) throw qSlotResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
     
     console.log("Loaded members count:", memberResult.length);
@@ -116,7 +138,7 @@ export async function loadRegionData(regionId) {
         sessions: sessionResult.map(mapSessionFromDb),
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
         aos: aoResult.data.map(mapAoFromDb),
-        qSlots: qSlotResult.data.map(mapQSlotFromDb),
+        qSlots: qSlotResult.map(mapQSlotFromDb),
         adminFlags: adminFlagResult,
         savedPlannerSections: (savedPlannerSectionResult.data || [])
             .map(mapSavedPlannerSectionFromDb),
