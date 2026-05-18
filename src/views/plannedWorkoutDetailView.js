@@ -67,19 +67,6 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
         allowSessionLogging: true,
     };
 
-    logAppEvent({
-        type: APP_EVENTS.EXECUTION_STARTED,
-        metadata: {
-            plannedWorkoutId: workout.id,
-            launchSource,
-            workoutDate: workout.date || null,
-            aoName: workout.aoName || null,
-            isShared: Boolean(workout.isShared),
-            timerCount: workout.timers?.length || 0,
-            executionDate: state.executionContext.executionDate,
-        },
-    });
-
     state.selectedPlannedWorkoutId = workout.id;
     state.plannedWorkoutLaunchMode = "execution";
 
@@ -92,6 +79,22 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
 
     saveNavState(state);
     renderApp();
+    try {
+        logAppEvent({
+            type: APP_EVENTS.EXECUTION_STARTED,
+            metadata: {
+                plannedWorkoutId: workout.id,
+                launchSource,
+                workoutDate: workout.date || null,
+                aoName: workout.aoName || null,
+                isShared: Boolean(workout.isShared),
+                timerCount: workout.timers?.length || 0,
+                executionDate: state.executionContext.executionDate,
+            },
+        });
+    } catch (error) {
+        console.error("Failed to log execution start:", error);
+    }
 }
 
 export function renderPlannedWorkoutDetail() {
@@ -113,9 +116,7 @@ export function renderPlannedWorkoutDetail() {
 
     if (!workout) {
         console.warn("Missing workout. Redirecting to safe view.");
-        state.currentView = "plannedWorkoutList";
-        saveNavState(state);
-        renderApp();
+        navigateTo("plannedWorkoutList");
         return;
     }
 
@@ -143,8 +144,7 @@ export function renderPlannedWorkoutDetail() {
         if (state.sharedWorkoutViewMode) {
             state.sharedWorkoutViewMode = false;
             state.selectedPlannedWorkoutId = null;
-            state.currentView = "plannedWorkoutList";
-            renderApp();
+            navigateTo("plannedWorkoutList");
             return;
         }
 
@@ -713,9 +713,8 @@ export function renderPlannedWorkoutDetail() {
 
                 state.selectedPlannedWorkoutId = null;
                 state.editingPlannedWorkoutId = null;
-                state.currentView = "plannedWorkoutList";
+                navigateTo("plannedWorkoutList");
 
-                renderApp();
             } catch (error) {
                 console.error("Failed to delete workout:", error);
                 showToast("Failed to delete workout.", "error")
@@ -729,21 +728,23 @@ export function renderPlannedWorkoutDetail() {
     preblastButton.addEventListener("click", () => {
         state.selectedPreblastWorkoutId = workout.id;
         state.draftPreblastText = generatePreblast(workout, state.aos);
-
-        logAppEvent({
-            type: APP_EVENTS.PREBLAST_GENERATED,
-            metadata: {
-                plannedWorkoutId: workout.id,
-                workoutDate: workout.date || null,
-                aoName: workout.aoName || null,
-                title: workout.title || null,
-                isShared: Boolean(workout.isShared),
-            },
-        });
-
         state.hasAddedPreblastForecast = false;
-        state.currentView = "preblast";
-        renderApp();
+        navigateTo("preblast");
+
+        try {
+            logAppEvent({
+                type: APP_EVENTS.PREBLAST_GENERATED,
+                metadata: {
+                    plannedWorkoutId: workout.id,
+                    workoutDate: workout.date || null,
+                    aoName: workout.aoName || null,
+                    title: workout.title || null,
+                    isShared: Boolean(workout.isShared),
+                },
+            });
+        } catch (error) {
+            console.error("Failed to log preblast generated:", error);
+        }
     });
 
     const shareButton = document.createElement("button");

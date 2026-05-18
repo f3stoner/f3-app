@@ -3,6 +3,7 @@ import { renderApp } from "../index.js";
 import { updateMyProfile } from "../services/auth.js";
 import { updateMemberInCloud } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderClaimMemberView() {
     const app = document.getElementById("app");
@@ -165,9 +166,7 @@ export function renderClaimMemberView() {
                     state.currentUserMemberId = selectedMember.id;
                     state.currentUserDisplayName = selectedMember.paxName;
                     state.claimingMemberId = null;
-                    state.currentView = "dashboard";
-
-                    renderApp();
+                    navigateTo("dashboard");
                 } catch (error) {
                     console.error("Failed to claim member profile:", error);
                     showToast("Failed to save profile setup.", "error");

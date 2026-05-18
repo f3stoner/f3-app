@@ -257,8 +257,7 @@ export function renderSessionHistory() {
     const backButton = document.createElement("button");
     backButton.textContent = "Back to Dashboard";
     backButton.addEventListener("click", () => {
-        state.currentView = "dashboard";
-        renderApp();
+        navigateTo("dashboard");
     });
 
     const nav = createGlobalNav();

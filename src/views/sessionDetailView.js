@@ -276,23 +276,26 @@ export function renderSessionDetail() {
 
         state.draftBackblastMediaFiles = [];
         state.hasAddedBackblastWeather = false;
-
-        logAppEvent({
-            type: APP_EVENTS.BACKBLAST_GENERATED,
-            metadata: {
-                sessionId: session.id,
-                sessionDate: session.date || null,
-                aoName: session.aoName || null,
-                paxCount: session.attendeeIds?.length || 0,
-                fngCount: session.fngs?.length || 0,
-                qCount: session.qIds?.length || 0,
-                sourcePlannedWorkoutId: session.sourcePlannedWorkoutId || null,
-                hasWorkout: Boolean(session.workout),
-                usedSavedBackblast,
-            },
-        });
-
         navigateTo("backblast");
+
+        try {
+            logAppEvent({
+                type: APP_EVENTS.BACKBLAST_GENERATED,
+                metadata: {
+                    sessionId: session.id,
+                    sessionDate: session.date || null,
+                    aoName: session.aoName || null,
+                    paxCount: session.attendeeIds?.length || 0,
+                    fngCount: session.fngs?.length || 0,
+                    qCount: session.qIds?.length || 0,
+                    sourcePlannedWorkoutId: session.sourcePlannedWorkoutId || null,
+                    hasWorkout: Boolean(session.workout),
+                    usedSavedBackblast,
+                },
+            });
+        } catch (error) {
+            console.error("Failed to log backblast generated:", error);
+        }
     })
 
     const copyToPlanButton = document.createElement("button");
@@ -331,7 +334,7 @@ export function renderSessionDetail() {
     editButton.textContent = "Edit Session";
     editButton.addEventListener("click", () => {
         if (!canEditSession) {
-            alert("You can only edit sessionsyou created.");
+            alert("You can only edit sessions you created.");
             return;
         }
 
@@ -366,9 +369,7 @@ export function renderSessionDetail() {
                 await deleteSession(session.id);
 
                 state.selectedSessionId = null;
-                state.currentView = "dashboard";
-
-                renderApp();
+                navigateTo("dashboard");
             } catch (error) {
                 console.error("Failed to delete session:", error);
                 showToast("Failed to delete session", "error");

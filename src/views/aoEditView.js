@@ -3,7 +3,7 @@ import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { insertAo, updateAoInCloud, deleteUpcomingQSlotsForAo, deleteQSlotsByIds } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
-import { goBack } from "../utils/navigation.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 import { getTodayDate } from "../utils/date.js";
 import { showToast } from "../utils/toast.js";
 
@@ -247,8 +247,7 @@ export function renderAoEditView() {
            
 
             state.editingAoId = null;
-            state.currentView = "aoManagement";
-            renderApp();
+            navigateTo("aoManagement");
         } catch (error) {
             console.error("Failed to save AO:", error);
             showToast("Failed to save AO.", "error");

@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { updateMember } from "../services/appData.js";
-import { goBack } from "../utils/navigation.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 
 export function renderMemberEdit () {
@@ -15,8 +15,7 @@ export function renderMemberEdit () {
     cancelButton.textContent = "Cancel";
     cancelButton.addEventListener("click", () => {
         state.editingMemberId = null;
-        state.currentView = "memberDetail";
-        renderApp();
+        navigateTo("memberDetail");
     });
 
     if (!member) {
@@ -31,8 +30,7 @@ export function renderMemberEdit () {
 
     if (!canEditMember) {
         alert("You can only edit your own profile.");
-        state.currentView = "dashboard";
-        renderApp();
+        navigateTo("dashboard");
         return;
     }
 
@@ -78,8 +76,7 @@ export function renderMemberEdit () {
             await updateMember(member.id, updatedMember);
             state.selectedMemberId = member.id;
             state.editingMemberId = null;
-            state.currentView = "memberDetail";
-            renderApp();
+            navigateTo("memberDetail");
         } catch (error) {
             console.error("Failed to update member:", error);
             showToast("Failed to save member", "error");

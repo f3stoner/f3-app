@@ -69,6 +69,7 @@ button,
         radial-gradient(circle at top center, rgba(194, 202, 211, 0.14), transparent 260px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent 180px),
         var(--bg);
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
 h1 {

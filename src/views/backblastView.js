@@ -5,6 +5,7 @@ import { updateSession } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
 import { updateCustomTemplates } from "../services/cloudData.js";
 import { logActionFailure } from "../services/appEvents.js";
+import { navigateTo } from "../utils/navigation.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -287,8 +288,7 @@ export function renderBackblastView () {
         state.draftBackblastMediaFiles = [];
         state.draftBackblastText = "";
         state.hasAddedBackblastWeather = false;
-        state.currentView = "sessionDetail";
-        renderApp();
+        navigateTo("sessionDetail");
     });
 
     const resetButton = document.createElement("button");

@@ -8,7 +8,7 @@ import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { addSession, updateSession } from "../services/appData.js";
 import { REGION_AOS } from "../config.js";
-import { goBack } from "../utils/navigation.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
 import { addAdminFlags } from "../services/appData.js";
@@ -735,8 +735,7 @@ try {
     state.draftSession = null;
 
     if (isEditing) {
-        state.currentView = "sessionDetail";
-        renderApp();
+        navigateTo("sessionDetail");
     } else {
         const sessionForBackblast = savedSession || draftSession;
 
@@ -746,8 +745,7 @@ try {
 
         state.draftBackblastMediaFiles = [];
         state.hasAddedBackblastWeather = false;
-        state.currentView = "backblast";
-        renderApp();
+        navigateTo("backblast");
     }
 } catch (error) {
     console.error("Failed to save session:", error);

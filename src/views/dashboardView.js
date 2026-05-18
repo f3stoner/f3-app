@@ -499,8 +499,7 @@ export function renderDashboard() {
                 }
 
                 state.hasAddedPreblastForecast = false;
-                state.currentView = "preblast";
-                renderApp();
+                navigateTo("preblast");
             });
 
             nextQActions.appendChild(preblastButton);
@@ -572,23 +571,21 @@ export function renderDashboard() {
     workoutLibraryButton.classList.add("quick-access-card");
     workoutLibraryButton.textContent = "Workout Library";
     workoutLibraryButton.addEventListener("click", () => {
-        state.currentView = "plannedWorkoutList";
-        renderApp();
+        navigateTo("plannedWorkoutList");
     });
 
     const rosterButton = document.createElement("button");
     rosterButton.classList.add("quick-access-card");
     rosterButton.textContent = "Roster";
     rosterButton.addEventListener("click", () => {
-        state.currentView = "roster";
-        renderApp()
+        navigateTo("roster");
     });
 
     const qSignupButton = document.createElement("button");
     qSignupButton.classList.add("quick-access-card");
     qSignupButton.textContent = "Q Signup";
     qSignupButton.addEventListener("click", () => {
-        state.currentView = "qSignup";
+        navigateTo("qSignup");
         renderApp();
     });
 
@@ -968,7 +965,7 @@ export function renderDashboard() {
 
             sessionDetail.addEventListener("click", () => {
                 state.selectedSessionId = session.id;
-                state.currentView = "sessionDetail";
+                navigateTo("sessionDetail");
                 renderApp();
             })
 
