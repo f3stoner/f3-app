@@ -902,6 +902,7 @@ function mapRegionFromDb(row) {
         id: row.id,
         name: row.name,
         workoutFieldLabels: row.workout_field_labels || null,
+        regionPassword: row.region_password || null,
     };
 }
 

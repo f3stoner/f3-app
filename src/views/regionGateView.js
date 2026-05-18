@@ -29,7 +29,14 @@ export function renderRegionGateView() {
         try {
             const region = await getRegionById(state.currentRegionId);
 
-            if (entered !== region.region_password) {
+            console.log("regionGate currentRegionId:", state.currentRegionId);
+            console.log("regionGate region returned:", region);
+            console.log("entered:", entered);
+            console.log("saved:", region?.region_password);
+
+            const savedPassword = String(region?.region_password || "").trim();
+
+            if (entered !== region.regionPassword) {
                 alert("Incorrect Password");
                 return;
             }
