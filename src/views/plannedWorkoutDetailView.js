@@ -652,6 +652,18 @@ export function renderPlannedWorkoutDetail() {
             .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
     }       
 
+    function findMatchingQSlotForWorkout(workout) {
+        return state.qSlots.find(slot => {
+            const ao = state.aos.find(a => a.id === slot.aoId);
+
+            return (
+                slot.date === workout.date &&
+                ao?.name === workout.aoName &&
+                slot.qUserId === state.currentUserMemberId
+            );
+        });
+    }
+
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy to New Plan";
 
@@ -726,8 +738,15 @@ export function renderPlannedWorkoutDetail() {
     preblastButton.textContent = "Create Preblast";
 
     preblastButton.addEventListener("click", () => {
+        const matchingQSlot = findMatchingQSlotForWorkout(workout);
+
+        state.selectedPreblastQSlotId = matchingQSlot?.id || null;
         state.selectedPreblastWorkoutId = workout.id;
-        state.draftPreblastText = generatePreblast(workout, state.aos);
+
+        state.draftPreblastText =
+            matchingQSlot?.preblastText ||
+            generatePreblast(workout, state.aos);
+
         state.hasAddedPreblastForecast = false;
         navigateTo("preblast");
 
@@ -735,6 +754,7 @@ export function renderPlannedWorkoutDetail() {
             logAppEvent({
                 type: APP_EVENTS.PREBLAST_GENERATED,
                 metadata: {
+                    qSlotId: matchingQSlot?.id || null,
                     plannedWorkoutId: workout.id,
                     workoutDate: workout.date || null,
                     aoName: workout.aoName || null,

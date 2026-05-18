@@ -2670,3 +2670,27 @@ select:focus,
     width: auto;
     opacity: 0.65;
 }
+
+.template-tools-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.template-tools-content select,
+.template-tools-content button {
+    width: 100%;
+}
+
+.preblast-media-section {
+    margin-top: 0.75rem;
+}
+
+.preblast-template-section {
+    margin-top: 0.75rem;
+}
+
+details.section {
+    margin-top: 1rem;
+}

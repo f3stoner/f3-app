@@ -210,6 +210,8 @@ function mapPlannedWorkoutFromDb(row) {
         createdByUserId: row.created_by_user_id || null,
         isShared: row.is_shared ?? true,
         timers: row.timers || [],
+        preblastText: row.preblast_text || "",
+        preblastLastModifiedAt: row.preblast_last_modified_at || null,
     };
 }
 
@@ -234,6 +236,9 @@ function mapQSlotFromDb(row) {
         date: row.date,
         qUserId: row.q_user_id || null,
         createdAt: row.created_at,
+        preblastText: row.preblast_text || "",
+        preblastLastModifiedAt: row.preblast_last_modified_at || null,
+        preblastPostedAt: row.preblast_posted_at || null,
     };
 }
 
@@ -395,6 +400,8 @@ export async function insertPlannedWorkout(regionId, workout) {
                 created_by_user_id: workout.createdByUserId || null,
                 is_shared: workout.isShared ?? false,
                 timers: workout.timers || [],
+                preblast_text: workout.preblastText || null,
+                preblast_last_modified_at: workout.preblastLastModifiedAt || null,
             },
         ])
         .select()
@@ -443,6 +450,8 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             created_by_user_id: workout.createdByUserId || null,
             is_shared: workout.isShared ?? false,
             timers: workout.timers || [],
+            preblast_text: workout.preblastText || null,
+            preblast_last_modified_at: workout.preblastLastModifiedAt || null,
         })
         .eq("id", workout.id)
         .select()
@@ -635,6 +644,9 @@ export async function updateQSlotInCloud(regionId, qSlot) {
             date: qSlot.date,
             q_user_id: qSlot.qUserId || null,
             created_at: qSlot.createdAt,
+            preblast_text: qSlot.preblastText || null,
+            preblast_last_modified_at: qSlot.preblastLastModifiedAt || null,
+            preblast_posted_at: qSlot.preblastPostedAt || null,
         })
         .eq("id", qSlot.id)
         .eq("region_id", regionId)

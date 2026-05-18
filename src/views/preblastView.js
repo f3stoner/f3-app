@@ -2,11 +2,17 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { showToast } from "../utils/toast.js";
 import { logActionFailure } from "../services/appEvents.js";
-import { ensureCustomTemplates } from "../utils/customTemplates.js";
+import { createCustomTemplate, ensureCustomTemplates } from "../utils/customTemplates.js";
 import { navigateTo } from "../utils/navigation.js";
 import { getAoWeather } from "../services/weather.js";
+import { updateCustomTemplates, updatePlannedWorkoutInCloud, updateQSlotInCloud } from "../services/cloudData.js";
 
 export function renderPreblastView() {
+
+    console.log("selectedPreblastWorkoutId:", state.selectedPreblastWorkoutId);
+    console.log("selectedPlannedWorkoutId:", state.selectedPlannedWorkoutId);
+    console.log("editingPlannedWorkoutId:", state.editingPlannedWorkoutId);
+
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -17,6 +23,15 @@ export function renderPreblastView() {
     subtitle.classList.add("view-subtitle");
     subtitle.textContent = "Write and refine your preblast.";
 
+    function getPreblastQSlot() {
+        return state.qSlots.find(
+            slot => slot.id === state.selectedPreblastQSlotId
+        );
+    }
+
+    const preblastQSlot = getPreblastQSlot();
+    const preblastWorkout = getPreblastWorkout();
+
     const textInput = document.createElement("textarea");
     textInput.classList.add("preblast-textarea");
     textInput.value = state.draftPreblastText || "";
@@ -25,9 +40,24 @@ export function renderPreblastView() {
         state.draftPreblastText = event.target.value;
     });
 
-    const preblastWorkout = getPreblastWorkout();
-    const preblastAo = state.aos.find(ao => ao.name === preblastWorkout?.aoName);
-    const targetDateTime = getTargetDateTime(preblastWorkout, preblastAo);
+    function getPreblastAo(qSlot, workout) {
+        if (qSlot?.aoId) {
+            return state.aos.find(ao => ao.id === qSlot.aoId);
+        }
+
+        return state.aos.find(ao => ao.name === workout?.aoName);
+    }
+
+    function getTargetDateTime(qSlot, workout, ao) {
+        const date = qSlot?.date || workout?.date;
+
+        if (!date || !ao?.time) return null;
+
+        return`${date}T${ao.time}:00`;
+    }
+
+    const preblastAo = getPreblastAo(preblastQSlot, preblastWorkout);
+    const targetDateTime = getTargetDateTime(preblastQSlot, preblastWorkout, preblastAo);
 
     if (preblastAo?.id && targetDateTime && !state.hasAddedPreblastForecast) {
         state.hasAddedPreblastForecast = true;
@@ -47,9 +77,6 @@ export function renderPreblastView() {
 
     state.customTemplates = ensureCustomTemplates(state.customTemplates);
 
-    const templateButtonRow = document.createElement("div");
-    templateButtonRow.classList.add("button-row");
-
     const templateSelect = document.createElement("select");
     templateSelect.value = state.customTemplates.preblast.activeTemplateId || "";
 
@@ -66,23 +93,68 @@ export function renderPreblastView() {
     });
 
     templateSelect.addEventListener("change", (event) => {
-        const templateId = event.target.value;
+        state.customTemplates.preblast.activeTemplateId = event.target.value || null;
+    });
 
-        state.customTemplates.preblast.activeTemplateId = templateId || null;
+    const applyTemplateButton = document.createElement("button");
+    applyTemplateButton.type = "button";
+    applyTemplateButton.textContent = "Apply Template";
+
+    applyTemplateButton.addEventListener("click", () => {
+        const templateId = templateSelect.value;
 
         const selectedTemplate = state.customTemplates.preblast.savedTemplates.find(
             template => template.id === templateId
         );
 
-        if (!selectedTemplate) return;
+        if (!selectedTemplate) {
+            showToast("Choose a template first.", "error");
+            return;
+        }
 
-        textInput.value = selectedTemplate.content;
-        state.draftPreblastText = selectedTemplate.content;
+        if (textInput.value.trim()) {
+            const shouldApply = window.confirm(
+                "Apply this template? It will replace the current draft on screen."
+            );
+
+            if (!shouldApply) return;
+        }
+
+        textInput.value = selectedTemplate.content || "";
+        state.draftPreblastText = textInput.value;
+    });
+
+    const saveAsTemplateButton = document.createElement("button");
+    saveAsTemplateButton.type = "button";
+    saveAsTemplateButton.textContent = "Save Current as Template";
+
+    saveAsTemplateButton.addEventListener("click", async () => {
+        const content = textInput.value.trim();
+
+        if (!content) {
+            showToast("Nothing to save as a template.", "error");
+            return;
+        }
+
+        const templateName = window.prompt("Template name?");
+
+        if (!templateName?.trim()) return;
+
+        state.customTemplates = ensureCustomTemplates(state.customTemplates);
+
+        const template = createCustomTemplate({
+            name: templateName.trim(),
+            content,
+        });
+
+        state.customTemplates.preblast.savedTemplates.push(template);
+        state.customTemplates.preblast.activeTemplateId = template.id;
+
+        await persistCustomTemplates("Template saved.");
     });
 
     const manageTemplateButton = document.createElement("button");
     manageTemplateButton.type = "button";
-    manageTemplateButton.classList.add("secondary-button");
     manageTemplateButton.textContent = "Manage Templates";
 
     manageTemplateButton.addEventListener("click", () => {
@@ -90,17 +162,33 @@ export function renderPreblastView() {
         navigateTo("templateHub");
     });
 
-    templateButtonRow.append(templateSelect, manageTemplateButton);
+    const templateDetails = document.createElement("details");
+    templateDetails.classList.add("section");
+
+    const templateSummary = document.createElement("summary");
+    templateSummary.textContent = "Preblast Templates";
+
+    const templateContent = document.createElement("div");
+    templateContent.classList.add("template-tools-content");
+
+    templateContent.append(
+        templateSelect,
+        applyTemplateButton,
+        saveAsTemplateButton,
+        manageTemplateButton
+    );
+
+    templateDetails.append(templateSummary, templateContent);
 
     function getPreblastWorkout() {
-        return state.plannedWorkouts.find(
-            workout => workout.id === state.selectedPreblastWorkoutId
-        );
-    }
+        const workoutId =
+        state.selectedPreblastWorkoutId ||
+        state.selectedPlannedWorkoutId ||
+        state.editingPlannedWorkoutId;
 
-    function getTargetDateTime(workout, ao) {
-        if (!workout?.date || !ao?.time) return null;
-        return `${workout.date}T${ao.time}:00`;
+        return state.plannedWorkouts.find(
+            workout => workout.id === workoutId
+        );
     }
 
     function buildForecastLine(weather) {
@@ -139,8 +227,31 @@ export function renderPreblastView() {
         textInput.value = nextText;
     }
 
+    async function persistCustomTemplates(successMessage) {
+        try {
+            await updateCustomTemplates(state.currentUserId, state.customTemplates);
+            showToast(successMessage, "success");
+            renderApp();
+        } catch (error) {
+            console.error("Failed to persist custom templates:", error);
+            showToast("Failed to save to your account.", "error");
+            renderApp();
+        }
+    }
+
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");
+
+    const mediaFiles = state.draftPreblastMediaFiles || [];
+
+    const mediaDetails = document.createElement("details");
+    mediaDetails.classList.add("section");
+    mediaDetails.open = mediaFiles.length > 0;
+
+    const mediaSummary = document.createElement("summary");
+    mediaSummary.textContent = "Attachments";
+
+    mediaDetails.append(mediaSummary, mediaSection);
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
@@ -160,8 +271,6 @@ export function renderPreblastView() {
 
     const mediaPreviewWrapper = document.createElement("div");
     mediaPreviewWrapper.classList.add("preblast-media-preview-wrapper");
-
-    const mediaFiles = state.draftPreblastMediaFiles || [];
 
     mediaFiles.forEach((file, index) => {
         
@@ -195,12 +304,52 @@ export function renderPreblastView() {
 
     mediaSection.append(mediaInput, mediaHelperText, mediaPreviewWrapper);
 
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "Save Draft";
+
+    saveButton.addEventListener("click", async () => {
+        if (!preblastQSlot) {
+            showToast("No Q slot found for this preblast.", "error");
+            return;
+        }
+        try {
+            const savedAt = new Date().toISOString();
+
+            const updatedQSlot = {
+                ...preblastQSlot,
+                preblastText: textInput.value,
+                preblastLastModifiedAt: savedAt,
+            };
+
+            const savedQSlot = await updateQSlotInCloud(
+                state.currentRegionId,
+                updatedQSlot
+            );
+
+            state.qSlots = state.qSlots.map(slot =>
+                slot.id === savedQSlot.id ? savedQSlot : slot
+            );
+
+            state.draftPreblastText = savedQSlot.preblastText || "";
+
+            showToast("Preblast saved.");
+        } catch (error) {
+            console.error("Failed to save preblast:", error);
+            showToast("Failed to save preblast.", "error");
+
+            logActionFailure("savePreblast", error, {
+                qSlotId: preblastQSlot.id,
+                plannedWorkoutId: state.selectedPreblastWorkoutId || null,
+            });
+        }
+    });
+
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy Preblast";
 
     copyButton.addEventListener("click", async () => {
         try {
-            await navigator.clipboard.writeText(state.draftPreblastText || "");
+            await navigator.clipboard.writeText(textInput.value || "");
             copyButton.textContent = "Copied";
             setTimeout(() => {
                 copyButton.textContent = "Copy Preblast";
@@ -219,7 +368,7 @@ export function renderPreblastView() {
         shareButton.textContent = "Share Not Available";
     } else {
         shareButton.addEventListener("click", () => {
-            const text = state.draftPreblastText || "";
+            const text = textInput.value || "";
             const mediaFiles = state.draftPreblastMediaFiles || [];
 
             let sharePromise;
@@ -256,6 +405,10 @@ export function renderPreblastView() {
 
         state.draftPreblastMediaFiles = [];
         state.draftPreblastText = "";
+        state.activePreblastWorkoutId = null;
+        state.hasAddedPreblastForecast = false;
+        state.selectedPreblastQSlotId = null;
+        state.selectedPreblastWorkoutId = null;
 
         if (returnToWorkout) {
             state.currentView = "plannedWorkoutDetail";
@@ -269,14 +422,14 @@ export function renderPreblastView() {
 
     const actionRow = document.createElement("div");
     actionRow.classList.add("button-row");
-    actionRow.append(shareButton, copyButton, doneButton);
+    actionRow.append(saveButton, shareButton, copyButton, doneButton);
 
     app.append(
         title,
         subtitle,
         textInput,
-        templateButtonRow,
-        mediaSection,
         actionRow,
+        templateDetails,
+        mediaDetails,
     );
 }

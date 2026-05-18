@@ -485,18 +485,17 @@ export function renderDashboard() {
             preblastButton.addEventListener("click", (event) => {
                 event.stopPropagation();
 
-                if (matchingWorkout) {
-                    state.selectedPreblastWorkoutId = matchingWorkout.id;
-                    state.draftPreblastText = generatePreblast(matchingWorkout, state.aos);
-                } else {
-                    const fallbackWorkout = {
-                        date: nextQSlot.date,
-                        aoName: ao?.name || "",
-                    };
+                const fallbackWorkout = {
+                    date: nextQSlot.date,
+                    aoName: ao?.name || "",
+                };
 
-                    state.selectedPreblastWorkoutId = matchingWorkout?.id || null;
-                    state.draftPreblastText = generatePreblast(fallbackWorkout, state.aos);
-                }
+                state.selectedPreblastQSlotId = nextQSlot.id;
+                state.selectedPreblastWorkoutId = matchingWorkout?.id || null;
+
+                state.draftPreblastText =
+                    nextQSlot.preblastText ||
+                    generatePreblast(matchingWorkout || fallbackWorkout, state.aos);
 
                 state.hasAddedPreblastForecast = false;
                 navigateTo("preblast");
