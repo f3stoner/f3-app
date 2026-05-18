@@ -20,6 +20,7 @@ import { getAoWeather } from "../services/weather.js";
 import { buildRegionInsights } from "../modules/insights.js";
 import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
 import { createQReminderPrompt } from "../components/qReminderPrompt.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -247,7 +248,7 @@ export function renderDashboard() {
 
             state.weatherByAoDate[cacheKey] = weather;
         } catch (error) {
-            console.error("failed to load next Q weather:", error);
+            console.error("Failed to load next Q weather:", error);
 
             state.weatherByAoDate[cacheKey] = {
                 weatherUnavailable: true,
@@ -451,18 +452,20 @@ export function renderDashboard() {
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = "execution";
 
-                logAppEvent({                
-                    type: APP_EVENTS.EXECUTION_STARTED,
-
-                    metadata: {
-                        plannedWorkoutId: matchingWorkout.id,
-                        source: "dashboard_next_q",
-                        aoName: matchingWorkout.aoName || null,
-                        workoutDate: matchingWorkout.date || null,
-                    },
-                });
-                
                 navigateTo("plannedWorkoutDetail");
+                try {
+                    logAppEvent({                
+                        type: APP_EVENTS.EXECUTION_STARTED,
+
+                        metadata: {
+                            plannedWorkoutId: matchingWorkout.id,
+                            source: "dashboard_next_q",
+                            aoName: matchingWorkout.aoName || null,
+                            workoutDate: matchingWorkout.date || null,
+                        },
+                
+                    })
+                } catch (error) {"Failed to log execution start:", error};
             });
         } else {
             actionButton.textContent = "View Workout";
