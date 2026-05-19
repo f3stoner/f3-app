@@ -2792,3 +2792,32 @@ details.section {
 .thang-section-card .detail-label {
     font-size: 13px;
 }
+
+.timer-control-button {
+    min-height: 56px;
+    padding: 0.95rem 1rem;
+    font-size: 1.05rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.timer-start-button {
+    width: 100%;
+    font-weight: 800;
+}
+
+.active-timer-panel .button-row {
+    gap: 0.75rem;
+}
+
+.timer-control-button.is-loading {
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.workout-timer-button {
+    min-height: 52px;
+    padding: 0.85rem 1rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}

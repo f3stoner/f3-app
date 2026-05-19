@@ -16,6 +16,7 @@ import { normalizeThangSections } from "../utils/thangs.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
+let timerActionInProgress = false;
 
 const TIMER_SOUND_URL =
     `${window.location.origin}${process.env.NODE_ENV === "production" ? "/f3-app" : ""}/sounds/timer-complete.wav`;
@@ -208,7 +209,13 @@ export function renderPlannedWorkoutDetail() {
             const timerName = timer.label || "Timer";
             button.textContent = `▶ ${timerName} · ${formatTimerSummary(timer)}`;
 
-            button.addEventListener("click", () =>{
+            button.addEventListener("click", (event) =>{
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (timerActionInProgress) return;
+                timerActionInProgress = true;
+
                 state.activeWorkoutTimerId = timer.id;
                 state.activeWorkoutTimerStatus = "idle";
                 state.activeWorkoutTimerStartedAt = null;
@@ -220,6 +227,11 @@ export function renderPlannedWorkoutDetail() {
                     timer.type === "interval"
                         ? timer.workSeconds || 45
                         : timer.durationSeconds || 300;
+
+                setTimeout(() => {
+                    timerActionInProgress = false;
+                }, 350);
+
                 renderApp();
             });
 
@@ -404,39 +416,61 @@ export function renderPlannedWorkoutDetail() {
         buttonRow.classList.add("button-row");
 
         const startButton = document.createElement("button");
+        startButton.classList.add("timer-control-button", "timer-start-button");
         startButton.textContent = state.activeWorkoutTimerStatus === "running"
             ? "Pause"
             : state.activeWorkoutTimerStatus === "done"
                 ? "Restart"
                 : "Start";
 
-        startButton.addEventListener("click", async () => {
-            await unlockTimerAudio();
-
-            const wasDone =
-            state.activeWorkoutTimerStatus === "done" ||
-            state.activeWorkoutTimerRemainingSeconds === 0;
+        startButton.addEventListener("click", async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
             
-            if (state.activeWorkoutTimerStatus === "running") {
-                state.activeWorkoutTimerStatus = "paused";
-            } else {
-                state.activeWorkoutTimerStatus = "running";
+            if (timerActionInProgress) return;
+            timerActionInProgress = true;
 
-                if (wasDone) {
-                    state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+            startButton.disabled = true;
+            startButton.classList.add("is-loading");
+
+            try {
+                await unlockTimerAudio();
+
+                const wasDone =
+                state.activeWorkoutTimerStatus === "done" ||
+                state.activeWorkoutTimerRemainingSeconds === 0;
+                
+                if (state.activeWorkoutTimerStatus === "running") {
+                    state.activeWorkoutTimerStatus = "paused";
+                } else {
+                    state.activeWorkoutTimerStatus = "running";
+
+                    if (wasDone) {
+                        state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+                    }
                 }
+
+                state.activeWorkoutTimerStartedAt = Date.now();
+
+                renderApp();
+            } finally {
+                setTimeout(() => {
+                    timerActionInProgress = false;
+                }, 350);
             }
-
-            state.activeWorkoutTimerStartedAt = Date.now();
-
-            renderApp();
         });
 
         const resetButton = document.createElement("button");
-        resetButton.classList.add("secondary-button");
+        resetButton.classList.add("secondary-button", "timer-control-button");
         resetButton.textContent = "Reset";
 
-        resetButton.addEventListener("click", () => {
+        resetButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (timerActionInProgress) return;
+            timerActionInProgress = true;
+
             state.activeWorkoutTimerStatus = "idle";
             state.activeWorkoutTimerStartedAt = null;
 
@@ -450,14 +484,24 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerRound = null;
             }
 
+            setTimeout(() => {
+                timerActionInProgress = false;
+            }, 350);
+
             renderApp();
         });
 
         const closeButton = document.createElement("button");
-        closeButton.classList.add("secondary-button");
+        closeButton.classList.add("secondary-button", "timer-control-button");
         closeButton.textContent = "Close";
 
-        closeButton.addEventListener("click", () => {
+        closeButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (timerActionInProgress) return;
+            timerActionInProgress = true;
+
             clearActiveTimerInterval();
             removeActiveTimerModal();
 
@@ -467,6 +511,10 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerRemainingSeconds = null;
             state.activeWorkoutTimerPhase = null;
             state.activeWorkoutTimerRound = null;
+
+            setTimeout(() => {
+                timerActionInProgress = false;
+            }, 350);
             renderApp();
         });
 
