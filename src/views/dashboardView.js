@@ -26,8 +26,31 @@ export function renderDashboard() {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    if (!state.isMainMenuOpen) {
+        document.body.classList.remove("menu-open");
+    }
+
+    document.querySelectorAll(".main-menu-overlay").forEach(menu => menu.remove());
+
     const title = document.createElement("h1");
     title.textContent = state.regionName || "F3 App";
+
+    const dashboardHeader = document.createElement("div");
+    dashboardHeader.classList.add("dashboard-header");
+
+    const menuButton = document.createElement("button");
+    menuButton.type = "button";
+    menuButton.classList.add("hamburger-button");
+    menuButton.setAttribute("aria-label", "Open menu");
+    menuButton.textContent = "☰";
+
+    menuButton.addEventListener("click", () => {
+        state.isMainMenuOpen = true;
+        document.body.classList.add("menu-open");
+        renderApp();
+    });
+
+    dashboardHeader.append(title, menuButton);
 
     let regionSwitcher = null;
     let regionSwitcherLabel = null;
@@ -155,6 +178,82 @@ export function renderDashboard() {
 
     const isAdmin = state.currentUserRole === "admin";
 
+    function createDashboardMenu() {
+        const overlay = document.createElement("div");
+        overlay.classList.add("main-menu-overlay");
+
+        const drawer = document.createElement("div");
+        drawer.classList.add("main-menu-drawer");
+
+        const header = document.createElement("div");
+        header.classList.add("main-menu-header");
+
+        const heading = document.createElement("h2");
+        heading.textContent = "Menu";
+
+        const closeButton = document.createElement("button");
+        closeButton.type = "button";
+        closeButton.classList.add("secondary-button");
+        closeButton.textContent = "Close";
+
+        closeButton.addEventListener("click", () => {
+            state.isMainMenuOpen = false;
+            document.body.classList.remove("menu-open");
+            overlay.remove();
+            renderApp();
+        });
+
+        header.append(heading, closeButton);
+
+        const menuItems = [
+            { label: "Workout Library", view: "plannedWorkoutList" },
+            { label: "My Templates", view: "templateHub" },
+            { label: "Session History", view: "sessionHistory" },
+            { label: "Roster", view: "roster" },
+            ...(isAdmin
+                ? [
+                    { label: "Region Insights", view: "regionInsights" },
+                    { label: "Admin Settings", view: "adminSettings" },
+                ]
+            : []),
+        ];
+
+        const list = document.createElement("div");
+        list.classList.add("main-menu-list");
+
+        menuItems.forEach(item => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.classList.add("main-menu-item");
+            button.textContent = item.label;
+
+            button.addEventListener("click", () => {
+                state.isMainMenuOpen = false;
+                document.body.classList.remove("menu-open");
+                overlay.remove();
+                navigateTo(item.view);
+            });
+
+            list.appendChild(button);
+        });
+
+        drawer.append(header, list);
+        overlay.append(drawer);
+
+        overlay.addEventListener("click", () => {
+            state.isMainMenuOpen = false;
+            document.body.classList.remove("menu-open");
+            overlay.remove();
+            renderApp();
+        });
+
+        drawer.addEventListener("click", event => {
+            event.stopPropagation();
+        });
+
+        return overlay;
+    }
+
     function findMatchingPlannedWorkoutForSlot(slot) {
         const ao = state.aos.find(a => a.id === slot.aoId);
 
@@ -163,6 +262,31 @@ export function renderDashboard() {
             workout.createdByUserId === state.currentUserId &&
             workout.aoName === ao?.name
         );
+    }
+
+    function createPrimaryActionsRow() {
+        const row = document.createElement("div");
+        row.classList.add("dashboard-primary-actions");
+
+        const qSignupButton = document.createElement("button");
+        qSignupButton.classList.add("primary-action-card");
+        qSignupButton.textContent = "Q Signup";
+
+        qSignupButton.addEventListener("click", () => {
+            navigateTo("qSignup");
+        });
+
+        const weeklyQButton = document.createElement("button");
+        weeklyQButton.classList.add("primary-action-card");
+        weeklyQButton.textContent = "Weekly Q Schedule";
+
+        weeklyQButton.addEventListener("click", () => {
+            navigateTo("weeklyQCalendar");
+        });
+
+        row.append(qSignupButton, weeklyQButton);
+
+        return row;
     }
 
     function findLoggedSessionForSlot(slot) {
@@ -572,77 +696,6 @@ export function renderDashboard() {
         nextQSection.append(nextQHeading, nextQCard);
         loadNextQWeather(nextQSlot, ao);
     }
-
-    const quickAccessHeading = document.createElement("div");
-    quickAccessHeading.textContent = "Plan & Manage";
-    quickAccessHeading.classList.add("detail-label");
-
-    const quickAccessRow = document.createElement("div");
-    quickAccessRow.classList.add("quick-access-row");
-
-    const workoutLibraryButton = document.createElement("button");
-    workoutLibraryButton.classList.add("quick-access-card");
-    workoutLibraryButton.textContent = "Workout Library";
-    workoutLibraryButton.addEventListener("click", () => {
-        navigateTo("plannedWorkoutList");
-    });
-
-    const rosterButton = document.createElement("button");
-    rosterButton.classList.add("quick-access-card");
-    rosterButton.textContent = "Roster";
-    rosterButton.addEventListener("click", () => {
-        navigateTo("roster");
-    });
-
-    const qSignupButton = document.createElement("button");
-    qSignupButton.classList.add("quick-access-card");
-    qSignupButton.textContent = "Q Signup";
-    qSignupButton.addEventListener("click", () => {
-        navigateTo("qSignup");
-        renderApp();
-    });
-
-    const weeklyQButton = document.createElement("button");
-    weeklyQButton.classList.add("quick-access-card");
-    weeklyQButton.textContent = "Weekly Q Schedule";
-
-    weeklyQButton.addEventListener("click", () => {
-        navigateTo("weeklyQCalendar");
-    });
-
-    const templatesButton = document.createElement("button");
-    templatesButton.classList.add("quick-access-card");
-    templatesButton.textContent = "My Templates";
-
-    templatesButton.addEventListener("click", () => {
-        navigateTo("templateHub");
-    });
-
-    const adminButton = document.createElement("button");
-    adminButton.classList.add("quick-access-card");
-    adminButton.textContent = "Admin";
-
-    adminButton.addEventListener("click", () => {
-        navigateTo("adminSettings");
-    });
-
-    const insightsButton = document.createElement("button");
-    insightsButton.classList.add("quick-access-card");
-    insightsButton.textContent = "Region Insights";
-
-    insightsButton.addEventListener("click", () => {
-        navigateTo("regionInsights");
-    });
-
-    quickAccessRow.append(
-        qSignupButton,
-        workoutLibraryButton,
-        weeklyQButton,
-        templatesButton,
-        rosterButton,
-        ...(isAdmin ? [adminButton] : []),
-        ...(isAdmin ? [insightsButton] : []),
-);
 
     function renderMyUpcomingQs() {
         const mySlots = myUpcomingQSlots.slice(1);
@@ -1169,17 +1222,18 @@ export function renderDashboard() {
     
     });
 
+    const primaryActionsRow = createPrimaryActionsRow();
+
     app.append(
-        title, 
+        dashboardHeader, 
         ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
         ...(regionSwitcher ? [regionSwitcher] : []),
         userRow,
         //notificationRow,
         ...(nextQSection ? [nextQSection] : []),
+        primaryActionsRow,
         myUpcomingQsSection,
-        quickAccessHeading,
-        quickAccessRow,
-        ...(myStatsSection ? [myStatsSection] : []),
+       ...(myStatsSection ? [myStatsSection] : []),
         recentSessionsSection,
         nav
     );
@@ -1187,4 +1241,8 @@ export function renderDashboard() {
    /* if (isAdmin) {
         app.append(dataToolsHeading, dataToolsRow, importInput, testNotificationButton);
     }*/
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createDashboardMenu());
+    }
 }

@@ -2821,3 +2821,90 @@ details.section {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
+
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-right: 3.75rem;
+}
+
+.dashboard-header h1 {
+    margin-bottom: 0;
+}
+
+.hamburger-button {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+    right: 1rem;
+    z-index: 900;
+    width: 48px;
+    min-height: 48px;
+    border-radius: 999px;
+    font-size: 1.4rem;
+    padding: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.main-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.main-menu-drawer {
+    width: min(86vw, 360px);
+    min-height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 1rem;
+    box-shadow: -12px 0 30px rgba(0, 0, 0, 0.45);
+    overflow-y: auto;
+}
+
+.main-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.main-menu-header h2 {
+    margin: 0;
+}
+
+.main-menu-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.main-menu-item {
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
+    min-height: 48px;
+}
+
+body.menu-open {
+    overflow: hidden;
+    touch-action: none;
+}
+
+.dashboard-primary-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.primary-action-card {
+    min-height: 72px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}

@@ -106,6 +106,7 @@ export const state = {
     weatherByAoDate: {},
     rosterFilter: null,
     exercises: [],
+    isMainMenuOpen: false,
 };
 
 state.runHistoricImport = async function () {
