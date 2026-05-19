@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode production",
     "deploy": "npm run build && gh-pages -d dist",
-    "refresh:aggieland-csvs": "node import/refreshAggielandCsvs.mjs"
+    "refresh:aggieland-csvs": "node import/refreshAggielandCsvs.mjs",
+    "import:exicon": "node scripts/import-exicon-exercises.js"
   },
   "repository": {
     "type": "git",

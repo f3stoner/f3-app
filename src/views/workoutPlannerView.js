@@ -12,7 +12,7 @@ import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { deleteSavedPlannerSectionFromCloud } from "../services/cloudData.js";
 import { logSaveFailure } from "../services/appEvents.js";
 import { normalizeThangSections, serializeThangSections } from "../utils/thangs.js";
-
+import { searchExercises } from "../utils/exerciseSearch.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -525,6 +525,71 @@ export function renderWorkoutPlanner() {
         getWorkoutFieldLabel(state, "introduction")
     );
 
+    function getCurrentLineText(textarea) {
+        const value = textarea.value || "";
+        const cursor = textarea.selectionStart || value.length;
+        const beforeCursor = value.slice(0, cursor);
+        const lines = beforeCursor.split("\n");
+        return lines[lines.length - 1] || "";
+    }
+
+    function replaceCurrentLine(textarea, replacement) {
+        const value = textarea.value || "";
+        const cursor = textarea.selectionStart || value.length;
+
+        const beforeCursor = value.slice(0, cursor);
+        const afterCursor = value.slice(cursor);
+
+        const lineStart = beforeCursor.lastIndexOf("\n") + 1;
+        const lineEndOffset = afterCursor.indexOf("\n");
+        const lineEnd =
+            lineEndOffset === -1
+                ? value.length
+                : cursor + lineEndOffset;
+
+        const beforeLine = value.slice(0, lineStart);
+        const afterLine = value.slice(lineEnd);
+    
+        const nextValue = `${beforeLine}${replacement}${afterLine}`;
+        textarea.value = nextValue;
+    
+        const nextCursor = beforeLine.length + replacement.length;
+        textarea.setSelectionRange(nextCursor, nextCursor);
+    
+        return nextValue;
+    }
+    
+    function renderExerciseSuggestions(textarea, suggestionsWrap, onSelect) {
+        const currentLine = getCurrentLineText(textarea).trim();
+        const suggestions = searchExercises(state.exercises, currentLine, { limit: 6 });
+    
+        suggestionsWrap.textContent = "";
+    
+        if (suggestions.length === 0) {
+            suggestionsWrap.style.display = "none";
+            return;
+        }
+    
+        suggestionsWrap.style.display = "block";
+    
+        suggestions.forEach(exercise => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.classList.add("exercise-suggestion-button");
+            button.textContent = exercise.name;
+
+            button.addEventListener("click", () => {
+                const nextValue = replaceCurrentLine(textarea, exercise.name);
+                onSelect(nextValue);
+                suggestionsWrap.textContent = "";
+                suggestionsWrap.style.display = "none";
+                textarea.focus();
+            });
+    
+            suggestionsWrap.appendChild(button);
+        });
+    }
+
     const warmoramaLabel = document.createElement("div");
     warmoramaLabel.textContent = getWorkoutFieldLabel(state, "warmorama");
     warmoramaLabel.classList.add("detail-label");
@@ -533,9 +598,28 @@ export function renderWorkoutPlanner() {
     warmoramaInput.classList.add("notes");
     warmoramaInput.value = draftWorkout.warmorama || "";
 
+    const warmoramaSuggestions = document.createElement("div");
+    warmoramaSuggestions.classList.add("exercise-suggestions");
+    warmoramaSuggestions.style.display = "none";
+
     warmoramaInput.addEventListener("input", (event) => {
         draftWorkout.warmorama = event.target.value;
         persistDraft();
+    
+        renderExerciseSuggestions(
+            warmoramaInput,
+            warmoramaSuggestions,
+            (nextValue) => {
+                draftWorkout.warmorama = nextValue;
+                persistDraft();
+            }
+        );
+    });
+    
+    warmoramaInput.addEventListener("blur", () => {
+        setTimeout(() => {
+            warmoramaSuggestions.style.display = "none";
+        }, 150);
     });
 
     const warmoramaTemplateControls = createSectionTemplateControls(
@@ -701,6 +785,7 @@ export function renderWorkoutPlanner() {
         introductionTemplateControls,
         warmoramaLabel,
         warmoramaInput,
+        warmoramaSuggestions,
         warmoramaTemplateControls,
         warmoramaTimers,
         thangsLabel,

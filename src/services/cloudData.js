@@ -80,6 +80,28 @@ export async function loadAllQSlots(regionId) {
     return allQSlots;
 }
 
+export async function loadExercises() {
+    const { data, error } = await supabase
+        .from("exercises")
+        .select("*")
+        .order("name", { ascending: true });
+    
+    if (error) throw error;
+
+    return (data || []).map(mapExerciseFromDb);
+}
+
+function mapExerciseFromDb(row) {
+    return {
+        id: row.id,
+        name: row.name,
+        normalizedName: row.normalized_name,
+        description: row.description || "",
+        source: row.source,
+        createdAt: row.created_at,
+    };
+}
+
 export async function loadRegionData(regionId) {
     const [
         regionResult,
