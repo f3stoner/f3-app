@@ -12,6 +12,7 @@ import { getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
+import { normalizeThangSections } from "../utils/thangs.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -573,7 +574,13 @@ export function renderPlannedWorkoutDetail() {
         { hideIfEmpty: isExecutionMode }
         );
     const warmoramaSection = createDetailSection(getWorkoutFieldLabel(state, "warmorama"), workout.warmorama || "-", { hideIfEmpty: isExecutionMode });
-    const thangsSection = createDetailSection(getWorkoutFieldLabel(state, "thangs"), workout.thangs || "-", { hideIfEmpty: isExecutionMode });
+    const thangSections = normalizeThangSections(workout)
+        .map(section => createDetailSection(
+            section.title || getWorkoutFieldLabel(state, "thangs"),
+            section.content || "-",
+            { hideIfEmpty: isExecutionMode }
+        ))
+        .filter(Boolean);
     const finisherSection = createDetailSection(getWorkoutFieldLabel(state, "finisher"), workout.finisher || "-", { hideIfEmpty: isExecutionMode });
     const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : getWorkoutFieldLabel(state, "notes"), workout.notes || "-", { hideIfEmpty: isExecutionMode });
     const visibilitySection = createDetailSection(
@@ -621,6 +628,7 @@ export function renderPlannedWorkoutDetail() {
             introduction: resolvedIntroduction,
             warmorama: workout.warmorama,
             thangs: workout.thangs,
+            thangSections: normalizeThangSections(workout),
             finisher: workout.finisher,
             notes: workout.notes,
         };
@@ -671,6 +679,21 @@ export function renderPlannedWorkoutDetail() {
         const nextQSlot = getNextClaimedQSlot();
         const nextAo = state.aos.find(ao => ao.id === nextQSlot?.aoId);
 
+        const sourceThangs = normalizeThangSections(workout);
+        const thangIdMap = new Map();
+
+        const copiedThangSections = sourceThangs.map((section, index) => {
+            const newId = crypto.randomUUID();
+            thangIdMap.set(section.id, newId);
+
+            return {
+                ...section,
+                id: newId,
+                title: section.title || `Thang ${index + 1}`,
+                content: section.content || "",
+            };
+        });
+
         const newWorkout = {
             ...workout,
             id: crypto.randomUUID(),
@@ -681,10 +704,16 @@ export function renderPlannedWorkoutDetail() {
             sourceWorkoutId: workout.id,
             createdByUserId: state.currentUserId,
             isShared: false,
+            thangSections: copiedThangSections,
+            thangs: copiedThangSections
+                .map(section => `${section.title}\n${section.content}`)
+                .join("\n\n"),
             timers: (workout.timers || []).map(timer => ({
                 ...timer,
-                id: crypto.randomUUID()
+                id: crypto.randomUUID(),
+                section: thangIdMap.get(timer.section) || timer.section,
             })),
+            
         };
 
         state.draftPlannedWorkout = newWorkout;
@@ -876,8 +905,14 @@ export function renderPlannedWorkoutDetail() {
         ...(introductionSection ? [introductionSection] : []),
         ...(warmoramaSection ? [warmoramaSection] : []),
         ...createTimerButtonsForSection("warmorama"),
-        ...(thangsSection ? [thangsSection] : []),
-        ...createTimerButtonsForSection("thangs"),
+        ...thangSections.flatMap((sectionEl, index) => {
+            const thang = normalizeThangSections(workout)[index];
+        
+            return [
+                sectionEl,
+                ...createTimerButtonsForSection(thang.id),
+            ];
+        }),
         ...(finisherSection ? [finisherSection] : []),
         ...createTimerButtonsForSection("finisher"),
         ...(notesSection ? [notesSection] : []),

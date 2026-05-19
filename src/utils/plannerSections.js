@@ -10,15 +10,20 @@ export function createSavedPlannerSection({ sectionType, name, content, createdB
     };
 }
 
-export function getSavedSectionsByType(sections, sectionType, currentUserId) {
-    return (sections || [])
+export function getSavedSectionsByType(savedSections = [], sectionType, currentUserId) {
+    const allowedTypes =
+        sectionType === "thang"
+            ? ["thang", "thangs"]
+            : [sectionType];
+    
+    return savedSections
         .filter(section =>
-            section.sectionType === sectionType &&
+            allowedTypes.includes(section.sectionType) &&
             section.createdByUserId === currentUserId
         )
         .sort((a, b) => {
             const aTime = a.lastUsedAt || a.createdAt || 0;
             const bTime = b.lastUsedAt || b.createdAt || 0;
-            return bTime - aTime;
+            return String(bTime).localeCompare(String(aTime));
         });
 }

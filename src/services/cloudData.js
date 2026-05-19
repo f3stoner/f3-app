@@ -212,6 +212,7 @@ function mapPlannedWorkoutFromDb(row) {
         timers: row.timers || [],
         preblastText: row.preblast_text || "",
         preblastLastModifiedAt: row.preblast_last_modified_at || null,
+        thangSections: row.thang_sections || null,
     };
 }
 
@@ -402,6 +403,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 timers: workout.timers || [],
                 preblast_text: workout.preblastText || null,
                 preblast_last_modified_at: workout.preblastLastModifiedAt || null,
+                thang_sections: workout.thangSections || null,
             },
         ])
         .select()
@@ -452,6 +454,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             timers: workout.timers || [],
             preblast_text: workout.preblastText || null,
             preblast_last_modified_at: workout.preblastLastModifiedAt || null,
+            thang_sections: workout.thangSections || null,
         })
         .eq("id", workout.id)
         .select()

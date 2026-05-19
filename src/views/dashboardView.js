@@ -427,6 +427,13 @@ export function renderDashboard() {
                     introduction: "",
                     warmorama: "",
                     thangs: "",
+                    thangSections: [
+                        {
+                            id: crypto.randomUUID(),
+                            title: "Thang 1",
+                            content: "",
+                        },
+                    ],
                     finisher: "",
                     notes: "",
                     sourceWorkoutId: null,
@@ -530,6 +537,13 @@ export function renderDashboard() {
                     introduction: "",
                     warmorama: "",
                     thangs: "",
+                    thangSections: [
+                        {
+                            id: crypto.randomUUID(),
+                            title: "Thang 1",
+                            content: "",
+                        },
+                    ],
                     finisher: "",
                     notes: "",
                     sourceWorkoutId: null,
@@ -667,6 +681,13 @@ export function renderDashboard() {
                         introduction: "",
                         warmorama: "",
                         thangs: "",
+                        thangSections: [
+                            {
+                                id: crypto.randomUUID(),
+                                title: "Thang 1",
+                                content: "",
+                            },
+                        ],
                         finisher: "",
                         notes: "",
                         sourceWorkoutId: null,

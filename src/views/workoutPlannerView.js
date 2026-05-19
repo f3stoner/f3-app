@@ -11,6 +11,7 @@ import { createSavedPlannerSection, getSavedSectionsByType } from "../utils/plan
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { deleteSavedPlannerSectionFromCloud } from "../services/cloudData.js";
 import { logSaveFailure } from "../services/appEvents.js";
+import { normalizeThangSections, serializeThangSections } from "../utils/thangs.js";
 
 
 export function renderWorkoutPlanner() {
@@ -71,7 +72,13 @@ export function renderWorkoutPlanner() {
         );
     }
 
+    draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+    draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+
     function persistDraft() {
+        draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+
         state.draftPlannedWorkout = { ...draftWorkout };
 
         localStorage.setItem(
@@ -80,7 +87,7 @@ export function renderWorkoutPlanner() {
         );
     }
 
-    function createSectionTemplateControls(sectionType, input, labelText) {
+    function createSectionTemplateControls(sectionType, input, labelText, targetThangId = null) {
         const controls = document.createElement("div");
         controls.classList.add("button-row", "section-template-controls");
 
@@ -127,6 +134,7 @@ export function renderWorkoutPlanner() {
             state.plannerSectionModalOpen = true;
             state.plannerSectionModalType = sectionType;
             state.plannerSectionModalTarget = sectionType;
+            state.plannerSectionModalTargetThangId = targetThangId;
             renderApp();
         });
 
@@ -197,6 +205,100 @@ export function renderWorkoutPlanner() {
         return wrap;
     }
 
+    function renderThangSections() {
+        const wrap = document.createElement("div");
+        wrap.classList.add("thang-sections-list");
+
+        draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+
+        draftWorkout.thangSections.forEach((section, index) => {
+            const sectionCard = document.createElement("div");
+            sectionCard.classList.add("section", "thang-section-card");
+
+            const titleRow = document.createElement("div");
+            titleRow.classList.add("thang-section-title-row");
+
+            const titleInput = document.createElement("input");
+            titleInput.type = "text";
+            titleInput.value = section.title || `Thang ${index + 1}`;
+            titleInput.placeholder = `Thang ${index + 1}`;
+
+            titleInput.addEventListener("input", event => {
+                draftWorkout.thangSections[index].title = event.target.value;
+                persistDraft();
+            });
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.classList.add("secondary-button");
+            removeButton.textContent = "Remove";
+
+            removeButton.disabled = draftWorkout.thangSections.length === 1;
+
+            removeButton.addEventListener("click", () => {
+                draftWorkout.thangSections = draftWorkout.thangSections.filter(
+                    thang => thang.id !== section.id
+                );
+
+                persistDraft();
+                renderApp();
+            });
+
+            titleRow.append(titleInput, removeButton);
+
+            const contentInput = document.createElement("textarea");
+            contentInput.classList.add("notes");
+            contentInput.value = section.content || "";
+            contentInput.placeholder = "Write this Thang...";
+
+            contentInput.addEventListener("input", event => {
+                draftWorkout.thangSections[index].content = event.target.value;
+                persistDraft();
+            });
+
+            const thangsTemplateControls = createSectionTemplateControls(
+                "thang",
+                {
+                    get value() {
+                        return draftWorkout.thangSections[index]?.content || "";
+                    }
+                },
+                section.title || `Thang ${index + 1}`,
+                section.id
+            );
+
+            const thangTimers = renderTimerList(section.id);
+
+            sectionCard.append(
+                titleRow,
+                contentInput,
+                thangsTemplateControls,
+                thangTimers,
+            );
+
+            wrap.appendChild(sectionCard);
+        });
+
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.classList.add("thang-add-button");
+        addButton.textContent = "+ Add Thang";
+
+        addButton.addEventListener("click", () => {
+            draftWorkout.thangSections.push({
+                id: crypto.randomUUID(),
+                title: `Thang ${draftWorkout.thangSections.length + 1}`,
+                content: "",
+            });
+
+            persistDraft();
+            renderApp();
+        });
+
+        wrap.append(addButton);
+        return wrap;
+    }
+
     function copyWorkoutToPlanner(sourceWorkout) {
         const copiedWorkout = {
             ...sourceWorkout,
@@ -208,10 +310,28 @@ export function renderWorkoutPlanner() {
             aoName: draftWorkout.aoName || "",
         };
 
-       copiedWorkout.timers = (sourceWorkout.timers || []).map(timer => ({
+        const sourceThangs = normalizeThangSections(sourceWorkout);
+        const thangIdMap = new Map();
+        
+        copiedWorkout.thangSections = sourceThangs.map((section, index) => {
+            const newId = crypto.randomUUID();
+            thangIdMap.set(section.id, newId);
+        
+            return {
+                ...section,
+                id: newId,
+                title: section.title || `Thang ${index + 1}`,
+                content: section.content || "",
+            };
+        });
+        
+        copiedWorkout.thangs = serializeThangSections(copiedWorkout.thangSections);
+        
+        copiedWorkout.timers = (sourceWorkout.timers || []).map(timer => ({
             ...timer,
             id: crypto.randomUUID(),
-       }));
+            section: thangIdMap.get(timer.section) || timer.section,
+        }));
     
         state.draftPlannedWorkout = copiedWorkout;
     
@@ -428,20 +548,7 @@ export function renderWorkoutPlanner() {
     thangsLabel.textContent = getWorkoutFieldLabel(state, "thangs");
     thangsLabel.classList.add("detail-label");
 
-    const thangsInput = document.createElement("textarea");
-    thangsInput.classList.add("notes");
-    thangsInput.value = draftWorkout.thangs || "";
-
-    thangsInput.addEventListener("input", (event) => {
-        draftWorkout.thangs = event.target.value;
-        persistDraft();
-    });
-
-    const thangsTemplateControls = createSectionTemplateControls(
-        "thangs",
-        thangsInput,
-        getWorkoutFieldLabel(state, "thangs")
-    );
+    const thangSectionsList = renderThangSections();
 
     const finisherLabel = document.createElement("div");
     finisherLabel.textContent = getWorkoutFieldLabel(state, "finisher");
@@ -463,7 +570,6 @@ export function renderWorkoutPlanner() {
     );
 
     const warmoramaTimers = renderTimerList("warmorama");
-    const thangsTimers = renderTimerList("thangs");
     const finisherTimers = renderTimerList("finisher");
 
     const notesLabel = document.createElement("div");
@@ -598,9 +704,7 @@ export function renderWorkoutPlanner() {
         warmoramaTemplateControls,
         warmoramaTimers,
         thangsLabel,
-        thangsInput,
-        thangsTemplateControls,
-        thangsTimers,
+        thangSectionsList,
         finisherLabel,
         finisherInput,
         finisherTemplateControls,
@@ -637,6 +741,7 @@ export function renderWorkoutPlanner() {
                 state.plannerSectionModalOpen = false;
                 state.plannerSectionModalType = null;
                 state.plannerSectionModalTarget = null;
+                state.plannerSectionModalTargetThangId = null;
                 renderApp();
             }
         }));
@@ -889,7 +994,26 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
             replaceButton.textContent = "Replace Section";
 
             replaceButton.addEventListener("click", async () => {
+                if (sectionType === "thang") {
+                    draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+
+                    const targetId = state.plannerSectionModalTargetThangId;
+
+                    draftWorkout.thangSections = draftWorkout.thangSections.map((thang, index) => {
+                        if (thang.id !== targetId) return thang;
+
+                        return {
+                            ...thang,
+                            title: thang.title || `Thang ${index + 1}`,
+                            content: section.content, 
+                        };
+                    });
+
+                    draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+                } else {
                 draftWorkout[sectionType] = section.content;
+                }
+
                 section.lastUsedAt = new Date().toISOString();
 
                 try {
@@ -909,12 +1033,24 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
             appendButton.textContent = "Add to Section";
 
             appendButton.addEventListener("click", async () => {
+                if (sectionType === "thang") {
+                    draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+
+                    draftWorkout.thangSections.push({
+                        id: crypto.randomUUID(),
+                        title: `Thang ${draftWorkout.thangSections.length + 1}`,
+                        content: section.content,
+                    });
+
+                    draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+                } else {
                 const currentContent = draftWorkout[sectionType] || "";
 
                 draftWorkout[sectionType] = currentContent
                     ? `${currentContent}\n\n${section.content}`
                     : section.content;
-
+                }
+                
                 section.lastUsedAt = new Date().toISOString();
 
                 try {

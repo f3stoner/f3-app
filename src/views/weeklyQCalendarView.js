@@ -398,6 +398,13 @@ export function renderWeeklyQCalendarView() {
                             introduction: "",
                             warmorama: "",
                             thangs: "",
+                            thangSections: [
+                                {
+                                    id: crypto.randomUUID(),
+                                    title: "Thang 1",
+                                    content: "",
+                                },
+                            ],
                             finisher: "",
                             notes: "",
                             sourceWorkoutId: null,

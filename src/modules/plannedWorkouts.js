@@ -8,6 +8,13 @@ export function createPlannedWorkout(date, aoName) {
         title: "",
         warmorama: "",
         thangs: "",
+        thangSections: [
+            {
+            id: crypto.randomUUID(),
+            title: "Thang 1",
+            content: "",
+            },
+        ],
         finisher: "",
         notes: "",
         createdAt: Date.now(),
