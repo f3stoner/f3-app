@@ -9,10 +9,21 @@ import { showToast } from "../utils/toast.js";
 import { createSavedPlannerSection } from "../utils/plannerSections.js";
 import { ensureCustomTemplates, createCustomTemplate } from "../utils/customTemplates.js";
 import { updateCustomTemplates } from "../services/cloudData.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderTemplateHubView() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
 
     const title = document.createElement("h1");
     title.textContent = "My Templates";
@@ -56,6 +67,7 @@ export function renderTemplateHubView() {
     });
 
     app.append(
+        header,
         title,
         intro,
         plannerSection,
@@ -79,6 +91,10 @@ export function renderTemplateHubView() {
 
     if (state.creatingPreblastTemplate) {
         app.appendChild(createCreatePreblastTemplateModal());
+    }
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
     }
 }
 

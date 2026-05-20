@@ -5,6 +5,8 @@ import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { navigateTo } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 function renderRosterList(rosterContainer, members) {
     rosterContainer.textContent = "";
@@ -173,6 +175,15 @@ export function renderRoster() {
   const app = document.getElementById("app");
   app.textContent = "";
 
+  cleanupMainMenu();
+
+  const header = createAppHeader({
+    title: "",
+    showBack: true,
+    fallbackView: "dashboard",
+    showMenu: true,
+  });
+
   const title = document.createElement("h1");
   title.textContent = "Roster";
 
@@ -227,9 +238,26 @@ export function renderRoster() {
   }
 
   if (activeFilterNotice) {
-    app.append(title, activeFilterNotice, searchInput, rosterContainer, backButton, nav);
+    app.append(
+      header,
+      title,
+      activeFilterNotice,
+      searchInput,
+      rosterContainer,
+      backButton,
+      nav
+    );
   } else {
-    app.append(title, searchInput, rosterContainer, backButton, nav);
+    app.append(
+      header,
+      title,
+      searchInput,
+      rosterContainer,
+      backButton,
+      nav
+    );
   }
-
+  if (state.isMainMenuOpen) {
+    document.body.appendChild(createMainMenu());
+  }
 }

@@ -2908,3 +2908,68 @@ body.menu-open {
     font-weight: 700;
     margin: 0;
 }
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+.app-header-left,
+.app-header-right {
+    display: flex;
+    align-items: center;
+    min-width: 72px;
+}
+
+.app-header-right {
+    justify-content: flex-end;
+}
+
+.app-header-title {
+    flex: 1;
+}
+
+.app-header-back-button {
+    background: transparent;
+    border: none;
+
+    padding: 8px 0;
+
+    color: var(--text);
+
+    font: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.app-header-back-button:active {
+    opacity: 0.7;
+}
+
+.main-menu-item.active {
+    background: rgba(255, 255, 255, 0.12);
+
+    border-color: rgba(255, 255, 255, 0.32);
+
+    opacity: 1;
+
+    cursor: default;
+}
+
+.main-menu-item.active,
+.main-menu-item:disabled {
+    opacity: 1;
+    cursor: default;
+    color: var(--text);
+}
+
+.main-menu-item.active {
+    border-color: var(--border-strong);
+    background: var(--accent-bright);
+    color: var(--text-inverse);
+}

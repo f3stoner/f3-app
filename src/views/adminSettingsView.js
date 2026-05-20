@@ -6,26 +6,26 @@ import { getWorkoutFieldLabels } from "../utils/workoutLabels.js";
 import { showToast } from "../utils/toast.js";
 import { updateRegionWorkoutFieldLabels } from "../services/cloudData.js";
 import { createElement } from "lucide";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderAdminSettingsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
+
     const labels = getWorkoutFieldLabels(state) || {};
 
     const title = document.createElement("h1");
     title.textContent = "Admin";
-
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
-    backButton.textContent = "← Back";
-    backButton.addEventListener("click", () => {
-        goBack("dashboard");
-    });
-
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
 
     function createAdminCard(titleText, subtitleText, view) {
         const card = document.createElement("button");
@@ -148,4 +148,8 @@ export function renderAdminSettingsView() {
         saveButton,
         nav
     );
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

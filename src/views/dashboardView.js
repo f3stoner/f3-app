@@ -21,10 +21,13 @@ import { buildRegionInsights } from "../modules/insights.js";
 import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
 import { createQReminderPrompt } from "../components/qReminderPrompt.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
 
     if (!state.isMainMenuOpen) {
         document.body.classList.remove("menu-open");
@@ -1243,6 +1246,6 @@ export function renderDashboard() {
     }*/
 
     if (state.isMainMenuOpen) {
-        document.body.appendChild(createDashboardMenu());
+        document.body.appendChild(createMainMenu());
     }
 }

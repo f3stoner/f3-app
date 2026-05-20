@@ -3,10 +3,21 @@ import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderPlannedWorkoutsList () {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    })
 
     const title = document.createElement("h1");
     title.textContent = "Workout Library";
@@ -106,6 +117,7 @@ export function renderPlannedWorkoutsList () {
     const nav = createGlobalNav();
 
     app.append(
+        header,
         title,
         subtitle,
         myWorkoutsToggle,
@@ -113,4 +125,8 @@ export function renderPlannedWorkoutsList () {
         listContainer,
         nav
     );
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

@@ -4,6 +4,8 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { createIcon } from "../utils/icons.js";
 import { ArrowUpRight } from "lucide";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 function getCurrentMonthRange() {
     const now = new Date();
@@ -266,6 +268,15 @@ export function renderRegionInsightsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
+
     const title = document.createElement("h1");
     title.textContent = "Region Insights";
 
@@ -450,6 +461,7 @@ export function renderRegionInsightsView() {
     const nav = createGlobalNav();
 
     app.append(
+        header,
         title,
         subtitle,
         monthNavRow,
@@ -462,4 +474,7 @@ export function renderRegionInsightsView() {
         fngSection,
         nav,
     );
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

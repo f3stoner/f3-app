@@ -3,11 +3,22 @@ import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderSessionHistory() {
     const app = document.getElementById("app");
     app.textContent = "";
     app.classList.add("view-session-history");
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    })
 
     const title = document.createElement("h1");
     title.textContent = "Session History";
@@ -264,5 +275,17 @@ export function renderSessionHistory() {
 
     renderSessionList();
 
-    app.append(title, filterSection, searchInput, sessionList, backButton, nav);
+    app.append(
+        header,
+        title,
+        filterSection,
+        searchInput,
+        sessionList,
+        backButton,
+        nav
+    );
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }
