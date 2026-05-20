@@ -2,7 +2,8 @@ import { state } from "../modules/state.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { loadImportRuns } from "../services/cloudData.js";
+import { loadImportRuns, runAggielandImportDryRun, applyAggielandImport } from "../services/cloudData.js";
+import { showToast } from "../utils/toast.js";
 
 export async function renderImportRunsView() {
     const app = document.getElementById("app");
@@ -24,13 +25,71 @@ export async function renderImportRunsView() {
     subtitle.classList.add("view-subtitle");
     subtitle.textContent = "Review nightly Aggieland dry-run import results.";
 
+    const runButton = document.createElement("button");
+    runButton.textContent = "Run Dry Run Now";
+
+    runButton.addEventListener("click", async () => {
+        const confirmed = confirm("Run Aggieland import dry run now?");
+        if (!confirmed) return;
+
+        runButton.disabled = true;
+        runButton.textContent = "Running...";
+
+        try {
+            await runAggielandImportDryRun();
+            showToast("Import dry run complete.", "success");
+            renderImportRunsView();
+        } catch (error) {
+            console.error("Failed to run import dry run:", error);
+            showToast("Import dry run failed.", "error");
+            runButton.disabled = false;
+            runButton.textContent = "Run Dry Run Now";
+        }
+    });
+
+    const applyButton = document.createElement("button");
+applyButton.textContent = "Apply Import";
+applyButton.classList.add("danger-button");
+
+applyButton.addEventListener("click", async () => {
+    const firstConfirm = confirm(
+        "Apply Aggieland import now? This will insert new sessions into The Q."
+    );
+    if (!firstConfirm) return;
+
+    const secondConfirm = confirm(
+        "Final confirmation: this will write live session data and create admin flags for unresolved PAX. Continue?"
+    );
+    if (!secondConfirm) return;
+
+    applyButton.disabled = true;
+    runButton.disabled = true;
+    applyButton.textContent = "Applying...";
+
+    try {
+        const result = await applyAggielandImport();
+
+        const inserted = result?.summary?.inserted ?? 0;
+        const flags = result?.summary?.createdAdminFlags ?? 0;
+
+        showToast(`Import applied: ${inserted} sessions, ${flags} flags.`, "success");
+        renderImportRunsView();
+    } catch (error) {
+        console.error("Failed to apply import:", error);
+        showToast("Apply import failed.", "error");
+        applyButton.disabled = false;
+        runButton.disabled = false;
+        applyButton.textContent = "Apply Import";
+    }
+});
+
     const loading = document.createElement("div");
     loading.classList.add("detail-value");
     loading.textContent = "Loading import runs...";
 
     const nav = createGlobalNav();
 
-    app.append(header, title, subtitle, loading, nav);
+    app.append(header, title, subtitle, runButton, applyButton, loading, nav);
 
     try {
         const runs = await loadImportRuns(state.currentRegionId, 10);
@@ -182,7 +241,7 @@ function createNewSessionsDetails(newSessions) {
 
             row.appendChild(unresolvedWrap);
         }
-        
+
         details.appendChild(row);
     });
 

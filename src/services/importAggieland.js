@@ -1379,6 +1379,14 @@ export async function runAggielandSync({ apply = false } = {}) {
         totalDuplicates: preview.totalDuplicates,
         totalNewSessions: preview.totalNewSessions,
         unresolvedSessionCount: unresolvedSessions.length,
+        newSessions: (preview.newSessions || []).map(session => ({
+            date: session.date,
+            aoName: session.aoName,
+            attendeeCount: session.attendeeIds?.length || 0,
+            qCount: session.qIds?.length || 0,
+            unresolvedCount: session.unresolvedPax?.length || 0,
+            unresolvedPax: session.unresolvedPax || [],
+        })),
     };
 
     console.log("Aggieland sync preview summary:", summary);

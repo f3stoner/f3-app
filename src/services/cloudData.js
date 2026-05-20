@@ -988,3 +988,30 @@ export async function loadImportRuns(regionId, limit = 10) {
     return (data || []).map(mapImportRunFromDb);
 }
 
+export async function runAggielandImport({ apply = false } = {}) {
+    const functionUrl = `${process.env.SUPABASE_URL}/functions/v1/nightly-aggieland-import`;
+
+    const response = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ apply }),
+    });
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        throw new Error(result?.error || `Import failed with status ${response.status}`);
+    }
+
+    return result;
+}
+
+export function runAggielandImportDryRun() {
+    return runAggielandImport({ apply: false });
+}
+
+export function applyAggielandImport() {
+    return runAggielandImport({ apply: true });
+}
