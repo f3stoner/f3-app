@@ -255,10 +255,13 @@ export function renderWorkoutPlanner() {
             contentInput.value = section.content || "";
             contentInput.placeholder = "Write this Thang...";
 
-            contentInput.addEventListener("input", event => {
-                draftWorkout.thangSections[index].content = event.target.value;
-                persistDraft();
-            });
+            const thangSuggestions = attachExerciseAutocomplete(
+                contentInput,
+                nextValue => {
+                    draftWorkout.thangSections[index].content = nextValue;
+                    persistDraft();
+                }
+            );
 
             const thangsTemplateControls = createSectionTemplateControls(
                 "thang",
@@ -276,6 +279,7 @@ export function renderWorkoutPlanner() {
             sectionCard.append(
                 titleRow,
                 contentInput,
+                thangSuggestions,
                 thangsTemplateControls,
                 thangTimers,
             );
@@ -565,37 +569,92 @@ export function renderWorkoutPlanner() {
         return nextValue;
     }
     
-    function renderExerciseSuggestions(textarea, suggestionsWrap, onSelect) {
-        const currentLine = getCurrentLineText(textarea).trim();
-        const suggestions = searchExercises(state.exercises, currentLine, { limit: 6 });
+    function getCurrentLineText(textarea) {
+        const value = textarea.value || "";
+        const cursor = textarea.selectionStart || value.length;
+        const beforeCursor = value.slice(0, cursor);
+        const lines = beforeCursor.split("\n");
+        return lines[lines.length - 1] || "";
+    }
     
-        suggestionsWrap.textContent = "";
+    function replaceCurrentLine(textarea, replacement) {
+        const value = textarea.value || "";
+        const cursor = textarea.selectionStart || value.length;
     
-        if (suggestions.length === 0) {
-            suggestionsWrap.style.display = "none";
-            return;
+        const beforeCursor = value.slice(0, cursor);
+        const afterCursor = value.slice(cursor);
+    
+        const lineStart = beforeCursor.lastIndexOf("\n") + 1;
+        const lineEndOffset = afterCursor.indexOf("\n");
+        const lineEnd = lineEndOffset === -1 ? value.length : cursor + lineEndOffset;
+    
+        const beforeLine = value.slice(0, lineStart);
+        const afterLine = value.slice(lineEnd);
+    
+        const nextValue = `${beforeLine}${replacement}${afterLine}`;
+        textarea.value = nextValue;
+    
+        const nextCursor = beforeLine.length + replacement.length;
+        textarea.setSelectionRange(nextCursor, nextCursor);
+    
+        return nextValue;
+    }
+    
+    function attachExerciseAutocomplete(textarea, onValueChange) {
+        const suggestionsWrap = document.createElement("div");
+        suggestionsWrap.classList.add("exercise-suggestions");
+        suggestionsWrap.style.display = "none";
+    
+        function renderSuggestions() {
+            const currentLine = getCurrentLineText(textarea).trim();
+            const suggestions = searchExercises(state.exercises, currentLine, { limit: 6 });
+    
+            suggestionsWrap.textContent = "";
+    
+            if (!currentLine || suggestions.length === 0) {
+                suggestionsWrap.style.display = "none";
+                return;
+            }
+    
+            suggestionsWrap.style.display = "block";
+    
+            suggestions.forEach(exercise => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.classList.add("exercise-suggestion-button");
+                button.textContent = exercise.name;
+    
+                button.addEventListener("mousedown", event => {
+                    event.preventDefault();
+    
+                    const nextValue = replaceCurrentLine(textarea, exercise.name);
+                    onValueChange(nextValue);
+    
+                    suggestionsWrap.textContent = "";
+                    suggestionsWrap.style.display = "none";
+                    textarea.focus();
+                });
+    
+                suggestionsWrap.appendChild(button);
+            });
         }
     
-        suggestionsWrap.style.display = "block";
-    
-        suggestions.forEach(exercise => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.classList.add("exercise-suggestion-button");
-            button.textContent = exercise.name;
-
-            button.addEventListener("click", () => {
-                const nextValue = replaceCurrentLine(textarea, exercise.name);
-                onSelect(nextValue);
-                suggestionsWrap.textContent = "";
-                suggestionsWrap.style.display = "none";
-                textarea.focus();
-            });
-    
-            suggestionsWrap.appendChild(button);
+        textarea.addEventListener("input", () => {
+            onValueChange(textarea.value);
+            renderSuggestions();
         });
+    
+        textarea.addEventListener("focus", renderSuggestions);
+    
+        textarea.addEventListener("blur", () => {
+            setTimeout(() => {
+                suggestionsWrap.style.display = "none";
+            }, 150);
+        });
+    
+        return suggestionsWrap;
     }
-
+    
     const warmoramaLabel = document.createElement("div");
     warmoramaLabel.textContent = getWorkoutFieldLabel(state, "warmorama");
     warmoramaLabel.classList.add("detail-label");
@@ -604,29 +663,13 @@ export function renderWorkoutPlanner() {
     warmoramaInput.classList.add("notes");
     warmoramaInput.value = draftWorkout.warmorama || "";
 
-    const warmoramaSuggestions = document.createElement("div");
-    warmoramaSuggestions.classList.add("exercise-suggestions");
-    warmoramaSuggestions.style.display = "none";
-
-    warmoramaInput.addEventListener("input", (event) => {
-        draftWorkout.warmorama = event.target.value;
-        persistDraft();
-    
-        renderExerciseSuggestions(
-            warmoramaInput,
-            warmoramaSuggestions,
-            (nextValue) => {
-                draftWorkout.warmorama = nextValue;
-                persistDraft();
-            }
-        );
-    });
-    
-    warmoramaInput.addEventListener("blur", () => {
-        setTimeout(() => {
-            warmoramaSuggestions.style.display = "none";
-        }, 150);
-    });
+    const warmoramaSuggestions = attachExerciseAutocomplete(
+        warmoramaInput,
+        nextValue => {
+            draftWorkout.warmorama = nextValue;
+            persistDraft();
+        }
+    );
 
     const warmoramaTemplateControls = createSectionTemplateControls(
         "warmorama",
@@ -648,10 +691,13 @@ export function renderWorkoutPlanner() {
     finisherInput.classList.add("notes");
     finisherInput.value = draftWorkout.finisher || "";
 
-    finisherInput.addEventListener("input", (event) => {
-        draftWorkout.finisher = event.target.value;
-        persistDraft();
-    });
+    const finisherSuggestions = attachExerciseAutocomplete(
+        finisherInput,
+        nextValue => {
+            draftWorkout.finisher = nextValue;
+            persistDraft();
+        }
+    );
 
     const finisherTemplateControls = createSectionTemplateControls(
         "finisher",
@@ -795,6 +841,7 @@ export function renderWorkoutPlanner() {
         thangSectionsList,
         finisherLabel,
         finisherInput,
+        finisherSuggestions,
         finisherTemplateControls,
         finisherTimers,
         notesLabel,
