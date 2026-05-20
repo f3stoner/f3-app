@@ -428,14 +428,14 @@ export function renderPreblastView() {
         });
     }
 
-    const doneButton = document.createElement("button");
+    /*const doneButton = document.createElement("button");
     doneButton.textContent = "Done";
 
-    doneButton.addEventListener("click", exitPreblastView);
+    doneButton.addEventListener("click", exitPreblastView);*/
 
     const actionRow = document.createElement("div");
     actionRow.classList.add("button-row");
-    actionRow.append(saveButton, shareButton, copyButton, doneButton);
+    actionRow.append(saveButton, shareButton, copyButton);
 
     app.append(
         header,
