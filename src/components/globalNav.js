@@ -1,6 +1,7 @@
 import { renderApp } from "../index.js";
 import { state } from "../modules/state.js";
 import { navigateTo } from "../utils/navigation.js";
+import { closeMainMenu } from "./mainMenu.js";
 
 export function createGlobalNav () {
     const nav = document.createElement("div");
@@ -21,13 +22,14 @@ export function createGlobalNav () {
         }
 
         button.addEventListener("click", () => {
+            closeMainMenu();
+
             if (item.view === "session") {
                 state.editingSessionId = null;
                 state.selectedSessionId = null;
             }
 
-            state.currentView = item.view;
-            renderApp();
+            navigateTo(item.view);
         });
 
         nav.appendChild(button);
@@ -42,6 +44,8 @@ export function createGlobalNav () {
     }
 
     fabButton.addEventListener("click", () => {
+        closeMainMenu();
+        
         state.editingSessionId = null;
         state.selectedSessionId = null;
         navigateTo("session");

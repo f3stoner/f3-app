@@ -2857,7 +2857,7 @@ details.section {
 }
 
 .main-menu-drawer {
-    width: min(86vw, 360px);
+    width: min(82vw, 340px);
     min-height: 100vh;
     background: var(--surface);
     border-left: 1px solid var(--border);
