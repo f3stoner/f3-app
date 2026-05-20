@@ -40,6 +40,7 @@ import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 import { renderAoInsightsView } from "./views/aoInsightsView.js";
 import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit.js";
+import { renderImportRunsView } from "./views/importRunsView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -79,6 +80,7 @@ const RESTORABLE_VIEWS = new Set([
     "session",
     "adminSettings",
     "regionInsights",
+    "importRuns",
 ]);
 
 function restoreNavState(nav) {
@@ -234,6 +236,8 @@ function renderApp() {
         renderRegionInsightsView();
     } else if (state.currentView === "aoInsights") {
         renderAoInsightsView();
+    } else if (state.currentView === "importRuns") {
+        renderImportRunsView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

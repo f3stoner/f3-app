@@ -57,7 +57,8 @@ export function renderAdminSettingsView() {
     adminHubGrid.append(
         createAdminCard("Manage AOs", "Create, edit, and activate workout locations.", "aoManagement"),
         createAdminCard("Admin Flags", `${openFlagsCount} open issue${openFlagsCount === 1 ? "" : "s"} to review.`, "adminFlags"),
-        createAdminCard("Review Stale PAX", "Find inactive or outdated roster records.", "stalePax")
+        createAdminCard("Review Stale PAX", "Find inactive or outdated roster records.", "stalePax"),
+        createAdminCard("Import Runs", "Review nightly Aggieland dry-run results.", "importRuns")
     );
 
     const sectionTitle = document.createElement("h2");

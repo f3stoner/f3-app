@@ -364,6 +364,7 @@ serve(async () => {
                 attendeeCount: session.attendeeCount,
                 qCount: session.qCount,
                 unresolvedCount: session.unresolvedPax?.length || 0,
+                unresolvedPax: session.unresolvedPax || [],
             })),
         };
 

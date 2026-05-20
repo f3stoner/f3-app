@@ -961,3 +961,30 @@ export async function insertImportRun(regionId, importRun) {
 
     return data;
 }
+
+function mapImportRunFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        type: row.type,
+        mode: row.mode,
+        status: row.status,
+        summary: row.summary || {},
+        error: row.error || null,
+        createdAt: row.created_at,
+    };
+}
+
+export async function loadImportRuns(regionId, limit = 10) {
+    const { data, error } = await supabase
+        .from("import_runs")
+        .select("*")
+        .eq("region_id", regionId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+
+    return (data || []).map(mapImportRunFromDb);
+}
+
