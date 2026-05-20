@@ -13,10 +13,14 @@ import { deleteSavedPlannerSectionFromCloud } from "../services/cloudData.js";
 import { logSaveFailure } from "../services/appEvents.js";
 import { normalizeThangSections, serializeThangSections } from "../utils/thangs.js";
 import { searchExercises } from "../utils/exerciseSearch.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
 
     const isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
@@ -374,15 +378,17 @@ export function renderWorkoutPlanner() {
         draftWorkout.introduction = regionIntroTemplate;
     }
 
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        showMenu: true,
+        onBack: () => {
+            returnAfterPlanner(draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner");
+        },
+    });
+
     const title = document.createElement("h1");
     title.textContent = isEditing ? "Edit Workout" : "Plan Workout";
-
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
-    backButton.textContent = "← Back";
-    backButton.addEventListener("click", () => {
-        returnAfterPlanner(draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner");
-    })
 
     const browseWorkoutsButton = document.createElement("button");
     browseWorkoutsButton.textContent = "Browse & Copy Workouts";
@@ -766,12 +772,9 @@ export function renderWorkoutPlanner() {
 
     primaryActionsRow.append(saveButton);
 
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
-
     app.append(
         header,
+        title,
         browseRow,
         divider,
         dateLabel,
@@ -830,6 +833,10 @@ export function renderWorkoutPlanner() {
                 renderApp();
             }
         }));
+    }
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
     }
 }
 

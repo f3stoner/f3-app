@@ -13,12 +13,23 @@ import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
 import { createQReminderPrompt } from "../components/qReminderPrompt.js";
 import { createQReminderPromptModal } from "../components/qReminderPromptModal.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderQSignupView() {
     const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
 
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
 
     const title = document.createElement("h1");
     title.textContent = "Q Signup";
@@ -741,6 +752,7 @@ export function renderQSignupView() {
     controlsRow.append(aoFilterSelect, openOnlyWrap);
 
     app.append(
+        header,
         title,
         subtitle,
         ...(adminRow.children.length ? [adminRow] : []),
@@ -750,4 +762,8 @@ export function renderQSignupView() {
         listContainer,
         nav
     );
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

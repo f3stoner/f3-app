@@ -5,10 +5,21 @@ import { updateMember } from "../services/appData.js";
 import { formatDate } from "../utils/date.js";
 import { goBack } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderStalePaxView() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "adminSettings",
+        showMenu: true,
+    });
 
     const title = document.createElement("h1");
     title.textContent = "Stale PAX Review";
@@ -171,20 +182,13 @@ export function renderStalePaxView() {
         });
     }
 
-    const backButton = document.createElement("button");
-    backButton.textContent = "← Back";
-    backButton.classList.add("secondary-button");
-    backButton.addEventListener("click", () => {
-        goBack("adminSettings");
-    });
-
     const nav = createGlobalNav();
 
     renderStalePaxList();
 
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
+    app.append(header, title, controlsRow, stalePaxList, nav);
 
-    app.append(header, controlsRow, stalePaxList, nav);
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

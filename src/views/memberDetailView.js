@@ -5,23 +5,32 @@ import { formatDate } from "../utils/date.js";
 import { setMemberStatus, updateMember } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderMemberDetail () {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    const member = state.members.find(m => m.id === state.selectedMemberId);
+    cleanupMainMenu();
 
-    const backButton = document.createElement("button");
-    backButton.textContent = "← Back";
-    backButton.classList.add("secondary-button");
-    backButton.addEventListener("click", () => {
-        goBack("roster");
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
     });
 
+    const member = state.members.find(m => m.id === state.selectedMemberId);
+
     if (!member) {
-        app.textContent = "No Member Found";
-        app.append(backButton);
+        app.append(header);
+
+        const empty = document.createElement("div");
+        empty.classList.add("detail-value");
+        empty.textContent = "No Member Found";
+
+        app.append(empty);
         return;
     }
 
@@ -100,12 +109,9 @@ export function renderMemberDetail () {
         navigateTo("memberEdit");
     })
 
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
-
     app.append(
         header,
+        title,
         nameSection, 
         realNameSection, 
         statusSection, 
@@ -121,5 +127,9 @@ export function renderMemberDetail () {
     }
     if (canEditMember) {
     app.append(editButton);
+    }
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
     }
 }

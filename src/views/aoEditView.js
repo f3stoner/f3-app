@@ -6,6 +6,8 @@ import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { getTodayDate } from "../utils/date.js";
 import { showToast } from "../utils/toast.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 const DAY_OPTIONS = [
     { value: 0, label: "Sun" },
@@ -35,6 +37,15 @@ export function renderAoEditView() {
 
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "aoManagement",
+        showMenu: true,
+    });
 
     const isEditing = Boolean(state.editingAoId);
     const existingAo = isEditing
@@ -258,21 +269,11 @@ export function renderAoEditView() {
     saveRow.classList.add("button-row", "ao-save-row");
     saveRow.append(saveButton);
 
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
-    backButton.textContent = "← Back";
-    backButton.addEventListener("click", () => {
-        goBack("aoManagement");
-    });
-
     const nav = createGlobalNav();
-
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
 
     app.append(
         header,
+        title,
         nameLabel,
         nameInput,
         locationLabel,
@@ -290,4 +291,8 @@ export function renderAoEditView() {
         saveRow,
         nav
     );
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

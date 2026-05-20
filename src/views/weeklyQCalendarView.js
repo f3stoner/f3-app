@@ -12,6 +12,8 @@ import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleIMage.js
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -156,6 +158,15 @@ function findMatchingPlannedWorkout(slot, ao) {
 export function renderWeeklyQCalendarView() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
 
     const today = getTodayDate();
 
@@ -436,10 +447,14 @@ export function renderWeeklyQCalendarView() {
     const nav = createGlobalNav();
 
     app.append(
+        header,
         title,
         subtitle,
         weekControls,
         calendar,
         nav,
     );
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu);
+    }
 }

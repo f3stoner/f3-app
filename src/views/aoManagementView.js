@@ -2,10 +2,21 @@ import { renderApp } from "../index.js";
 import { state } from "../modules/state.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderAoManagementView() {
 const app = document.getElementById("app");
 app.textContent = "";
+
+cleanupMainMenu();
+
+const header = createAppHeader({
+    title: "",
+    showBack: true,
+    fallbackView: "adminSettings",
+    showMenu: true,
+});
 
 const title = document.createElement("h1");
 title.textContent = "AO Management";
@@ -16,13 +27,6 @@ addAoButton.addEventListener("click", () => {
     state.editingAoId = null;
     navigateTo("aoEdit");
 });
-
-const backButton = document.createElement("button");
-backButton.classList.add("secondary-button");
-backButton.textContent = "← Back";
-backButton.addEventListener("click", () => {
-    goBack("adminSettings");
-})
 
 const actionRow = document.createElement("div");
 actionRow.classList.add("button-row");
@@ -103,15 +107,14 @@ if (sortedAos.length === 0) {
 
 const nav = createGlobalNav();
 
-const header = document.createElement("div");
-header.classList.add("view-header");
-header.append(backButton, title);
-
 app.append(
     header,
+    title,
     actionRow,
     listContainer,
     nav,
 );
-
+if (state.isMainMenuOpen) {
+    document.body.appendChild(createMainMenu());
+}
 }

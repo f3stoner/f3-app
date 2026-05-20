@@ -6,17 +6,20 @@ import { updateAdminFlag, setMemberStatus, updateSession, updateMember } from ".
 import { showToast } from "../utils/toast.js";
 import { getLastPostDate } from "../utils/memberStats.js";
 import { ADMIN_FLAG_TYPES } from "../modules/adminFlags.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderAdminFlagsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    const backButton = document.createElement("button");
-    backButton.textContent = "← Back";
-    backButton.classList.add("secondary-button");
+    cleanupMainMenu();
 
-    backButton.addEventListener("click", () => {
-        goBack("adminSettings");
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "adminSettings",
+        showMenu: true,
     });
 
     const title = document.createElement("h1");
@@ -43,8 +46,10 @@ export function renderAdminFlagsView() {
         });
     }
 
-    app.append(backButton, title, subtitle, flagList);
-
+    app.append(header, title, subtitle, flagList);
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }
 
 function createAdminFlagCard(flag) {

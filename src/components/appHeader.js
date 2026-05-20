@@ -8,6 +8,7 @@ export function createAppHeader({
     showBack = true,
     fallbackView = "dashboard",
     showMenu = true,
+    onBack = null,
 } = {}) {
     const header = document.createElement("div");
     header.classList.add("app-header");
@@ -22,6 +23,11 @@ export function createAppHeader({
         backButton.textContent = "← Back";
 
         backButton.addEventListener("click", () => {
+            if (onBack) {
+                onBack();
+                return;
+            }
+            
             goBack(fallbackView);
         });
 

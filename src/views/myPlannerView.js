@@ -2,10 +2,21 @@ import { state } from "../modules/state.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderMyPlanner() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
 
     const title = document.createElement("h1");
     title.textContent = "My Planner";
@@ -183,6 +194,7 @@ export function renderMyPlanner() {
     const nav = createGlobalNav();
 
     app.append(
+        header,
         title,
         subtitle,
         newWorkoutButton,
@@ -191,4 +203,7 @@ export function renderMyPlanner() {
         listContainer,
         nav
     )
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu);
+    }
 }

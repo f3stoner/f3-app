@@ -10,10 +10,21 @@ import { showToast } from "../utils/toast.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "dashboard",
+        showMenu: true,
+    });
 
     const session = state.sessions.find(s => s.id === state.selectedSessionId);
 
@@ -24,17 +35,17 @@ export function renderSessionDetail() {
             session.createdByUserId === state.currentUserId
         );
 
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
-    backButton.textContent = "← Back";
-    backButton.addEventListener("click", () => {
-        goBack("sessionHistory");
-    });
-
-    if (!session) {
-        app.textContent = "No Session Found";
-        app.append(backButton);
-    } else {
+        if (!session) {
+            app.append(header);
+        
+            const empty = document.createElement("div");
+            empty.classList.add("detail-value");
+            empty.textContent = "No Session Found";
+        
+            app.append(empty);
+            return;
+        
+     } else {
     const title = document.createElement("h1");
     title.textContent = "Session";
     const formattedDate = formatDate(session.date);
@@ -379,12 +390,9 @@ export function renderSessionDetail() {
         secondaryActionsRow.appendChild(deleteButton);
     }
 
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
-
     app.append(
         header,
+        title,
         summaryCard,
         paxSection, 
         fngSection, 
@@ -394,5 +402,8 @@ export function renderSessionDetail() {
         secondaryActionsRow,
         nav
     );
+    }
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
     }
 }

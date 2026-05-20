@@ -14,10 +14,14 @@ import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
 import { addAdminFlags } from "../services/appData.js";
 import { logSaveFailure } from "../services/appEvents.js";
 import { getAoWeather } from "../services/weather.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
 app.textContent = "";
+
+cleanupMainMenu();
 
 const sessionId = state.editingSessionId || state.selectedSessionId;
 const isEditing = Boolean(state.editingSessionId);
@@ -117,6 +121,23 @@ function resetSessionUiState() {
     state.sessionQExpanded = false;
 }
 
+const header = createAppHeader({
+    title: "",
+    showBack: true,
+    showMenu: true,
+    onBack: () => {
+        resetSessionUiState();
+
+        if (!isEditing) {
+            state.draftSession = null;
+            goBack("dashboard");
+            return;
+        }
+
+        goBack("sessionDetail");
+    },
+});
+
 function createSelectedPillStrip(qMembers, selectedMembers) {
     const strip = document.createElement("div");
     strip.classList.add("selected-pill-strip");
@@ -161,22 +182,6 @@ function createSelectedPillStrip(qMembers, selectedMembers) {
 
     return strip;
 }
-
-const backButton = document.createElement("button");
-    backButton.textContent = "← Back";
-    backButton.classList.add("secondary-button");
-
-    backButton.addEventListener("click", () => {
-        resetSessionUiState();
-        
-        if (!isEditing) {
-            state.draftSession = null;
-            goBack("dashboard");
-            return;
-        }
-
-        goBack("sessionDetail");
-    });
 
 const aoOptions = (state.aos || [])
     .filter(ao => ao.isActive)
@@ -795,7 +800,7 @@ topSection.append(dateLabel, dateInputWrap, ...(loadedWorkoutBanner ? [loadedWor
 
 
 app.append(
-    backButton,
+    header,
     title, 
     topSection, 
     stickyHeader,
@@ -806,5 +811,7 @@ app.append(
     notes, 
     actionBar,
 );
-
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu);
+    }
 }

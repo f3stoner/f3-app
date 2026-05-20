@@ -4,11 +4,22 @@ import { createInvitedByField } from "../components/invitedByField.js";
 import { updateMember } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderMemberEdit () {
     
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        fallbackView: "memberDetail",
+        showMenu: true,
+    });
 
     const member = state.members.find(m => m.id === state.editingMemberId);
     const cancelButton = document.createElement("button");
@@ -83,19 +94,9 @@ export function renderMemberEdit () {
         }   
     });
 
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
-    backButton.textContent = "← Back";
-    backButton.addEventListener("click", () => {
-        goBack("memberDetail");
-    })
-
-    const header = document.createElement("div");
-    header.classList.add("view-header");
-    header.append(backButton, title);
-
     app.append(
         header,
+        title,
         paxNameLabel, 
         paxNameInput, 
         realNameLabel, 
@@ -105,4 +106,7 @@ export function renderMemberEdit () {
         saveButton, 
         cancelButton
     );
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu);
+    }
 }

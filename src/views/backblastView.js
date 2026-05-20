@@ -6,10 +6,48 @@ import { showToast } from "../utils/toast.js";
 import { updateCustomTemplates } from "../services/cloudData.js";
 import { logActionFailure } from "../services/appEvents.js";
 import { navigateTo } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    async function exitBackblastView() {
+        const session = state.sessions.find(
+            s => s.id === state.selectedSessionId
+        );
+
+        if (session) {
+            try {
+                const updatedSession = {
+                    ...session,
+                    backblastText: state.draftBackblastText || "",
+                };
+
+                await updateSession(session.id, updatedSession);
+            } catch (error) {
+                console.error("Failed to save backblast text:", error);
+                showToast("Failed to save backblast.", "error");
+                return;
+            }
+        }
+
+        state.draftBackblastMediaFiles = [];
+        state.draftBackblastText = "";
+        state.hasAddedBackblastWeather = false;
+        state.currentView = "sessionDetail";
+        renderApp();
+    }
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        showMenu: true,
+        onBack: exitBackblastView,
+    });
 
     const session = state.sessions.find(
         s => s.id === state.selectedSessionId
@@ -265,31 +303,7 @@ export function renderBackblastView () {
     const doneButton = document.createElement("button");
     doneButton.textContent ="Done";
 
-    doneButton.addEventListener("click", async () => {
-        const session = state.sessions.find(
-            s => s.id === state.selectedSessionId
-        );
-
-        if (session) {
-            try {
-                const updatedSession = {
-                    ...session,
-                    backblastText: state.draftBackblastText || "",
-                };
-
-                await updateSession(session.id, updatedSession);
-            } catch (error) {
-                console.error("Failed to save backblast text:", error);
-                showToast("Failed to save backblast.", "error");
-                return;
-            }
-        }
-
-        state.draftBackblastMediaFiles = [];
-        state.draftBackblastText = "";
-        state.hasAddedBackblastWeather = false;
-        navigateTo("sessionDetail");
-    });
+    doneButton.addEventListener("click", exitBackblastView);
 
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
@@ -315,5 +329,16 @@ export function renderBackblastView () {
 
     actionRow.append(shareButton, copyButton, resetButton, doneButton);
 
-    app.append(title, helper, textArea, templateSection, mediaSection, actionRow);
+    app.append(
+        header,
+        title,
+        helper,
+        textArea,
+        templateSection,
+        mediaSection,
+        actionRow
+    );
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu);
+    }
 }

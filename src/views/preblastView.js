@@ -6,6 +6,8 @@ import { createCustomTemplate, ensureCustomTemplates } from "../utils/customTemp
 import { navigateTo } from "../utils/navigation.js";
 import { getAoWeather } from "../services/weather.js";
 import { updateCustomTemplates, updatePlannedWorkoutInCloud, updateQSlotInCloud } from "../services/cloudData.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderPreblastView() {
 
@@ -15,6 +17,35 @@ export function renderPreblastView() {
 
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
+
+    function exitPreblastView() {
+        const returnToWorkout = Boolean(state.selectedPlannedWorkoutId);
+
+        state.draftPreblastMediaFiles = [];
+        state.draftPreblastText = "";
+        state.activePreblastWorkoutId = null;
+        state.hasAddedPreblastForecast = false;
+        state.selectedPreblastQSlotId = null;
+        state.selectedPreblastWorkoutId = null;
+
+        if (returnToWorkout) {
+            state.currentView = "plannedWorkoutDetail";
+        } else {
+            state.currentView = "dashboard";
+            state.selectedPlannedWorkoutId = null;
+        }
+
+        renderApp();
+    }
+
+    const header = createAppHeader({
+        title: "",
+        showBack: true,
+        showMenu: true,
+        onBack: exitPreblastView,
+    });
 
     const title = document.createElement("h1");
     title.textContent = "Preblast";
@@ -400,31 +431,14 @@ export function renderPreblastView() {
     const doneButton = document.createElement("button");
     doneButton.textContent = "Done";
 
-    doneButton.addEventListener("click", () => {
-        const returnToWorkout = Boolean(state.selectedPlannedWorkoutId);
-
-        state.draftPreblastMediaFiles = [];
-        state.draftPreblastText = "";
-        state.activePreblastWorkoutId = null;
-        state.hasAddedPreblastForecast = false;
-        state.selectedPreblastQSlotId = null;
-        state.selectedPreblastWorkoutId = null;
-
-        if (returnToWorkout) {
-            state.currentView = "plannedWorkoutDetail";
-        } else {
-            state.currentView = "dashboard";
-            state.selectedPlannedWorkoutId = null;
-        }
-        
-        renderApp();
-    });
+    doneButton.addEventListener("click", exitPreblastView);
 
     const actionRow = document.createElement("div");
     actionRow.classList.add("button-row");
     actionRow.append(saveButton, shareButton, copyButton, doneButton);
 
     app.append(
+        header,
         title,
         subtitle,
         textInput,
@@ -432,4 +446,7 @@ export function renderPreblastView() {
         templateDetails,
         mediaDetails,
     );
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }
