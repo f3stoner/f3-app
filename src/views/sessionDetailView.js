@@ -12,6 +12,7 @@ import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { getBackblastLinkBySessionId } from "../services/cloudData.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -223,6 +224,59 @@ export function renderSessionDetail() {
         section.append(label, value);
         return section;
     }
+    function formatMatchMethod(method) {
+        switch (method) {
+            case "date_ao_q":
+                return "Date + AO + Q";
+            case "nearby_date_ao_q":
+                return "Nearby Date + AO + Q";
+            case "date_ao_single_session":
+                return "Date + AO";
+            case "nearby_date_ao_single_session":
+                return "Nearby Date + AO";
+            default:
+                return method || "Unknown";
+        }
+    }
+    
+    function getConfidenceLabel(score) {
+        if (score >= 0.9) return "High";
+        if (score >= 0.75) return "Medium";
+        return "Low";
+    }
+
+    function createHistoricalBackblastSection(linkedBackblast) {
+        const section = document.createElement("div");
+        section.classList.add("section", "historical-backblast-card");
+    
+        const label = document.createElement("div");
+        label.textContent = "Historical Band Backblast";
+        label.classList.add("detail-label", "session-detail-label");
+    
+        const meta = document.createElement("div");
+        meta.classList.add("stats-line");
+        const methodLabel = formatMatchMethod(linkedBackblast.link_method);
+        const confidenceLabel = getConfidenceLabel(Number(linkedBackblast.confidence_score));
+        
+        meta.textContent = `Imported from Band · Matched by ${methodLabel} · ${confidenceLabel} confidence`;    
+        
+        const details = document.createElement("details");
+    
+        const summary = document.createElement("summary");
+        summary.textContent = "View imported backblast";
+    
+        const content = document.createElement("pre");
+        content.classList.add("historical-backblast-text");
+        content.textContent =
+            linkedBackblast.cleaned_content ||
+            linkedBackblast.raw_content ||
+            "";
+    
+        details.append(summary, content);
+        section.append(label, meta, details);
+    
+        return section;
+    }
 
     function createWorkoutSection() {
         const section = document.createElement("div");
@@ -390,6 +444,8 @@ export function renderSessionDetail() {
         secondaryActionsRow.appendChild(deleteButton);
     }
 
+    const historicalBackblastMount = document.createElement("div");
+
     app.append(
         header,
         title,
@@ -397,11 +453,29 @@ export function renderSessionDetail() {
         paxSection, 
         fngSection, 
         workoutSection,
+        historicalBackblastMount,
         ...(shouldShowNotesSection ? [notesSection] : []), 
         primaryActionsRow,
         secondaryActionsRow,
         nav
     );
+
+    getBackblastLinkBySessionId(session.id)
+    .then(linkedBackblast => {
+        if (!linkedBackblast) return;
+
+        if (Number(linkedBackblast.confidence_score) < 0.75) {
+            return;
+        }
+        
+        historicalBackblastMount.appendChild(
+            createHistoricalBackblastSection(linkedBackblast)
+        );
+    })
+    .catch(error => {
+        console.error("Failed to load historical backblast:", error);
+    });
+
     }
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());

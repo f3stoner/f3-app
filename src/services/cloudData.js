@@ -1015,3 +1015,17 @@ export function runAggielandImportDryRun() {
 export function applyAggielandImport() {
     return runAggielandImport({ apply: true });
 }
+
+export async function getBackblastLinkBySessionId(sessionId) {
+    const { data, error } = await supabase
+        .from("session_backblast_links")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("confidence_score", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+    if (error) throw error;
+
+    return data?.[0] || null;
+}
