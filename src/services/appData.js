@@ -25,11 +25,28 @@ export function persistAppData() {
     });
 }
 
+function normalizeSessionForSave(session) {
+    return {
+        ...session,
+        id: session.id || crypto.randomUUID(),
+        qIds: session.qIds || (session.qId ? [session.qId] : []),
+        attendeeIds: session.attendeeIds || [],
+        fngs: session.fngs || [],
+        notes: session.notes || "",
+        workout: session.workout || null,
+        backblastText: session.backblastText || "",
+        createdAt: session.createdAt || Date.now(),
+        createdByUserId: session.createdByUserId || state.currentUserId,
+    };
+}
+
 export async function addSession(session) {
     const activeRegionId = state.currentRegionId;
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
+
+    const normalizedSession = normalizeSessionForSave(session);
 
     console.log("addSession RLS debug", {
         activeRegionId: state.currentRegionId,
@@ -38,7 +55,7 @@ export async function addSession(session) {
         regionName: state.regionName,
     });
 
-    const savedSession = await insertSession(activeRegionId, session)
+    const savedSession = await insertSession(activeRegionId, normalizedSession);
     state.sessions.push(savedSession);
     persistAppData();
     return savedSession;

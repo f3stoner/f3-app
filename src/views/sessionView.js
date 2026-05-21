@@ -740,7 +740,12 @@ try {
     state.draftSession = null;
 
     if (isEditing) {
-        navigateTo("sessionDetail");
+        state.viewHistory = (state.viewHistory || []).filter(
+            view => view !== "session"
+        );
+    
+        state.currentView = "sessionDetail";
+        renderApp();
     } else {
         const sessionForBackblast = savedSession || draftSession;
 
@@ -812,6 +817,6 @@ app.append(
     actionBar,
 );
     if (state.isMainMenuOpen) {
-        document.body.appendChild(createMainMenu);
+        document.body.appendChild(createMainMenu());
     }
 }

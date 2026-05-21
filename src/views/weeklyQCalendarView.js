@@ -455,6 +455,6 @@ export function renderWeeklyQCalendarView() {
         nav,
     );
     if (state.isMainMenuOpen) {
-        document.body.appendChild(createMainMenu);
+        document.body.appendChild(createMainMenu());
     }
 }
