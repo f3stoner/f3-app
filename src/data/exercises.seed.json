@@ -6,8 +6,8 @@
   "exercises": [
     {
       "id": "side-straddle-hop",
-      "name": "Side Straddle Hop",
-      "aliases": [],
+      "name": "Side Straddle Hops",
+      "aliases": ["SSH", "SSHs", "Side Straddle Hop"],
       "category": "warmup",
       "equipment": [],
       "source": "aggieland_band_backblast_import",
@@ -101,7 +101,7 @@
     {
       "id": "little-baby-arm-circles",
       "name": "Little Baby Arm Circles",
-      "aliases": [],
+      "aliases": ["LBAC", "LBACs"],
       "category": "warmup",
       "equipment": [],
       "source": "aggieland_band_backblast_import",
@@ -242,7 +242,7 @@
     {
       "id": "reverse-little-baby-arm-circles",
       "name": "Reverse Little Baby Arm Circles",
-      "aliases": [],
+      "aliases": ["RLBAC", "CABLs", "Reverse LBAC"],
       "category": "warmup",
       "equipment": [],
       "source": "aggieland_band_backblast_import",
