@@ -534,40 +534,6 @@ export function renderWorkoutPlanner() {
         introductionInput,
         getWorkoutFieldLabel(state, "introduction")
     );
-
-    function getCurrentLineText(textarea) {
-        const value = textarea.value || "";
-        const cursor = textarea.selectionStart || value.length;
-        const beforeCursor = value.slice(0, cursor);
-        const lines = beforeCursor.split("\n");
-        return lines[lines.length - 1] || "";
-    }
-
-    function replaceCurrentLine(textarea, replacement) {
-        const value = textarea.value || "";
-        const cursor = textarea.selectionStart || value.length;
-
-        const beforeCursor = value.slice(0, cursor);
-        const afterCursor = value.slice(cursor);
-
-        const lineStart = beforeCursor.lastIndexOf("\n") + 1;
-        const lineEndOffset = afterCursor.indexOf("\n");
-        const lineEnd =
-            lineEndOffset === -1
-                ? value.length
-                : cursor + lineEndOffset;
-
-        const beforeLine = value.slice(0, lineStart);
-        const afterLine = value.slice(lineEnd);
-    
-        const nextValue = `${beforeLine}${replacement}${afterLine}`;
-        textarea.value = nextValue;
-    
-        const nextCursor = beforeLine.length + replacement.length;
-        textarea.setSelectionRange(nextCursor, nextCursor);
-    
-        return nextValue;
-    }
     
     function getCurrentLineText(textarea) {
         const value = textarea.value || "";
@@ -607,7 +573,7 @@ export function renderWorkoutPlanner() {
     
         function renderSuggestions() {
             const currentLine = getCurrentLineText(textarea).trim();
-            const suggestions = searchExercises(state.exercises, currentLine, { limit: 6 });
+            const suggestions = searchExercises(currentLine, { limit: 6 });
     
             suggestionsWrap.textContent = "";
     

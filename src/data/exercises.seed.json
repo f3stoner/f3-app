@@ -1,0 +1,6420 @@
+{
+  "generated_at": "2026-05-21T03:34:02.724Z",
+  "source_file": "exercise_candidates.json",
+  "min_count": 25,
+  "total": 136,
+  "exercises": [
+    {
+      "id": "side-straddle-hop",
+      "name": "Side Straddle Hop",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 2080,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "SSH",
+          "stripped": "Side Straddle Hop",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Side straddle hops",
+          "stripped": "Side Straddle Hop",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Side straddle hops",
+          "stripped": "Side Straddle Hop",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "Side straddle hop",
+          "stripped": "Side Straddle Hop",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "SSH",
+          "stripped": "Side Straddle Hop",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        }
+      ]
+    },
+    {
+      "id": "grass-grabbers",
+      "name": "Grass Grabbers",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 1657,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Grass grabbers",
+          "stripped": "Grass Grabbers",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Grass Grabbers",
+          "stripped": "Grass Grabbers",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Grass Grabbers",
+          "stripped": "Grass Grabbers",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Grass grabbers",
+          "stripped": "Grass Grabbers",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Grass Grabbers",
+          "stripped": "Grass Grabbers",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "little-baby-arm-circles",
+      "name": "Little Baby Arm Circles",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 1374,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Little Baby Arm Circles",
+          "stripped": "Little Baby Arm Circles",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "LBACs",
+          "stripped": "Little Baby Arm Circles",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "Little baby arm circles",
+          "stripped": "Little Baby Arm Circles",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "LBACs/CABLs",
+          "stripped": "Little Baby Arm Circles",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Little Baby Arm Circles",
+          "stripped": "Little Baby Arm Circles",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "michael-phelps",
+      "name": "Michael Phelps",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 1328,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Michael Phelps",
+          "stripped": "Michael Phelps",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Michael Phelps",
+          "stripped": "Michael Phelps",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "Michael Phelps",
+          "stripped": "Michael Phelps",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Michael Phelps",
+          "stripped": "Michael Phelps",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Michael Phelps",
+          "stripped": "Michael Phelps",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "hillbilly-walker",
+      "name": "Hillbilly Walker",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 914,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Hillbilly Walkers",
+          "stripped": "Hillbilly Walker",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Hillbilly Walkers",
+          "stripped": "Hillbilly Walker",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Hillbilly walkers",
+          "stripped": "Hillbilly Walker",
+          "post_key": "AAB95BL4dYnhM_msdrXXK9dy",
+          "created_at": 1778847908000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Hillbilly walkers",
+          "stripped": "Hillbilly Walker",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Hillbilly Walkers",
+          "stripped": "Hillbilly Walker",
+          "post_key": "AABer_wY4pB9SH8VQLRWPKrO",
+          "created_at": 1778759317000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "reverse-little-baby-arm-circles",
+      "name": "Reverse Little Baby Arm Circles",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 904,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Circle Arm Baby Littles",
+          "stripped": "Reverse Little Baby Arm Circles",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Circle Arm Baby Littles",
+          "stripped": "Reverse Little Baby Arm Circles",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Reverse big baby arm circles",
+          "stripped": "Reverse Little Baby Arm Circles",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Circle Arm Baby Littles",
+          "stripped": "Reverse Little Baby Arm Circles",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "Circle Arm Baby Littles",
+          "stripped": "Reverse Little Baby Arm Circles",
+          "post_key": "AADSkk9jaaOFoJfUQnKfb-wY",
+          "created_at": 1778944015000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "abe-vigoda",
+      "name": "Abe Vigoda",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 890,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Abe Vigodas",
+          "stripped": "Abe Vigoda",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Abe Vigodas",
+          "stripped": "Abe Vigoda",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "Abe Vigoda",
+          "stripped": "Abe Vigoda",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Abe Vigodas",
+          "stripped": "Abe Vigoda",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Abe vigoda",
+          "stripped": "Abe Vigoda",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        }
+      ]
+    },
+    {
+      "id": "imperial-walker",
+      "name": "Imperial Walker",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 785,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Imperial Walkers",
+          "stripped": "Imperial Walker",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "Imperial Walkers",
+          "stripped": "Imperial Walker",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Imperial walker",
+          "stripped": "Imperial Walker",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Imperial Walkers",
+          "stripped": "Imperial Walker",
+          "post_key": "AAD8EOdwZZAGUJuWDNhTLyF0",
+          "created_at": 1779193732000,
+          "author": "Narc"
+        },
+        {
+          "line": "Imperial walkers",
+          "stripped": "Imperial Walker",
+          "post_key": "AAB95BL4dYnhM_msdrXXK9dy",
+          "created_at": 1778847908000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "merkin",
+      "name": "Merkin",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 635,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "6. Merkins",
+          "stripped": "Merkin",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Merkins",
+          "stripped": "Merkin",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "10 Merkins",
+          "stripped": "Merkin",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Merkins",
+          "stripped": "Merkin",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "Merkins",
+          "stripped": "Merkin",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "goat-stretch",
+      "name": "GOAT stretch",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 541,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "GOAT stretch",
+          "stripped": "GOAT stretch",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Goat Stretch",
+          "stripped": "Goat Stretch",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Goat Stretch",
+          "stripped": "Goat Stretch",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Goat stretch",
+          "stripped": "Goat stretch",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "GOAT stretch",
+          "stripped": "GOAT stretch",
+          "post_key": "AAD8EOdwZZAGUJuWDNhTLyF0",
+          "created_at": 1779193732000,
+          "author": "Narc"
+        }
+      ]
+    },
+    {
+      "id": "big-boy-sit-up",
+      "name": "Big Boy Sit-Up",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 495,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "BBSU for the 6",
+          "stripped": "Big Boy Sit-Up",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "BBSU for the 6",
+          "stripped": "Big Boy Sit-Up",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "BBSU for the 6",
+          "stripped": "Big Boy Sit-Up",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "30 pace run and 30 BBS",
+          "stripped": "Big Boy Sit-Up",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "5 BBSUs",
+          "stripped": "Big Boy Sit-Up",
+          "post_key": "AAB4cSue-01qchDIklegpoEa",
+          "created_at": 1778953677000,
+          "author": "SCUBA Steve"
+        }
+      ]
+    },
+    {
+      "id": "water-wheel",
+      "name": "Water Wheel",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 418,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Waterwheel",
+          "stripped": "Water Wheel",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Water wheel",
+          "stripped": "Water Wheel",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Waterwheel",
+          "stripped": "Water Wheel",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Water wheels",
+          "stripped": "Water Wheel",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Waterwheel",
+          "stripped": "Water Wheel",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "copperhead-squat",
+      "name": "Copperhead Squat",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 392,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Copperhead Squats 10",
+          "stripped": "Copperhead Squat",
+          "post_key": "AAAxI_x4xskvR9N4lBK9n_r0",
+          "created_at": 1777985314000,
+          "author": "Mario"
+        },
+        {
+          "line": "Copperhead squats",
+          "stripped": "Copperhead Squat",
+          "post_key": "AACiXCPuqx93qgHtjN1jeBQj",
+          "created_at": 1777983818000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Copperhead squats x8 IC",
+          "stripped": "Copperhead Squat",
+          "post_key": "AADIdGE6NShBNgBgvrJRz8cF",
+          "created_at": 1777478848000,
+          "author": "D20"
+        },
+        {
+          "line": "Copperhead squats x10 IC",
+          "stripped": "Copperhead Squat",
+          "post_key": "AACKIgrs8q6NzBPzWMx-QSpE",
+          "created_at": 1775573162000,
+          "author": "D20"
+        },
+        {
+          "line": "Copperhead Squat",
+          "stripped": "Copperhead Squat",
+          "post_key": "AAC6HDeeMcWSAyvh_iL7Sn-X",
+          "created_at": 1775476210000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "chinooks",
+      "name": "Chinooks",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 323,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Chinooks",
+          "stripped": "Chinooks",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Chinooks",
+          "stripped": "Chinooks",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Chinooks",
+          "stripped": "Chinooks",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Chinooks",
+          "stripped": "Chinooks",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "Chinooks",
+          "stripped": "Chinooks",
+          "post_key": "AADSkk9jaaOFoJfUQnKfb-wY",
+          "created_at": 1778944015000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "burpees",
+      "name": "Burpees",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 319,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Burpees",
+          "stripped": "Burpees",
+          "post_key": "AADgdeWEwk7z3U8KJQc-hLrX",
+          "created_at": 1778172687000,
+          "author": "Skipper"
+        },
+        {
+          "line": "10 Burpees",
+          "stripped": "Burpees",
+          "post_key": "AADgdeWEwk7z3U8KJQc-hLrX",
+          "created_at": 1778172687000,
+          "author": "Skipper"
+        },
+        {
+          "line": "2 burpees",
+          "stripped": "burpees",
+          "post_key": "AABTup5Wj__bv56BhBpHwcoT",
+          "created_at": 1778075545000,
+          "author": "Frogger"
+        },
+        {
+          "line": "10 Burpees",
+          "stripped": "Burpees",
+          "post_key": "AAAp5CXcmz_XL_E_PLlKhtr0",
+          "created_at": 1777894807000,
+          "author": "Mario"
+        },
+        {
+          "line": "10 Burpees",
+          "stripped": "Burpees",
+          "post_key": "AAAp5CXcmz_XL_E_PLlKhtr0",
+          "created_at": 1777894807000,
+          "author": "Mario"
+        }
+      ]
+    },
+    {
+      "id": "squat",
+      "name": "Squat",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 305,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "1 Squat and 1 Lunge (2 is 1)",
+          "stripped": "Squat",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "2 squats and 2 lunges",
+          "stripped": "Squat",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "10 squats and 10 lunges… and back down",
+          "stripped": "Squat",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "20 Squats",
+          "stripped": "Squat",
+          "post_key": "AABz52ybOJTZLJivrKn16wfT",
+          "created_at": 1779103149000,
+          "author": "Rawhide"
+        },
+        {
+          "line": "5 squats",
+          "stripped": "Squat",
+          "post_key": "AAB4cSue-01qchDIklegpoEa",
+          "created_at": 1778953677000,
+          "author": "SCUBA Steve"
+        }
+      ]
+    },
+    {
+      "id": "plank",
+      "name": "Plank",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 274,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Plank for 6",
+          "stripped": "Plank",
+          "post_key": "AAAbUKcqxX4y9AYNmCMSc3T4",
+          "created_at": 1777471009000,
+          "author": "Skin Graft"
+        },
+        {
+          "line": "Plank for 6",
+          "stripped": "Plank",
+          "post_key": "AAAbUKcqxX4y9AYNmCMSc3T4",
+          "created_at": 1777471009000,
+          "author": "Skin Graft"
+        },
+        {
+          "line": "Plank for 6",
+          "stripped": "Plank",
+          "post_key": "AAAbUKcqxX4y9AYNmCMSc3T4",
+          "created_at": 1777471009000,
+          "author": "Skin Graft"
+        },
+        {
+          "line": "1 min plank",
+          "stripped": "plank",
+          "post_key": "AACKIgrs8q6NzBPzWMx-QSpE",
+          "created_at": 1775573162000,
+          "author": "D20"
+        },
+        {
+          "line": "Plank for the 6",
+          "stripped": "Plank",
+          "post_key": "AACd7YVOgFdljxtvYV_D_jj2",
+          "created_at": 1775498589000,
+          "author": "Frogger"
+        }
+      ]
+    },
+    {
+      "id": "curl",
+      "name": "Curl",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 255,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "2. Curls",
+          "stripped": "Curl",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "150 curls and 100 squats",
+          "stripped": "Curl",
+          "post_key": "AADuQbdTIKw7NGluA8gRDmAc",
+          "created_at": 1778156438000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Curls x15",
+          "stripped": "Curl",
+          "post_key": "AABSjsZlGKUR58v8v-mpEK1T",
+          "created_at": 1778002449000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Curls for the girls",
+          "stripped": "Curl",
+          "post_key": "AAA4X58wOZIUJxnqtTpAlHhZ",
+          "created_at": 1777905135000,
+          "author": "Jake"
+        },
+        {
+          "line": "Curls for the girls",
+          "stripped": "Curl",
+          "post_key": "AAA4X58wOZIUJxnqtTpAlHhZ",
+          "created_at": 1777905135000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "al-gore",
+      "name": "Al Gore",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 252,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Al Gore for the 6",
+          "stripped": "Al Gore",
+          "post_key": "AAABFtOyxkbEFTuM0iG70IBk",
+          "created_at": 1778334617000,
+          "author": "Jake"
+        },
+        {
+          "line": "AL GORE FOR THE 6",
+          "stripped": "AL GORE",
+          "post_key": "AAAGxNOQl3riFgjwRSpxTAes",
+          "created_at": 1777144602000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Al Gore for 6",
+          "stripped": "Al Gore",
+          "post_key": "AACwqa87W4KZFpZQ_f2Gecvq",
+          "created_at": 1776873808000,
+          "author": "Jake"
+        },
+        {
+          "line": "Al gore for the 6",
+          "stripped": "Al gore",
+          "post_key": "AACVUF4KZH-XD7xhnq0yz5Us",
+          "created_at": 1775943232000,
+          "author": "Meatloaf"
+        },
+        {
+          "line": "Al Gore/plank to six.",
+          "stripped": "Al Gore",
+          "post_key": "AADPs3XqbBikHAkt8oh3ZZJK",
+          "created_at": 1775741614000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "flutter-kicks",
+      "name": "Flutter Kicks",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 237,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "1. Flutter kicks",
+          "stripped": "Flutter Kicks",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Flutter kicks",
+          "stripped": "Flutter Kicks",
+          "post_key": "AAAp2LiEQpMvycJaBZGAT2RK",
+          "created_at": 1778592268000,
+          "author": "Narc"
+        },
+        {
+          "line": "5 Flutter Kicks",
+          "stripped": "Flutter Kicks",
+          "post_key": "AABKCbm9yYE1NqwSOZq5t7jF",
+          "created_at": 1778166721000,
+          "author": "Victory Lap"
+        },
+        {
+          "line": "Flutter kicks x 25 IC",
+          "stripped": "Flutter Kicks",
+          "post_key": "AAAGxNOQl3riFgjwRSpxTAes",
+          "created_at": 1777144602000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Flutter kicks x25 IC",
+          "stripped": "Flutter Kicks",
+          "post_key": "AAC-fGKQvx96bRoXzpoxX3Es",
+          "created_at": 1775827697000,
+          "author": "Lt Dangle"
+        }
+      ]
+    },
+    {
+      "id": "high-knees",
+      "name": "High Knees",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 209,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "High knees",
+          "stripped": "High Knees",
+          "post_key": "AAB4cSue-01qchDIklegpoEa",
+          "created_at": 1778953677000,
+          "author": "SCUBA Steve"
+        },
+        {
+          "line": "High knees 30 sec",
+          "stripped": "High Knees",
+          "post_key": "AACNF0lfJ9xTaESPH-svJYI-",
+          "created_at": 1775078782000,
+          "author": "Acme"
+        },
+        {
+          "line": "High Knees",
+          "stripped": "High Knees",
+          "post_key": "AACOSLyafhaw8o4_tGPM64Br",
+          "created_at": 1774360998000,
+          "author": "Dial-up"
+        },
+        {
+          "line": "Decaffeinated cool down mosey w/ high knees and butt kickers.",
+          "stripped": "High Knees",
+          "post_key": "AADDWs86jHBF6UQNRj0lqCLc",
+          "created_at": 1773937776000,
+          "author": "Eraser"
+        },
+        {
+          "line": "10x High knees IC",
+          "stripped": "High Knees",
+          "post_key": "AAAZ4ysFBzNviZXw1K_4eWLP",
+          "created_at": 1773863533000,
+          "author": "D20"
+        }
+      ]
+    },
+    {
+      "id": "mountain-climber",
+      "name": "Mountain Climber",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 191,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Mountain Climbers (2 count)",
+          "stripped": "Mountain Climber",
+          "post_key": "AABp4Vnm5lgVLmngUGX8LxGm",
+          "created_at": 1779231781000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "20 pace run and 20 Mountain Climbers",
+          "stripped": "Mountain Climber",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Mountain climbers",
+          "stripped": "Mountain Climber",
+          "post_key": "AAAp2LiEQpMvycJaBZGAT2RK",
+          "created_at": 1778592268000,
+          "author": "Narc"
+        },
+        {
+          "line": "X10 mountain climbers",
+          "stripped": "Mountain Climber",
+          "post_key": "AAAiEZiuSzKTqzncLcRpfqop",
+          "created_at": 1777478084000,
+          "author": "Mr. Burns"
+        },
+        {
+          "line": "4.) X10 mountain climbers",
+          "stripped": "Mountain Climber",
+          "post_key": "AACmX8uXnT1x_ctakmKrU3Tx",
+          "created_at": 1776278120000,
+          "author": "Mr. Burns"
+        }
+      ]
+    },
+    {
+      "id": "shoulder-tap",
+      "name": "Shoulder Tap",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 188,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "RD 1 Overhead Press / Shoulder Taps",
+          "stripped": "Shoulder Tap",
+          "post_key": "AABitvMMgfWzzwUIs_ZakFiz",
+          "created_at": 1778772462000,
+          "author": "Jake"
+        },
+        {
+          "line": "Shoulder Taps",
+          "stripped": "Shoulder Tap",
+          "post_key": "AACr32-JY0HCC5dqvrOnUsCs",
+          "created_at": 1775572385000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Shoulder Taps",
+          "stripped": "Shoulder Tap",
+          "post_key": "AADws3JUhZVPwLXgrUYfwaHp",
+          "created_at": 1774979006000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Shoulder taps",
+          "stripped": "Shoulder Tap",
+          "post_key": "AACcVPuU8hkP4yLAivRwddgU",
+          "created_at": 1774651799000,
+          "author": "Hippo"
+        },
+        {
+          "line": "Shoulder Taps IC x10",
+          "stripped": "Shoulder Tap",
+          "post_key": "AADwWAGBP9R9WMTYHbx5bAE-",
+          "created_at": 1773923718000,
+          "author": "Gunpoint"
+        }
+      ]
+    },
+    {
+      "id": "overhead-press",
+      "name": "Overhead Press",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 171,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 OH press",
+          "stripped": "Overhead Press",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Overhead press x10",
+          "stripped": "Overhead Press",
+          "post_key": "AABSjsZlGKUR58v8v-mpEK1T",
+          "created_at": 1778002449000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Overhead Press",
+          "stripped": "Overhead Press",
+          "post_key": "AAA4X58wOZIUJxnqtTpAlHhZ",
+          "created_at": 1777905135000,
+          "author": "Jake"
+        },
+        {
+          "line": "Overhead Press",
+          "stripped": "Overhead Press",
+          "post_key": "AAA4X58wOZIUJxnqtTpAlHhZ",
+          "created_at": 1777905135000,
+          "author": "Jake"
+        },
+        {
+          "line": "OH press x11",
+          "stripped": "Overhead Press",
+          "post_key": "AADXY821Ud0JCn6_MFxlS5ZJ",
+          "created_at": 1777293103000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "freddie-mercury",
+      "name": "Freddie Mercury",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 171,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "6 Freddy Mercuries",
+          "stripped": "Freddie Mercury",
+          "post_key": "AABKCbm9yYE1NqwSOZq5t7jF",
+          "created_at": 1778166721000,
+          "author": "Victory Lap"
+        },
+        {
+          "line": "Freddie Mercury x 20 IC",
+          "stripped": "Freddie Mercury",
+          "post_key": "AAAGxNOQl3riFgjwRSpxTAes",
+          "created_at": 1777144602000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "10 Freddie Mercuries",
+          "stripped": "Freddie Mercury",
+          "post_key": "AAB8zLCG52n3xpUcYE0bz2y1",
+          "created_at": 1775221872000,
+          "author": "Webelo"
+        },
+        {
+          "line": "10 x Freddy Mercury",
+          "stripped": "Freddie Mercury",
+          "post_key": "AADBBdb5XgUqBMoVXMs3SnJS",
+          "created_at": 1774901938000,
+          "author": "TropicThunder"
+        },
+        {
+          "line": "Freddy Mercuries",
+          "stripped": "Freddie Mercury",
+          "post_key": "AACcVPuU8hkP4yLAivRwddgU",
+          "created_at": 1774651799000,
+          "author": "Hippo"
+        }
+      ]
+    },
+    {
+      "id": "calf-raise",
+      "name": "Calf Raise",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 168,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "4. Calf raises",
+          "stripped": "Calf Raise",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Calf raises",
+          "stripped": "Calf Raise",
+          "post_key": "AACBogIC2oKd_mR29zJbXdoc",
+          "created_at": 1778593076000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Calf raises",
+          "stripped": "Calf Raise",
+          "post_key": "AAAp2LiEQpMvycJaBZGAT2RK",
+          "created_at": 1778592268000,
+          "author": "Narc"
+        },
+        {
+          "line": "Cone 3 and calf raises x30",
+          "stripped": "Calf Raise",
+          "post_key": "AADXY821Ud0JCn6_MFxlS5ZJ",
+          "created_at": 1777293103000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Cone 4 and calf raises x40",
+          "stripped": "Calf Raise",
+          "post_key": "AADXY821Ud0JCn6_MFxlS5ZJ",
+          "created_at": 1777293103000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "lbc",
+      "name": "LBC",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 161,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "LBCs/flapjack",
+          "stripped": "LBC",
+          "post_key": "AABItBnm6cAu9QZX2ex-PiOr",
+          "created_at": 1778611640000,
+          "author": "Frodo"
+        },
+        {
+          "line": "40 LBCs",
+          "stripped": "LBC",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "LBC 43",
+          "stripped": "LBC",
+          "post_key": "AACnKaOm6EJ9t3cQMjfbHA-a",
+          "created_at": 1775911759000,
+          "author": "Wiretap"
+        },
+        {
+          "line": "LBCs",
+          "stripped": "LBC",
+          "post_key": "AADIscZNtSa_meQJ6NkmJLFG",
+          "created_at": 1775483099000,
+          "author": "Cobbler"
+        },
+        {
+          "line": "LBCs",
+          "stripped": "LBC",
+          "post_key": "AABmQrOVSkYZHf-Bqf-vEUKC",
+          "created_at": 1774616387000,
+          "author": "Cobbler"
+        }
+      ]
+    },
+    {
+      "id": "high-plank",
+      "name": "High Plank",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 152,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "high plank",
+          "stripped": "High Plank",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "2 high plank",
+          "stripped": "High Plank",
+          "post_key": "AABPdamC1ZDxllKCHQqwvR55",
+          "created_at": 1774997583000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Sprint Back & High plank for 6",
+          "stripped": "High Plank",
+          "post_key": "AAAlpldy2LzZmMUo_rXC-gFv",
+          "created_at": 1774356840000,
+          "author": "Jake"
+        },
+        {
+          "line": "Sprint Back & High plank for 6",
+          "stripped": "High Plank",
+          "post_key": "AAAlpldy2LzZmMUo_rXC-gFv",
+          "created_at": 1774356840000,
+          "author": "Jake"
+        },
+        {
+          "line": "Sprint Back & High plank for 6",
+          "stripped": "High Plank",
+          "post_key": "AAAlpldy2LzZmMUo_rXC-gFv",
+          "created_at": 1774356840000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "air-squat",
+      "name": "Air Squat",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 140,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Air squat",
+          "stripped": "Air Squat",
+          "post_key": "AABTup5Wj__bv56BhBpHwcoT",
+          "created_at": 1778075545000,
+          "author": "Frogger"
+        },
+        {
+          "line": "Air squats",
+          "stripped": "Air Squat",
+          "post_key": "AAAUMyvU-J4_6D1HvmW4qO1X",
+          "created_at": 1776684526000,
+          "author": "Elmer"
+        },
+        {
+          "line": "Air squat",
+          "stripped": "Air Squat",
+          "post_key": "AACd7YVOgFdljxtvYV_D_jj2",
+          "created_at": 1775498589000,
+          "author": "Frogger"
+        },
+        {
+          "line": "Air Squats",
+          "stripped": "Air Squat",
+          "post_key": "AACOSLyafhaw8o4_tGPM64Br",
+          "created_at": 1774360998000,
+          "author": "Dial-up"
+        },
+        {
+          "line": "41 Air Squats",
+          "stripped": "Air Squat",
+          "post_key": "AAB9fGo1Zm9iCaOq5v9wf8oB",
+          "created_at": 1772901360000,
+          "author": "Cuatro"
+        }
+      ]
+    },
+    {
+      "id": "butt-kicks",
+      "name": "Butt Kicks",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 136,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Butt kickers",
+          "stripped": "Butt Kicks",
+          "post_key": "AAB4cSue-01qchDIklegpoEa",
+          "created_at": 1778953677000,
+          "author": "SCUBA Steve"
+        },
+        {
+          "line": "Height knees & butt kicks",
+          "stripped": "Butt Kicks",
+          "post_key": "AABer_wY4pB9SH8VQLRWPKrO",
+          "created_at": 1778759317000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Double applesauce mosey around parking lot with high knees and butt kickers",
+          "stripped": "Butt Kicks",
+          "post_key": "AACBogIC2oKd_mR29zJbXdoc",
+          "created_at": 1778593076000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "1 lap jog with high knees / butt kicks/karaokes",
+          "stripped": "Butt Kicks",
+          "post_key": "AAAqYNe0xgQYxYUyC_Xornj-",
+          "created_at": 1774028706000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Decaffeinated cool down mosey w/ high knees and butt kickers.",
+          "stripped": "Butt Kicks",
+          "post_key": "AADDWs86jHBF6UQNRj0lqCLc",
+          "created_at": 1773937776000,
+          "author": "Eraser"
+        }
+      ]
+    },
+    {
+      "id": "seal-clap",
+      "name": "Seal Clap",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 135,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Seal claps",
+          "stripped": "Seal Clap",
+          "post_key": "AAB95BL4dYnhM_msdrXXK9dy",
+          "created_at": 1778847908000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Seal claps",
+          "stripped": "Seal Clap",
+          "post_key": "AACQliDzRdeDpx1vZN_RRwid",
+          "created_at": 1777640254000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Seal claps",
+          "stripped": "Seal Clap",
+          "post_key": "AADXY821Ud0JCn6_MFxlS5ZJ",
+          "created_at": 1777293103000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Seal claps x12",
+          "stripped": "Seal Clap",
+          "post_key": "AACCApzRd5fOmtQYCXyhIfst",
+          "created_at": 1776951012000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Seal claps",
+          "stripped": "Seal Clap",
+          "post_key": "AADL2U1SgWAe5gUFVH6Iah5N",
+          "created_at": 1776687089000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "overhead-clap",
+      "name": "Overhead Clap",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 135,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Overhead claps",
+          "stripped": "Overhead Clap",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Overhead claps",
+          "stripped": "Overhead Clap",
+          "post_key": "AADuQbdTIKw7NGluA8gRDmAc",
+          "created_at": 1778156438000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Overhead claps",
+          "stripped": "Overhead Clap",
+          "post_key": "AAA1o38-OgNcEygfHQPDyKJq",
+          "created_at": 1776344598000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Overhead claps",
+          "stripped": "Overhead Clap",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Overhead claps",
+          "stripped": "Overhead Clap",
+          "post_key": "AABtGD02QXFHMp2o5B2IY3JU",
+          "created_at": 1775824316000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "plank-jack",
+      "name": "Plank Jack",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 128,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "20 Plank Jacks",
+          "stripped": "Plank Jack",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "1. Merkins, MCs and plank jacks x10",
+          "stripped": "Plank Jack",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "3. Merkins, MCs and plank jacks x10",
+          "stripped": "Plank Jack",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "5. Merkins, MCs and plank jacks x10",
+          "stripped": "Plank Jack",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "7. Merkins, MCs and plank jacks x10",
+          "stripped": "Plank Jack",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "lunge",
+      "name": "Lunge",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 126,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "2 squats and 2 lunges",
+          "stripped": "Lunge",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Lunges, x10",
+          "stripped": "Lunge",
+          "post_key": "AAB4cSue-01qchDIklegpoEa",
+          "created_at": 1778953677000,
+          "author": "SCUBA Steve"
+        },
+        {
+          "line": "LUNGES",
+          "stripped": "Lunge",
+          "post_key": "AAA6MuqpI8q5owPloTEKq-0R",
+          "created_at": 1778173272000,
+          "author": "Jake"
+        },
+        {
+          "line": "2 squats and 2 lunges",
+          "stripped": "Lunge",
+          "post_key": "AACwqa87W4KZFpZQ_f2Gecvq",
+          "created_at": 1776873808000,
+          "author": "Jake"
+        },
+        {
+          "line": "2 squats and 2 lunges",
+          "stripped": "Lunge",
+          "post_key": "AABBkMFpYfVZA2wpekpL3mtr",
+          "created_at": 1776261564000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "pendulums",
+      "name": "Pendulums",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 110,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Pendulums",
+          "stripped": "Pendulums",
+          "post_key": "AAB95BL4dYnhM_msdrXXK9dy",
+          "created_at": 1778847908000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Pendulums",
+          "stripped": "Pendulums",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Pendulums x8 IC",
+          "stripped": "Pendulums",
+          "post_key": "AAAT6O7efcZhziAPYTc7tmNG",
+          "created_at": 1778522508000,
+          "author": "D20"
+        },
+        {
+          "line": "Pendulums",
+          "stripped": "Pendulums",
+          "post_key": "AADuQbdTIKw7NGluA8gRDmAc",
+          "created_at": 1778156438000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Pendulums",
+          "stripped": "Pendulums",
+          "post_key": "AACQliDzRdeDpx1vZN_RRwid",
+          "created_at": 1777640254000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "american-hammers",
+      "name": "American Hammers",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 107,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "American hammers",
+          "stripped": "American Hammers",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "American hammers",
+          "stripped": "American Hammers",
+          "post_key": "AAArXJrkHiHGhlJcx7FBKef2",
+          "created_at": 1774525851000,
+          "author": "Siesta"
+        },
+        {
+          "line": "American Hammers",
+          "stripped": "American Hammers",
+          "post_key": "AABff-29-M_OTFp2mb81qcCJ",
+          "created_at": 1774364248000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "American Hammers",
+          "stripped": "American Hammers",
+          "post_key": "AADcBpPacIiNdaM_8sTs2OOL",
+          "created_at": 1774210264000,
+          "author": "Delta Blues (DB)"
+        },
+        {
+          "line": "American hammers",
+          "stripped": "American Hammers",
+          "post_key": "AADHfFfQUrSZTpatymysAjv7",
+          "created_at": 1773501979000,
+          "author": "Shaggy"
+        }
+      ]
+    },
+    {
+      "id": "cindy-swing",
+      "name": "Cindy Swing",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 105,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Cindy swings x15",
+          "stripped": "Cindy Swing",
+          "post_key": "AAD0t8YhO4WWCSruvn-QoB5_",
+          "created_at": 1777407706000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Cindy swings x15",
+          "stripped": "Cindy Swing",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "1. Cindy Swings",
+          "stripped": "Cindy Swing",
+          "post_key": "AAA2pZijkvpsxTQFMvaqim0S",
+          "created_at": 1776771844000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Cindy swings",
+          "stripped": "Cindy Swing",
+          "post_key": "AADiAPOWXvFpI9YtsejKLCiv",
+          "created_at": 1776169857000,
+          "author": "Xena"
+        },
+        {
+          "line": "Cindy swings",
+          "stripped": "Cindy Swing",
+          "post_key": "AABmQrOVSkYZHf-Bqf-vEUKC",
+          "created_at": 1774616387000,
+          "author": "Cobbler"
+        }
+      ]
+    },
+    {
+      "id": "moroccan-night-club",
+      "name": "Moroccan Night Club",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 101,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Moroccan night clubs",
+          "stripped": "Moroccan Night Club",
+          "post_key": "AABItBnm6cAu9QZX2ex-PiOr",
+          "created_at": 1778611640000,
+          "author": "Frodo"
+        },
+        {
+          "line": "Moroccan Night Club 10",
+          "stripped": "Moroccan Night Club",
+          "post_key": "AAAZ6OXZb_6pm-1nuAOSA8Sc",
+          "created_at": 1777461326000,
+          "author": "Mario"
+        },
+        {
+          "line": "Moroccan night club IC x 10",
+          "stripped": "Moroccan Night Club",
+          "post_key": "AAB13z7tHWx9FSwcGiuvYAIs",
+          "created_at": 1776975375000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Moroccan night club",
+          "stripped": "Moroccan Night Club",
+          "post_key": "AABX4jK6KKHGBXiNEr8vxUAO",
+          "created_at": 1774525205000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Moroccan night clubs",
+          "stripped": "Moroccan Night Club",
+          "post_key": "AADoS-oViLCBxWGzSsjeFSj9",
+          "created_at": 1772543551000,
+          "author": "Whistleblower"
+        }
+      ]
+    },
+    {
+      "id": "bent-over-row",
+      "name": "Bent Over Row",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 100,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "BENT OVER ROWS",
+          "stripped": "Bent Over Row",
+          "post_key": "AADSkk9jaaOFoJfUQnKfb-wY",
+          "created_at": 1778944015000,
+          "author": "Jake"
+        },
+        {
+          "line": "Bent over Row",
+          "stripped": "Bent over Row",
+          "post_key": "AAA4X58wOZIUJxnqtTpAlHhZ",
+          "created_at": 1777905135000,
+          "author": "Jake"
+        },
+        {
+          "line": "Bent over Row",
+          "stripped": "Bent over Row",
+          "post_key": "AAA4X58wOZIUJxnqtTpAlHhZ",
+          "created_at": 1777905135000,
+          "author": "Jake"
+        },
+        {
+          "line": "Bent over rows x11",
+          "stripped": "Bent Over Row",
+          "post_key": "AADXY821Ud0JCn6_MFxlS5ZJ",
+          "created_at": 1777293103000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Bent over rows x12",
+          "stripped": "Bent Over Row",
+          "post_key": "AADXY821Ud0JCn6_MFxlS5ZJ",
+          "created_at": 1777293103000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "thrusters",
+      "name": "Thrusters",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 99,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "5. Thrusters",
+          "stripped": "Thrusters",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Thrusters 10",
+          "stripped": "Thrusters",
+          "post_key": "AADIdGE6NShBNgBgvrJRz8cF",
+          "created_at": 1777478848000,
+          "author": "D20"
+        },
+        {
+          "line": "Thrusters x10",
+          "stripped": "Thrusters",
+          "post_key": "AAD0t8YhO4WWCSruvn-QoB5_",
+          "created_at": 1777407706000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Thrusters for the six",
+          "stripped": "Thrusters",
+          "post_key": "AAAGxNOQl3riFgjwRSpxTAes",
+          "created_at": 1777144602000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Thrusters",
+          "stripped": "Thrusters",
+          "post_key": "AAAWmAdiBoaO4OxzWKMifHq5",
+          "created_at": 1776522210000,
+          "author": "LinkedIn"
+        }
+      ]
+    },
+    {
+      "id": "hand-release-merkin",
+      "name": "Hand Release Merkin",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 91,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "2 minute AMRAP Hand Release Merkins",
+          "stripped": "Hand Release Merkin",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "10 hand release merkins",
+          "stripped": "Hand Release Merkin",
+          "post_key": "AAAA0qKFiRbjIJSA2IY9kEiQ",
+          "created_at": 1776428545000,
+          "author": "Siesta"
+        },
+        {
+          "line": "2min hand release merkin",
+          "stripped": "hand release merkin",
+          "post_key": "AACrUtk21YPof1SxtnORFtGK",
+          "created_at": 1775603894000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "12 hand release merkins",
+          "stripped": "Hand Release Merkin",
+          "post_key": "AABwros267E2KzZ6ZPDg-1lt",
+          "created_at": 1772769611000,
+          "author": "K-Pop"
+        },
+        {
+          "line": "Hand Release Merkins",
+          "stripped": "Hand Release Merkin",
+          "post_key": "AAAbQRkp1oPJtthEC4ZFNr-2",
+          "created_at": 1772047211000,
+          "author": "Anakin"
+        }
+      ]
+    },
+    {
+      "id": "prisoner-squat",
+      "name": "Prisoner Squat",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 81,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "25 prisoner squats",
+          "stripped": "Prisoner Squat",
+          "post_key": "AAAeV-0WmHpaX4FOXA59Acqa",
+          "created_at": 1778869297000,
+          "author": "Frogger"
+        },
+        {
+          "line": "2 minute AMRAP Prisoner Squat",
+          "stripped": "Prisoner Squat",
+          "post_key": "AACBogIC2oKd_mR29zJbXdoc",
+          "created_at": 1778593076000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Prisoner Squats x 13",
+          "stripped": "Prisoner Squat",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "5.) X10 prisoner squats",
+          "stripped": "Prisoner Squat",
+          "post_key": "AACmX8uXnT1x_ctakmKrU3Tx",
+          "created_at": 1776278120000,
+          "author": "Mr. Burns"
+        },
+        {
+          "line": "12 Prisoner Squats",
+          "stripped": "Prisoner Squat",
+          "post_key": "AAA62mxoXJBsiJ9w1E6sbZ6P",
+          "created_at": 1771215672000,
+          "author": "Mario"
+        }
+      ]
+    },
+    {
+      "id": "pull-up",
+      "name": "Pull-Up",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 78,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Pull ups",
+          "stripped": "Pull-Up",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "5 pull ups/15 pushups/25 squats",
+          "stripped": "Pull-Up",
+          "post_key": "AACWr0y-9Hu0c2ROs4gKSi6d",
+          "created_at": 1778511826000,
+          "author": "Evac"
+        },
+        {
+          "line": "5 pull ups",
+          "stripped": "Pull-Up",
+          "post_key": "AABSjsZlGKUR58v8v-mpEK1T",
+          "created_at": 1778002449000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "5x pull ups and run",
+          "stripped": "Pull-Up",
+          "post_key": "AADj-f5XAhXPoQm_oO3AvPVJ",
+          "created_at": 1777952277000,
+          "author": "MASH"
+        },
+        {
+          "line": "Pull ups",
+          "stripped": "Pull-Up",
+          "post_key": "AADKPHub3dIMUAoLq4XZv4AZ",
+          "created_at": 1773436200000,
+          "author": "Wemby"
+        }
+      ]
+    },
+    {
+      "id": "cindy-curl",
+      "name": "Cindy Curl",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 76,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Cindy Curls",
+          "stripped": "Cindy Curl",
+          "post_key": "AACEOoRIkC-ISpqZdKmnavqM",
+          "created_at": 1775137603000,
+          "author": "Skin Graft"
+        },
+        {
+          "line": "100 cindy curls",
+          "stripped": "Cindy Curl",
+          "post_key": "AADQuaSNNPeEcUFxLkN9Dr1p",
+          "created_at": 1774440234000,
+          "author": "Siesta"
+        },
+        {
+          "line": "100 Cindy curls",
+          "stripped": "Cindy Curl",
+          "post_key": "AAA9Up-tXtvbWAZ1oeqMVC0i",
+          "created_at": 1772166661000,
+          "author": "Judge Judy"
+        },
+        {
+          "line": "1. Cindy Curl x10",
+          "stripped": "Cindy Curl",
+          "post_key": "AAAYE0wlNPZ2B5SNCVVx51Sa",
+          "created_at": 1768312056000,
+          "author": "Hot Pants"
+        },
+        {
+          "line": "6. Cindy Curls",
+          "stripped": "Cindy Curl",
+          "post_key": "AAAhx2cGKnz_3rsftsCkyQYj",
+          "created_at": 1766496804000,
+          "author": "Whistleblower"
+        }
+      ]
+    },
+    {
+      "id": "accountability-burpees",
+      "name": "Accountability Burpees",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 74,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Accountability Burpees 10 On Q",
+          "stripped": "Accountability Burpees",
+          "post_key": "AADM-FUkigoApZi9zduBNgs4",
+          "created_at": 1778594573000,
+          "author": "Jake"
+        },
+        {
+          "line": "Accountability burpees",
+          "stripped": "Accountability Burpees",
+          "post_key": "AACWr0y-9Hu0c2ROs4gKSi6d",
+          "created_at": 1778511826000,
+          "author": "Evac"
+        },
+        {
+          "line": "Accountability burpees",
+          "stripped": "Accountability Burpees",
+          "post_key": "AADHLNKKfwvc4YuzZh6byuVT",
+          "created_at": 1777896174000,
+          "author": "Narc"
+        },
+        {
+          "line": "Accountability burpees",
+          "stripped": "Accountability Burpees",
+          "post_key": "AAA18mWu3mVCwvN3p2x_yFK7",
+          "created_at": 1775220151000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Accountability Burpees",
+          "stripped": "Accountability Burpees",
+          "post_key": "AACEOoRIkC-ISpqZdKmnavqM",
+          "created_at": 1775137603000,
+          "author": "Skin Graft"
+        }
+      ]
+    },
+    {
+      "id": "dip",
+      "name": "Dip",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 73,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Dips",
+          "stripped": "Dip",
+          "post_key": "AADvuY7-r-4bgu3zo_80bMWC",
+          "created_at": 1779277782000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Dips",
+          "stripped": "Dip",
+          "post_key": "AAAGHols2gr_t_0JkXk8rI7Q",
+          "created_at": 1778855588000,
+          "author": "Jake"
+        },
+        {
+          "line": "Cindy row, run to bench and dip 1/20, 2/19, 3/18, 4/17 . . . I don't think we finished but PAX were smokin and 8 Mile was hauling buns",
+          "stripped": "dip",
+          "post_key": "AABItBnm6cAu9QZX2ex-PiOr",
+          "created_at": 1778611640000,
+          "author": "Frodo"
+        },
+        {
+          "line": "1: Dips x20/15/10/8",
+          "stripped": "Dip",
+          "post_key": "AAA1o38-OgNcEygfHQPDyKJq",
+          "created_at": 1776344598000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Dips",
+          "stripped": "Dip",
+          "post_key": "AAAnoX8AjmuXhIvVGJm8WzZM",
+          "created_at": 1775653304000,
+          "author": "Narc"
+        }
+      ]
+    },
+    {
+      "id": "carolina-dry-docks",
+      "name": "Carolina Dry Docks",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 72,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Carolina Dry Docks",
+          "stripped": "Carolina Dry Docks",
+          "post_key": "AABAdDIkGfVfqDzblc_qTg4s",
+          "created_at": 1777290291000,
+          "author": "Elmer"
+        },
+        {
+          "line": "Carolina Dry Docks",
+          "stripped": "Carolina Dry Docks",
+          "post_key": "AACr32-JY0HCC5dqvrOnUsCs",
+          "created_at": 1775572385000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "10 Carolina Dry Docks",
+          "stripped": "Carolina Dry Docks",
+          "post_key": "AAAazeXYbn98C9FQBTeubLmc",
+          "created_at": 1775221250000,
+          "author": "LinkedIn"
+        },
+        {
+          "line": "10 Carolina Dry Docks",
+          "stripped": "Carolina Dry Docks",
+          "post_key": "AACEOoRIkC-ISpqZdKmnavqM",
+          "created_at": 1775137603000,
+          "author": "Skin Graft"
+        },
+        {
+          "line": "Carolina Dry Docks",
+          "stripped": "Carolina Dry Docks",
+          "post_key": "AADws3JUhZVPwLXgrUYfwaHp",
+          "created_at": 1774979006000,
+          "author": "Thermostat"
+        }
+      ]
+    },
+    {
+      "id": "dead-hang",
+      "name": "Dead Hang",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 71,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Dead Hang",
+          "stripped": "Dead Hang",
+          "post_key": "AAD8EOdwZZAGUJuWDNhTLyF0",
+          "created_at": 1779193732000,
+          "author": "Narc"
+        },
+        {
+          "line": "Dead hang",
+          "stripped": "Dead hang",
+          "post_key": "AABJ2MoI4bCxf1bBx8acKGjP",
+          "created_at": 1779192874000,
+          "author": "Hot Pants"
+        },
+        {
+          "line": "Dead Hang",
+          "stripped": "Dead Hang",
+          "post_key": "AAAlfDMWOtMKZEFNqJPAoWiP",
+          "created_at": 1778337347000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "dead hang 10 count",
+          "stripped": "dead hang",
+          "post_key": "AAAp5CXcmz_XL_E_PLlKhtr0",
+          "created_at": 1777894807000,
+          "author": "Mario"
+        },
+        {
+          "line": "Dead hang",
+          "stripped": "Dead hang",
+          "post_key": "AADIdGE6NShBNgBgvrJRz8cF",
+          "created_at": 1777478848000,
+          "author": "D20"
+        }
+      ]
+    },
+    {
+      "id": "cobra-pose",
+      "name": "Cobra Pose",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 70,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Cobra",
+          "stripped": "Cobra Pose",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Cobra",
+          "stripped": "Cobra Pose",
+          "post_key": "AADFkMrYHQZsqXZHEDkCHbVg",
+          "created_at": 1778155325000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Cobra",
+          "stripped": "Cobra Pose",
+          "post_key": "AACavttIbdGCNwF2uMs3bCFJ",
+          "created_at": 1776946593000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Cobra pose",
+          "stripped": "Cobra Pose",
+          "post_key": "AADRQz-zaPb0bJzm2zQ5gpFe",
+          "created_at": 1776086974000,
+          "author": "Johnny 5"
+        },
+        {
+          "line": "Cobra Pose / Child's Pose 15 seconds each",
+          "stripped": "Cobra Pose",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        }
+      ]
+    },
+    {
+      "id": "deadlift",
+      "name": "Deadlift",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 70,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Deadlifts",
+          "stripped": "Deadlift",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "10 Deadlifts",
+          "stripped": "Deadlift",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "Deadlift x 10",
+          "stripped": "Deadlift",
+          "post_key": "AAAT6O7efcZhziAPYTc7tmNG",
+          "created_at": 1778522508000,
+          "author": "D20"
+        },
+        {
+          "line": "DEADLIFTS",
+          "stripped": "Deadlift",
+          "post_key": "AAAYVofO_t-SUw8MAa4NIth_",
+          "created_at": 1777644041000,
+          "author": "Jake"
+        },
+        {
+          "line": "Deadlift 15",
+          "stripped": "Deadlift",
+          "post_key": "AADIdGE6NShBNgBgvrJRz8cF",
+          "created_at": 1777478848000,
+          "author": "D20"
+        }
+      ]
+    },
+    {
+      "id": "copperhead-merkin",
+      "name": "Copperhead Merkin",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 69,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Copperhead Merkins",
+          "stripped": "Copperhead Merkin",
+          "post_key": "AADh7MkACsCS_QQgeRqkuDs6",
+          "created_at": 1771342225000,
+          "author": "Frodo"
+        },
+        {
+          "line": "Copperhead merkins x10 IC",
+          "stripped": "Copperhead Merkin",
+          "post_key": "AABMYwIHqoNKp-kHDiKKHms-",
+          "created_at": 1765543878000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Copperhead Merkins 10",
+          "stripped": "Copperhead Merkin",
+          "post_key": "AACWqQrRRuYnH1wSoZCDnOGG",
+          "created_at": 1760028861000,
+          "author": "Mario"
+        },
+        {
+          "line": "Copperhead Merkins 10",
+          "stripped": "Copperhead Merkin",
+          "post_key": "AABY_IT2EF-IstYB1WcnwaOZ",
+          "created_at": 1759937469000,
+          "author": "Mario"
+        },
+        {
+          "line": "Copperhead Merkins",
+          "stripped": "Copperhead Merkin",
+          "post_key": "AACW-sRxmDVBK3MAlWqSsB-N",
+          "created_at": 1755271660000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "child-s-pose",
+      "name": "Child's Pose",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 67,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Childs pose",
+          "stripped": "Child's Pose",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Child's pose",
+          "stripped": "Child's pose",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "child's pose",
+          "stripped": "child's pose",
+          "post_key": "AAA9Up-tXtvbWAZ1oeqMVC0i",
+          "created_at": 1772166661000,
+          "author": "Judge Judy"
+        },
+        {
+          "line": "Child's pose",
+          "stripped": "Child's pose",
+          "post_key": "AADtnavbwspmXU_9pG_fQxH0",
+          "created_at": 1768486634000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Childs pose",
+          "stripped": "Child's Pose",
+          "post_key": "AADJFQv5hwPPphA_cjT-NVsn",
+          "created_at": 1756209315000,
+          "author": "BlueScreen (BS)"
+        }
+      ]
+    },
+    {
+      "id": "light-bulbs",
+      "name": "Light Bulbs",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 63,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Light Bulbs",
+          "stripped": "Light Bulbs",
+          "post_key": "AABitvMMgfWzzwUIs_ZakFiz",
+          "created_at": 1778772462000,
+          "author": "Jake"
+        },
+        {
+          "line": "Light bulbs",
+          "stripped": "Light Bulbs",
+          "post_key": "AABItBnm6cAu9QZX2ex-PiOr",
+          "created_at": 1778611640000,
+          "author": "Frodo"
+        },
+        {
+          "line": "Light bulbs IC x 10",
+          "stripped": "Light Bulbs",
+          "post_key": "AAB13z7tHWx9FSwcGiuvYAIs",
+          "created_at": 1776975375000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Light bulbs",
+          "stripped": "Light Bulbs",
+          "post_key": "AACavttIbdGCNwF2uMs3bCFJ",
+          "created_at": 1776946593000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Light bulbs",
+          "stripped": "Light Bulbs",
+          "post_key": "AAA2pZijkvpsxTQFMvaqim0S",
+          "created_at": 1776771844000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "double-applesauce-mosey",
+      "name": "Double Applesauce Mosey",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 63,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Double applesauce mosey/shuffle around the quarter mile loop stopping at the exercise area to perform Clock merkins on the Curb.",
+          "stripped": "Double Applesauce Mosey",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Double applesauce mosey/shuffle back to flags stopping on stairs to perform 30 Calf raises.",
+          "stripped": "Double Applesauce Mosey",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and double applesauce mosey/shuffle toward Amphitheater",
+          "stripped": "Double Applesauce Mosey",
+          "post_key": "AABtGD02QXFHMp2o5B2IY3JU",
+          "created_at": 1775824316000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and double applesauce mosey/shuffle to Amphitheater",
+          "stripped": "Double Applesauce Mosey",
+          "post_key": "AABtGD02QXFHMp2o5B2IY3JU",
+          "created_at": 1775824316000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and double applesauce mosey/shuffle the quarter mile loop to playground parking area.",
+          "stripped": "Double Applesauce Mosey",
+          "post_key": "AAA18mWu3mVCwvN3p2x_yFK7",
+          "created_at": 1775220151000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "flamingos",
+      "name": "Flamingos",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 62,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Flamingos",
+          "stripped": "Flamingos",
+          "post_key": "AAA5upPQiYmdme1Y6KWcnRZg",
+          "created_at": 1778241949000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Flamingos",
+          "stripped": "Flamingos",
+          "post_key": "AADQAC9hRTriAo3opf9Aakq7",
+          "created_at": 1776775038000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "Flamingos x 10",
+          "stripped": "Flamingos",
+          "post_key": "AADcBpPacIiNdaM_8sTs2OOL",
+          "created_at": 1774210264000,
+          "author": "Delta Blues (DB)"
+        },
+        {
+          "line": "Flamingos",
+          "stripped": "Flamingos",
+          "post_key": "AAB9fGo1Zm9iCaOq5v9wf8oB",
+          "created_at": 1772901360000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "Flamingos",
+          "stripped": "Flamingos",
+          "post_key": "AACWvpC8jl7egc_wCajHmBlJ",
+          "created_at": 1772806055000,
+          "author": "Webelo"
+        }
+      ]
+    },
+    {
+      "id": "broga",
+      "name": "Broga",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 58,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Broga (5 min.)",
+          "stripped": "Broga",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Broga/Stretch",
+          "stripped": "Broga",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "Broga",
+          "stripped": "Broga",
+          "post_key": "AACcVPuU8hkP4yLAivRwddgU",
+          "created_at": 1774651799000,
+          "author": "Hippo"
+        },
+        {
+          "line": "Broga",
+          "stripped": "Broga",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Broga",
+          "stripped": "Broga",
+          "post_key": "AACocXMVfGTiMGcQyqGwovmX",
+          "created_at": 1771532802000,
+          "author": "Elmer"
+        }
+      ]
+    },
+    {
+      "id": "prom-nights",
+      "name": "Prom Nights",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 58,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Prom nights x10",
+          "stripped": "Prom Nights",
+          "post_key": "AAD0t8YhO4WWCSruvn-QoB5_",
+          "created_at": 1777407706000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Prom Nights x 18",
+          "stripped": "Prom Nights",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "Prom nights x10",
+          "stripped": "Prom Nights",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "prom nights",
+          "stripped": "Prom Nights",
+          "post_key": "AADpGwen9fKWZCY2QIAyvfRo",
+          "created_at": 1775741662000,
+          "author": "Siesta"
+        },
+        {
+          "line": "1min prom.nights",
+          "stripped": "Prom Nights",
+          "post_key": "AAAmJi2V3GMh49lHKlh_0vt2",
+          "created_at": 1775004988000,
+          "author": "TonyHawk"
+        }
+      ]
+    },
+    {
+      "id": "mile-run",
+      "name": "Mile Run",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 56,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "1 mile run",
+          "stripped": "Mile Run",
+          "post_key": "AAAUMyvU-J4_6D1HvmW4qO1X",
+          "created_at": 1776684526000,
+          "author": "Elmer"
+        },
+        {
+          "line": "1 mile run",
+          "stripped": "Mile Run",
+          "post_key": "AACrUtk21YPof1SxtnORFtGK",
+          "created_at": 1775603894000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Cuarto dos (oyo): 25 Merkins, 25 BBSUs, 1/4 mile run",
+          "stripped": "Mile Run",
+          "post_key": "AACz-Z4DBmm7QnyZsJe9BohI",
+          "created_at": 1770298045000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "Cuarto tres (oyo): 25 Merkins, 25 BBSUs, 1/4 mile run",
+          "stripped": "Mile Run",
+          "post_key": "AACz-Z4DBmm7QnyZsJe9BohI",
+          "created_at": 1770298045000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "Cuarto cuatro (oyo): 25 Merkins, 25 BBSUs, 1/4 mile run",
+          "stripped": "Mile Run",
+          "post_key": "AACz-Z4DBmm7QnyZsJe9BohI",
+          "created_at": 1770298045000,
+          "author": "Cuatro"
+        }
+      ]
+    },
+    {
+      "id": "box-cutter",
+      "name": "Box Cutter",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 56,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Box cutters",
+          "stripped": "Box Cutter",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Box cutters",
+          "stripped": "Box Cutter",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Box cutters",
+          "stripped": "Box Cutter",
+          "post_key": "AAAnoX8AjmuXhIvVGJm8WzZM",
+          "created_at": 1775653304000,
+          "author": "Narc"
+        },
+        {
+          "line": "Box cutters",
+          "stripped": "Box Cutter",
+          "post_key": "AADmsGdOsZqQxeB7t1ldpNy_",
+          "created_at": 1775130481000,
+          "author": "Narc"
+        },
+        {
+          "line": "6 box cutters",
+          "stripped": "Box Cutter",
+          "post_key": "AABPdamC1ZDxllKCHQqwvR55",
+          "created_at": 1774997583000,
+          "author": "Tinkerbell"
+        }
+      ]
+    },
+    {
+      "id": "concrete-ticklers",
+      "name": "Concrete Ticklers",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 54,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Concrete ticklers",
+          "stripped": "Concrete Ticklers",
+          "post_key": "AABJ2MoI4bCxf1bBx8acKGjP",
+          "created_at": 1779192874000,
+          "author": "Hot Pants"
+        },
+        {
+          "line": "Concrete ticklers",
+          "stripped": "Concrete Ticklers",
+          "post_key": "AAC0gevXlVdqHZD32Ga4Wnbw",
+          "created_at": 1778762395000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Concrete Ticklers",
+          "stripped": "Concrete Ticklers",
+          "post_key": "AAAlfDMWOtMKZEFNqJPAoWiP",
+          "created_at": 1778337347000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "Concrete ticklers",
+          "stripped": "Concrete Ticklers",
+          "post_key": "AADuQbdTIKw7NGluA8gRDmAc",
+          "created_at": 1778156438000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Concrete ticklers",
+          "stripped": "Concrete Ticklers",
+          "post_key": "AABGfluEls0h5HQO3fCdiPe1",
+          "created_at": 1777034708000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "little-baby-crunches",
+      "name": "Little Baby Crunches",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 54,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Little baby crunches",
+          "stripped": "Little Baby Crunches",
+          "post_key": "AACavttIbdGCNwF2uMs3bCFJ",
+          "created_at": 1776946593000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Little baby crunches AMRAP",
+          "stripped": "Little Baby Crunches",
+          "post_key": "AAB1FgNdar3Ni6WmpREG0iCL",
+          "created_at": 1776944767000,
+          "author": "Gunpoint"
+        },
+        {
+          "line": "20 little baby crunches",
+          "stripped": "Little Baby Crunches",
+          "post_key": "AABPdamC1ZDxllKCHQqwvR55",
+          "created_at": 1774997583000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "7 little baby crunches",
+          "stripped": "Little Baby Crunches",
+          "post_key": "AAAvmbf5OqEddDbCMWKFpSLj",
+          "created_at": 1771342223000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "little baby crunches",
+          "stripped": "Little Baby Crunches",
+          "post_key": "AAC5eht59cX5r9OZDmdpKTp7",
+          "created_at": 1770129835000,
+          "author": "Mudder"
+        }
+      ]
+    },
+    {
+      "id": "fire-hydrants",
+      "name": "Fire Hydrants",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 53,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Fire hydrants",
+          "stripped": "Fire Hydrants",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Fire hydrants",
+          "stripped": "Fire Hydrants",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Fire hydrants",
+          "stripped": "Fire Hydrants",
+          "post_key": "AABI_NB_eVr-iDmL5KhtS6yc",
+          "created_at": 1775917390000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "3 Fire Hydrants",
+          "stripped": "Fire Hydrants",
+          "post_key": "AAAbLQ-dyoKZicAxVu8zIaVg",
+          "created_at": 1772908647000,
+          "author": "Gunpoint"
+        },
+        {
+          "line": "Fire hydrants",
+          "stripped": "Fire Hydrants",
+          "post_key": "AADLGUxXERaYPVoHt9GHE8lz",
+          "created_at": 1771940934000,
+          "author": "Werner"
+        }
+      ]
+    },
+    {
+      "id": "heels-to-heaven",
+      "name": "Heels to Heaven",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 51,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Heels to heaven x15",
+          "stripped": "Heels to Heaven",
+          "post_key": "AAAT6O7efcZhziAPYTc7tmNG",
+          "created_at": 1778522508000,
+          "author": "D20"
+        },
+        {
+          "line": "9 Heels to Heaven",
+          "stripped": "Heels to Heaven",
+          "post_key": "AABKCbm9yYE1NqwSOZq5t7jF",
+          "created_at": 1778166721000,
+          "author": "Victory Lap"
+        },
+        {
+          "line": "Heels to Heaven",
+          "stripped": "Heels to Heaven",
+          "post_key": "AAC-1Gp0hTPv3Zq9K7V_qmD8",
+          "created_at": 1773455083000,
+          "author": "D20"
+        },
+        {
+          "line": "6. Heels to Heaven",
+          "stripped": "Heels to Heaven",
+          "post_key": "AACnzvsdfGA-RerwZK1ZY8HC",
+          "created_at": 1771262833000,
+          "author": "Freedom"
+        },
+        {
+          "line": "6. Heels to Heaven",
+          "stripped": "Heels to Heaven",
+          "post_key": "AACNPKuu5W0VzV5bsWZjwr6-",
+          "created_at": 1764085606000,
+          "author": "Freedom"
+        }
+      ]
+    },
+    {
+      "id": "squat-jump",
+      "name": "Squat Jump",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 51,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Squat Jumps",
+          "stripped": "Squat Jump",
+          "post_key": "AAABiU8l-jqtY3JLSSxfUI5y",
+          "created_at": 1777757615000,
+          "author": "Wiretap"
+        },
+        {
+          "line": "4 Squat Jumps",
+          "stripped": "Squat Jump",
+          "post_key": "AAChmJddlpz-pNEoM5EsDfh0",
+          "created_at": 1776258368000,
+          "author": "Bareback"
+        },
+        {
+          "line": "Squat jump",
+          "stripped": "Squat jump",
+          "post_key": "AADiAPOWXvFpI9YtsejKLCiv",
+          "created_at": 1776169857000,
+          "author": "Xena"
+        },
+        {
+          "line": "5 Squat Jumps",
+          "stripped": "Squat Jump",
+          "post_key": "AADr6E_NKMtb1CnUi2uy2Kzb",
+          "created_at": 1772817091000,
+          "author": "Xena"
+        },
+        {
+          "line": "10 Squat Jumps",
+          "stripped": "Squat Jump",
+          "post_key": "AADr6E_NKMtb1CnUi2uy2Kzb",
+          "created_at": 1772817091000,
+          "author": "Xena"
+        }
+      ]
+    },
+    {
+      "id": "monkey-humper",
+      "name": "Monkey Humper",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 51,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Monkey Humpers",
+          "stripped": "Monkey Humper",
+          "post_key": "AAD1XahU5qndpTr6gl_VLgYY",
+          "created_at": 1772544791000,
+          "author": "Hot Pants"
+        },
+        {
+          "line": "Monkey humpers",
+          "stripped": "Monkey Humper",
+          "post_key": "AAA6myq2W06zT0eiuTcxSHlA",
+          "created_at": 1771447686000,
+          "author": "Search Party"
+        },
+        {
+          "line": "1. Monkey Humpers",
+          "stripped": "Monkey Humper",
+          "post_key": "AADkjw11I1tujV72HWj69lhm",
+          "created_at": 1770238746000,
+          "author": "Babel"
+        },
+        {
+          "line": "20 monkey humpers",
+          "stripped": "Monkey Humper",
+          "post_key": "AAC2AYqRoQoOMpRaD3x3h4Ru",
+          "created_at": 1768395015000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "Monkey Humpers IC 10",
+          "stripped": "Monkey Humper",
+          "post_key": "AACwRSE1qlZA_jj8vmeIt1o8",
+          "created_at": 1768330946000,
+          "author": "Anakin"
+        }
+      ]
+    },
+    {
+      "id": "cindy-squat",
+      "name": "Cindy Squat",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 50,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "3. Cindy squats x 12",
+          "stripped": "Cindy Squat",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "CINDY SQUATS",
+          "stripped": "Cindy Squat",
+          "post_key": "AACdlKy3MxQJ5k9n7P1R7ORl",
+          "created_at": 1778681785000,
+          "author": "Jake"
+        },
+        {
+          "line": "CINDY SQUATS",
+          "stripped": "Cindy Squat",
+          "post_key": "AAA6MuqpI8q5owPloTEKq-0R",
+          "created_at": 1778173272000,
+          "author": "Jake"
+        },
+        {
+          "line": "10 x Cindy Squat",
+          "stripped": "Cindy Squat",
+          "post_key": "AADBBdb5XgUqBMoVXMs3SnJS",
+          "created_at": 1774901938000,
+          "author": "TropicThunder"
+        },
+        {
+          "line": "15 Cindy squats",
+          "stripped": "Cindy Squat",
+          "post_key": "AACERwZ-WbWU0jNxmB9lEyhA",
+          "created_at": 1772573731000,
+          "author": "GridLock"
+        }
+      ]
+    },
+    {
+      "id": "v-up",
+      "name": "V-Up",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 50,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 pace run and 10 V Ups",
+          "stripped": "V-Up",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "10 V Ups",
+          "stripped": "V-Up",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "V Ups x15 on Q",
+          "stripped": "V-Up",
+          "post_key": "AAAGxNOQl3riFgjwRSpxTAes",
+          "created_at": 1777144602000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "V Ups",
+          "stripped": "V-Up",
+          "post_key": "AAAWmAdiBoaO4OxzWKMifHq5",
+          "created_at": 1776522210000,
+          "author": "LinkedIn"
+        },
+        {
+          "line": "10 V Ups",
+          "stripped": "V-Up",
+          "post_key": "AAABxt1Avf5pK1erKXWtKbER",
+          "created_at": 1776171082000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "goblet-squat",
+      "name": "Goblet Squat",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 50,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Goblet Squats x 18",
+          "stripped": "Goblet Squat",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "Goblet squats",
+          "stripped": "Goblet Squat",
+          "post_key": "AABVYvcjhb0vxAfF19JRnXXh",
+          "created_at": 1776772599000,
+          "author": "Squatter"
+        },
+        {
+          "line": "6. Goblet Squats",
+          "stripped": "Goblet Squat",
+          "post_key": "AAA2pZijkvpsxTQFMvaqim0S",
+          "created_at": 1776771844000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "6 goblet squats",
+          "stripped": "Goblet Squat",
+          "post_key": "AAAYMBnPv5HaQsy2lUhKI8Cp",
+          "created_at": 1772544153000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "200 goblet squats",
+          "stripped": "Goblet Squat",
+          "post_key": "AAA9Up-tXtvbWAZ1oeqMVC0i",
+          "created_at": 1772166661000,
+          "author": "Judge Judy"
+        }
+      ]
+    },
+    {
+      "id": "cindy-press",
+      "name": "Cindy Press",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 49,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "15 Cindy press",
+          "stripped": "Cindy Press",
+          "post_key": "AABSjsZlGKUR58v8v-mpEK1T",
+          "created_at": 1778002449000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "10 x Cindy Press",
+          "stripped": "Cindy Press",
+          "post_key": "AADBBdb5XgUqBMoVXMs3SnJS",
+          "created_at": 1774901938000,
+          "author": "TropicThunder"
+        },
+        {
+          "line": "Cindy Press",
+          "stripped": "Cindy Press",
+          "post_key": "AABvOCxJq4A3Ns1qPBHqldMh",
+          "created_at": 1767973297000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "11 cindy press",
+          "stripped": "Cindy Press",
+          "post_key": "AACBv_ZqWTCIp3IID7rDSx86",
+          "created_at": 1764856565000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "Cindy Press",
+          "stripped": "Cindy Press",
+          "post_key": "AAAp4mk6yU2HouGMUKKAS1op",
+          "created_at": 1762864948000,
+          "author": "Rawhide"
+        }
+      ]
+    },
+    {
+      "id": "catalina-wine-mixer",
+      "name": "Catalina Wine Mixer",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 48,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Catalina wine Mixers",
+          "stripped": "Catalina Wine Mixer",
+          "post_key": "AABVYvcjhb0vxAfF19JRnXXh",
+          "created_at": 1776772599000,
+          "author": "Squatter"
+        },
+        {
+          "line": "10 Catalina Wine Mixers",
+          "stripped": "Catalina Wine Mixer",
+          "post_key": "AACEOoRIkC-ISpqZdKmnavqM",
+          "created_at": 1775137603000,
+          "author": "Skin Graft"
+        },
+        {
+          "line": "30 seconds Catalina Wine Mixer",
+          "stripped": "Catalina Wine Mixer",
+          "post_key": "AACNF0lfJ9xTaESPH-svJYI-",
+          "created_at": 1775078782000,
+          "author": "Acme"
+        },
+        {
+          "line": "Catalina Wine Mixer",
+          "stripped": "Catalina Wine Mixer",
+          "post_key": "AAAbQRkp1oPJtthEC4ZFNr-2",
+          "created_at": 1772047211000,
+          "author": "Anakin"
+        },
+        {
+          "line": "10 Catalina wine mixers",
+          "stripped": "Catalina Wine Mixer",
+          "post_key": "AADtnavbwspmXU_9pG_fQxH0",
+          "created_at": 1768486634000,
+          "author": "Lt Dangle"
+        }
+      ]
+    },
+    {
+      "id": "cat-cow",
+      "name": "Cat-Cow",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 48,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Cat cow",
+          "stripped": "Cat-Cow",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Cat/Cow 15 seconds each",
+          "stripped": "Cat-Cow",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Cat/cow some cadence",
+          "stripped": "Cat-Cow",
+          "post_key": "AADmpoBw3idqmVa83enzGQje",
+          "created_at": 1772150349000,
+          "author": "Frodo"
+        },
+        {
+          "line": "Cat/Cow (onQ) 10 count",
+          "stripped": "Cat-Cow",
+          "post_key": "AAB9x5pw48Je-YN_IB6UwxOe",
+          "created_at": 1770390896000,
+          "author": "Hector"
+        },
+        {
+          "line": "Cat/Cow",
+          "stripped": "Cat-Cow",
+          "post_key": "AAC5EjEYNMBuq_ZndtQfBc9d",
+          "created_at": 1768308037000,
+          "author": "Cowbell"
+        }
+      ]
+    },
+    {
+      "id": "incline-merkin",
+      "name": "Incline Merkin",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 47,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Incline merkins",
+          "stripped": "Incline Merkin",
+          "post_key": "AADQx2-IpLNrvLYhoJsqFI-l",
+          "created_at": 1779279534000,
+          "author": "Narc"
+        },
+        {
+          "line": "PAX 2 10 dips & 10 incline merkins",
+          "stripped": "Incline Merkin",
+          "post_key": "AAB13z7tHWx9FSwcGiuvYAIs",
+          "created_at": 1776975375000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Incline merkin",
+          "stripped": "Incline merkin",
+          "post_key": "AAAnoX8AjmuXhIvVGJm8WzZM",
+          "created_at": 1775653304000,
+          "author": "Narc"
+        },
+        {
+          "line": "Incline Merkins",
+          "stripped": "Incline Merkin",
+          "post_key": "AACr32-JY0HCC5dqvrOnUsCs",
+          "created_at": 1775572385000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Incline merkin",
+          "stripped": "Incline merkin",
+          "post_key": "AADmsGdOsZqQxeB7t1ldpNy_",
+          "created_at": 1775130481000,
+          "author": "Narc"
+        }
+      ]
+    },
+    {
+      "id": "saloon-doors",
+      "name": "Saloon Doors",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 44,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Saloon Doors x 10 IC",
+          "stripped": "Saloon Doors",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "Saloon doors x10 IC",
+          "stripped": "Saloon Doors",
+          "post_key": "AAC-fGKQvx96bRoXzpoxX3Es",
+          "created_at": 1775827697000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Saloon doors x10 IC",
+          "stripped": "Saloon Doors",
+          "post_key": "AADkjw11I1tujV72HWj69lhm",
+          "created_at": 1770238746000,
+          "author": "Babel"
+        },
+        {
+          "line": "Saloon doors x10",
+          "stripped": "Saloon Doors",
+          "post_key": "AAAyY00a0s99ULiImEJJAUhb",
+          "created_at": 1767971805000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Saloon doors x10 IC",
+          "stripped": "Saloon Doors",
+          "post_key": "AABMYwIHqoNKp-kHDiKKHms-",
+          "created_at": 1765543878000,
+          "author": "Lt Dangle"
+        }
+      ]
+    },
+    {
+      "id": "civil-wars",
+      "name": "Civil Wars",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 44,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "1min civil wars",
+          "stripped": "Civil Wars",
+          "post_key": "AAAmJi2V3GMh49lHKlh_0vt2",
+          "created_at": 1775004988000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "60 civil wars",
+          "stripped": "Civil Wars",
+          "post_key": "AAAyY00a0s99ULiImEJJAUhb",
+          "created_at": 1767971805000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "50 civil wars",
+          "stripped": "Civil Wars",
+          "post_key": "AAAyY00a0s99ULiImEJJAUhb",
+          "created_at": 1767971805000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "40 civil wars",
+          "stripped": "Civil Wars",
+          "post_key": "AAAyY00a0s99ULiImEJJAUhb",
+          "created_at": 1767971805000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "7. Civil Wars",
+          "stripped": "Civil Wars",
+          "post_key": "AAAGJ1O9NTBUjYUGrHvwrJ0X",
+          "created_at": 1764597645000,
+          "author": "BlueScreen (BS)"
+        }
+      ]
+    },
+    {
+      "id": "blockees",
+      "name": "Blockees",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 41,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "1. Blockees x 7",
+          "stripped": "Blockees",
+          "post_key": "AABrCEHrfxjcUVbxSzdPGbqK",
+          "created_at": 1779285595000,
+          "author": "Floss’in"
+        },
+        {
+          "line": "10 blockees",
+          "stripped": "Blockees",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        },
+        {
+          "line": "10 blockees",
+          "stripped": "Blockees",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        },
+        {
+          "line": "10 blockees",
+          "stripped": "Blockees",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        },
+        {
+          "line": "10 blockees",
+          "stripped": "Blockees",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        }
+      ]
+    },
+    {
+      "id": "happy-baby",
+      "name": "Happy Baby",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 41,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Happy Baby",
+          "stripped": "Happy Baby",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Happy Baby",
+          "stripped": "Happy Baby",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Happy Baby",
+          "stripped": "Happy Baby",
+          "post_key": "AABPdamC1ZDxllKCHQqwvR55",
+          "created_at": 1774997583000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Happy Baby",
+          "stripped": "Happy Baby",
+          "post_key": "AAAvmbf5OqEddDbCMWKFpSLj",
+          "created_at": 1771342223000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Happy Baby",
+          "stripped": "Happy Baby",
+          "post_key": "AAC5EjEYNMBuq_ZndtQfBc9d",
+          "created_at": 1768308037000,
+          "author": "Cowbell"
+        }
+      ]
+    },
+    {
+      "id": "bobby-hurley",
+      "name": "Bobby Hurley",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 39,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "15 Bobby Hurleys",
+          "stripped": "Bobby Hurley",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "40 Bobby Hurley",
+          "stripped": "Bobby Hurley",
+          "post_key": "AAD3XA8rQKntp9FwCkZ9MUiy",
+          "created_at": 1776432830000,
+          "author": "O-Ring"
+        },
+        {
+          "line": "40 Bobby Hurley",
+          "stripped": "Bobby Hurley",
+          "post_key": "AAD3XA8rQKntp9FwCkZ9MUiy",
+          "created_at": 1776432830000,
+          "author": "O-Ring"
+        },
+        {
+          "line": "D) 10 Apolo Ohno (2 is 1) / 10 Bobby Hurley",
+          "stripped": "Bobby Hurley",
+          "post_key": "AACmX8uXnT1x_ctakmKrU3Tx",
+          "created_at": 1776278120000,
+          "author": "Mr. Burns"
+        },
+        {
+          "line": "20 Bobby hurleys",
+          "stripped": "Bobby Hurley",
+          "post_key": "AAC-fGKQvx96bRoXzpoxX3Es",
+          "created_at": 1775827697000,
+          "author": "Lt Dangle"
+        }
+      ]
+    },
+    {
+      "id": "penguins",
+      "name": "Penguins",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 39,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "7 Penguins",
+          "stripped": "Penguins",
+          "post_key": "AABKCbm9yYE1NqwSOZq5t7jF",
+          "created_at": 1778166721000,
+          "author": "Victory Lap"
+        },
+        {
+          "line": "Penguins and BBSU on \"Insane\"",
+          "stripped": "Penguins",
+          "post_key": "AAD4nnWVhjcPn1VM571YvSkZ",
+          "created_at": 1777991720000,
+          "author": "Jake"
+        },
+        {
+          "line": "Penguins and BBSU on \"Insane\"",
+          "stripped": "Penguins",
+          "post_key": "AABsG1Cz9cu6I2NAzW4JCuBf",
+          "created_at": 1775137472000,
+          "author": "Jake"
+        },
+        {
+          "line": "Penguins",
+          "stripped": "Penguins",
+          "post_key": "AADDWs86jHBF6UQNRj0lqCLc",
+          "created_at": 1773937776000,
+          "author": "Eraser"
+        },
+        {
+          "line": "Penguins x15 IC",
+          "stripped": "Penguins",
+          "post_key": "AACBkUa1ifZcdKd_QtkG7NvQ",
+          "created_at": 1770394517000,
+          "author": "Lt Dangle"
+        }
+      ]
+    },
+    {
+      "id": "nolan-ryan",
+      "name": "Nolan Ryan",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 39,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Nolan Ryan",
+          "stripped": "Nolan Ryan",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Nolan Ryan",
+          "stripped": "Nolan Ryan",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Nolan Ryan",
+          "stripped": "Nolan Ryan",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Nolan Ryan",
+          "stripped": "Nolan Ryan",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Nolan Ryan",
+          "stripped": "Nolan Ryan",
+          "post_key": "AACUhKcuK4nn4HF_f8ELzxph",
+          "created_at": 1768398871000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "step-up",
+      "name": "Step-Up",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 38,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "20 Box Jumps / Step Ups",
+          "stripped": "Step-Up",
+          "post_key": "AABAdDIkGfVfqDzblc_qTg4s",
+          "created_at": 1777290291000,
+          "author": "Elmer"
+        },
+        {
+          "line": "15 Box Jumps / Step Ups",
+          "stripped": "Step-Up",
+          "post_key": "AABAdDIkGfVfqDzblc_qTg4s",
+          "created_at": 1777290291000,
+          "author": "Elmer"
+        },
+        {
+          "line": "15 Box Jumps / Step Ups",
+          "stripped": "Step-Up",
+          "post_key": "AABAdDIkGfVfqDzblc_qTg4s",
+          "created_at": 1777290291000,
+          "author": "Elmer"
+        },
+        {
+          "line": "Step Ups x 18",
+          "stripped": "Step-Up",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "step ups",
+          "stripped": "Step-Up",
+          "post_key": "AADpGwen9fKWZCY2QIAyvfRo",
+          "created_at": 1775741662000,
+          "author": "Siesta"
+        }
+      ]
+    },
+    {
+      "id": "jump-squat",
+      "name": "Jump Squat",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 38,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "15 Jump Squats",
+          "stripped": "Jump Squat",
+          "post_key": "AABAdDIkGfVfqDzblc_qTg4s",
+          "created_at": 1777290291000,
+          "author": "Elmer"
+        },
+        {
+          "line": "Jump squats x 18",
+          "stripped": "Jump Squat",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "30 seconds jump squats",
+          "stripped": "Jump Squat",
+          "post_key": "AACNF0lfJ9xTaESPH-svJYI-",
+          "created_at": 1775078782000,
+          "author": "Acme"
+        },
+        {
+          "line": "Jump Squats x 10",
+          "stripped": "Jump Squat",
+          "post_key": "AACx0VLHdAQcL1CN5GrCp2-O",
+          "created_at": 1775002223000,
+          "author": "Asiago"
+        },
+        {
+          "line": "Jump Squats",
+          "stripped": "Jump Squat",
+          "post_key": "AACOSLyafhaw8o4_tGPM64Br",
+          "created_at": 1774360998000,
+          "author": "Dial-up"
+        }
+      ]
+    },
+    {
+      "id": "imperial-squat-walker",
+      "name": "Imperial Squat Walker",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 37,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Imperial squat walkers",
+          "stripped": "Imperial Squat Walker",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "IMPERIAL SQUAT WALKERS",
+          "stripped": "Imperial Squat Walker",
+          "post_key": "AAABFtOyxkbEFTuM0iG70IBk",
+          "created_at": 1778334617000,
+          "author": "Jake"
+        },
+        {
+          "line": "Imperial squat walkers x13",
+          "stripped": "Imperial Squat Walker",
+          "post_key": "AACCApzRd5fOmtQYCXyhIfst",
+          "created_at": 1776951012000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Imperial Squat Walkers IC x7",
+          "stripped": "Imperial Squat Walker",
+          "post_key": "AABlBVW8eBVRyH4jdyZxpQhs",
+          "created_at": 1775332040000,
+          "author": "Search Party"
+        },
+        {
+          "line": "Imperial squat walkers x10",
+          "stripped": "Imperial Squat Walker",
+          "post_key": "AAAr3h-qIsQwv8d0HajBu4BZ",
+          "created_at": 1772209827000,
+          "author": "Tinkerbell"
+        }
+      ]
+    },
+    {
+      "id": "aussie-snow-angel",
+      "name": "Aussie Snow Angel",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 36,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Aussie Snow Angels",
+          "stripped": "Aussie Snow Angel",
+          "post_key": "AAD4nnWVhjcPn1VM571YvSkZ",
+          "created_at": 1777991720000,
+          "author": "Jake"
+        },
+        {
+          "line": "Aussie Snow Angels",
+          "stripped": "Aussie Snow Angel",
+          "post_key": "AABsG1Cz9cu6I2NAzW4JCuBf",
+          "created_at": 1775137472000,
+          "author": "Jake"
+        },
+        {
+          "line": "Aussie snow angels x15 IC",
+          "stripped": "Aussie Snow Angel",
+          "post_key": "AAAFJomnm4tU_nfK0YJENe8v",
+          "created_at": 1762526144000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Aussie Snow Angels IC x 10",
+          "stripped": "Aussie Snow Angel",
+          "post_key": "AADQr7uaM3Eq8wOv3wSwLF_j",
+          "created_at": 1761139161000,
+          "author": "Anakin"
+        },
+        {
+          "line": "AUSSIE SNOW ANGELS FOR THE 6",
+          "stripped": "Aussie Snow Angel",
+          "post_key": "AADSnEDhHPFRMQv0CUql9w94",
+          "created_at": 1761070474000,
+          "author": "Squatter"
+        }
+      ]
+    },
+    {
+      "id": "row",
+      "name": "Row",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 35,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "25 Rows",
+          "stripped": "Row",
+          "post_key": "AAC4UbsPJRpjBEPeh3fpeHV_",
+          "created_at": 1776339122000,
+          "author": "Mario"
+        },
+        {
+          "line": "10 rows",
+          "stripped": "Row",
+          "post_key": "AABMfRf8vdwKQ3VcvxH-uBDn",
+          "created_at": 1775306803000,
+          "author": "Stoner"
+        },
+        {
+          "line": "1 min rows 2",
+          "stripped": "Row",
+          "post_key": "AAAmLe-p37YtuZPJLrTUwgR9",
+          "created_at": 1773750263000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Rows x5",
+          "stripped": "Row",
+          "post_key": "AAA1nmLpua7LUgDoBUQI4fn8",
+          "created_at": 1767275622000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rows x15",
+          "stripped": "Row",
+          "post_key": "AAA1nmLpua7LUgDoBUQI4fn8",
+          "created_at": 1767275622000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "big-baby-arm-circles",
+      "name": "Big Baby Arm Circles",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 33,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Big baby arm circles",
+          "stripped": "Big Baby Arm Circles",
+          "post_key": "AAA_YT02b7h_Qesj0J0u9ZP5",
+          "created_at": 1779196492000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Big baby arm circles",
+          "stripped": "Big Baby Arm Circles",
+          "post_key": "AACvDjVEXvxr8WWEaIIXaw-3",
+          "created_at": 1767811239000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Big baby arm circles",
+          "stripped": "Big Baby Arm Circles",
+          "post_key": "AABU98kXEkpOIiaMhdfOQHqj",
+          "created_at": 1765894127000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Big baby arm circles",
+          "stripped": "Big Baby Arm Circles",
+          "post_key": "AAD7K1wORjHbZKtMMN-ZgWMg",
+          "created_at": 1764082527000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Big Baby Arm circles",
+          "stripped": "Big Baby Arm Circles",
+          "post_key": "AACPuiWN4lMwjv7SlZbJLbR5",
+          "created_at": 1762785114000,
+          "author": "MASH"
+        }
+      ]
+    },
+    {
+      "id": "bear-crawl",
+      "name": "Bear Crawl",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 33,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "(2 sets) 10 prisoner squats / Bear crawl / 10 mounting climbers (2 is1)",
+          "stripped": "Bear Crawl",
+          "post_key": "AAAiEZiuSzKTqzncLcRpfqop",
+          "created_at": 1777478084000,
+          "author": "Mr. Burns"
+        },
+        {
+          "line": "Bear Crawl",
+          "stripped": "Bear Crawl",
+          "post_key": "AAChmJddlpz-pNEoM5EsDfh0",
+          "created_at": 1776258368000,
+          "author": "Bareback"
+        },
+        {
+          "line": "Bear crawl/crawl bear",
+          "stripped": "Bear Crawl",
+          "post_key": "AADIscZNtSa_meQJ6NkmJLFG",
+          "created_at": 1775483099000,
+          "author": "Cobbler"
+        },
+        {
+          "line": "6)bear crawl 1/2 way",
+          "stripped": "Bear Crawl",
+          "post_key": "AAD98gGIpUrv5HCynGx-5nuc",
+          "created_at": 1773844462000,
+          "author": "Wolfie"
+        },
+        {
+          "line": "11)bear crawl",
+          "stripped": "Bear Crawl",
+          "post_key": "AAD98gGIpUrv5HCynGx-5nuc",
+          "created_at": 1773844462000,
+          "author": "Wolfie"
+        }
+      ]
+    },
+    {
+      "id": "low-plank",
+      "name": "Low Plank",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 33,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Low plank and alternate leg raise",
+          "stripped": "Low Plank",
+          "post_key": "AACcVPuU8hkP4yLAivRwddgU",
+          "created_at": 1774651799000,
+          "author": "Hippo"
+        },
+        {
+          "line": "Pull ups negatives at max / low plank",
+          "stripped": "Low Plank",
+          "post_key": "AABqBz0pJR5ib-QnFjKi-KHQ",
+          "created_at": 1758073319000,
+          "author": "Fertile"
+        },
+        {
+          "line": "Low plank for the 6",
+          "stripped": "Low Plank",
+          "post_key": "AAA3OfV3xLXAn7v1YBsW4OuP",
+          "created_at": 1757447771000,
+          "author": "Webelo"
+        },
+        {
+          "line": "low plank",
+          "stripped": "Low Plank",
+          "post_key": "AAB4DObRkozqDbYdUdZGDVmz",
+          "created_at": 1755603542000,
+          "author": "Elmer"
+        },
+        {
+          "line": "Round 4 Tennis Court Loop and Low Plank",
+          "stripped": "Low Plank",
+          "post_key": "AACH-fyjJ4cSc4RGqNqrGOWC",
+          "created_at": 1752767592000,
+          "author": "Dealer"
+        }
+      ]
+    },
+    {
+      "id": "cindy-bench-press",
+      "name": "Cindy Bench Press",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 33,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Cindy Bench Press 12 reps",
+          "stripped": "Cindy Bench Press",
+          "post_key": "AABwros267E2KzZ6ZPDg-1lt",
+          "created_at": 1772769611000,
+          "author": "K-Pop"
+        },
+        {
+          "line": "Cindy Bench Press",
+          "stripped": "Cindy Bench Press",
+          "post_key": "AAA9wbE-uD9zD-BXz6RDHE7-",
+          "created_at": 1767362314000,
+          "author": "Jake"
+        },
+        {
+          "line": "Cindy Bench Press",
+          "stripped": "Cindy Bench Press",
+          "post_key": "AADdoFDjRIOVQHhSaSHdnRpn",
+          "created_at": 1766069325000,
+          "author": "Jake"
+        },
+        {
+          "line": "15 Cindy Bench Press",
+          "stripped": "Cindy Bench Press",
+          "post_key": "AAD5yGFVU-Lyq8ns8KO723yC",
+          "created_at": 1765295663000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Cindy Bench Press",
+          "stripped": "Cindy Bench Press",
+          "post_key": "AACUyAIAAIpsv6autopCw9i7",
+          "created_at": 1763649020000,
+          "author": "Cobbler"
+        }
+      ]
+    },
+    {
+      "id": "hello-dolly",
+      "name": "Hello Dolly",
+      "aliases": [],
+      "category": "core",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 33,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Hello Dolly x 20 IC",
+          "stripped": "Hello Dolly",
+          "post_key": "AADlkOm1_LKE0zt7LXWcjeUd",
+          "created_at": 1758633128000,
+          "author": "Judge Judy"
+        },
+        {
+          "line": "Hello dolly",
+          "stripped": "Hello Dolly",
+          "post_key": "AAAw5uIJMHbXQbUkiJj1BwrG",
+          "created_at": 1756295339000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "20 hello dolly",
+          "stripped": "Hello Dolly",
+          "post_key": "AABupMJc7o0u1fTOxZ-BMlNy",
+          "created_at": 1748522786000,
+          "author": "Boomer"
+        },
+        {
+          "line": "Hello Dolly IC x 10",
+          "stripped": "Hello Dolly",
+          "post_key": "AABpoRG7fIuiOwxvGxzef6jH",
+          "created_at": 1741799234000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Hello Dolly x 10 IC",
+          "stripped": "Hello Dolly",
+          "post_key": "AAA0tiiC8S4EmFzncTlXwtI1",
+          "created_at": 1735653271000,
+          "author": "Tinkerbell"
+        }
+      ]
+    },
+    {
+      "id": "wall-sit",
+      "name": "Wall Sit",
+      "aliases": [],
+      "category": "lower",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 32,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Squat hold/wall sit",
+          "stripped": "Wall Sit",
+          "post_key": "AAAp2LiEQpMvycJaBZGAT2RK",
+          "created_at": 1778592268000,
+          "author": "Narc"
+        },
+        {
+          "line": "Wall Sit 45 sec",
+          "stripped": "Wall Sit",
+          "post_key": "AAB-cgXDTjucD3_nfOKaCdLI",
+          "created_at": 1776791605000,
+          "author": "Acme"
+        },
+        {
+          "line": "3: Wall sit 1 minute",
+          "stripped": "Wall Sit",
+          "post_key": "AAA1o38-OgNcEygfHQPDyKJq",
+          "created_at": 1776344598000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "· Squat hold/wall sit",
+          "stripped": "Wall Sit",
+          "post_key": "AAD6gIHhCNZMmf1Ps3wHNMxf",
+          "created_at": 1770133572000,
+          "author": "Narc"
+        },
+        {
+          "line": "X Squat hold/wall sit",
+          "stripped": "Wall Sit",
+          "post_key": "AAAu68oRaMXMbl-jewobjVWO",
+          "created_at": 1769520064000,
+          "author": "Narc"
+        }
+      ]
+    },
+    {
+      "id": "cindy-overhead-press",
+      "name": "Cindy Overhead Press",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 31,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "100 cindy overhead press",
+          "stripped": "Cindy Overhead Press",
+          "post_key": "AADQuaSNNPeEcUFxLkN9Dr1p",
+          "created_at": 1774440234000,
+          "author": "Siesta"
+        },
+        {
+          "line": "15 Cindy Overhead Press",
+          "stripped": "Cindy Overhead Press",
+          "post_key": "AACJuRQCymLGKny6GgvSxvwL",
+          "created_at": 1765466179000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "15 Cindy Overhead Press",
+          "stripped": "Cindy Overhead Press",
+          "post_key": "AAD5yGFVU-Lyq8ns8KO723yC",
+          "created_at": 1765295663000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "15 Cindy Overhead Press",
+          "stripped": "Cindy Overhead Press",
+          "post_key": "AABAx4XWXMY_sc6ZMsCX4zWN",
+          "created_at": 1760977276000,
+          "author": "Jake"
+        },
+        {
+          "line": "Cindy overhead press",
+          "stripped": "Cindy Overhead Press",
+          "post_key": "AADrnTdbXp56gnu4cMjQ7TzS",
+          "created_at": 1758801659000,
+          "author": "Shaggy"
+        }
+      ]
+    },
+    {
+      "id": "toe-touches",
+      "name": "Toe Touches",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 31,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Toe touches On Q",
+          "stripped": "Toe Touches",
+          "post_key": "AADUVYx841_lkokvF4LxV0Tf",
+          "created_at": 1754568606000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Toe Touches 20",
+          "stripped": "Toe Touches",
+          "post_key": "AAAGhIZZN_OWKmoVMKv_9f2Z",
+          "created_at": 1753893046000,
+          "author": "Mario"
+        },
+        {
+          "line": "Toe touches",
+          "stripped": "Toe Touches",
+          "post_key": "AAATPcYzr63R_Yl_15mtG3ml",
+          "created_at": 1752581998000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "toe touches",
+          "stripped": "Toe Touches",
+          "post_key": "AAAzLfyHZQmZWXTOjA8GDAao",
+          "created_at": 1749308239000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Dads are doing mountain climbers/toe touches/inch worms/plank/merkins",
+          "stripped": "Toe Touches",
+          "post_key": "AAB-1N05KB3qJ1vGr6yEgJPy",
+          "created_at": 1748708151000,
+          "author": "Whistleblower"
+        }
+      ]
+    },
+    {
+      "id": "cindy-thruster",
+      "name": "Cindy Thruster",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 30,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Cindy Thrusters",
+          "stripped": "Cindy Thruster",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "10 cindy thrusters",
+          "stripped": "Cindy Thruster",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        },
+        {
+          "line": "10 cindy thrusters",
+          "stripped": "Cindy Thruster",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        },
+        {
+          "line": "Cindy Thrusters",
+          "stripped": "Cindy Thruster",
+          "post_key": "AAD1XahU5qndpTr6gl_VLgYY",
+          "created_at": 1772544791000,
+          "author": "Hot Pants"
+        },
+        {
+          "line": "10 Cindy thrusters",
+          "stripped": "Cindy Thruster",
+          "post_key": "AAB03O7yFIttdS6IRkRWMHP3",
+          "created_at": 1768834367000,
+          "author": "Wemby"
+        }
+      ]
+    },
+    {
+      "id": "hold-the-world",
+      "name": "Hold the World",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 30,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Hold the world",
+          "stripped": "Hold the World",
+          "post_key": "AAAp2LiEQpMvycJaBZGAT2RK",
+          "created_at": 1778592268000,
+          "author": "Narc"
+        },
+        {
+          "line": "Station 1 15 reps Ranger merkins (hands at rib cage) and hold the world",
+          "stripped": "Hold the World",
+          "post_key": "AAC6av70ekWW3oLFEDmhDpeL",
+          "created_at": 1772119435000,
+          "author": "Narc"
+        },
+        {
+          "line": "Hold the world 60 seconds",
+          "stripped": "Hold the World",
+          "post_key": "AACBkUa1ifZcdKd_QtkG7NvQ",
+          "created_at": 1770394517000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "On each landing going up, do BB sit ups starting with 16 and decreasing by 2 on each landing. At the top do 5 toe touches and hold the world for the 6.",
+          "stripped": "Hold the World",
+          "post_key": "AAB88Y9AsmM7ZTLEKIoyr4RJ",
+          "created_at": 1769783683000,
+          "author": "Asiago"
+        },
+        {
+          "line": "Hold the world",
+          "stripped": "Hold the World",
+          "post_key": "AADaQ6nx-qBwDKksaWWZ1l4c",
+          "created_at": 1769536028000,
+          "author": "Babel"
+        }
+      ]
+    },
+    {
+      "id": "downward-dog",
+      "name": "Downward Dog",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 30,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Downward dog",
+          "stripped": "Downward Dog",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "downward dog",
+          "stripped": "Downward Dog",
+          "post_key": "AAA9Up-tXtvbWAZ1oeqMVC0i",
+          "created_at": 1772166661000,
+          "author": "Judge Judy"
+        },
+        {
+          "line": "Downward dog",
+          "stripped": "Downward Dog",
+          "post_key": "AADtnavbwspmXU_9pG_fQxH0",
+          "created_at": 1768486634000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Downward Dog",
+          "stripped": "Downward Dog",
+          "post_key": "AADJFQv5hwPPphA_cjT-NVsn",
+          "created_at": 1756209315000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Downward dog",
+          "stripped": "Downward Dog",
+          "post_key": "AAAUgWMJ28YMfiTPARCRtwFk",
+          "created_at": 1754655251000,
+          "author": "BlueScreen (BS)"
+        }
+      ]
+    },
+    {
+      "id": "rack-coupons",
+      "name": "Rack coupons",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 29,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Rack coupons and single file Indian run to the restrooms by the playground.",
+          "stripped": "Rack coupons",
+          "post_key": "AADL2U1SgWAe5gUFVH6Iah5N",
+          "created_at": 1776687089000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and single file Indian run the long loop to back to the flags.",
+          "stripped": "Rack coupons",
+          "post_key": "AABtGD02QXFHMp2o5B2IY3JU",
+          "created_at": 1775824316000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and double applesauce mosey/shuffle toward Amphitheater",
+          "stripped": "Rack coupons",
+          "post_key": "AABtGD02QXFHMp2o5B2IY3JU",
+          "created_at": 1775824316000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and double applesauce mosey/shuffle to Amphitheater",
+          "stripped": "Rack coupons",
+          "post_key": "AABtGD02QXFHMp2o5B2IY3JU",
+          "created_at": 1775824316000,
+          "author": "Rosetta"
+        },
+        {
+          "line": "Rack coupons and double applesauce mosey/shuffle the quarter mile loop to playground parking area.",
+          "stripped": "Rack coupons",
+          "post_key": "AAA18mWu3mVCwvN3p2x_yFK7",
+          "created_at": 1775220151000,
+          "author": "Rosetta"
+        }
+      ]
+    },
+    {
+      "id": "single-leg-over",
+      "name": "Single Leg Over",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 29,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Single Leg Over x 10",
+          "stripped": "Single Leg Over",
+          "post_key": "AACXcUFkgs8YrlIP_aIzvCQV",
+          "created_at": 1775670630000,
+          "author": "Delta Blues (DB)"
+        },
+        {
+          "line": "Single Leg Over x 10",
+          "stripped": "Single Leg Over",
+          "post_key": "AADcBpPacIiNdaM_8sTs2OOL",
+          "created_at": 1774210264000,
+          "author": "Delta Blues (DB)"
+        },
+        {
+          "line": "Single Leg Over x 10",
+          "stripped": "Single Leg Over",
+          "post_key": "AABcN9_ZBz_CYnbjtNfEnC2K",
+          "created_at": 1748121285000,
+          "author": "Delta Blues (DB)"
+        },
+        {
+          "line": "Single Leg Over x 10",
+          "stripped": "Single Leg Over",
+          "post_key": "AABFfqhOC_h0XVZf8zsc940V",
+          "created_at": 1743429529000,
+          "author": "Delta Blues (DB)"
+        },
+        {
+          "line": "Single Leg Over x 10",
+          "stripped": "Single Leg Over",
+          "post_key": "AAAnA-rVySOCbh_I2XjdHmsS",
+          "created_at": 1735570290000,
+          "author": "Delta Blues (DB)"
+        }
+      ]
+    },
+    {
+      "id": "toy-soldier",
+      "name": "Toy Soldier",
+      "aliases": [],
+      "category": "cardio",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 28,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Toy soldiers x10 IC",
+          "stripped": "Toy Soldier",
+          "post_key": "AACKIgrs8q6NzBPzWMx-QSpE",
+          "created_at": 1775573162000,
+          "author": "D20"
+        },
+        {
+          "line": "10x Toy soldiers IC",
+          "stripped": "Toy Soldier",
+          "post_key": "AAAZ4ysFBzNviZXw1K_4eWLP",
+          "created_at": 1773863533000,
+          "author": "D20"
+        },
+        {
+          "line": "Toy soldiers",
+          "stripped": "Toy Soldier",
+          "post_key": "AADtpk2QjigqlmKH2eIXC-hS",
+          "created_at": 1762438418000,
+          "author": "GridLock"
+        },
+        {
+          "line": "Toy soldiers",
+          "stripped": "Toy Soldier",
+          "post_key": "AAA3LoQmR12DUlNABpZoW4kJ",
+          "created_at": 1755265572000,
+          "author": "Whistleblower"
+        },
+        {
+          "line": "Toy soldiers",
+          "stripped": "Toy Soldier",
+          "post_key": "AACHfcZntczobOC9h6gXvxK5",
+          "created_at": 1755180403000,
+          "author": "Whistleblower"
+        }
+      ]
+    },
+    {
+      "id": "reverse-chinooks",
+      "name": "Reverse Chinooks",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 28,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Reverse Chinooks x 10",
+          "stripped": "Reverse Chinooks",
+          "post_key": "AADMEol-NETHZRgt5TpehUxU",
+          "created_at": 1768313139000,
+          "author": "Mario"
+        },
+        {
+          "line": "Reverse Chinooks 8",
+          "stripped": "Reverse Chinooks",
+          "post_key": "AACcScJEmi4F06qmKZLpvf_9",
+          "created_at": 1767797790000,
+          "author": "Mario"
+        },
+        {
+          "line": "Reverse Chinooks x5",
+          "stripped": "Reverse Chinooks",
+          "post_key": "AAClAZDxP6zaNmO764brt5tb",
+          "created_at": 1760027754000,
+          "author": "D20"
+        },
+        {
+          "line": "Reverse Chinooks X 10",
+          "stripped": "Reverse Chinooks",
+          "post_key": "AAA_xS5R6Hcb72CAbnYjIyAE",
+          "created_at": 1756996139000,
+          "author": "Mario"
+        },
+        {
+          "line": "Reverse Chinooks",
+          "stripped": "Reverse Chinooks",
+          "post_key": "AABoTUcBzGvME0kTSgOuB0oy",
+          "created_at": 1750087405000,
+          "author": "Renegade"
+        }
+      ]
+    },
+    {
+      "id": "hr-merkins",
+      "name": "HR Merkins",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "HR Merkins & BBSUs",
+          "stripped": "HR Merkins",
+          "post_key": "AAA16SH16RRZbK5uS8QkqeF7",
+          "created_at": 1778760527000,
+          "author": "Squatter"
+        },
+        {
+          "line": "11's of Thrusters and HR Merkins",
+          "stripped": "HR Merkins",
+          "post_key": "AADIscZNtSa_meQJ6NkmJLFG",
+          "created_at": 1775483099000,
+          "author": "Cobbler"
+        },
+        {
+          "line": "30 second HR Merkins",
+          "stripped": "HR Merkins",
+          "post_key": "AACn58rGhepJdH-T4aUJ6kT3",
+          "created_at": 1769091079000,
+          "author": "LinkedIn"
+        },
+        {
+          "line": "30 second HR Merkins",
+          "stripped": "HR Merkins",
+          "post_key": "AACn58rGhepJdH-T4aUJ6kT3",
+          "created_at": 1769091079000,
+          "author": "LinkedIn"
+        },
+        {
+          "line": "30 second HR Merkins",
+          "stripped": "HR Merkins",
+          "post_key": "AACn58rGhepJdH-T4aUJ6kT3",
+          "created_at": 1769091079000,
+          "author": "LinkedIn"
+        }
+      ]
+    },
+    {
+      "id": "whistleblower",
+      "name": "Whistleblower",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Whistleblower",
+          "stripped": "Whistleblower",
+          "post_key": "AAAGxNOQl3riFgjwRSpxTAes",
+          "created_at": 1777144602000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "Whistleblower",
+          "stripped": "Whistleblower",
+          "post_key": "AACJuRQCymLGKny6GgvSxvwL",
+          "created_at": 1765466179000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "Whistleblower",
+          "stripped": "Whistleblower",
+          "post_key": "AAAprxf978iAJWXOeDgKErH3",
+          "created_at": 1763838504000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "Whistleblower",
+          "stripped": "Whistleblower",
+          "post_key": "AADVQBgULIKO6_pHkVJCHLlH",
+          "created_at": 1763052076000,
+          "author": "8 Mile"
+        },
+        {
+          "line": "Whistleblower",
+          "stripped": "Whistleblower",
+          "post_key": "AAAWdgM5VB9CD5de3iGNGgkr",
+          "created_at": 1762875068000,
+          "author": "Freedom"
+        }
+      ]
+    },
+    {
+      "id": "m-run",
+      "name": "m run",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "5. Tire Flip Sprint (timed) In 2:00, 10 tire flips and 150 m run",
+          "stripped": "m run",
+          "post_key": "AACnKaOm6EJ9t3cQMjfbHA-a",
+          "created_at": 1775911759000,
+          "author": "Wiretap"
+        },
+        {
+          "line": "1. 200m run",
+          "stripped": "m run",
+          "post_key": "AAC2A0QPtMn3zug19PTfmDNg",
+          "created_at": 1751039717000,
+          "author": "Toretto"
+        },
+        {
+          "line": "3. 200m run",
+          "stripped": "m run",
+          "post_key": "AAC2A0QPtMn3zug19PTfmDNg",
+          "created_at": 1751039717000,
+          "author": "Toretto"
+        },
+        {
+          "line": "400m Run",
+          "stripped": "m Run",
+          "post_key": "AADw1D0PrakANuCtrxq_lxf7",
+          "created_at": 1746224654000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "400m run",
+          "stripped": "m run",
+          "post_key": "AAAdwfP0JT7wtdHhowXJDtnF",
+          "created_at": 1745076267000,
+          "author": "Babel"
+        }
+      ]
+    },
+    {
+      "id": "inchworm-across",
+      "name": "InchWorm across",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "InchWorm across",
+          "stripped": "InchWorm across",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Inchworm across",
+          "stripped": "Inchworm across",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Inchworm across",
+          "stripped": "Inchworm across",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "InchWorm across",
+          "stripped": "InchWorm across",
+          "post_key": "AACUhKcuK4nn4HF_f8ELzxph",
+          "created_at": 1768398871000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Inchworm across",
+          "stripped": "Inchworm across",
+          "post_key": "AACUhKcuK4nn4HF_f8ELzxph",
+          "created_at": 1768398871000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "exercise",
+      "name": ">Exercise",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": ">Exercise",
+          "stripped": ">Exercise",
+          "post_key": "AAACwDp8jcV1P72MS6jmr7cS",
+          "created_at": 1772810174000,
+          "author": "Mountie"
+        },
+        {
+          "line": ">Exercise",
+          "stripped": ">Exercise",
+          "post_key": "AADREre3d1OBLxyKXN9FlALe",
+          "created_at": 1769723203000,
+          "author": "Mountie"
+        },
+        {
+          "line": ">Exercise",
+          "stripped": ">Exercise",
+          "post_key": "AACSQyCa8_WOkvpzEySTsi7p",
+          "created_at": 1768826029000,
+          "author": "Mountie"
+        },
+        {
+          "line": ">Exercise",
+          "stripped": ">Exercise",
+          "post_key": "AABB1PbmSGCCywOCFh9oXA1n",
+          "created_at": 1768391479000,
+          "author": "Mountie"
+        },
+        {
+          "line": ">Exercise",
+          "stripped": ">Exercise",
+          "post_key": "AAAcie_J1uHNf2soLaKhrrsd",
+          "created_at": 1768225732000,
+          "author": "Mountie"
+        }
+      ]
+    },
+    {
+      "id": "diamond-merkins",
+      "name": "Diamond Merkins",
+      "aliases": [],
+      "category": "upper",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Diamond Merkins 15 reps",
+          "stripped": "Diamond Merkins",
+          "post_key": "AABwros267E2KzZ6ZPDg-1lt",
+          "created_at": 1772769611000,
+          "author": "K-Pop"
+        },
+        {
+          "line": "Diamond Merkins",
+          "stripped": "Diamond Merkins",
+          "post_key": "AADQEJ4pd0Ik3W0Z-B03sSZr",
+          "created_at": 1771428047000,
+          "author": "Narc"
+        },
+        {
+          "line": "Diamond merkins AMRAP",
+          "stripped": "Diamond merkins",
+          "post_key": "AAB-M__Uw32g6WVytHQo92Hu",
+          "created_at": 1768674523000,
+          "author": "Gunpoint"
+        },
+        {
+          "line": "Diamond Merkins",
+          "stripped": "Diamond Merkins",
+          "post_key": "AABsJnPu-eh6RdrAsArRCwHS",
+          "created_at": 1767878671000,
+          "author": "Narc"
+        },
+        {
+          "line": "5 Diamond merkins",
+          "stripped": "Diamond merkins",
+          "post_key": "AABsIkwJNJLTk-Qo-SZiwxLJ",
+          "created_at": 1764693230000,
+          "author": "Johnny 5"
+        }
+      ]
+    },
+    {
+      "id": "so-on",
+      "name": "so on",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Pax line up in single file line in bear hold position with space between each other. Last pax bear crawls serpentining through pax until he's at the front. Then new last pax goes and so on and so forth until we get to the sidewalk.",
+          "stripped": "so on",
+          "post_key": "AADZazvw2UjEmD8uDZaNQhqz",
+          "created_at": 1770901725000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Indian run. Last pax does 3 Smurf jacks then sprints to front. New last pax goes and so on and so forth.",
+          "stripped": "so on",
+          "post_key": "AADtnavbwspmXU_9pG_fQxH0",
+          "created_at": 1768486634000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Q stopped at Station 8 and started doing the reps assigned at that station while Hector continued on to Station 1 (picking up the new runner) and so on and on.",
+          "stripped": "so on",
+          "post_key": "AACPcwVWkY6GCOob6Uiebcxa",
+          "created_at": 1768235244000,
+          "author": "Mario"
+        },
+        {
+          "line": "3. Bid how many reps your team can finish of every exercise. If you bid 20, then you have 1 minute to do 20 reps of the first exercise, 1 minute to do 20 of the second exercise, and so on.",
+          "stripped": "so on",
+          "post_key": "AACAMMgKHRjR6ExZLz85bhQF",
+          "created_at": 1766507337000,
+          "author": "D20"
+        },
+        {
+          "line": "Run to the next cone, do that exercise, then back and do a burpee. And so on.",
+          "stripped": "so on",
+          "post_key": "AADIbdDZmH7q_cCYWE5RZDw3",
+          "created_at": 1751720710000,
+          "author": "Anakin"
+        }
+      ]
+    },
+    {
+      "id": "double-apple-sauce-mosey",
+      "name": "Double Apple Sauce Mosey",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Double Apple Sauce Mosey",
+          "stripped": "Double Apple Sauce Mosey",
+          "post_key": "AAB88Y9AsmM7ZTLEKIoyr4RJ",
+          "created_at": 1769783683000,
+          "author": "Asiago"
+        },
+        {
+          "line": "Double Apple Sauce Mosey",
+          "stripped": "Double Apple Sauce Mosey",
+          "post_key": "AABNTD0m-OiSZQtOUK_ktneI",
+          "created_at": 1762872205000,
+          "author": "Asiago"
+        },
+        {
+          "line": "Double Apple Sauce Mosey",
+          "stripped": "Double Apple Sauce Mosey",
+          "post_key": "AAAh0ttOXIAQ2hi_r96IPhqr",
+          "created_at": 1750769621000,
+          "author": "Asiago"
+        },
+        {
+          "line": "Double Apple Sauce Mosey",
+          "stripped": "Double Apple Sauce Mosey",
+          "post_key": "AADXEhCZiGzMYBbIJgkL8EVE",
+          "created_at": 1740751327000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Double Apple Sauce Mosey",
+          "stripped": "Double Apple Sauce Mosey",
+          "post_key": "AABjRQLA3xkEqSTL1Ec1TrpC",
+          "created_at": 1740171640000,
+          "author": "BlueScreen (BS)"
+        }
+      ]
+    },
+    {
+      "id": "rest",
+      "name": "· Rest",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "· Rest 2 min",
+          "stripped": "· Rest",
+          "post_key": "AADMEol-NETHZRgt5TpehUxU",
+          "created_at": 1768313139000,
+          "author": "Mario"
+        },
+        {
+          "line": "· Rest 2 min",
+          "stripped": "· Rest",
+          "post_key": "AADMEol-NETHZRgt5TpehUxU",
+          "created_at": 1768313139000,
+          "author": "Mario"
+        },
+        {
+          "line": "· Rest 2 min",
+          "stripped": "· Rest",
+          "post_key": "AADMEol-NETHZRgt5TpehUxU",
+          "created_at": 1768313139000,
+          "author": "Mario"
+        },
+        {
+          "line": "· Rest 4 min",
+          "stripped": "· Rest",
+          "post_key": "AADMEol-NETHZRgt5TpehUxU",
+          "created_at": 1768313139000,
+          "author": "Mario"
+        },
+        {
+          "line": "· Rest 2 min",
+          "stripped": "· Rest",
+          "post_key": "AAC9H2WMYyfQpxme_oKqM3EQ",
+          "created_at": 1753199017000,
+          "author": "Thermostat"
+        }
+      ]
+    },
+    {
+      "id": "d20",
+      "name": "D20",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 27,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "D20",
+          "stripped": "D20",
+          "post_key": "AACNPKuu5W0VzV5bsWZjwr6-",
+          "created_at": 1764085606000,
+          "author": "Freedom"
+        },
+        {
+          "line": "D20",
+          "stripped": "D20",
+          "post_key": "AACrROvtw83RV6EVL5MQzzDV",
+          "created_at": 1764000395000,
+          "author": "Meatloaf"
+        },
+        {
+          "line": "D20",
+          "stripped": "D20",
+          "post_key": "AADvjD8inXXT-UbT21-Hp2AW",
+          "created_at": 1763048977000,
+          "author": "Xena"
+        },
+        {
+          "line": "D20",
+          "stripped": "D20",
+          "post_key": "AAAnNWGVhpREcT5Ogha47pM3",
+          "created_at": 1758029565000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "D20",
+          "stripped": "D20",
+          "post_key": "AADxb6BcD0zhdCBjIxP1GMOk",
+          "created_at": 1752976415000,
+          "author": "Meatloaf"
+        }
+      ]
+    },
+    {
+      "id": "trust",
+      "name": "Trust",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Trust.",
+          "stripped": "Trust",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Trust.",
+          "stripped": "Trust",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Trust.",
+          "stripped": "Trust",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "Trust.",
+          "stripped": "Trust",
+          "post_key": "AADSkk9jaaOFoJfUQnKfb-wY",
+          "created_at": 1778944015000,
+          "author": "Jake"
+        },
+        {
+          "line": "Trust.",
+          "stripped": "Trust",
+          "post_key": "AAAGHols2gr_t_0JkXk8rI7Q",
+          "created_at": 1778855588000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "rifle-carry",
+      "name": "Rifle Carry",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "PAX 2 Farmers/Rifle Carry",
+          "stripped": "Rifle Carry",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "60s AMRAP exercise, with a 45s transition (farmer/rifle carry)/rest between stations.",
+          "stripped": "rifle carry",
+          "post_key": "AACXYcOr_0mQrhf6aQLhW9N7",
+          "created_at": 1773150108000,
+          "author": "Anakin"
+        },
+        {
+          "line": "60s AMRAP exercise, with a 45s transition (farmer/rifle carry)/rest between stations.",
+          "stripped": "rifle carry",
+          "post_key": "AABoW0jYWyy89rPiYASUf87g",
+          "created_at": 1768502685000,
+          "author": "Hector"
+        },
+        {
+          "line": "round 2: 6 in leg lift with Cindy overhead and rifle carry",
+          "stripped": "rifle carry",
+          "post_key": "AABqqAEOA05roSGdqCgTyAoi",
+          "created_at": 1765284183000,
+          "author": "Elmer"
+        },
+        {
+          "line": "round 4: upright Cindy shrug hold and rifle carry",
+          "stripped": "rifle carry",
+          "post_key": "AABqqAEOA05roSGdqCgTyAoi",
+          "created_at": 1765284183000,
+          "author": "Elmer"
+        }
+      ]
+    },
+    {
+      "id": "stop-fitness-trackers",
+      "name": "Stop Fitness Trackers",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Stop Fitness Trackers",
+          "stripped": "Stop Fitness Trackers",
+          "post_key": "AABz52ybOJTZLJivrKn16wfT",
+          "created_at": 1779103149000,
+          "author": "Rawhide"
+        },
+        {
+          "line": "Stop Fitness Trackers",
+          "stripped": "Stop Fitness Trackers",
+          "post_key": "AAAdiR6nDB1fikaUnk6I_jTN",
+          "created_at": 1778846214000,
+          "author": "Dr. Frasier Crane"
+        },
+        {
+          "line": "Stop Fitness Trackers",
+          "stripped": "Stop Fitness Trackers",
+          "post_key": "AAB1XZlmZLto7mgSxveh4YVF",
+          "created_at": 1778252558000,
+          "author": "Acme"
+        },
+        {
+          "line": "Stop Fitness Trackers",
+          "stripped": "Stop Fitness Trackers",
+          "post_key": "AABOP9mXK5Y13_mUpP2ZxrpE",
+          "created_at": 1775218046000,
+          "author": "Rawhide"
+        },
+        {
+          "line": "Stop Fitness Trackers",
+          "stripped": "Stop Fitness Trackers",
+          "post_key": "AADWNeJu9nmRbFMyinWms9_k",
+          "created_at": 1771709382000,
+          "author": "Acme"
+        }
+      ]
+    },
+    {
+      "id": "grass-grabbers-on-in",
+      "name": "Grass Grabbers on In",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Grass Grabbers on In cadence",
+          "stripped": "Grass Grabbers on In",
+          "post_key": "AABDO5zSVST98-qNPtbaLQZ6",
+          "created_at": 1779027502000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Grass Grabbers on In cadence",
+          "stripped": "Grass Grabbers on In",
+          "post_key": "AAC43hN_YfD3d3Fg7WNAFRV2",
+          "created_at": 1777559529000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Grass Grabbers on In cadence",
+          "stripped": "Grass Grabbers on In",
+          "post_key": "AABNDRptl0KqNA3LQBRiY658",
+          "created_at": 1777387096000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Grass Grabbers on In cadence",
+          "stripped": "Grass Grabbers on In",
+          "post_key": "AADtE6y5dfIPKe83xD7EsZtX",
+          "created_at": 1774533861000,
+          "author": "Thermostat"
+        },
+        {
+          "line": "Grass Grabbers on In cadence",
+          "stripped": "Grass Grabbers on In",
+          "post_key": "AAAiZ7sYT_Ya3wp71FY4bz27",
+          "created_at": 1770395113000,
+          "author": "Thermostat"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "name": "Time",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Time",
+          "stripped": "Time",
+          "post_key": "AAAp2LiEQpMvycJaBZGAT2RK",
+          "created_at": 1778592268000,
+          "author": "Narc"
+        },
+        {
+          "line": "Time",
+          "stripped": "Time",
+          "post_key": "AADHLNKKfwvc4YuzZh6byuVT",
+          "created_at": 1777896174000,
+          "author": "Narc"
+        },
+        {
+          "line": "Time",
+          "stripped": "Time",
+          "post_key": "AAAnoX8AjmuXhIvVGJm8WzZM",
+          "created_at": 1775653304000,
+          "author": "Narc"
+        },
+        {
+          "line": "Time",
+          "stripped": "Time",
+          "post_key": "AACNF0lfJ9xTaESPH-svJYI-",
+          "created_at": 1775078782000,
+          "author": "Acme"
+        },
+        {
+          "line": "Time",
+          "stripped": "Time",
+          "post_key": "AADaZQVhulnhci3T9Jnncptf",
+          "created_at": 1774267691000,
+          "author": "Narc"
+        }
+      ]
+    },
+    {
+      "id": "goat-stretch-2x10-hold-each-leg",
+      "name": "Goat stretch 2x10 hold each leg",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Goat stretch 2x10 second hold each leg",
+          "stripped": "Goat stretch 2x10 hold each leg",
+          "post_key": "AAD2fxl99SlHNT-01zemglyr",
+          "created_at": 1778592091000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Goat stretch 2x10 second hold each leg",
+          "stripped": "Goat stretch 2x10 hold each leg",
+          "post_key": "AACvDjVEXvxr8WWEaIIXaw-3",
+          "created_at": 1767811239000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Goat stretch 2x10 second hold each leg",
+          "stripped": "Goat stretch 2x10 hold each leg",
+          "post_key": "AAD7K1wORjHbZKtMMN-ZgWMg",
+          "created_at": 1764082527000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Goat stretch 2x10 second hold each leg",
+          "stripped": "Goat stretch 2x10 hold each leg",
+          "post_key": "AADk5ecxy5TvU0DCcOow4k8s",
+          "created_at": 1757939486000,
+          "author": "BlueScreen (BS)"
+        },
+        {
+          "line": "Goat stretch 2x10 second hold each leg",
+          "stripped": "Goat stretch 2x10 hold each leg",
+          "post_key": "AAB61SU40YYULSue6OdzBqn4",
+          "created_at": 1756830411000,
+          "author": "BlueScreen (BS)"
+        }
+      ]
+    },
+    {
+      "id": "skull-crushers",
+      "name": "Skull crushers",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Skull crushers x10",
+          "stripped": "Skull crushers",
+          "post_key": "AABSjsZlGKUR58v8v-mpEK1T",
+          "created_at": 1778002449000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "4 Skull Crushers",
+          "stripped": "Skull Crushers",
+          "post_key": "AAChmJddlpz-pNEoM5EsDfh0",
+          "created_at": 1776258368000,
+          "author": "Bareback"
+        },
+        {
+          "line": "Skull crushers",
+          "stripped": "Skull crushers",
+          "post_key": "AAAnoX8AjmuXhIvVGJm8WzZM",
+          "created_at": 1775653304000,
+          "author": "Narc"
+        },
+        {
+          "line": "Skull crushers",
+          "stripped": "Skull crushers",
+          "post_key": "AADmsGdOsZqQxeB7t1ldpNy_",
+          "created_at": 1775130481000,
+          "author": "Narc"
+        },
+        {
+          "line": "6 Skull crushers",
+          "stripped": "Skull crushers",
+          "post_key": "AABrTmlhPQ_L8Ese07KkSznO",
+          "created_at": 1766511061000,
+          "author": "Johnny 5"
+        }
+      ]
+    },
+    {
+      "id": "bird-dogs",
+      "name": "Bird Dogs",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Bird Dogs",
+          "stripped": "Bird Dogs",
+          "post_key": "AAD4nnWVhjcPn1VM571YvSkZ",
+          "created_at": 1777991720000,
+          "author": "Jake"
+        },
+        {
+          "line": "Bird dogs",
+          "stripped": "Bird dogs",
+          "post_key": "AACl02eqqn5DewYg8cHFJifp",
+          "created_at": 1776772219000,
+          "author": "Cowbell"
+        },
+        {
+          "line": "Bird Dogs",
+          "stripped": "Bird Dogs",
+          "post_key": "AABsG1Cz9cu6I2NAzW4JCuBf",
+          "created_at": 1775137472000,
+          "author": "Jake"
+        },
+        {
+          "line": "Bird dogs",
+          "stripped": "Bird dogs",
+          "post_key": "AADpHmSGY5Sj6F4gZivYo18Y",
+          "created_at": 1756906050000,
+          "author": "Judge Judy"
+        },
+        {
+          "line": "Bird Dogs",
+          "stripped": "Bird Dogs",
+          "post_key": "AADEaqdgjktbPiWXHSrvLlZy",
+          "created_at": 1756496218000,
+          "author": "Thunderbird"
+        }
+      ]
+    },
+    {
+      "id": "grass-grabbers-in",
+      "name": "Grass grabbers in",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "3. Grass grabbers in cadence",
+          "stripped": "Grass grabbers in",
+          "post_key": "AAA3FnrXhK9juUcrJ_K99Ctp",
+          "created_at": 1777308154000,
+          "author": "Business Socks"
+        },
+        {
+          "line": "2. Grass grabbers in cadence",
+          "stripped": "Grass grabbers in",
+          "post_key": "AAClztEI0Pk4eR-Ahj2fR792",
+          "created_at": 1773841244000,
+          "author": "Business Socks"
+        },
+        {
+          "line": "2. Grass grabbers in cadence",
+          "stripped": "Grass grabbers in",
+          "post_key": "AACrYq7cUGU7GJe3jSLyfdXT",
+          "created_at": 1772037568000,
+          "author": "Business Socks"
+        },
+        {
+          "line": "2. Grass grabbers in cadence",
+          "stripped": "Grass grabbers in",
+          "post_key": "AAB96VD0-S8vYlCuAOUrC6mU",
+          "created_at": 1767023930000,
+          "author": "Business Socks"
+        },
+        {
+          "line": "2. Grass grabbers in cadence",
+          "stripped": "Grass grabbers in",
+          "post_key": "AABF-pkMkxZXBNw610RmGMVj",
+          "created_at": 1765377919000,
+          "author": "Business Socks"
+        }
+      ]
+    },
+    {
+      "id": "elmer",
+      "name": "Elmer",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Elmer",
+          "stripped": "Elmer",
+          "post_key": "AADiAPOWXvFpI9YtsejKLCiv",
+          "created_at": 1776169857000,
+          "author": "Xena"
+        },
+        {
+          "line": "Elmer",
+          "stripped": "Elmer",
+          "post_key": "AAC2DaEctlTp260wSPVP8DxM",
+          "created_at": 1776095619000,
+          "author": "Wemby"
+        },
+        {
+          "line": "Elmer",
+          "stripped": "Elmer",
+          "post_key": "AABmQrOVSkYZHf-Bqf-vEUKC",
+          "created_at": 1774616387000,
+          "author": "Cobbler"
+        },
+        {
+          "line": "Elmer",
+          "stripped": "Elmer",
+          "post_key": "AACrROvtw83RV6EVL5MQzzDV",
+          "created_at": 1764000395000,
+          "author": "Meatloaf"
+        },
+        {
+          "line": "Elmer",
+          "stripped": "Elmer",
+          "post_key": "AAAJM0AMpyiMBw8yHJg8rDuX",
+          "created_at": 1758289850000,
+          "author": "Judge Judy"
+        }
+      ]
+    },
+    {
+      "id": "left",
+      "name": "left",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Oblique right and left",
+          "stripped": "left",
+          "post_key": "AACJb5l5k7eLZQ3dZF7YlRr6",
+          "created_at": 1773184229000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "Lawn mower pulls (right and left) x 15",
+          "stripped": "left",
+          "post_key": "AACS_qkF73uCKeSNmDExhQ4N",
+          "created_at": 1759238175000,
+          "author": "Werner"
+        },
+        {
+          "line": "[ ] Cindy row right and left",
+          "stripped": "left",
+          "post_key": "AABtQVNK7hip7OhnyOaDlxJ8",
+          "created_at": 1740491976000,
+          "author": "Webelo"
+        },
+        {
+          "line": "25 Left",
+          "stripped": "Left",
+          "post_key": "AABlC2IpUcpIGypZQAv3XshF",
+          "created_at": 1733242681000,
+          "author": "Wemby"
+        },
+        {
+          "line": "25 Left",
+          "stripped": "Left",
+          "post_key": "AABrhkD4rCjn-qAMCBu9Odin",
+          "created_at": 1725985865000,
+          "author": "Wemby"
+        }
+      ]
+    },
+    {
+      "id": "goat-stretch-cc",
+      "name": "Goat Stretch CC",
+      "aliases": [],
+      "category": "mobility",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Goat Stretch CC x 20 / flapjack",
+          "stripped": "Goat Stretch CC",
+          "post_key": "AAAlUWxd8-m2JId2YQq-DBf6",
+          "created_at": 1770827522000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Goat Stretch CC 10/flapjack",
+          "stripped": "Goat Stretch CC",
+          "post_key": "AACwRSE1qlZA_jj8vmeIt1o8",
+          "created_at": 1768330946000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Goat Stretch CC 10/flapjack",
+          "stripped": "Goat Stretch CC",
+          "post_key": "AAAkNF8PuD2XQCSkBrdXH5ef",
+          "created_at": 1762961710000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Goat Stretch CC 10/flapjack",
+          "stripped": "Goat Stretch CC",
+          "post_key": "AACXMXpa4KWYJWwerTwNnfaY",
+          "created_at": 1762436409000,
+          "author": "Anakin"
+        },
+        {
+          "line": "Goat stretch CC X 10 / Flapjack",
+          "stripped": "Goat stretch CC",
+          "post_key": "AABz4ghst4VFyhVc3Dqnsm1a",
+          "created_at": 1736951973000,
+          "author": "Anakin"
+        }
+      ]
+    },
+    {
+      "id": "mile",
+      "name": "mile",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "DASM Big lap (1/3 mile)",
+          "stripped": "mile",
+          "post_key": "AAC908t0hZuSjThZR_xn_Orh",
+          "created_at": 1763473910000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "8 Mile",
+          "stripped": "Mile",
+          "post_key": "AAAWdgM5VB9CD5de3iGNGgkr",
+          "created_at": 1762875068000,
+          "author": "Freedom"
+        },
+        {
+          "line": "8 Mile",
+          "stripped": "Mile",
+          "post_key": "AABRKfyk3rk8zVoHQr7IgRFp",
+          "created_at": 1762353300000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "8 Mile",
+          "stripped": "Mile",
+          "post_key": "AABgOUrVZpvWkKJhnjUwQKGh",
+          "created_at": 1758115042000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "8 Mile",
+          "stripped": "Mile",
+          "post_key": "AAAtHxsIgpwtNdifIhMaFJcu",
+          "created_at": 1758039858000,
+          "author": "Judge Judy"
+        }
+      ]
+    },
+    {
+      "id": "hold-each-leg",
+      "name": "hold each leg",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 26,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "2x10 second hold each leg",
+          "stripped": "hold each leg",
+          "post_key": "AAASSbapKvcHrfG7m4Q-pUvv",
+          "created_at": 1749913898000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "2x10 second hold each leg",
+          "stripped": "hold each leg",
+          "post_key": "AABbxjKFDp60WXhy2y9R0U62",
+          "created_at": 1743265362000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "1x20 second hold each leg",
+          "stripped": "hold each leg",
+          "post_key": "AADipvwXPbBxLCZxxZoqn1ms",
+          "created_at": 1726581356000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "1 x20 second hold each leg",
+          "stripped": "hold each leg",
+          "post_key": "AABt_DD_1mVx5MSSk4EogO93",
+          "created_at": 1726490180000,
+          "author": "Tinkerbell"
+        },
+        {
+          "line": "1x15 second hold each leg",
+          "stripped": "hold each leg",
+          "post_key": "AACUIxAzP5NjJrtkthbuTTpW",
+          "created_at": 1724420553000,
+          "author": "Tinkerbell"
+        }
+      ]
+    },
+    {
+      "id": "thangs",
+      "name": "Thangs",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Thangs:",
+          "stripped": "Thangs",
+          "post_key": "AAAAGKl5lh7x6TLrV4vxyJfB",
+          "created_at": 1779285020000,
+          "author": "Jake"
+        },
+        {
+          "line": "Thangs:",
+          "stripped": "Thangs",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "Thangs:",
+          "stripped": "Thangs",
+          "post_key": "AADRdK2cFdwvWYcXgQ-lI8kG",
+          "created_at": 1779114330000,
+          "author": "Jake"
+        },
+        {
+          "line": "Thangs:",
+          "stripped": "Thangs",
+          "post_key": "AABz52ybOJTZLJivrKn16wfT",
+          "created_at": 1779103149000,
+          "author": "Rawhide"
+        },
+        {
+          "line": "Thangs:",
+          "stripped": "Thangs",
+          "post_key": "AADSkk9jaaOFoJfUQnKfb-wY",
+          "created_at": 1778944015000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "back-down",
+      "name": "back down",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 squats and 10 lunges… and back down",
+          "stripped": "back down",
+          "post_key": "AAC-k60ObkQmUUGgiarL0RmL",
+          "created_at": 1779198936000,
+          "author": "Jake"
+        },
+        {
+          "line": "10 squats and 10 lunges… and back down",
+          "stripped": "back down",
+          "post_key": "AACwqa87W4KZFpZQ_f2Gecvq",
+          "created_at": 1776873808000,
+          "author": "Jake"
+        },
+        {
+          "line": "10 squats and 10 lunges… and back down",
+          "stripped": "back down",
+          "post_key": "AABBkMFpYfVZA2wpekpL3mtr",
+          "created_at": 1776261564000,
+          "author": "Jake"
+        },
+        {
+          "line": "Run small lap then up the tower and back down",
+          "stripped": "back down",
+          "post_key": "AAC-fGKQvx96bRoXzpoxX3Es",
+          "created_at": 1775827697000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Station 7 Stairs: Plyometrics/Jump on the steps & back down",
+          "stripped": "back down",
+          "post_key": "AADwWAGBP9R9WMTYHbx5bAE-",
+          "created_at": 1773923718000,
+          "author": "Gunpoint"
+        }
+      ]
+    },
+    {
+      "id": "count-off-pax",
+      "name": "Count off PAX",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Count off PAX 1 & PAX 2",
+          "stripped": "Count off PAX",
+          "post_key": "AADM-FUkigoApZi9zduBNgs4",
+          "created_at": 1778594573000,
+          "author": "Jake"
+        },
+        {
+          "line": "COUNT OFF PAX 1 & PAX 2",
+          "stripped": "COUNT OFF PAX",
+          "post_key": "AAA0g5bonuL0rbR-j1heG-M4",
+          "created_at": 1777736468000,
+          "author": "Jake"
+        },
+        {
+          "line": "Count off PAX 1 & PAX 2 & Line up at half court",
+          "stripped": "Count off PAX",
+          "post_key": "AABBkMFpYfVZA2wpekpL3mtr",
+          "created_at": 1776261564000,
+          "author": "Jake"
+        },
+        {
+          "line": "Count off PAX 1 & PAX 2 & Stay Circled Up",
+          "stripped": "Count off PAX",
+          "post_key": "AAArYMEZjaIczkAaaw0U07bo",
+          "created_at": 1774443049000,
+          "author": "Jake"
+        },
+        {
+          "line": "Count off PAX 1 & PAX 2 & Line up at half court",
+          "stripped": "Count off PAX",
+          "post_key": "AAAlpldy2LzZmMUo_rXC-gFv",
+          "created_at": 1774356840000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "crunches",
+      "name": "Crunches",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "10 Crunches",
+          "stripped": "Crunches",
+          "post_key": "AABKCbm9yYE1NqwSOZq5t7jF",
+          "created_at": 1778166721000,
+          "author": "Victory Lap"
+        },
+        {
+          "line": "200 crunches",
+          "stripped": "crunches",
+          "post_key": "AAA3FnrXhK9juUcrJ_K99Ctp",
+          "created_at": 1777308154000,
+          "author": "Business Socks"
+        },
+        {
+          "line": "Crunches",
+          "stripped": "Crunches",
+          "post_key": "AAC-1Gp0hTPv3Zq9K7V_qmD8",
+          "created_at": 1773455083000,
+          "author": "D20"
+        },
+        {
+          "line": "10 Crunches",
+          "stripped": "Crunches",
+          "post_key": "AAB03O7yFIttdS6IRkRWMHP3",
+          "created_at": 1768834367000,
+          "author": "Wemby"
+        },
+        {
+          "line": "Crunches",
+          "stripped": "Crunches",
+          "post_key": "AAA6Wecv_CDBHSFcuEtpvIZ7",
+          "created_at": 1764368875000,
+          "author": "Neon Moon"
+        }
+      ]
+    },
+    {
+      "id": "back",
+      "name": "back >",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "PAX 1 starts with AMRAP Cindy Squats & PAX 2 does half court weighted Lunges and back >",
+          "stripped": "back >",
+          "post_key": "AACwqa87W4KZFpZQ_f2Gecvq",
+          "created_at": 1776873808000,
+          "author": "Jake"
+        },
+        {
+          "line": "PAX 1 starts with AMRAP Flutter Kicks & PAX 2 Farmer Carry both Cindy full court & back >",
+          "stripped": "back >",
+          "post_key": "AACwqa87W4KZFpZQ_f2Gecvq",
+          "created_at": 1776873808000,
+          "author": "Jake"
+        },
+        {
+          "line": "PAX 1 starts with AMRAP AIR SQUATS & PAX 2 Farmer Carry both Cindy full court & back >",
+          "stripped": "back >",
+          "post_key": "AADzcfzgt1tbyYqGFxuSqXg0",
+          "created_at": 1773751806000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "PAX 1 starts with AMRAP PROM NIGHTS & PAX 2 Rifle Carry Cindy full court & back >",
+          "stripped": "back >",
+          "post_key": "AADzcfzgt1tbyYqGFxuSqXg0",
+          "created_at": 1773751806000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "PAX 1 starts with AMRAP Cindy Squats & PAX 2 does weighted Lunges to light pole and back >",
+          "stripped": "back >",
+          "post_key": "AACnhD0UOiRe04gJmDay_aqH",
+          "created_at": 1770045741000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "bonnie-blair-s",
+      "name": "Bonnie Blair's",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "20 Bonnie Blair's",
+          "stripped": "Bonnie Blair's",
+          "post_key": "AAC-fGKQvx96bRoXzpoxX3Es",
+          "created_at": 1775827697000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Bonnie Blair's for the 6.",
+          "stripped": "Bonnie Blair's",
+          "post_key": "AABr3tmoOmK13ZF0Rsp8dqw_",
+          "created_at": 1763987936000,
+          "author": "Rawhide"
+        },
+        {
+          "line": "40 Bonnie Blair's",
+          "stripped": "Bonnie Blair's",
+          "post_key": "AAAcAVATri_gUAEhgh0_mw9h",
+          "created_at": 1758805837000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "40 Bonnie Blair's",
+          "stripped": "Bonnie Blair's",
+          "post_key": "AAAcAVATri_gUAEhgh0_mw9h",
+          "created_at": 1758805837000,
+          "author": "Lt Dangle"
+        },
+        {
+          "line": "Bonnie Blair's 1 min",
+          "stripped": "Bonnie Blair's",
+          "post_key": "AABsMtENZEmuYDFmzM-sg-aU",
+          "created_at": 1754748517000,
+          "author": "Whistleblower"
+        }
+      ]
+    },
+    {
+      "id": "bear-complex",
+      "name": "Bear Complex",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "5 Bear Complex",
+          "stripped": "Bear Complex",
+          "post_key": "AAAusO84NFMfmCeEh1ax5GVX",
+          "created_at": 1774879411000,
+          "author": "Jake"
+        },
+        {
+          "line": "5 Bear Complex",
+          "stripped": "Bear Complex",
+          "post_key": "AAAusO84NFMfmCeEh1ax5GVX",
+          "created_at": 1774879411000,
+          "author": "Jake"
+        },
+        {
+          "line": "5 Bear Complex and 2 step up (2=1)",
+          "stripped": "Bear Complex",
+          "post_key": "AADYZgMBNYXiFSqUuZH4x-mF",
+          "created_at": 1768221937000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "5. Bear Complex",
+          "stripped": "Bear Complex",
+          "post_key": "AABREUlYn3cHO8llXXIB52Se",
+          "created_at": 1762033720000,
+          "author": "Boomer"
+        },
+        {
+          "line": "5 Bear Complex",
+          "stripped": "Bear Complex",
+          "post_key": "AAD9YLMNA8pwmbdoa8gZWsJH",
+          "created_at": 1760370498000,
+          "author": "Jake"
+        }
+      ]
+    },
+    {
+      "id": "run-back",
+      "name": "run back",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Pax 1 Broad jumps full court and run back",
+          "stripped": "run back",
+          "post_key": "AAB9fGo1Zm9iCaOq5v9wf8oB",
+          "created_at": 1772901360000,
+          "author": "Cuatro"
+        },
+        {
+          "line": "Partner 1 bearcrawl to other side of bball court and run back",
+          "stripped": "run back",
+          "post_key": "AAAyHbm2PJqKJn5N8HArmiA4",
+          "created_at": 1770663638000,
+          "author": "MASH"
+        },
+        {
+          "line": "Get on line, start with 10 Squats, run to end of court, perform 9 Squat Jumps and run back",
+          "stripped": "run back",
+          "post_key": "AACfVywIokait3T3w5l2iaM3",
+          "created_at": 1753223380000,
+          "author": "TonyHawk"
+        },
+        {
+          "line": "Do Exercise 1, bear crawl to the net and run back",
+          "stripped": "run back",
+          "post_key": "AAA5QygutIIwWdQ3jYADWiSz",
+          "created_at": 1752175344000,
+          "author": "D20"
+        },
+        {
+          "line": "Do Exercise 1 + 2, bear crawl to the net and run back",
+          "stripped": "run back",
+          "post_key": "AAA5QygutIIwWdQ3jYADWiSz",
+          "created_at": 1752175344000,
+          "author": "D20"
+        }
+      ]
+    },
+    {
+      "id": "grass-sweepers",
+      "name": "Grass sweepers",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Grass sweepers",
+          "stripped": "Grass sweepers",
+          "post_key": "AACK2UxkNBbQ9P-_VOLHEF9n",
+          "created_at": 1771331810000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Grass sweepers",
+          "stripped": "Grass sweepers",
+          "post_key": "AAD9AOXLn8UnaBzBOQuuL-ZE",
+          "created_at": 1756996526000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Grass sweepers",
+          "stripped": "Grass sweepers",
+          "post_key": "AACxpLJPlO_30rzTPU5Hmqxk",
+          "created_at": 1746532170000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Grass sweepers",
+          "stripped": "Grass sweepers",
+          "post_key": "AADsJRoa3KdLwRO5QvQiePp9",
+          "created_at": 1739883550000,
+          "author": "Firestarter"
+        },
+        {
+          "line": "Grass sweepers",
+          "stripped": "Grass sweepers",
+          "post_key": "AADBdp3IZR0sFmjYMEY7I5F7",
+          "created_at": 1738683747000,
+          "author": "Firestarter"
+        }
+      ]
+    },
+    {
+      "id": "grass-grabbers-in-cadence-recover",
+      "name": "Grass grabbers in cadence Recover",
+      "aliases": [],
+      "category": "warmup",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Grass grabbers in cadence x10, Recover",
+          "stripped": "Grass grabbers in cadence Recover",
+          "post_key": "AADREre3d1OBLxyKXN9FlALe",
+          "created_at": 1769723203000,
+          "author": "Mountie"
+        },
+        {
+          "line": "Grass grabbers in cadence x 8, Recover",
+          "stripped": "Grass grabbers in cadence Recover",
+          "post_key": "AADysGIRRX0Wx0wRCNMqUezx",
+          "created_at": 1768925291000,
+          "author": "Skipper"
+        },
+        {
+          "line": "Grass grabbers in cadence x10, Recover",
+          "stripped": "Grass grabbers in cadence Recover",
+          "post_key": "AACSQyCa8_WOkvpzEySTsi7p",
+          "created_at": 1768826029000,
+          "author": "Mountie"
+        },
+        {
+          "line": "Grass grabbers in cadence x10, Recover",
+          "stripped": "Grass grabbers in cadence Recover",
+          "post_key": "AABB1PbmSGCCywOCFh9oXA1n",
+          "created_at": 1768391479000,
+          "author": "Mountie"
+        },
+        {
+          "line": "Grass grabbers in cadence x10, Recover",
+          "stripped": "Grass grabbers in cadence Recover",
+          "post_key": "AAAcie_J1uHNf2soLaKhrrsd",
+          "created_at": 1768225732000,
+          "author": "Mountie"
+        }
+      ]
+    },
+    {
+      "id": "skin-graft",
+      "name": "Skin Graft",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Skin Graft",
+          "stripped": "Skin Graft",
+          "post_key": "AACJuRQCymLGKny6GgvSxvwL",
+          "created_at": 1765466179000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "Skin Graft",
+          "stripped": "Skin Graft",
+          "post_key": "AADVQBgULIKO6_pHkVJCHLlH",
+          "created_at": 1763052076000,
+          "author": "8 Mile"
+        },
+        {
+          "line": "Skin Graft",
+          "stripped": "Skin Graft",
+          "post_key": "AABRKfyk3rk8zVoHQr7IgRFp",
+          "created_at": 1762353300000,
+          "author": "Shaggy"
+        },
+        {
+          "line": "Skin Graft",
+          "stripped": "Skin Graft",
+          "post_key": "AAB08hRxC5tXgvUSp9osGrsK",
+          "created_at": 1761062532000,
+          "author": "8 Mile"
+        },
+        {
+          "line": "Skin Graft",
+          "stripped": "Skin Graft",
+          "post_key": "AAB5LeGOvHuoikz75JaJNoS7",
+          "created_at": 1760614804000,
+          "author": "8 Mile"
+        }
+      ]
+    },
+    {
+      "id": "cindy-oh-press",
+      "name": "Cindy OH Press",
+      "aliases": [],
+      "category": "full_body",
+      "equipment": [
+        "coupon"
+      ],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "Cindy OH Press",
+          "stripped": "Cindy OH Press",
+          "post_key": "AAA6Wecv_CDBHSFcuEtpvIZ7",
+          "created_at": 1764368875000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Cindy OH Press",
+          "stripped": "Cindy OH Press",
+          "post_key": "AADicQVCGq3EmQDCGL79T4Te",
+          "created_at": 1761701832000,
+          "author": "Neon Moon"
+        },
+        {
+          "line": "Cindy OH press/jog short lap",
+          "stripped": "Cindy OH press",
+          "post_key": "AAAbLD-fF3x-LtcxRqBmdMba",
+          "created_at": 1758556625000,
+          "author": "Hot Lips"
+        },
+        {
+          "line": "2) Cindy OH Press",
+          "stripped": "Cindy OH Press",
+          "post_key": "AABoTUcBzGvME0kTSgOuB0oy",
+          "created_at": 1750087405000,
+          "author": "Renegade"
+        },
+        {
+          "line": "Cindy OH Press",
+          "stripped": "Cindy OH Press",
+          "post_key": "AAAqTe-7LlGHeDmX3HXj3G4w",
+          "created_at": 1749699703000,
+          "author": "Neon Moon"
+        }
+      ]
+    },
+    {
+      "id": "underdog-goat-tour",
+      "name": "UNDERDOG GOAT TOUR🐐",
+      "aliases": [],
+      "category": "uncategorized",
+      "equipment": [],
+      "source": "aggieland_band_backblast_import",
+      "sourceCount": 25,
+      "reviewStatus": "needs_review",
+      "examples": [
+        {
+          "line": "UNDERDOG GOAT TOUR🐐",
+          "stripped": "UNDERDOG GOAT TOUR🐐",
+          "post_key": "AADD9Brb0peZYDHF3Jt4dVbX",
+          "created_at": 1756566851000,
+          "author": "Jake"
+        },
+        {
+          "line": "UNDERDOG GOAT TOUR🐐",
+          "stripped": "UNDERDOG GOAT TOUR🐐",
+          "post_key": "AAA7J7GC0lDbUYLFA6fPQwZ4",
+          "created_at": 1756479997000,
+          "author": "Jake"
+        },
+        {
+          "line": "UNDERDOG GOAT TOUR🐐",
+          "stripped": "UNDERDOG GOAT TOUR🐐",
+          "post_key": "AABqHMKsaPk_Rjbv9vudkTa5",
+          "created_at": 1756390041000,
+          "author": "Jake"
+        },
+        {
+          "line": "UNDERDOG GOAT TOUR🐐",
+          "stripped": "UNDERDOG GOAT TOUR🐐",
+          "post_key": "AABq5r6asOm6AEqXip1z5aBF",
+          "created_at": 1756303341000,
+          "author": "Jake"
+        },
+        {
+          "line": "UNDERDOG GOAT TOUR🐐",
+          "stripped": "UNDERDOG GOAT TOUR🐐",
+          "post_key": "AABinWsVCHcXOY5KFpRB96WF",
+          "created_at": 1756217613000,
+          "author": "Jake"
+        }
+      ]
+    }
+  ]
+}
