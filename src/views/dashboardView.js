@@ -267,6 +267,12 @@ export function renderDashboard() {
         );
     }
 
+    function markQSlotLoggedElsewhere(slot) {
+        slot.workflowStatus = "logged_elsewhere";
+        showToast("Q marked as logged elsewhere.", "success");
+        renderApp();
+    }
+
     function createPrimaryActionsRow() {
         const row = document.createElement("div");
         row.classList.add("dashboard-primary-actions");
@@ -306,31 +312,53 @@ export function renderDashboard() {
         });
     }
 
-    function isTodayQStillActionable(slot) {
+    function getRecentDateCutoff(daysBack) {
+        const date = new Date();
+        date.setDate(date.getDate() - daysBack);
+    
+        return [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0"),
+        ].join("-");
+    }
+
+    function findMostRecentUnpostedQSession() {
+        if (!state.currentUserMemberId) return null;
+    
         const today = getTodayDate();
+        const cutoff = getRecentDateCutoff(7);
+    
+        return [...state.sessions]
+            .filter(session => {
+                const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+                const isCurrentUserQ = effectiveQIds.includes(state.currentUserMemberId);
+                const isRecent = session.date >= cutoff && session.date <= today;
+                const isNotPosted =
+                    !session.backblastText &&
+                    session.backblastStatus !== "posted_elsewhere";
+    
+                return isCurrentUserQ && isRecent && isNotPosted;
+            })
+            .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+    }
 
-        if (slot.date !== today) {
-            return true;
-        }
-
+    function isTodayQPastWorkoutTime(slot) {
+        if (slot.date !== getTodayDate()) return false;
+    
         const ao = state.aos.find(a => a.id === slot.aoId);
-
-        if (!ao?.time) {
-            return true;
-        }
-
+        if (!ao?.time) return false;
+    
         const [hourString, minuteString] = ao.time.split(":");
         const hour = Number(hourString);
         const minute = Number(minuteString || 0);
-
-        if (Number.isNaN(hour) || Number.isNaN(minute)) {
-            return true;
-        }
-
-        const cutoff = new Date();
-        cutoff.setHours(hour + 4, minute, 0, 0);
-
-        return new Date() < cutoff;
+    
+        if (Number.isNaN(hour) || Number.isNaN(minute)) return false;
+    
+        const workoutStart = new Date();
+        workoutStart.setHours(hour, minute, 0, 0);
+    
+        return new Date() > workoutStart;
     }
 
     function getNextQTargetDateTime(slot, ao) {
@@ -437,6 +465,10 @@ export function renderDashboard() {
 
         return state.qSlots
             .filter(slot => {
+                if (slot.workflowStatus === "logged_elsewhere") {
+                    return false;
+                }
+
                 if (slot.qUserId !== state.currentUserMemberId) {
                     return false;
                 }
@@ -450,10 +482,6 @@ export function renderDashboard() {
                 if (loggedSession) {
                     return false;
                 }
-
-                if (!isTodayQStillActionable(slot)) {
-                    return false;
-                } 
 
                 return true;
             })
@@ -472,10 +500,13 @@ export function renderDashboard() {
     const today = getTodayDate();
     const myUpcomingQSlots = getMyUpcomingQSlots();
     const nextQSlot = myUpcomingQSlots[0] || null;
+    const unpostedQSession = findMostRecentUnpostedQSession();
 
-    let nextQSection = null;
+    let dashboardCtaSection = unpostedQSession
+        ? renderPostBackblastCtaSection(unpostedQSession)
+        : renderNoUpcomingQSection();
 
-    if (nextQSlot) {
+    if (nextQSlot && !unpostedQSession) {
         const ao = state.aos.find(a => a.id === nextQSlot.aoId);
         const weatherCacheKey = getWeatherCacheKey(nextQSlot, ao);
         const nextQWeather = weatherCacheKey
@@ -485,9 +516,11 @@ export function renderDashboard() {
         const hasPlannedWorkout = Boolean(matchingWorkout);
         const isTodayQ = nextQSlot.date === today;
         const isTomorrowQ = nextQSlot.date === tomorrow;
+        const loggedSession = findLoggedSessionForSlot(nextQSlot);
+        const isPastTodayWorkout = isTodayQPastWorkoutTime(nextQSlot);
 
-        nextQSection = document.createElement("div");
-        nextQSection.classList.add("section");
+        dashboardCtaSection = document.createElement("div");
+        dashboardCtaSection.classList.add("section");
 
         const nextQHeading = document.createElement("div");
         nextQHeading.classList.add("detail-label");
@@ -504,8 +537,8 @@ export function renderDashboard() {
         const nextQTitle = document.createElement("div");
         nextQTitle.classList.add("member-name");
         nextQTitle.textContent = isTodayQ
-            ? `You are Qing today at ${ao?.name || "Unknown AO"}`
-            : `You are Qing at ${ao?.name || "Unknown AO"}`;
+            ? `Today's Q: ${ao?.name || "Unknown AO"}`
+            : `Upcoming Q: ${ao?.name || "Unknown AO"}`;
 
         const nextQSubtitle = document.createElement("div");
         nextQSubtitle.classList.add("stats-line");
@@ -518,10 +551,12 @@ export function renderDashboard() {
 
         const nextQPreview = document.createElement("div");
         nextQPreview.classList.add("stats-line");
-        nextQPreview.textContent = hasPlannedWorkout
-            ? "BD Ready"
-            : "No workout planned";
-
+        nextQPreview.textContent =
+        isTodayQ && isPastTodayWorkout && !loggedSession
+            ? "Workout Time Has Passed"
+            : hasPlannedWorkout
+                ? "BD Ready"
+                : "No Workout Planned";
         const nextQWeatherLine = document.createElement("div");
         nextQWeatherLine.classList.add("stats-line", "next-q-weather-line");
 
@@ -540,7 +575,43 @@ export function renderDashboard() {
         const actionButton = document.createElement("button");
         actionButton.classList.add("primary-button");
 
-        if (!hasPlannedWorkout) {
+        if (isTodayQ && isPastTodayWorkout && !loggedSession) {
+            actionButton.textContent = "Log Session";
+        
+            actionButton.addEventListener("click", event => {
+                event.stopPropagation();
+        
+                state.draftSession = {
+                    id: crypto.randomUUID(),
+                    date: nextQSlot.date,
+                    aoName: ao?.name || "",
+                    qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
+                    attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
+                    fngs: [],
+                    notes: "",
+                    workout: matchingWorkout || null,
+                    sourcePlannedWorkoutId: matchingWorkout?.id || null,
+                    createdByUserId: state.currentUserId,
+                    createdAt: Date.now(),
+                    backblastText: "",
+                };
+        
+                state.editingSessionId = null;
+                navigateTo("session");
+            });
+
+            const alreadyLoggedButton = document.createElement("button");
+            alreadyLoggedButton.classList.add("secondary-button");
+            alreadyLoggedButton.textContent = "Already Logged";
+
+            alreadyLoggedButton.addEventListener("click", event => {
+                event.stopPropagation();
+                markQSlotLoggedElsewhere(nextQSlot);
+            });
+
+            nextQActions.appendChild(alreadyLoggedButton);
+
+        } else if (!hasPlannedWorkout) {
             actionButton.textContent = "Plan Workout";
 
             actionButton.addEventListener("click", (event) => {
@@ -696,8 +767,136 @@ export function renderDashboard() {
 
         nextQActions.prepend(actionButton);
         nextQCard.append(nextQCardContent, nextQActions);
-        nextQSection.append(nextQHeading, nextQCard);
+        dashboardCtaSection.append(nextQHeading, nextQCard);
         loadNextQWeather(nextQSlot, ao);
+    }
+
+    function renderNoUpcomingQSection() {
+        const section = document.createElement("div");
+        section.classList.add("section");
+    
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = "Next Action";
+    
+        const card = document.createElement("div");
+        card.classList.add("member-card", "dashboard-next-q-card");
+    
+        const content = document.createElement("div");
+    
+        const title = document.createElement("div");
+        title.classList.add("member-name");
+        title.textContent = "No Upcoming Qs";
+    
+        const subtitle = document.createElement("div");
+        subtitle.classList.add("stats-line");
+        subtitle.textContent = "Grab a spot on the schedule and start planning.";
+    
+        const actions = document.createElement("div");
+        actions.classList.add("q-slot-actions");
+    
+        const claimButton = document.createElement("button");
+        claimButton.classList.add("primary-button");
+        claimButton.textContent = "Claim a Q Slot";
+    
+        claimButton.addEventListener("click", event => {
+            event.stopPropagation();
+            navigateTo("qSignup");
+        });
+    
+        const scheduleButton = document.createElement("button");
+        scheduleButton.classList.add("secondary-button");
+        scheduleButton.textContent = "View Schedule";
+    
+        scheduleButton.addEventListener("click", event => {
+            event.stopPropagation();
+            navigateTo("weeklyQCalendar");
+        });
+    
+        card.addEventListener("click", () => {
+            navigateTo("qSignup");
+        });
+    
+        content.append(title, subtitle);
+        actions.append(claimButton, scheduleButton);
+        card.append(content, actions);
+        section.append(heading, card);
+    
+        return section;
+    }
+
+    function renderPostBackblastCtaSection(session) {
+        const section = document.createElement("div");
+        section.classList.add("section");
+    
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = "Next Action";
+    
+        const card = document.createElement("div");
+        card.classList.add("member-card", "dashboard-next-q-card");
+    
+        const content = document.createElement("div");
+    
+        const title = document.createElement("div");
+        title.classList.add("member-name");
+        title.textContent = "Post Your Backblast";
+    
+        const subtitle = document.createElement("div");
+        subtitle.classList.add("stats-line");
+        subtitle.textContent = `${formatDate(session.date)} • ${session.aoName || "Unknown AO"}`;
+    
+        const preview = document.createElement("div");
+        preview.classList.add("stats-line");
+        preview.textContent = "Session logged. Finish the loop with a backblast.";
+    
+        const actions = document.createElement("div");
+        actions.classList.add("q-slot-actions");
+    
+        const backblastButton = document.createElement("button");
+        backblastButton.classList.add("primary-button");
+        backblastButton.textContent = "Post Backblast";
+    
+        backblastButton.addEventListener("click", event => {
+            event.stopPropagation();
+            state.selectedSessionId = session.id;
+            navigateTo("backblast");
+        });
+    
+        const viewSessionButton = document.createElement("button");
+        viewSessionButton.classList.add("secondary-button");
+        viewSessionButton.textContent = "View Session";
+    
+        viewSessionButton.addEventListener("click", event => {
+            event.stopPropagation();
+            state.selectedSessionId = session.id;
+            navigateTo("sessionDetail");
+        });
+
+        const alreadyPostedButton = document.createElement("button");
+        alreadyPostedButton.classList.add("secondary-button");
+        alreadyPostedButton.textContent = "Already Posted";
+
+        alreadyPostedButton.addEventListener("click", event => {
+            event.stopPropagation();
+
+            session.backblastStatus = "posted_elsewhere";
+
+            showToast("Backblast marked as posted.", "success");
+            renderApp();
+        });
+    
+        card.addEventListener("click", () => {
+            state.selectedSessionId = session.id;
+            navigateTo("backblast");
+        });
+    
+        content.append(title, subtitle, preview);
+        actions.append(backblastButton, viewSessionButton, alreadyPostedButton);
+        card.append(content, actions);
+        section.append(heading, card);
+    
+        return section;
     }
 
     function renderMyUpcomingQs() {
@@ -1233,7 +1432,7 @@ export function renderDashboard() {
         ...(regionSwitcher ? [regionSwitcher] : []),
         userRow,
         //notificationRow,
-        ...(nextQSection ? [nextQSection] : []),
+        dashboardCtaSection,
         primaryActionsRow,
         myUpcomingQsSection,
        ...(myStatsSection ? [myStatsSection] : []),
