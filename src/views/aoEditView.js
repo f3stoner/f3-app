@@ -193,7 +193,22 @@ export function renderAoEditView() {
         { value: "fixed", label: "Fixed" },
         { value: "alternating-weeks", label: "Alternating Weeks" },
     ];
+
+    function createEmphasisSelect(value = "") {
+        const select = document.createElement("select");
     
+        EMPHASIS_OPTIONS.forEach(option => {
+            const optionEl = document.createElement("option");
+            optionEl.value = option.value;
+            optionEl.textContent = option.label;
+            select.appendChild(optionEl);
+        });
+    
+        select.value = value || "";
+    
+        return select;
+    }
+
     function createEmphasisRuleForDay(dayValue) {
         return draftAo.emphasisSchedule?.[String(dayValue)] || {
             pattern: "fixed",
@@ -202,6 +217,15 @@ export function renderAoEditView() {
         };
     }
 
+    function formatEmphasisValues(values = []) {
+        return values
+            .map(value => {
+                const option = EMPHASIS_OPTIONS.find(option => option.value === value);
+                return option?.label || value;
+            })
+            .join(", ");
+    }
+    
     const emphasisRowsByDay = {};
     
     const emphasisLabel = document.createElement("div");
@@ -244,23 +268,75 @@ export function renderAoEditView() {
             ? "Rotation Order"
             : "Emphasis";
     
-        const valuesInput = document.createElement("input");
-        valuesInput.type = "text";
-        valuesInput.placeholder = patternSelect.value === "alternating-weeks"
-            ? "Example: upper, lower, cardio"
-            : "Example: upper";
+        const valuesWrap = document.createElement("div");
+        valuesWrap.classList.add("emphasis-values-wrap");
 
-        function formatEmphasisValues(values = []) {
-            return values
-                .map(value => {
-                    const option = EMPHASIS_OPTIONS.find(option => option.value === value);
-                    return option?.label || value;
-                })
-                .join(", ");
+        function renderValueSelectors() {
+            valuesWrap.textContent = "";
+
+            const isAlternating = patternSelect.value === "alternating-weeks";
+            const values = rule.values?.length ? [...rule.values] : [""];
+
+            if (!isAlternating) {
+                const select = createEmphasisSelect(values[0] || "");
+                select.addEventListener("change", syncRule);
+                valuesWrap.appendChild(select);
+                return;
+            }
+
+            values.forEach(value => {
+                const row = document.createElement("div");
+                row.classList.add("emphasis-value-row");
+
+                const select = createEmphasisSelect(value);
+
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.textContent = "x";
+                removeButton.classList.add("secondary-button");
+                removeButton.setAttribute("aria-label", "Remove rotation");
+
+                select.addEventListener("change", syncRule);
+
+                removeButton.addEventListener("click", () => {
+                    row.remove();
+                    syncRule();
+                });
+
+                row.append(select, removeButton);
+                valuesWrap.appendChild(row);
+            });
+
+            const addButton = document.createElement("button");
+            addButton.type = "button";
+            addButton.textContent = "Add Rotation";
+            addButton.classList.add("secondary-button", "emphasis-add-button");
+
+            addButton.addEventListener("click", () => {
+                const row = document.createElement("div");
+                row.classList.add("emphasis-value-row");
+
+                const select = createEmphasisSelect("");
+
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.textContent = "Remove";
+                removeButton.classList.add("secondary-button");
+
+                select.addEventListener("change", syncRule);
+
+                removeButton.addEventListener("click", () => {
+                    row.remove();
+                    syncRule();
+                });
+
+                row.append(select, removeButton);
+                valuesWrap.insertBefore(row, addButton);
+            });
+
+            valuesWrap.appendChild(addButton);
         }
-
-        valuesInput.value = formatEmphasisValues(rule.values || []);
-    
+        
         const startsOnLabel = document.createElement("div");
         startsOnLabel.classList.add("detail-label");
         startsOnLabel.textContent = "Rotation Start Date";
@@ -276,24 +352,22 @@ export function renderAoEditView() {
             startsOnInput.style.display = isAlternating ? "" : "none";
     
             valuesLabel.textContent = isAlternating ? "Rotation Order" : "Emphasis";
-            valuesInput.placeholder = isAlternating
-                ? "Example: upper, lower, cardio"
-                : "Example: upper";
+            
+            renderValueSelectors();
         }
     
         function syncRule() {
-            const values = valuesInput.value
-                .split(",")
-                .map(value => value.trim().toLowerCase())
+            const values = [...valuesWrap.querySelectorAll("select")]
+                .map(select => select.value)
                 .filter(Boolean);
-    
+        
             if (!values.length) {
                 delete draftAo.emphasisSchedule[dayKey];
                 return;
             }
-    
+        
             const isAlternating = patternSelect.value === "alternating-weeks";
-    
+        
             draftAo.emphasisSchedule[dayKey] = {
                 pattern: patternSelect.value || "fixed",
                 values,
@@ -301,19 +375,15 @@ export function renderAoEditView() {
                     ? startsOnInput.value || null
                     : null,
             };
-
-            valuesInput.value = values
-                .map(value => {
-                    const option = EMPHASIS_OPTIONS.find(option => option.value === value);
-                    return option?.label || value;
-                })
-                .join(", ");
-    
+        
+            rule.pattern = draftAo.emphasisSchedule[dayKey].pattern;
+            rule.values = values;
+            rule.startsOnDate = draftAo.emphasisSchedule[dayKey].startsOnDate;
+        
             updateAlternatingVisibility();
         }
     
         patternSelect.addEventListener("change", syncRule);
-        valuesInput.addEventListener("input", syncRule);
         startsOnInput.addEventListener("input", syncRule);
     
         updateAlternatingVisibility();
@@ -322,7 +392,7 @@ export function renderAoEditView() {
             dayLabel,
             patternSelect,
             valuesLabel,
-            valuesInput,
+            valuesWrap,
             startsOnLabel,
             startsOnInput
         );
@@ -418,6 +488,11 @@ export function renderAoEditView() {
     saveButton.textContent = "Save AO";
 
     saveButton.addEventListener("click", async () => {
+        if (saveButton.disabled) return;
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+
         if (!draftAo.name.trim()) {
             alert("Please enter an AO name.");
             return;
@@ -510,11 +585,14 @@ export function renderAoEditView() {
             
            
 
+            showToast(isEditing ? "AO updated." : "AO created.");
             state.editingAoId = null;
             navigateTo("aoManagement");
         } catch (error) {
             console.error("Failed to save AO:", error);
             showToast("Failed to save AO.", "error");
+            saveButton.disabled = false;
+            saveButton.textContent = "Save AO";
         }
     });
 

@@ -3049,3 +3049,32 @@ body.menu-open {
 .emphasis-day-card input {
     margin-bottom: 10px;
 }
+
+.emphasis-day-card {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface-raised);
+    margin-bottom: 1rem;
+}
+
+.emphasis-value-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.emphasis-value-row button {
+    flex-shrink: 0;
+}
+
+.emphasis-values-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.emphasis-add-button {
+    align-self: flex-start;
+}

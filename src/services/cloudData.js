@@ -689,7 +689,7 @@ export async function updateAoInCloud(regionId, ao) {
             map_url: ao.mapUrl || null,
             latitude: ao.latitude ?? null,
             longitude: ao.longitude ?? null,
-            weather_location_label: ao.weatherLocationLabel || nulll,
+            weather_location_label: ao.weatherLocationLabel || null,
             weather_enabled: ao.weatherEnabled ?? false,
             emphasis_schedule: ao.emphasisSchedule || {},
         })
