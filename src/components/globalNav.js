@@ -51,7 +51,7 @@ export function createGlobalNav () {
         navigateTo("session");
     });
 
-    nav.appendChild(fabButton);
+    /*nav.appendChild(fabButton);*/
 
     return nav;
 }

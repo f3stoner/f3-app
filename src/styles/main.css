@@ -3020,3 +3020,10 @@ body.menu-open {
     font-family: inherit;
     line-height: 1.45;
 }
+
+.button-row button.active,
+.search-mode-row button.active {
+    background: var(--primary);
+    color: var(--text-inverse);
+    border-color: var(--primary);
+}

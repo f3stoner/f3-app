@@ -6,6 +6,8 @@ import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 
+state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
+
 export function renderSessionHistory() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -141,8 +143,11 @@ export function renderSessionHistory() {
 
     const statsLine = document.createElement("div");
     statsLine.classList.add("stats-line");
-    statsLine.textContent = `${session.attendeeIds.length} PAX • ${session.fngs.length} FNGs`;
-
+    const attendeeCount = session.attendeeIds?.length || 0;
+    const fngCount = session.fngs?.length || 0;
+    
+    statsLine.textContent = `${attendeeCount} PAX • ${fngCount} FNGs`;
+   
     const previewLine = document.createElement("div");
     previewLine.classList.add("stats-line", "session-preview-line");
     previewLine.textContent =
@@ -161,108 +166,204 @@ export function renderSessionHistory() {
     return card;
 }
 
-    function renderSessionList() {
+function getMemberNamesByIds(ids = []) {
+    return ids
+        .map(id => state.members.find(m => m.id === id))
+        .filter(Boolean)
+        .flatMap(member => [member.paxName, member.realName])
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+}
 
-        sessionList.textContent = "";
+function getSessionSearchText(session, mode = "all") {
+    const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+    const workout = session.workout || {};
 
-        const searchTerm = (state.sessionHistorySearchTerm || "").trim().toLowerCase();
+    const workoutText = [
+        workout.title,
+        workout.warmorama,
+        workout.thangs,
+        ...(workout.thangSections || []).map(section => section.content),
+        workout.finisher,
+        workout.notes,
+    ].filter(Boolean).join(" ");
 
-        const filteredSessions = state.sessions.filter((session) => {
-            const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+    const attendeeOnlyIds = (session.attendeeIds || [])
+    .filter(id => !effectiveQIds.includes(id));
 
-            const isQ = effectiveQIds.includes(state.currentUserMemberId);
-            const isAttended = 
-                session.attendeeIds.includes(state.currentUserMemberId) &&
-                !isQ;
+    const attendeeText = [
+        getMemberNamesByIds(attendeeOnlyIds),
+        ...(session.fngs || []).flatMap(fng => [fng.realName, fng.paxName]),
+    ].filter(Boolean).join(" ");
 
-            if (state.sessionHistoryFilterType === "q" && !isQ) return false;
-            if (state.sessionHistoryFilterType === "attended" && !isAttended) return false;
+    const qText = getMemberNamesByIds(effectiveQIds);
 
-            if (state.sessionHistoryAoFilter) {
-                const matchesAo =
-                    !state.sessionHistoryAoFilter.aoName ||
-                    session.aoName === state.sessionHistoryAoFilter.aoName;
-            
-                const matchesDate =
-                    (!state.sessionHistoryAoFilter.startDate ||
-                        session.date >= state.sessionHistoryAoFilter.startDate) &&
-            
-                    (!state.sessionHistoryAoFilter.endDate ||
-                        session.date <= state.sessionHistoryAoFilter.endDate);
-            
-                if (!matchesAo || !matchesDate) {
-                    return false;
-                }
+    const backblastText = [
+        session.backblastText,
+        session.historicalBackblastText,
+        session.linkedBackblastText,
+        session.importedBackblastText,
+        session.bandBackblastText,
+        session.bandPostText,
+    ].filter(Boolean).join(" ");
+
+    const baseText = [
+        session.aoName,
+        formatDate(session.date),
+        session.date,
+    ].filter(Boolean).join(" ");
+
+    const notesText = session.notes || "";
+
+    const buckets = {
+        all: [baseText, qText, attendeeText, workoutText, backblastText, notesText],
+        q: [qText],
+        attendee: [attendeeText],
+        workout: [workoutText],
+    };
+
+    return (buckets[mode] || buckets.all).join(" ").toLowerCase();
+}
+
+const resultsMeta = document.createElement("div");
+resultsMeta.classList.add("detail-value", "session-results-meta");
+
+function renderSessionList() {
+
+    sessionList.textContent = "";
+
+    const searchTerm = (state.sessionHistorySearchTerm || "").trim().toLowerCase();
+
+    const filteredSessions = state.sessions.filter((session) => {
+        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+
+        const isQ = effectiveQIds.includes(state.currentUserMemberId);
+        const attendeeIds = session.attendeeIds || [];
+        const isAttended =
+            attendeeIds.includes(state.currentUserMemberId) &&
+            !isQ;
+
+        if (state.sessionHistoryFilterType === "q" && !isQ) return false;
+        if (state.sessionHistoryFilterType === "attended" && !isAttended) return false;
+
+        if (state.sessionHistoryAoFilter) {
+            const matchesAo =
+                !state.sessionHistoryAoFilter.aoName ||
+                session.aoName === state.sessionHistoryAoFilter.aoName;
+        
+            const matchesDate =
+                (!state.sessionHistoryAoFilter.startDate ||
+                    session.date >= state.sessionHistoryAoFilter.startDate) &&
+        
+                (!state.sessionHistoryAoFilter.endDate ||
+                    session.date <= state.sessionHistoryAoFilter.endDate);
+        
+            if (!matchesAo || !matchesDate) {
+                return false;
             }
+        }
 
-            if (!searchTerm) return true;
+        if (!searchTerm) return true;
 
-            const qNames = effectiveQIds
-                .map(qId => state.members.find(m => m.id === qId))
-                .filter(Boolean)
-                .map(member => member.paxName.toLowerCase())
-                .join(" ");
-
-            const paxNames = session.attendeeIds
-                .map(id => state.members.find(m => m.id === id))
-                .filter(Boolean)
-                .map(member => member.paxName.toLowerCase())
-                .join(" ");
-
-            const aoName = (session.aoName || "").toLowerCase();
-            const notes = (session.notes || "").toLowerCase();
-            const workoutTitle = (session.workout?.title || "").toLowerCase();
-            const workoutPreview = (session.workout?.thangs?.split("\n")[0]  || "").toLowerCase();
-            const formattedDate = formatDate(session.date).toLowerCase();
-            const rawDate = (session.date || "").toLowerCase();
-
-            return (
-                aoName.includes(searchTerm) ||
-                qNames.includes(searchTerm) ||
-                paxNames.includes(searchTerm) ||
-                notes.includes(searchTerm) ||
-                workoutTitle.includes(searchTerm) ||
-                workoutPreview.includes(searchTerm) ||
-                formattedDate.includes(searchTerm) ||
-                rawDate.includes(searchTerm)
-            );
-        });
-
-        const sortedSessions = [...filteredSessions].sort((a, b) => {
-            if (a.date !== b.date) {
-                return b.date.localeCompare(a.date);
-            }
-
-            const aCreatedAt = a.createdAt || 0;
-            const bCreatedAt = b.createdAt || 0;
-
-            return bCreatedAt - aCreatedAt;
-        })
-        if (sortedSessions.length === 0) {
-            sessionList.textContent = 
-            searchTerm || state.sessionHistoryFilterType !== "all" || state.sessionHistoryAoFilter
-                ? "No matching sessions found"            
-                : "No sessions saved yet";
-            return;
-        } 
-
-        let lastDate = null;
-
-        sortedSessions.forEach((session) => {
-            if (session.date !== lastDate) {
-                const dateHeader = document.createElement("div");
-                dateHeader.classList.add("detail-label", "session-date-divider");
-                dateHeader.textContent = formatDate(session.date);
-
-                sessionList.appendChild(dateHeader);
-                lastDate = session.date;
-            }
-            sessionList.appendChild(createSessionCard(session));
+        const sessionSearchText = getSessionSearchText(
+            session,
+            state.sessionHistorySearchMode || "all"
+        );
+        
+        if (
+            searchTerm === "mario" &&
+            state.sessionHistorySearchMode === "workout" &&
+            sessionSearchText.includes(searchTerm)
+        ) {
+            console.log("Mario workout match:", {
+                sessionId: session.id,
+                aoName: session.aoName,
+                workout: session.workout,
+                searchText: sessionSearchText,
             });
         }
+        
+        return sessionSearchText.includes(searchTerm);
+    });
+
+    const sortedSessions = [...filteredSessions].sort((a, b) => {
+        if (a.date !== b.date) {
+            return b.date.localeCompare(a.date);
+        }
+
+        const aCreatedAt = a.createdAt || 0;
+        const bCreatedAt = b.createdAt || 0;
+
+        return bCreatedAt - aCreatedAt;
+    })
+    if (sortedSessions.length === 0) {
+        resultsMeta.textContent = "0 sessions found";
+        sessionList.textContent =
+            searchTerm || state.sessionHistoryFilterType !== "all" || state.sessionHistoryAoFilter
+                ? "No matching sessions found"
+                : "No sessions saved yet";
+        return;
+    }
+
+    resultsMeta.textContent = `${sortedSessions.length} session${sortedSessions.length === 1 ? "" : "s"} found`;
+
+    let lastDate = null;
+
+    sortedSessions.forEach((session) => {
+        if (session.date !== lastDate) {
+            const dateHeader = document.createElement("div");
+            dateHeader.classList.add("detail-label", "session-date-divider");
+            dateHeader.textContent = formatDate(session.date);
+
+            sessionList.appendChild(dateHeader);
+            lastDate = session.date;
+        }
+        sessionList.appendChild(createSessionCard(session));
+        });
+    }
+    let searchTimeoutId = null;
+
     searchInput.addEventListener("input", (event) => {
-        state.sessionHistorySearchTerm = event.target.value;
+        const nextValue = event.target.value;
+    
+        clearTimeout(searchTimeoutId);
+    
+        searchTimeoutId = setTimeout(() => {
+            state.sessionHistorySearchTerm = nextValue;
+            renderSessionList();
+        }, 250);
+    });
+
+    const searchModeRow = document.createElement("div");
+    searchModeRow.classList.add("button-row", "search-mode-row");
+
+    [
+        ["all", "All"],
+        ["q", "Q"],
+        ["attendee", "PAX"],
+        ["workout", "Workout"],
+        
+    ].forEach(([value, label]) => {
+        const button = document.createElement("button");
+        button.textContent = label;
+        button.dataset.mode = value;
+
+        if ((state.sessionHistorySearchMode || "all") === value) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => {
+            state.sessionHistorySearchMode = value;
+
+            searchModeRow.querySelectorAll("button").forEach(button => {
+                button.classList.toggle("active", button.dataset.mode === value);
+        });
+
         renderSessionList();
+        });
+
+        searchModeRow.appendChild(button);
     });
 
     const backButton = document.createElement("button");
@@ -280,6 +381,8 @@ export function renderSessionHistory() {
         title,
         filterSection,
         searchInput,
+        searchModeRow,
+        resultsMeta,
         sessionList,
         backButton,
         nav

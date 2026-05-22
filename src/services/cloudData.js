@@ -112,6 +112,7 @@ export async function loadRegionData(regionId) {
         qSlotResult,
         adminFlagResult,
         savedPlannerSectionResult,
+        backblastLinkResult,
     ] = await Promise.all([
         supabase
             .from("regions")
@@ -143,7 +144,11 @@ export async function loadRegionData(regionId) {
             .eq("region_id", regionId)
             .order("last_used_at", { ascending: false, nullsFirst: false })
             .order("created_at", { ascending: false }),
+        
+        loadBackblastLinks(),
     ]);
+
+    console.log("Backblast link sample:", backblastLinkResult?.[0]);
 
     if (regionResult.error) throw regionResult.error;
     if (sessionResult.error) throw sessionResult.error;
@@ -154,10 +159,39 @@ export async function loadRegionData(regionId) {
     console.log("Loaded members count:", memberResult.length);
     console.log("RAW memberResult length:", memberResult.length);
     console.log("RAW sessionResult length:", sessionResult.length);
+
+    const backblastLinksBySessionId = new Map();
+
+    (backblastLinkResult || []).forEach(link => {
+        if (!link.session_id) return;
+
+        const existing = backblastLinksBySessionId.get(link.session_id);
+
+        if (
+            !existing ||
+            (link.confidence_score || 0) > (existing.confidence_score || 0)
+        ) {
+            backblastLinksBySessionId.set(link.session_id, link);
+        }
+    });
+
     return {
         regionName: regionResult.data.name,
         members: memberResult.map(mapMemberFromDb),
-        sessions: sessionResult.map(mapSessionFromDb),
+        sessions: sessionResult.map(row => {
+            const session = mapSessionFromDb(row);
+            const historicalBackblast = backblastLinksBySessionId.get(session.id);
+        
+            return {
+                ...session,
+                historicalBackblastText:
+                    historicalBackblast?.cleaned_content ||
+                    historicalBackblast?.raw_content ||
+                    "",
+                historicalParsedBackblast:
+                    historicalBackblast?.parsed_backblast || null,
+                historicalBackblastLink: historicalBackblast || null,            };
+        }),        
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
         aos: aoResult.data.map(mapAoFromDb),
         qSlots: qSlotResult.map(mapQSlotFromDb),
@@ -1028,4 +1062,16 @@ export async function getBackblastLinkBySessionId(sessionId) {
     if (error) throw error;
 
     return data?.[0] || null;
+}
+
+export async function loadBackblastLinks() {
+    const { data, error } = await supabase
+        .from("session_backblast_links")
+        .select("*")
+        .order("confidence_score", { ascending: false })
+        .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return data || [];
 }
