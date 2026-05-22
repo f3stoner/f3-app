@@ -185,13 +185,10 @@ export async function loadRegionData(regionId) {
         
             return {
                 ...session,
-                historicalBackblastText:
-                    historicalBackblast?.cleaned_content ||
-                    historicalBackblast?.raw_content ||
-                    "",
-                historicalParsedBackblast:
-                    historicalBackblast?.parsed_backblast || null,
-                historicalBackblastLink: historicalBackblast || null,            };
+                historicalBackblastText: "",
+                historicalParsedBackblast: null,
+                historicalBackblastLink: historicalBackblast || null,
+            };
         }),        
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
         aos: aoResult.data.map(mapAoFromDb),
@@ -1107,7 +1104,14 @@ export async function getBackblastLinkBySessionId(sessionId) {
 export async function loadBackblastLinks() {
     const { data, error } = await supabase
         .from("session_backblast_links")
-        .select("*")
+        .select(`
+            id,
+            session_id,
+            band_post_key,
+            link_method,
+            confidence_score,
+            created_at
+        `)
         .order("confidence_score", { ascending: false })
         .order("created_at", { ascending: false });
 

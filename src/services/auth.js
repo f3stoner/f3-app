@@ -68,8 +68,8 @@ export async function createProfile({ id, email, displayName, regionId, role = "
     return data;
 }
 
-export async function ensureMyProfile(defaultRegionId = null) {
-    const session = await getCurrentSession();
+export async function ensureMyProfile(defaultRegionId = null, existingSession = null) {
+    const session = existingSession || await getCurrentSession();
     if (!session) return null;
 
     try {
@@ -96,7 +96,6 @@ export async function ensureMyProfile(defaultRegionId = null) {
 
     return createdProfile;
 }
-
 export async function updateMyProfile(updates) {
     const currentSession = await getCurrentSession();
 

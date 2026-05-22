@@ -88,16 +88,22 @@ export function renderWorkoutPlanner() {
     draftWorkout.thangSections = normalizeThangSections(draftWorkout);
     draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
 
+    let persistDraftTimeout = null;
+
     function persistDraft() {
         draftWorkout.thangSections = normalizeThangSections(draftWorkout);
         draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
 
         state.draftPlannedWorkout = { ...draftWorkout };
 
-        localStorage.setItem(
-            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-            JSON.stringify(state.draftPlannedWorkout)
-        );
+        clearTimeout(persistDraftTimeout);
+
+        persistDraftTimeout = setTimeout(() => {
+            localStorage.setItem(
+                SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+                JSON.stringify(state.draftPlannedWorkout)
+            );
+        }, 300);
     }
 
     function createSectionTemplateControls(sectionType, input, labelText, targetThangId = null) {

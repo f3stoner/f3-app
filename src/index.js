@@ -318,6 +318,7 @@ function getSharedWorkoutIdFromUrl() {
 }
 
 async function bootApp() {
+
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
     const sharedWorkoutId = getSharedWorkoutIdFromUrl();
@@ -344,8 +345,7 @@ async function bootApp() {
             hideBootSplash();
             return;
         }
-
-        const profile = await ensureMyProfile(session.user.id);
+        const profile = await ensureMyProfile(session.user.id, session);
 
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
@@ -374,21 +374,22 @@ async function bootApp() {
             };
         
         state.availableRegions = regions || [];
-
+        
         const regionLoaded = await loadActiveRegionData(profile.region_id);
 
         if (!regionLoaded) {
             hideBootSplash();
             return;
         }
-
-        await logAppEvent({
+        logAppEvent({
             type: APP_EVENTS.APP_OPENED,
             metadata: {
                 role: state.currentUserRole,
                 hasLinkedMember: Boolean(state.currentUserMemberId),
                 restoredFromSharedWorkout: Boolean(sharedWorkoutId),
             },
+        }).catch(error => {
+            console.error("Failed to log app open:", error);
         });
 
         if (sharedWorkoutId) {
@@ -406,11 +407,9 @@ async function bootApp() {
                 state.currentView = "dashboard";
             }
         }
-
         renderApp();
         hideBootSplash();
     } catch (error) {
-        console.error("Failed to boot app:", error);
 
         logActionFailure("bootApp", error, {
             mode,
