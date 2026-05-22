@@ -15,6 +15,8 @@ import { createQReminderPrompt } from "../components/qReminderPrompt.js";
 import { createQReminderPromptModal } from "../components/qReminderPromptModal.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
+import { createIcon } from "../utils/icons.js";
 
 export function renderQSignupView() {
     const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
@@ -539,6 +541,7 @@ export function renderQSignupView() {
             card.classList.add("member-card", "q-slot-card");
 
             const ao = state.aos.find(a => a.id === slot.aoId);
+            const emphasis = getWorkoutEmphasisForSlot(slot, ao);
             const isMine = slot.qUserId === state.currentUserMemberId;
             const qMember = state.members.find(m => m.id === slot.qUserId);
             const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
@@ -547,6 +550,23 @@ export function renderQSignupView() {
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
             topLine.textContent = `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
+
+            const emphasisLine = document.createElement("div");
+            emphasisLine.classList.add("q-signup-emphasis-row");
+
+            if (emphasis) {
+                const emphasisBadge = document.createElement("span");
+                emphasisBadge.classList.add("workout-emphasis-line");
+
+                const icon = createIcon(emphasis.icon);
+                icon.classList.add("workout-emphasis-icon");
+
+                const label = document.createElement("div");
+                label.textContent = emphasis.label;
+
+                emphasisBadge.append(icon, label);
+                emphasisLine.appendChild(emphasisBadge);
+            }
 
             const titleLine = document.createElement("div");
             titleLine.classList.add("stats-line");
@@ -700,7 +720,12 @@ export function renderQSignupView() {
             mainRow.classList.add("q-slot-main-row");
 
             const cardContent = document.createElement("div");
-            cardContent.append(topLine, titleLine, previewLine);
+
+            if (emphasis) {
+                cardContent.append(topLine, emphasisLine, titleLine, previewLine);
+            } else {
+                cardContent.append(topLine, titleLine, previewLine);
+            }
             
             mainRow.append(cardContent, actionWrap);
             card.appendChild(mainRow);

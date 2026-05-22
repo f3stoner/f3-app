@@ -3027,3 +3027,8 @@ body.menu-open {
     color: var(--text-inverse);
     border-color: var(--primary);
 }
+
+.q-signup-emphasis-row {
+    margin-top: 0.35rem;
+    margin-bottom: 0.25rem;
+}
