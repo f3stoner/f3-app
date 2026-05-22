@@ -1140,13 +1140,26 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
             appendButton.addEventListener("click", async () => {
                 if (sectionType === "thang") {
                     draftWorkout.thangSections = normalizeThangSections(draftWorkout);
-
-                    draftWorkout.thangSections.push({
-                        id: crypto.randomUUID(),
-                        title: `Thang ${draftWorkout.thangSections.length + 1}`,
-                        content: section.content,
-                    });
-
+                
+                    const targetId = state.plannerSectionModalTargetThangId;
+                    const targetIndex = draftWorkout.thangSections.findIndex(
+                        thang => thang.id === targetId
+                    );
+                
+                    if (targetIndex === -1) {
+                        showToast("Could not find target Thang.", "error");
+                        return;
+                    }
+                
+                    const currentContent = draftWorkout.thangSections[targetIndex].content || "";
+                
+                    draftWorkout.thangSections[targetIndex] = {
+                        ...draftWorkout.thangSections[targetIndex],
+                        content: currentContent
+                            ? `${currentContent}\n\n${section.content}`
+                            : section.content,
+                    };
+                
                     draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
                 } else {
                 const currentContent = draftWorkout[sectionType] || "";
