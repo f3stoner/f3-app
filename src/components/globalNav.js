@@ -1,9 +1,19 @@
-import { renderApp } from "../index.js";
 import { state } from "../modules/state.js";
 import { navigateTo } from "../utils/navigation.js";
 import { closeMainMenu } from "./mainMenu.js";
 
+const EDIT_ACTION_VIEWS = new Set([
+    "workoutPlanner",
+    "session",
+    "memberEdit",
+    "aoEdit",
+]);
+
 export function createGlobalNav () {
+    if (EDIT_ACTION_VIEWS.has(state.currentView)) {
+        return createEditActionBar();
+    }
+
     const nav = document.createElement("div");
     nav.classList.add("global-nav");
 
@@ -35,7 +45,7 @@ export function createGlobalNav () {
         nav.appendChild(button);
     });
 
-    const fabButton = document.createElement("button");
+   /* const fabButton = document.createElement("button");
     fabButton.classList.add("global-fab");
     fabButton.textContent = "+ Log";
 
@@ -51,7 +61,25 @@ export function createGlobalNav () {
         navigateTo("session");
     });
 
-    /*nav.appendChild(fabButton);*/
+    nav.appendChild(fabButton);*/
+
+    function createEditActionBar() {
+        const nav = document.createElement("nav");
+        nav.classList.add("global-nav", "edit-action-bar");
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.classList.add("primary-button");
+        saveButton.textContent = "Save";
+
+        saveButton.addEventListener("click", () => {
+            window.dispatchEvent(new CustomEvent("theq:save-current-edit"));
+        });
+
+        nav.append(saveButton);
+
+        return nav;
+    }
 
     return nav;
 }

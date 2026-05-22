@@ -4,12 +4,10 @@ import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { addPlannedWorkout, updatePlannedWorkout, addSavedPlannerSection, updateSavedPlannerSection, deleteSavedPlannerSection } from "../services/appData.js";
 import { REGION_AOS, REGION_INTRO_TEMPLATES } from "../config.js";
-import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createWorkoutTimer, getTimersForSection, formatTimerSummary } from "../utils/workoutTimers.js";
 import { createSavedPlannerSection, getSavedSectionsByType } from "../utils/plannerSections.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
-import { deleteSavedPlannerSectionFromCloud } from "../services/cloudData.js";
 import { logSaveFailure } from "../services/appEvents.js";
 import { normalizeThangSections, serializeThangSections } from "../utils/thangs.js";
 import { searchExercises } from "../utils/exerciseSearch.js";
@@ -22,7 +20,7 @@ export function renderWorkoutPlanner() {
 
     cleanupMainMenu();
 
-    const isEditing = Boolean(state.editingPlannedWorkoutId);
+    let isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
 
     const SAVED_PLANNED_WORKOUT_DRAFT_KEY = "draftPlannedWorkout";
@@ -74,6 +72,17 @@ export function renderWorkoutPlanner() {
             SAVED_PLANNED_WORKOUT_DRAFT_KEY,
             JSON.stringify(state.draftPlannedWorkout)
         );
+    }
+
+    if (!isEditing && draftWorkout?.id) {
+        const existingWorkout = state.plannedWorkouts.find(
+            workout => workout.id === draftWorkout.id
+        );
+    
+        if (existingWorkout) {
+            isEditing = true;
+            state.editingPlannedWorkoutId = draftWorkout.id;
+        }
     }
 
     draftWorkout.thangSections = normalizeThangSections(draftWorkout);
@@ -128,7 +137,7 @@ export function renderWorkoutPlanner() {
                 showToast("Failed to save section.", "error");
             }
         });
-
+        
         const insertButton = document.createElement("button");
         insertButton.type ="button";
         insertButton.classList.add("secondary-button");
@@ -718,55 +727,66 @@ export function renderWorkoutPlanner() {
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save Workout";
 
-    saveButton.addEventListener("click", async () => {
+    let isSavingWorkout = false;
+
+    async function saveWorkout() {
+        if (isSavingWorkout) return;
+        isSavingWorkout = true;
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving..."
+
         console.log("isEditing:", isEditing);
         console.log("editingPLannedWorkoutId:", state.editingPlannedWorkoutId);
-        console.log("draftWorkout before save:", draftWorkout)
+        console.log("draftWorkout before save:", draftWorkout);
+    
         try {
             draftWorkout.lastModifiedAt = Date.now();
-
+    
             if (!isEditing) {
                 draftWorkout.id ||= crypto.randomUUID();
             }
-
+    
             draftWorkout.createdByUserId ||= state.currentUserId;
             draftWorkout.regionId ||= state.currentRegionId;
             draftWorkout.date ||= getTodayDate();
             draftWorkout.aoName ||= "";
             draftWorkout.isShared = Boolean(draftWorkout.isShared);
-
+    
             if (isEditing) {
+                const workoutId = state.editingPlannedWorkoutId || draftWorkout.id;
+            
                 const workoutToSave = {
                     ...draftWorkout,
-                    id: state.editingPlannedWorkoutId,
+                    id: workoutId,
                 };
-                await updatePlannedWorkout(state.editingPlannedWorkoutId, workoutToSave);
+            
+                await updatePlannedWorkout(workoutId, workoutToSave);
                 state.editingPlannedWorkoutId = null;
             } else {
                 await addPlannedWorkout(draftWorkout);
             }
-
+    
             const destinationView = draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner";
             const successMessage = draftWorkout.isShared
-            ? "Workout shared to Workout Library."
-            : "Saved to My Planner.";
-
+                ? "Workout shared to Workout Library."
+                : "Saved to My Planner.";
+    
             showToast(successMessage, "success");
-
-            if(state.returnToViewAfterPlanner) {
+    
+            if (state.returnToViewAfterPlanner) {
                 returnAfterPlanner(destinationView);
                 return;
             }
-
+    
             state.draftPlannedWorkout = null;
             state.currentView = destinationView;
             localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
             renderApp();
-
+    
         } catch (error) {
             console.error("Failed to save workout:", error);
-            showToast("Failed to save workout.", "error")
-
+            showToast("Failed to save workout.", "error");
+    
             logSaveFailure("workoutPlannerView.savePlannedWorkout", error, {
                 editingPlannedWorkoutId: state.editingPlannedWorkoutId || null,
                 selectedPlannedWorkoutId: state.selectedPlannedWorkoutId || null,
@@ -776,11 +796,17 @@ export function renderWorkoutPlanner() {
                 plannedWorkoutTitle: draftWorkout?.title || null,
                 isShared: Boolean(draftWorkout?.isShared),
             });
+        } finally {
+            isSavingWorkout = false;
+            saveButton.disabled = false;
+            saveButton.textContent = "Save Workout";
         }
-});
+    }
+    
+    saveButton.addEventListener("click", saveWorkout);
 
     const primaryActionsRow = document.createElement("div");
-    primaryActionsRow.classList.add("button-row", "primary-actions-row");
+    primaryActionsRow.classList.add("button-row", "primary-actions-row", "workout-planner-sticky-actions");
 
     primaryActionsRow.append(saveButton);
 
