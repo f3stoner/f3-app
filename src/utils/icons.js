@@ -26,6 +26,8 @@ import {
     ChevronRightCircle,
     ChartColumnIncreasing,
     ArrowUpRight,
+    Shield,
+    Medal,
 } from "lucide";
 
 const ICONS = {
@@ -48,6 +50,8 @@ const ICONS = {
     chevronRight: ChevronRightCircle,
     chartColumn: ChartColumnIncreasing,
     arrowUpRight: ArrowUpRight,
+    shield: Shield,
+    medal: Medal,
 };
 
 const weatherIconMap = {

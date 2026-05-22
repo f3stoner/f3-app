@@ -21,6 +21,7 @@ const DAY_OPTIONS = [
 
 const EMPHASIS_OPTIONS = [
     { value: "", label: "None" },
+    { value: "heavy", label: "Heavy/Sandbag"},
     { value: "upper", label: "Upper" },
     { value: "lower", label: "Lower" },
     { value: "core", label: "Core" },
@@ -29,6 +30,9 @@ const EMPHASIS_OPTIONS = [
     { value: "ruck", label: "Ruck" },
     { value: "run", label: "Run" },
     { value: "30/30", label: "30/30" },
+    { value: "benchmark", label: "Benchmark"},
+    { value: "murph_training", label: "Murph Training"},
+    { value: "stairs", label: "Stairs"},
 ];
 
 export function renderAoEditView() {

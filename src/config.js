@@ -83,6 +83,8 @@ export const WORKOUT_EMPHASIS = {
     core: { label: "Core", icon: "badge" },
     "30/30": { label: "30/30", icon: "zap" },
     stairs: { label: "Stairs", icon: "trendingUp" },
+    bootcamp: { label: "Bootcamp", icon: "shield"},
+    murph_training: { label: "Murph Training", icon: "medal"},
     other: { label: "Other", icon: "circle" },
     benchmark: { label: "Benchmark", icon: "clipboardList"},
 };
