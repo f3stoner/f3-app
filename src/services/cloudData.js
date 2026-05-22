@@ -2,6 +2,7 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { logAppEvent } from "./appEvents.js";
 import { supabase } from "./supabaseClient.js";
+import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
 
 export async function loadAllSessions(regionId) {
     const pageSize = 1000;
@@ -272,7 +273,29 @@ function mapPlannedWorkoutFromDb(row) {
     };
 }
 
+function getDefaultEmphasisScheduleForAo(aoName) {
+    const schedule = {};
+
+    AO_WORKOUT_EMPHASIS_RULES
+        .filter(rule => rule.aoName === aoName)
+        .forEach(rule => {
+            schedule[String(rule.dayOfWeek)] = {
+                pattern: rule.pattern || "fixed",
+                values: rule.values || [],
+                startsOnDate: rule.startsOnDate || null,
+            };
+        });
+
+    return schedule;
+}
+
+function hasEmphasisSchedule(schedule) {
+    return schedule && Object.keys(schedule).length > 0;
+}
+
 function mapAoFromDb(row) {
+    const dbSchedule = row.emphasis_schedule || {};
+
     return {
         id: row.id,
         name: row.name,
@@ -283,6 +306,13 @@ function mapAoFromDb(row) {
         createdAt: row.created_at,
         address: row.address || "",
         mapUrl: row.map_url || "",
+        latitude: row.latitude ?? null,
+        longitude: row.longitude ?? null,
+        weatherLocationLabel: row.weather_location_label || "",
+        weatherEnabled: row.weather_enabled ?? false,
+        emphasisSchedule: hasEmphasisSchedule(dbSchedule)
+            ? dbSchedule
+            : getDefaultEmphasisScheduleForAo(row.name),
     };
 }
 
@@ -629,6 +659,11 @@ export async function insertAo(regionId, ao) {
                 created_at: ao.createdAt,
                 address: ao.address || null,
                 map_url: ao.mapUrl || null,
+                latitude: ao.latitude ?? null,
+                longitude: ao.longitude ?? null,
+                weather_location_label: ao.weatherLocationLabel || null,
+                weather_enabled: ao.weatherEnabled ?? false,
+                emphasis_schedule: ao.emphasisSchedule || {},
             },
         ])
         .select()
@@ -652,6 +687,11 @@ export async function updateAoInCloud(regionId, ao) {
             created_at: ao.createdAt,
             address: ao.address || null,
             map_url: ao.mapUrl || null,
+            latitude: ao.latitude ?? null,
+            longitude: ao.longitude ?? null,
+            weather_location_label: ao.weatherLocationLabel || nulll,
+            weather_enabled: ao.weatherEnabled ?? false,
+            emphasis_schedule: ao.emphasisSchedule || {},
         })
         .eq("id", ao.id)
         .eq("region_id", regionId)

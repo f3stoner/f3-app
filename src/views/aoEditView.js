@@ -19,6 +19,18 @@ const DAY_OPTIONS = [
     { value: 6, label: "Sat" },
 ];
 
+const EMPHASIS_OPTIONS = [
+    { value: "", label: "None" },
+    { value: "upper", label: "Upper" },
+    { value: "lower", label: "Lower" },
+    { value: "core", label: "Core" },
+    { value: "cardio", label: "Cardio" },
+    { value: "bootcamp", label: "Bootcamp" },
+    { value: "ruck", label: "Ruck" },
+    { value: "run", label: "Run" },
+    { value: "30/30", label: "30/30" },
+];
+
 export function renderAoEditView() {
 
     function sameDaysOfWeek(a = [], b = []) {
@@ -53,13 +65,22 @@ export function renderAoEditView() {
     : null;
 
     const draftAo = existingAo
-    ? { ...existingAo, daysOfWeek: [...(existingAo.daysOfWeek || [])] }
+    ? { 
+        ...existingAo, 
+        daysOfWeek: [...(existingAo.daysOfWeek || [])],
+        emphasisSchedule: { ...(existingAo.emphasisSchedule || {}) },
+     }
     : {
         id: crypto.randomUUID(),
         name: "",
         locationName: "",
         address: "",
         mapUrl: "",
+        latitude: null,
+        longitude: null,
+        weatherLocationLabel: "",
+        weatherEnabled: false,
+        emphasisSchedule: {},
         daysOfWeek: [],
         time: "05:30",
         isActive: true,
@@ -106,7 +127,208 @@ export function renderAoEditView() {
         draftAo.address = event.target.value;
     });
 
-    /*const mapUrlLabel = document.createElement("div");
+    const latitudeLabel = document.createElement("div");
+    latitudeLabel.classList.add("detail-label");
+    latitudeLabel.textContent = "Latitude";
+
+    const latitudeInput = document.createElement("input");
+    latitudeInput.type = "number";
+    latitudeInput.step = "any";
+    latitudeInput.placeholder = "Example: 30.1669";
+    latitudeInput.value = draftAo.latitude ?? "";
+
+    latitudeInput.addEventListener("input", (event) => {
+        draftAo.latitude = event.target.value;
+    });
+
+    const longitudeLabel = document.createElement("div");
+    longitudeLabel.classList.add("detail-label");
+    longitudeLabel.textContent = "Longitude";
+
+    const longitudeInput = document.createElement("input");
+    longitudeInput.type = "number";
+    longitudeInput.step = "any";
+    longitudeInput.placeholder = "Example: -96.3977";
+    longitudeInput.value = draftAo.longitude ?? "";
+
+    longitudeInput.addEventListener("input", (event) => {
+        draftAo.longitude = event.target.value;
+    });
+
+    const weatherLocationLabel = document.createElement("div");
+    weatherLocationLabel.classList.add("detail-label");
+    weatherLocationLabel.textContent = "Weather Location Label";
+
+    const weatherLocationInput = document.createElement("input");
+    weatherLocationInput.type = "text";
+    weatherLocationInput.placeholder = "Example: Brenham, TX";
+    weatherLocationInput.value = draftAo.weatherLocationLabel || "";
+
+    weatherLocationInput.addEventListener("input", (event) => {
+        draftAo.weatherLocationLabel = event.target.value;
+    });
+
+    const weatherEnabledLabel = document.createElement("div");
+    weatherEnabledLabel.classList.add("detail-label");
+    weatherEnabledLabel.textContent = "Weather";
+
+    const weatherEnabledWrap = document.createElement("label");
+    weatherEnabledWrap.classList.add("ao-status-toggle");
+
+    const weatherEnabledInput = document.createElement("input");
+    weatherEnabledInput.type = "checkbox";
+    weatherEnabledInput.checked = draftAo.weatherEnabled ?? false;
+
+    weatherEnabledInput.addEventListener("change", (event) => {
+        draftAo.weatherEnabled = event.target.checked;
+    });
+
+    weatherEnabledWrap.append(weatherEnabledInput, document.createTextNode(" Enable weather for this AO"));
+
+    const weatherEnabledRow = document.createElement("div");
+    weatherEnabledRow.classList.add("ao-status-row");
+    weatherEnabledRow.append(weatherEnabledWrap);
+
+    const PATTERN_OPTIONS = [
+        { value: "fixed", label: "Fixed" },
+        { value: "alternating-weeks", label: "Alternating Weeks" },
+    ];
+    
+    function createEmphasisRuleForDay(dayValue) {
+        return draftAo.emphasisSchedule?.[String(dayValue)] || {
+            pattern: "fixed",
+            values: [],
+            startsOnDate: null,
+        };
+    }
+
+    const emphasisRowsByDay = {};
+    
+    const emphasisLabel = document.createElement("div");
+    emphasisLabel.classList.add("detail-label");
+    emphasisLabel.textContent = "Weekly Emphasis Schedule";
+    
+    const emphasisWrap = document.createElement("div");
+    emphasisWrap.classList.add("section");
+    
+    DAY_OPTIONS.forEach(day => {
+        const dayKey = String(day.value);
+        const rule = createEmphasisRuleForDay(day.value);
+    
+        const row = document.createElement("div");
+        row.classList.add("form-row");
+        row.classList.add("emphasis-day-card");
+        row.dataset.dayValue = String(day.value);
+        emphasisRowsByDay[String(day.value)] = row;
+
+        row.hidden = !draftAo.daysOfWeek.includes(day.value);
+    
+        const dayLabel = document.createElement("div");
+        dayLabel.classList.add("detail-label");
+        dayLabel.textContent = day.label;
+    
+        const patternSelect = document.createElement("select");
+    
+        PATTERN_OPTIONS.forEach(option => {
+            const optionEl = document.createElement("option");
+            optionEl.value = option.value;
+            optionEl.textContent = option.label;
+            patternSelect.appendChild(optionEl);
+        });
+    
+        patternSelect.value = rule.pattern || "fixed";
+    
+        const valuesLabel = document.createElement("div");
+        valuesLabel.classList.add("detail-label");
+        valuesLabel.textContent = patternSelect.value === "alternating-weeks"
+            ? "Rotation Order"
+            : "Emphasis";
+    
+        const valuesInput = document.createElement("input");
+        valuesInput.type = "text";
+        valuesInput.placeholder = patternSelect.value === "alternating-weeks"
+            ? "Example: upper, lower, cardio"
+            : "Example: upper";
+
+        function formatEmphasisValues(values = []) {
+            return values
+                .map(value => {
+                    const option = EMPHASIS_OPTIONS.find(option => option.value === value);
+                    return option?.label || value;
+                })
+                .join(", ");
+        }
+
+        valuesInput.value = formatEmphasisValues(rule.values || []);
+    
+        const startsOnLabel = document.createElement("div");
+        startsOnLabel.classList.add("detail-label");
+        startsOnLabel.textContent = "Rotation Start Date";
+    
+        const startsOnInput = document.createElement("input");
+        startsOnInput.type = "date";
+        startsOnInput.value = rule.startsOnDate || "";
+    
+        function updateAlternatingVisibility() {
+            const isAlternating = patternSelect.value === "alternating-weeks";
+    
+            startsOnLabel.style.display = isAlternating ? "" : "none";
+            startsOnInput.style.display = isAlternating ? "" : "none";
+    
+            valuesLabel.textContent = isAlternating ? "Rotation Order" : "Emphasis";
+            valuesInput.placeholder = isAlternating
+                ? "Example: upper, lower, cardio"
+                : "Example: upper";
+        }
+    
+        function syncRule() {
+            const values = valuesInput.value
+                .split(",")
+                .map(value => value.trim().toLowerCase())
+                .filter(Boolean);
+    
+            if (!values.length) {
+                delete draftAo.emphasisSchedule[dayKey];
+                return;
+            }
+    
+            const isAlternating = patternSelect.value === "alternating-weeks";
+    
+            draftAo.emphasisSchedule[dayKey] = {
+                pattern: patternSelect.value || "fixed",
+                values,
+                startsOnDate: isAlternating
+                    ? startsOnInput.value || null
+                    : null,
+            };
+
+            valuesInput.value = values
+                .map(value => {
+                    const option = EMPHASIS_OPTIONS.find(option => option.value === value);
+                    return option?.label || value;
+                })
+                .join(", ");
+    
+            updateAlternatingVisibility();
+        }
+    
+        patternSelect.addEventListener("change", syncRule);
+        valuesInput.addEventListener("input", syncRule);
+        startsOnInput.addEventListener("input", syncRule);
+    
+        updateAlternatingVisibility();
+    
+        row.append(
+            dayLabel,
+            patternSelect,
+            valuesLabel,
+            valuesInput,
+            startsOnLabel,
+            startsOnInput
+        );
+    
+        emphasisWrap.appendChild(row);
+    });    /*const mapUrlLabel = document.createElement("div");
     mapUrlLabel.classList.add("detail-label");
     mapUrlLabel.textContent = "Map Link";
 
@@ -147,15 +369,24 @@ export function renderAoEditView() {
         checkbox.checked = draftAo.daysOfWeek.includes(day.value);
 
         checkbox.addEventListener("change", (event) => {
+            const dayKey = String(day.value);
+        
             if (event.target.checked) {
                 if (!draftAo.daysOfWeek.includes(day.value)) {
                     draftAo.daysOfWeek.push(day.value);
                 }
             } else {
                 draftAo.daysOfWeek = draftAo.daysOfWeek.filter(value => value !== day.value);
+                delete draftAo.emphasisSchedule[dayKey];
             }
-
+        
             draftAo.daysOfWeek.sort((a, b) => a - b);
+        
+            const emphasisRow = emphasisRowsByDay[dayKey];
+        
+            if (emphasisRow) {
+                emphasisRow.hidden = !event.target.checked;
+            }
         });
 
         label.append(checkbox, document.createTextNode(` ${day.label}`));
@@ -207,6 +438,28 @@ export function renderAoEditView() {
         draftAo.locationName = draftAo.locationName.trim();
         draftAo.address = (draftAo.address || "").trim();
         draftAo.mapUrl = (draftAo.mapUrl || "").trim();
+
+        const latitude = String(draftAo.latitude ?? "").trim() === ""
+            ? null
+            : Number(draftAo.latitude);
+
+        const longitude = String(draftAo.longitude ?? "").trim() === ""
+            ? null
+            : Number(draftAo.longitude);
+            
+        if (
+            (latitude !== null && Number.isNaN(latitude)) ||
+            (longitude !== null && Number.isNaN(longitude))
+        ) {
+            showToast("Latitude and longitude must be valid numbers.", "error");
+            return;
+        }
+
+        draftAo.latitude = latitude;
+        draftAo.longitude = longitude;
+        draftAo.weatherLocationLabel = (draftAo.weatherLocationLabel || "").trim();
+        draftAo.weatherEnabled = Boolean(draftAo.weatherEnabled);
+        draftAo.emphasisSchedule = draftAo.emphasisSchedule || {};
 
         try {
             if (isEditing) {
@@ -280,12 +533,22 @@ export function renderAoEditView() {
         locationInput,
         addressLabel,
         addressInput,
+        latitudeLabel,
+        latitudeInput,
+        longitudeLabel,
+        longitudeInput,
+        weatherLocationLabel,
+        weatherLocationInput,
+        weatherEnabledLabel,
+        weatherEnabledRow,
         /*mapUrlLabel,
         mapUrlInput,*/
         timeLabel,
         timeInput,
         daysLabel,
         daysWrap,
+        emphasisLabel,
+        emphasisWrap,
         activeLabel,
         statusRow,
         saveRow,

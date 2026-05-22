@@ -3032,3 +3032,20 @@ body.menu-open {
     margin-top: 0.35rem;
     margin-bottom: 0.25rem;
 }
+
+.emphasis-day-card {
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.emphasis-day-card .detail-label:first-child {
+    margin-top: 0;
+}
+
+.emphasis-day-card select,
+.emphasis-day-card input {
+    margin-bottom: 10px;
+}
