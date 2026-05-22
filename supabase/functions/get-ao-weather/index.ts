@@ -108,6 +108,19 @@ function getTargetParts(targetDateTime?: string) {
   };
 }
 
+function isForecastTooFarOut(forecastDate: string) {
+  const today = new Date();
+  const target = new Date(`${forecastDate}T12:00:00`);
+
+  today.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.floor(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  
+  return diffDays > 6;
+}
+
 function getCacheExpiration(forecastDate: string) {
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
@@ -117,13 +130,11 @@ function getCacheExpiration(forecastDate: string) {
 }
 
 function findHourlyIndex(hourlyTimes: string[], targetHourKey: string) {
-  if (!hourlyTimes?.length) return 0;
+  if (!hourlyTimes?.length) return -1;
 
-  const exactIndex = hourlyTimes.findIndex(time =>
+  return hourlyTimes.findIndex(time =>
     time.startsWith(targetHourKey)
   );
-
-  return exactIndex >= 0 ? exactIndex : 0;
 }
 
 function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
@@ -132,6 +143,16 @@ function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
   const current = raw.current ?? {};
 
   const hourlyIndex = findHourlyIndex(hourly.time ?? [], targetHourKey);
+
+  if (hourlyIndex < 0) {
+    return {
+      weatherUnavailable: true,
+      reason: "Forecast not available yet",
+      targetHourKey,
+      source: PROVIDER,
+      fetchedAt: new Date().toISOString(),
+    };
+  }
 
   const weatherCode =
     hourly.weather_code?.[hourlyIndex] ??
@@ -198,6 +219,16 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const { forecastDate, forecastHour, targetHourKey } = getTargetParts(targetDateTime);
+
+    if (isForecastTooFarOut(forecastDate)) {
+      return jsonResponse({
+        weatherUnavailable: true,
+        reason: "Forecast not available yet",
+        targetHourKey,
+        source: PROVIDER,
+        fetchedAt: new Date().toISOString(),
+      });
+    }
 
     const { data: ao, error: aoError } = await supabase
       .from("aos")
