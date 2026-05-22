@@ -185,6 +185,7 @@ export async function loadRegionData(regionId) {
         
             return {
                 ...session,
+                hasHistoricalBackblast: Boolean(historicalBackblast),
                 historicalBackblastText: "",
                 historicalParsedBackblast: null,
                 historicalBackblastLink: historicalBackblast || null,
@@ -1118,4 +1119,24 @@ export async function loadBackblastLinks() {
     if (error) throw error;
 
     return data || [];
+}
+
+export async function searchHistoricalBackblasts(searchTerm) {
+    const trimmed = String(searchTerm || "").trim();
+
+    if (trimmed.length < 2) return [];
+
+    const { data, error } = await supabase
+        .from("session_backblast_links")
+        .select("session_id")
+        .ilike("cleaned_content", `%${trimmed}%`)
+        .limit(100);
+
+    if (error) throw error;
+
+    return [...new Set(
+        (data || [])
+            .map(row => row.session_id)
+            .filter(Boolean)
+    )];
 }

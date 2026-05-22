@@ -5,6 +5,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { searchHistoricalBackblasts } from "../services/cloudData.js";
 
 state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
 
@@ -12,6 +13,9 @@ export function renderSessionHistory() {
     const app = document.getElementById("app");
     app.textContent = "";
     app.classList.add("view-session-history");
+
+    let historicalSearchSessionIds = new Set();
+    let historicalSearchRequestId = 0;
 
     cleanupMainMenu();
 
@@ -201,7 +205,7 @@ function getSessionSearchText(session, mode = "all") {
 
     const backblastText = [
         session.backblastText,
-        session.historicalBackblastText,
+        session.hasHistoricalBackblast,
         session.linkedBackblastText,
         session.importedBackblastText,
         session.bandBackblastText,
@@ -271,20 +275,10 @@ function renderSessionList() {
             state.sessionHistorySearchMode || "all"
         );
         
-        if (
-            searchTerm === "mario" &&
-            state.sessionHistorySearchMode === "workout" &&
-            sessionSearchText.includes(searchTerm)
-        ) {
-            console.log("Mario workout match:", {
-                sessionId: session.id,
-                aoName: session.aoName,
-                workout: session.workout,
-                searchText: sessionSearchText,
-            });
-        }
-        
-        return sessionSearchText.includes(searchTerm);
+        return (
+            sessionSearchText.includes(searchTerm) ||
+            historicalSearchSessionIds.has(session.id)
+        );
     });
 
     const sortedSessions = [...filteredSessions].sort((a, b) => {
@@ -329,10 +323,32 @@ function renderSessionList() {
     
         clearTimeout(searchTimeoutId);
     
-        searchTimeoutId = setTimeout(() => {
+        searchTimeoutId = setTimeout(async () => {
             state.sessionHistorySearchTerm = nextValue;
+    
+            const trimmed = nextValue.trim();
+    
+            if (trimmed.length < 2) {
+                historicalSearchSessionIds = new Set();
+                renderSessionList();
+                return;
+            }
+    
+            const requestId = ++historicalSearchRequestId;
+    
             renderSessionList();
-        }, 250);
+    
+            try {
+                const matchingIds = await searchHistoricalBackblasts(trimmed);
+    
+                if (requestId !== historicalSearchRequestId) return;
+    
+                historicalSearchSessionIds = new Set(matchingIds);
+                renderSessionList();
+            } catch (error) {
+                console.error("Failed to search historical backblasts:", error);
+            }
+        }, 300);
     });
 
     const searchModeRow = document.createElement("div");
