@@ -17,14 +17,23 @@ import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 
+const Q_SIGNUP_REFRESH_INTERVAL_MS = 30_000;
+
 export function renderQSignupView() {
     const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
 
     const app = document.getElementById("app");
     app.textContent = "";
 
-    if (!state.isRefreshingQSignupSlots) {
+    const now = Date.now();
+    const shouldRefreshQSlots =
+        !state.isRefreshingQSignupSlots &&
+        (!state.lastQSignupRefreshAt ||
+            now - state.lastQSignupRefreshAt > Q_SIGNUP_REFRESH_INTERVAL_MS);
+    
+    if (shouldRefreshQSlots) {
         state.isRefreshingQSignupSlots = true;
+        state.lastQSignupRefreshAt = now;
     
         loadMappedQSlots(state.currentRegionId)
             .then(freshSlots => {
@@ -35,10 +44,9 @@ export function renderQSignupView() {
             .catch(error => {
                 console.error("Failed to refresh Q signup slots:", error);
                 state.isRefreshingQSignupSlots = false;
-                showToast("Could not refresh Q slots.", "error");
             });
     }
-
+    
     cleanupMainMenu();
 
     const header = createAppHeader({
