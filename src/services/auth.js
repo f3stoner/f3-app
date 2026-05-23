@@ -2,8 +2,6 @@ import { supabase } from "./supabaseClient.js";
 
 export async function getCurrentSession() {
     const { data, error } = await supabase.auth.getSession();
-    console.log("getCurrentSession data:", data);
-    console.log("getCurrentSession error:", error);
 
     if (error) throw error;
     return data.session;

@@ -1,5 +1,13 @@
 import Papa from "papaparse";
-import { insertMember, updateMemberInCloud, insertSessionsBatch } from "./cloudData.js";
+import {
+    insertMember,
+    updateMemberInCloud,
+    insertSessionsBatch,
+    loadAllMembers,
+    loadAllSessions,
+    mapMemberFromDb,
+    mapSessionFromDb,
+} from "./cloudData.js";
 import { state } from "../modules/state.js";
 
 const HEADER_ROW_INDEX = 4;
@@ -26,6 +34,17 @@ function normalizeName(value) {
     return normalize(value).toLowerCase();
 }
 
+function normalizeAoName(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^the\s+/, "");
+}
+
+function sessionDeltaKey(session) {
+    return `${normalizeAoName(session.aoName)}|${session.date}`;
+}
+
 function parseDateString(value) {
     const raw = normalize(value);
     if (!raw) return null;
@@ -35,9 +54,7 @@ function parseDateString(value) {
 
     let [month, day, year] = parts.map((p) => p.trim());
 
-    if (year.length === 2) {
-        year = `20${year}`;
-    }
+    if (year.length === 2) year = `20${year}`;
 
     return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
@@ -75,9 +92,25 @@ function isFutureDatePastCutoff(dateString) {
     return dateString > cutoffString;
 }
 
-export async function importOld300AttendanceCsv(csvText) {
-    if (!state.currentRegionId) {
-        throw new Error("No active region id found on state.currentRegionId");
+async function loadExistingOld300SessionKeys(regionId) {
+    const existingSessions = await loadAllSessions(regionId);
+
+    return new Set(
+        existingSessions.map(row => {
+            const session = mapSessionFromDb(row);
+            return sessionDeltaKey(session);
+        })
+    );
+}
+
+export async function importOld300AttendanceCsv(csvText, options = {}) {
+    const {
+        dryRun = true,
+        regionId = state.currentRegionId,
+    } = options;
+
+    if (!regionId) {
+        throw new Error("No active region id found.");
     }
 
     const parsed = Papa.parse(csvText, {
@@ -96,15 +129,15 @@ export async function importOld300AttendanceCsv(csvText) {
         throw new Error("Could not find expected header row in Old 300 attendance CSV.");
     }
 
-    const lastPostIndex = headerRow.findIndex(
-        (col) => String(col).trim() === "Last Post"
+    const dateLabelIndex = headerRow.findIndex(
+        (col) => normalize(col) === "Date"
     );
 
-    if (lastPostIndex === -1) {
-        throw new Error('Could not find "Last Post" column in header row.');
+    if (dateLabelIndex === -1) {
+        throw new Error('Could not find "Date" column in header row.');
     }
 
-    const dateStartIndex = lastPostIndex + 1;
+    const dateStartIndex = dateLabelIndex + 1;
 
     const rawMemberRows = rows.slice(DATA_START_INDEX).filter((row) => {
         return Array.isArray(row) && row.some((cell) => normalize(cell) !== "");
@@ -112,7 +145,6 @@ export async function importOld300AttendanceCsv(csvText) {
 
     console.log("Old 300 raw member rows:", rawMemberRows.length);
 
-    // Pass 1: Build local member objects
     const localMembers = [];
     const rowToMemberMeta = [];
 
@@ -148,17 +180,49 @@ export async function importOld300AttendanceCsv(csvText) {
 
     console.log("Old 300 local members built:", localMembers.length);
 
-    // Pass 2: Insert members
+    const existingMembers = (await loadAllMembers(regionId)).map(mapMemberFromDb);
     const savedMemberMap = {};
 
-    for (const member of localMembers) {
-        const saved = await insertMember(state.currentRegionId, member);
-        savedMemberMap[normalizeName(member.paxName)] = saved;
+    for (const existingMember of existingMembers) {
+        savedMemberMap[normalizeName(existingMember.paxName)] = existingMember;
     }
 
-    console.log("Old 300 members inserted:", Object.keys(savedMemberMap).length);
+    let membersInserted = 0;
+    let membersUpdated = 0;
 
-    // Pass 3: Resolve invitedById and update members in cloud
+    for (const member of localMembers) {
+        const key = normalizeName(member.paxName);
+        const existing = savedMemberMap[key];
+
+        if (!existing) {
+            if (!dryRun) {
+                const saved = await insertMember(regionId, member);
+                savedMemberMap[key] = saved;
+            } else {
+                savedMemberMap[key] = member;
+            }
+
+            membersInserted += 1;
+            continue;
+        }
+
+        const merged = {
+            ...existing,
+            realName: member.realName || existing.realName,
+            homeAo: member.homeAo || existing.homeAo,
+            firstPostDate: member.firstPostDate || existing.firstPostDate,
+            status: "active",
+        };
+
+        savedMemberMap[key] = merged;
+
+        if (!dryRun) {
+            await updateMemberInCloud(regionId, merged);
+        }
+
+        membersUpdated += 1;
+    }
+
     let invitedByUpdates = 0;
 
     for (const item of rowToMemberMeta) {
@@ -168,15 +232,22 @@ export async function importOld300AttendanceCsv(csvText) {
         const inviter = savedMemberMap[normalizeName(item.proudPapaName)];
 
         if (!member || !inviter) continue;
+        if (member.invitedById === inviter.id) continue;
 
-        member.invitedById = inviter.id;
-        await updateMemberInCloud(state.currentRegionId, member);
+        const updatedMember = {
+            ...member,
+            invitedById: inviter.id,
+        };
+
+        savedMemberMap[normalizeName(item.paxName)] = updatedMember;
+
+        if (!dryRun) {
+            await updateMemberInCloud(regionId, updatedMember);
+        }
+
         invitedByUpdates += 1;
     }
 
-    console.log("Old 300 invitedBy updates:", invitedByUpdates);
-
-    // Pass 4: Build sessions from inserted member ids
     const sessionMap = new Map();
     let skippedFutureDateCells = 0;
     let unmatchedSessionMembers = 0;
@@ -191,8 +262,7 @@ export async function importOld300AttendanceCsv(csvText) {
         }
 
         for (let colIndex = dateStartIndex; colIndex < headerRow.length; colIndex++) {
-            const headerCell = headerRow[colIndex];
-            const sessionDate = parseDateString(headerCell);
+            const sessionDate = parseDateString(headerRow[colIndex]);
 
             if (!sessionDate) continue;
 
@@ -218,6 +288,10 @@ export async function importOld300AttendanceCsv(csvText) {
                     workout: null,
                     sourcePlannedWorkoutId: null,
                     createdAt: Date.now(),
+                    createdByUserId: null,
+                    backblastText: "",
+                    unresolvedPax: [],
+                    weatherSnapshot: null,
                 });
             }
 
@@ -253,19 +327,85 @@ export async function importOld300AttendanceCsv(csvText) {
         return a.aoName.localeCompare(b.aoName);
     });
 
-    console.log("Old 300 sessions built:", sessions.length);
-    console.log("Old 300 unmatched session members:", unmatchedSessionMembers);
-    console.log("Old 300 skipped future date cells:", skippedFutureDateCells);
+    const existingSessionKeys = await loadExistingOld300SessionKeys(regionId);
 
-    // Pass 5: Insert sessions
-    await insertSessionsBatch(state.currentRegionId, sessions);
+    const newSessions = [];
+    const duplicateSessions = [];
 
-    console.log("Old 300 session import complete");
+    for (const session of sessions) {
+        const key = sessionDeltaKey(session);
+
+        if (existingSessionKeys.has(key)) {
+            duplicateSessions.push(session);
+        } else {
+            newSessions.push(session);
+        }
+    }
+
+    console.log("Old 300 delta import summary:");
+    console.log("Total parsed:", sessions.length);
+    console.log("Duplicates skipped:", duplicateSessions.length);
+    console.log("New sessions to insert:", newSessions.length);
+    console.log("Unmatched session members:", unmatchedSessionMembers);
+    console.log("Skipped future date cells:", skippedFutureDateCells);
+
+    if (newSessions.length) {
+        console.table(newSessions.map(session => ({
+            aoName: session.aoName,
+            date: session.date,
+            qCount: session.qIds.length,
+            attendees: session.attendeeIds.length,
+        })));
+    }
+
+    if (dryRun) {
+        console.log("Dry run only. No Old 300 sessions inserted.");
+
+        return {
+            dryRun,
+            totalParsed: sessions.length,
+            totalDuplicates: duplicateSessions.length,
+            totalNewSessions: newSessions.length,
+            newSessions,
+            duplicateSessions,
+            membersInserted,
+            membersUpdated,
+            invitedByUpdates,
+            skippedFutureDateCells,
+            unmatchedSessionMembers,
+        };
+    }
+
+    if (!newSessions.length) {
+        console.log("No new Old 300 sessions to insert.");
+
+        return {
+            dryRun,
+            totalParsed: sessions.length,
+            totalDuplicates: duplicateSessions.length,
+            totalNewSessions: 0,
+            inserted: 0,
+            membersInserted,
+            membersUpdated,
+            invitedByUpdates,
+            skippedFutureDateCells,
+            unmatchedSessionMembers,
+        };
+    }
+
+    await insertSessionsBatch(regionId, newSessions);
+
+    console.log(`Inserted ${newSessions.length} Old 300 sessions.`);
 
     return {
-        membersInserted: Object.keys(savedMemberMap).length,
+        dryRun,
+        totalParsed: sessions.length,
+        totalDuplicates: duplicateSessions.length,
+        totalNewSessions: newSessions.length,
+        inserted: newSessions.length,
+        membersInserted,
+        membersUpdated,
         invitedByUpdates,
-        sessionsInserted: sessions.length,
         skippedFutureDateCells,
         unmatchedSessionMembers,
     };

@@ -41,6 +41,7 @@ import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 import { renderAoInsightsView } from "./views/aoInsightsView.js";
 import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit.js";
 import { renderImportRunsView } from "./views/importRunsView.js";
+import { importOld300AttendanceCsv } from "./services/importOld300.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -54,6 +55,7 @@ window.splitMergedMemberByRawName = splitMergedMemberByRawName;
 window.logAppEvent = logAppEvent;
 window.triagePotentialMemberMisassignments = triagePotentialMemberMisassignments;
 window.runAggielandSync = runAggielandSync;
+window.importOld300AttendanceCsv = importOld300AttendanceCsv;
 }
 
 if ("serviceWorker" in navigator) {
@@ -300,8 +302,6 @@ async function loadActiveRegionData(profileRegionId) {
     replacePersistedData(cloudData);
     state.exercises = exercises;
     state.currentRegionId = activeRegionId;
-
-    console.log("loaded exercises:", state.exercises.length);
 
     autoHealQSlotsForAdmin();
 

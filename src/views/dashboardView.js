@@ -1410,20 +1410,6 @@ export function renderDashboard() {
         console.log("sent keys:", state.sentNotificationKeys);
     });
 
-    console.log("Reminder prompt check:", {
-
-        shouldShow: shouldShowQReminderPrompt(),
-    
-        currentUserId: state.currentUserId,
-    
-        pushEnabled: state.notificationSettings?.pushEnabled,
-    
-        notificationPermission: "Notification" in window ? Notification.permission : "unsupported",
-    
-        dismissed: localStorage.getItem("theQNotificationPromptDismissed"),
-    
-    });
-
     const primaryActionsRow = createPrimaryActionsRow();
 
     app.append(

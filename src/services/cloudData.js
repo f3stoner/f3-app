@@ -149,18 +149,12 @@ export async function loadRegionData(regionId) {
         loadBackblastLinks(),
     ]);
 
-    console.log("Backblast link sample:", backblastLinkResult?.[0]);
-
     if (regionResult.error) throw regionResult.error;
     if (sessionResult.error) throw sessionResult.error;
     if (plannedWorkoutResult.error) throw plannedWorkoutResult.error;
     if (aoResult.error) throw aoResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
     
-    console.log("Loaded members count:", memberResult.length);
-    console.log("RAW memberResult length:", memberResult.length);
-    console.log("RAW sessionResult length:", sessionResult.length);
-
     const backblastLinksBySessionId = new Map();
 
     (backblastLinkResult || []).forEach(link => {
@@ -618,6 +612,17 @@ export async function deleteSessionsByAo(regionId, aoName) {
         .delete()
         .eq("region_id", regionId)
         .eq("ao_name", aoName);
+
+    if (error) throw error;
+}
+
+export async function deleteSessionsInDateRangeForRegion(regionId, startDate, endDate) {
+    const { error } = await supabase
+        .from("sessions")
+        .delete()
+        .eq("region_id", regionId)
+        .gte("date", startDate)
+        .lte("date", endDate);
 
     if (error) throw error;
 }
