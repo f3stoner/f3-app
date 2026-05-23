@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot, loadMappedQSlots } from "../services/cloudData.js";
+import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot, loadMappedQSlots, subscribeToQSlotChanges, unsubscribeFromChannel } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
@@ -17,7 +17,45 @@ import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 
-const Q_SIGNUP_REFRESH_INTERVAL_MS = 30_000;
+let qSlotRealtimeChannel = null;
+let qSlotRealtimeRegionId = null;
+let qSlotRefreshTimerId = null;
+
+function setupQSlotRealtime() {
+    if (!state.currentRegionId) return;
+
+    if (
+        qSlotRealtimeChannel &&
+        qSlotRealtimeRegionId === state.currentRegionId
+    ) {
+        return;
+    }
+
+    if (qSlotRealtimeChannel) {
+        unsubscribeFromChannel(qSlotRealtimeChannel);
+    }
+
+    qSlotRealtimeRegionId = state.currentRegionId;
+
+    qSlotRealtimeChannel = subscribeToQSlotChanges(
+        state.currentRegionId,
+        () => {
+            clearTimeout(qSlotRefreshTimerId);
+
+            qSlotRefreshTimerId = setTimeout(async () => {
+                try {
+                    state.qSlots = await loadMappedQSlots(state.currentRegionId);
+
+                    if (state.currentView === "qSignup") {
+                        renderApp();
+                    }
+                } catch (error) {
+                    console.error("Failed to refresh Q slots from realtime:", error);
+                }
+            }, 150);
+        }
+    );
+}
 
 export function renderQSignupView() {
     const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
@@ -25,28 +63,7 @@ export function renderQSignupView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    const now = Date.now();
-    const shouldRefreshQSlots =
-        !state.isRefreshingQSignupSlots &&
-        (!state.lastQSignupRefreshAt ||
-            now - state.lastQSignupRefreshAt > Q_SIGNUP_REFRESH_INTERVAL_MS);
-    
-    if (shouldRefreshQSlots) {
-        state.isRefreshingQSignupSlots = true;
-        state.lastQSignupRefreshAt = now;
-    
-        loadMappedQSlots(state.currentRegionId)
-            .then(freshSlots => {
-                state.qSlots = freshSlots;
-                state.isRefreshingQSignupSlots = false;
-                renderApp();
-            })
-            .catch(error => {
-                console.error("Failed to refresh Q signup slots:", error);
-                state.isRefreshingQSignupSlots = false;
-            });
-    }
-    
+    setupQSlotRealtime();
     cleanupMainMenu();
 
     const header = createAppHeader({
@@ -143,6 +160,7 @@ export function renderQSignupView() {
 
             try {
                 const result = await generateQSlotsForCurrentRegion();
+                await refreshQSlotsFromCloud();
                 showToast(`Created ${result.createdCount} Q Slots.`, "success");
             } catch (error) {
                 console.error("Failed to generate Q slots:", error);

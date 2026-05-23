@@ -1150,3 +1150,26 @@ export async function loadMappedQSlots(regionId) {
     const rows = await loadAllQSlots(regionId);
     return rows.map(mapQSlotFromDb);
 }
+
+export function subscribeToQSlotChanges(regionId, onChange) {
+    if (!regionId) return null;
+
+    return supabase
+        .channel(`q-slots-${regionId}`)
+        .on(
+            "postgres_changes",
+            {
+                event: "*",
+                schema: "public",
+                table: "q_slots",
+                filter: `region_id=eq.${regionId}`,
+            },
+            onChange
+        )
+        .subscribe();
+}
+
+export function unsubscribeFromChannel(channel) {
+    if (!channel) return;
+    supabase.removeChannel(channel);
+}
