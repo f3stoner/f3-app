@@ -1145,3 +1145,8 @@ export async function searchHistoricalBackblasts(searchTerm) {
             .filter(Boolean)
     )];
 }
+
+export async function loadMappedQSlots(regionId) {
+    const rows = await loadAllQSlots(regionId);
+    return rows.map(mapQSlotFromDb);
+}

@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot } from "../services/cloudData.js";
+import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot, loadMappedQSlots } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
@@ -11,7 +11,6 @@ import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
-import { createQReminderPrompt } from "../components/qReminderPrompt.js";
 import { createQReminderPromptModal } from "../components/qReminderPromptModal.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
@@ -23,6 +22,22 @@ export function renderQSignupView() {
 
     const app = document.getElementById("app");
     app.textContent = "";
+
+    if (!state.isRefreshingQSignupSlots) {
+        state.isRefreshingQSignupSlots = true;
+    
+        loadMappedQSlots(state.currentRegionId)
+            .then(freshSlots => {
+                state.qSlots = freshSlots;
+                state.isRefreshingQSignupSlots = false;
+                renderApp();
+            })
+            .catch(error => {
+                console.error("Failed to refresh Q signup slots:", error);
+                state.isRefreshingQSignupSlots = false;
+                showToast("Could not refresh Q slots.", "error");
+            });
+    }
 
     cleanupMainMenu();
 
@@ -151,6 +166,12 @@ export function renderQSignupView() {
 
     const listContainer = document.createElement("div");
 
+    async function refreshQSlotsFromCloud() {
+        if (!state.currentRegionId) return;
+
+        state.qSlots = await loadMappedQSlots(state.currentRegionId);
+    }
+
     function openAddSlotModal() {
         const overlay = document.createElement("div");
         overlay.classList.add("modal-overlay");
@@ -257,8 +278,8 @@ export function renderQSignupView() {
             };
 
             try {
-                const saved = await insertQSlot(activeRegionId, newSlot);
-                state.qSlots.push(saved);
+                await insertQSlot(activeRegionId, newSlot);
+                await refreshQSlotsFromCloud();
 
                 overlay.remove();
                 renderApp();
@@ -367,15 +388,12 @@ export function renderQSignupView() {
 
             const ao = state.aos.find(a => a.id === slot.aoId);
 
-            const updatedSlot = await updateQSlotInCloud(activeRegionId, {
+            await updateQSlotInCloud(activeRegionId, {
                 ...slot,
                 qUserId: state.currentUserMemberId,
             });
-
-            const index = state.qSlots.findIndex(q => q.id === slot.id);
-            if (index !== -1) {
-                state.qSlots[index] = updatedSlot;
-            }
+            
+            await refreshQSlotsFromCloud();
 
             logAppEvent({
                 type: APP_EVENTS.Q_SLOT_CLAIMED,
@@ -419,16 +437,12 @@ export function renderQSignupView() {
                 return;
             }
 
-            const updatedSlot = await updateQSlotInCloud(activeRegionId, {
+            await updateQSlotInCloud(activeRegionId, {
                 ...slot,
                 qUserId: memberId,
             });
-
-            const index = state.qSlots.findIndex(q => q.id === slot.id);
-            if (index !== -1) {
-                state.qSlots[index] = updatedSlot;
-            }
-
+            
+            await refreshQSlotsFromCloud();
             renderApp();
         } catch (error) {
             console.error("failed to assign Q slot:", error);
@@ -448,7 +462,7 @@ export function renderQSignupView() {
 
             await deleteQSlotFromCloud(activeRegionId, slot.id);
 
-            state.qSlots = state.qSlots.filter(q => q.id !== slot.id);
+            await refreshQSlotsFromCloud();
 
             renderApp();
         } catch (error) {
@@ -649,6 +663,7 @@ export function renderQSignupView() {
                     event.stopPropagation();
                     try {
                         await unclaimQSlot(slot);
+                        await refreshQSlotsFromCloud();
                         renderApp();
                     } catch (error) {
                         console.error("Failed to unclaim Q slot:", error);
@@ -690,6 +705,7 @@ export function renderQSignupView() {
                     
                     try{
                         await unclaimQSlot(slot, { bypassDropGuard: true });
+                        await refreshQSlotsFromCloud();
                         renderApp();
                     } catch (error) {
                         console.error("Failed to clear Q slot:", error);

@@ -61,11 +61,13 @@ function removeActiveTimerModal() {
 }
 
 function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") {
+    const executionDate = workout.date || getTodayDate();
+    
     state.executionContext = {
         plannedWorkoutId: workout.id,
         launchSource,
         startedAt: Date.now(),
-        executionDate: getTodayDate(),
+        executionDate,
         allowSessionLogging: true,
     };
 
@@ -91,7 +93,7 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
                 aoName: workout.aoName || null,
                 isShared: Boolean(workout.isShared),
                 timerCount: workout.timers?.length || 0,
-                executionDate: state.executionContext.executionDate,
+                executionDate,
             },
         });
     } catch (error) {
@@ -660,8 +662,8 @@ export function renderPlannedWorkoutDetail() {
     logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
         const sessionDate =
-            state.executionContext?.executionDate ||
             workout.date ||
+            state.executionContext?.executionDate ||
             getTodayDate();
 
         const session = createSession(sessionDate, workout.aoName);
