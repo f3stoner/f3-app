@@ -1,6 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { saveState, saveNavState } from "./storage.js";
+import { runViewCleanup } from "./viewCleanup.js";
 
 const NON_HISTORY_VIEWS = new Set([
     "auth",
@@ -22,6 +23,10 @@ const TOP_LEVEL_VIEWS = new Set([
 export function navigateTo(view) {
     const currentView = state.currentView;
 
+    if (currentView && currentView !== view) {
+        runViewCleanup(currentView);
+    }
+
     if (TOP_LEVEL_VIEWS.has(view)) {
         state.viewHistory = [];
     } else if (
@@ -38,8 +43,15 @@ export function navigateTo(view) {
 }
 
 export function goBack(fallbackView = "dashboard") {
+    const currentView = state.currentView;
     const previousView = state.viewHistory.pop();
+    const nextView = previousView || fallbackView;
 
-    state.currentView = previousView || fallbackView;
+    if (currentView && currentView !== nextView) {
+        runViewCleanup(currentView);
+    }
+
+    state.currentView = nextView;
+    saveNavState(state);
     renderApp();
 }

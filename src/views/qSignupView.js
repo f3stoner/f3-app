@@ -16,10 +16,27 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
+import { registerViewCleanup } from "../utils/viewCleanup.js";
 
 let qSlotRealtimeChannel = null;
 let qSlotRealtimeRegionId = null;
 let qSlotRefreshTimerId = null;
+
+export function cleanupQSlotRealtime() {
+    if (qSlotRefreshTimerId) {
+        clearTimeout(qSlotRefreshTimerId);
+        qSlotRefreshTimerId = null;
+    }
+
+    if (qSlotRealtimeChannel) {
+        unsubscribeFromChannel(qSlotRealtimeChannel);
+        qSlotRealtimeChannel = null;
+    }
+
+    qSlotRealtimeRegionId = null;
+}
+
+registerViewCleanup("qSignup", cleanupQSlotRealtime);
 
 function setupQSlotRealtime() {
     if (!state.currentRegionId) return;
