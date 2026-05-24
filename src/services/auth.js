@@ -22,13 +22,21 @@ export async function signOut() {
     if (error) throw error;
 }
 
-export async function getMyProfile() {
-    const session = await getCurrentSession();
+export async function getMyProfile(existingSession = null) {
+    const session = existingSession || await getCurrentSession();
     if (!session) return null;
 
     const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select(`
+            id,
+            email,
+            display_name,
+            region_id,
+            role,
+            member_id,
+            custom_templates
+        `)
         .eq("id", session.user.id)
         .single();
 
@@ -67,23 +75,40 @@ export async function createProfile({ id, email, displayName, regionId, role = "
 }
 
 export async function ensureMyProfile(defaultRegionId = null, existingSession = null) {
+    console.time("ensureMyProfile:total");
+
+    console.time("ensureMyProfile:getSession");
     const session = existingSession || await getCurrentSession();
-    if (!session) return null;
+    console.timeEnd("ensureMyProfile:getSession");
+
+    if (!session) {
+        console.timeEnd("ensureMyProfile:total");
+        return null;
+    }
 
     try {
-        const existingProfile = await getMyProfile();
-        if (existingProfile) return existingProfile;
+        console.time("ensureMyProfile:getMyProfile");
+        const existingProfile = await getMyProfile(session);
+        console.timeEnd("ensureMyProfile:getMyProfile");
+
+        if (existingProfile) {
+            console.timeEnd("ensureMyProfile:total");
+            return existingProfile;
+        }
     } catch (error) {
+        console.timeEnd("ensureMyProfile:getMyProfile");
         console.warn("Profile lookup failed, attempting fallback profile creation.", error);
     }
 
     if (!defaultRegionId) {
+        console.timeEnd("ensureMyProfile:total");
         throw new Error("No profile found and no default region provided for fallback.");
     }
 
     const email = session.user.email || null;
     const displayName = email ? email.split("@")[0] : "User";
 
+    console.time("ensureMyProfile:createProfile");
     const createdProfile = await createProfile({
         id: session.user.id,
         email,
@@ -91,9 +116,12 @@ export async function ensureMyProfile(defaultRegionId = null, existingSession = 
         regionId: defaultRegionId,
         role: "user"
     });
+    console.timeEnd("ensureMyProfile:createProfile");
 
+    console.timeEnd("ensureMyProfile:total");
     return createdProfile;
 }
+
 export async function updateMyProfile(updates) {
     const currentSession = await getCurrentSession();
 

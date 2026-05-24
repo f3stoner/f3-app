@@ -119,66 +119,82 @@ export function renderSessionHistory() {
     searchInput.value = state.sessionHistorySearchTerm || "";
 
     const sessionList = document.createElement("div");
+    function renderEmptyState(titleText, detailText) {
+        sessionList.textContent = "";
+    
+        const emptyState = document.createElement("div");
+        emptyState.classList.add("empty-state");
+    
+        const title = document.createElement("p");
+        title.textContent = titleText;
+    
+        const detail = document.createElement("p");
+        detail.classList.add("detail-value");
+        detail.textContent = detailText;
+    
+        emptyState.append(title, detail);
+        sessionList.appendChild(emptyState);
+    }
 
     function createSessionCard(session) {
         const card = document.createElement("div");
-    card.classList.add("member-card", "session-history-card");
+        card.classList.add("member-card", "session-history-card");
 
-    const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
-    const qNames = effectiveQIds
-        .map(qId => state.members.find(m => m.id === qId))
-        .filter(Boolean)
-        .map(member => member.paxName);
+        const qNames = effectiveQIds
+            .map(qId => state.members.find(m => m.id === qId))
+            .filter(Boolean)
+            .map(member => member.paxName);
 
-    const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+        const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
 
-    const titleLine = document.createElement("div");
-    titleLine.classList.add("member-name");
-    titleLine.textContent = session.aoName;
+        const titleLine = document.createElement("div");
+        titleLine.classList.add("member-name");
+        titleLine.textContent = session.aoName;
 
-    const dateLine = document.createElement("div");
-    dateLine.classList.add("stats-line");
-    dateLine.textContent = formatDate(session.date);
+        const dateLine = document.createElement("div");
+        dateLine.classList.add("stats-line");
+        dateLine.textContent = formatDate(session.date);
 
-    const qLine = document.createElement("div");
-    qLine.classList.add("stats-line", "q-line");
-    qLine.textContent = `Q: ${qLabel}`;
+        const qLine = document.createElement("div");
+        qLine.classList.add("stats-line", "q-line");
+        qLine.textContent = `Q: ${qLabel}`;
 
-    const statsLine = document.createElement("div");
-    statsLine.classList.add("stats-line");
-    const attendeeCount = session.attendeeIds?.length || 0;
-    const fngCount = session.fngs?.length || 0;
+        const statsLine = document.createElement("div");
+        statsLine.classList.add("stats-line");
+        const attendeeCount = session.attendeeIds?.length || 0;
+        const fngCount = session.fngs?.length || 0;
+        
+        statsLine.textContent = `${attendeeCount} PAX • ${fngCount} FNGs`;
     
-    statsLine.textContent = `${attendeeCount} PAX • ${fngCount} FNGs`;
-   
-    const previewLine = document.createElement("div");
-    previewLine.classList.add("stats-line", "session-preview-line");
-    previewLine.textContent =
-        session.workout?.title ||
-        session.workout?.thangs?.split("\n")[0] ||
-        session.notes?.split("\n")[0] ||
-        "No workout logged";
+        const previewLine = document.createElement("div");
+        previewLine.classList.add("stats-line", "session-preview-line");
+        previewLine.textContent =
+            session.workout?.title ||
+            session.workout?.thangs?.split("\n")[0] ||
+            session.notes?.split("\n")[0] ||
+            "No workout logged";
 
-    card.append(titleLine, dateLine, qLine, statsLine, previewLine);
+        card.append(titleLine, dateLine, qLine, statsLine, previewLine);
 
-    card.addEventListener("click", () => {
-        state.selectedSessionId = session.id;
-        navigateTo("sessionDetail");
-    });
+        card.addEventListener("click", () => {
+            state.selectedSessionId = session.id;
+            navigateTo("sessionDetail");
+        });
 
-    return card;
-}
+        return card;
+    }
 
-function getMemberNamesByIds(ids = []) {
-    return ids
-        .map(id => state.members.find(m => m.id === id))
-        .filter(Boolean)
-        .flatMap(member => [member.paxName, member.realName])
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-}
+    function getMemberNamesByIds(ids = []) {
+        return ids
+            .map(id => state.members.find(m => m.id === id))
+            .filter(Boolean)
+            .flatMap(member => [member.paxName, member.realName])
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+    }
 
 function getSessionSearchText(session, mode = "all") {
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
@@ -292,6 +308,24 @@ function renderSessionList() {
         return bCreatedAt - aCreatedAt;
     })
     if (sortedSessions.length === 0) {
+        if (searchTerm && state.isSearchingHistoricalBackblasts) {
+            resultsMeta.textContent = "";
+            renderEmptyState(
+                "Searching historical backblasts...",
+                "Results may appear in a moment."
+            );
+            return;
+        }
+
+        if (searchTerm && state.isHydratingHistoricalBackblasts) {
+            resultsMeta.textContent = "";
+            renderEmptyState(
+                "Historical backblasts are still loading...",
+                "Results may appear in a moment."
+            );
+            return;
+        }
+
         resultsMeta.textContent = "0 sessions found";
         sessionList.textContent =
             searchTerm || state.sessionHistoryFilterType !== "all" || state.sessionHistoryAoFilter
@@ -330,22 +364,30 @@ function renderSessionList() {
     
             if (trimmed.length < 2) {
                 historicalSearchSessionIds = new Set();
+                state.isSearchingHistoricalBackblasts = false;
                 renderSessionList();
                 return;
             }
     
             const requestId = ++historicalSearchRequestId;
-    
+
+            state.isSearchingHistoricalBackblasts = true;
             renderSessionList();
     
             try {
                 const matchingIds = await searchHistoricalBackblasts(trimmed);
     
-                if (requestId !== historicalSearchRequestId) return;
+                if (requestId !== historicalSearchRequestId) { 
+                    state.isSearchingHistoricalBackblasts = false;   
+                    return;
+                }
     
                 historicalSearchSessionIds = new Set(matchingIds);
+                state.isSearchingHistoricalBackblasts = false;
                 renderSessionList();
+
             } catch (error) {
+                state.isSearchingHistoricalBackblasts = false;
                 console.error("Failed to search historical backblasts:", error);
             }
         }, 300);

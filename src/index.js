@@ -42,6 +42,7 @@ import { renderAoInsightsView } from "./views/aoInsightsView.js";
 import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit.js";
 import { renderImportRunsView } from "./views/importRunsView.js";
 import { importOld300AttendanceCsv } from "./services/importOld300.js";
+import { loadBackblastLinks } from "./services/cloudData.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -280,6 +281,54 @@ function autoHealQSlotsForAdmin() {
         });
 }
 
+function hydrateHistoricalBackblastLinks(regionId) {
+    if (!regionId) return;
+
+    state.isHydratingHistoricalBackblasts = true;
+
+    loadBackblastLinks(regionId)
+        .then(links => {
+            const linksBySessionId = new Map();
+
+            (links || []).forEach(link => {
+                if (!link.session_id) return;
+
+                const existing = linksBySessionId.get(link.session_id);
+
+                if (
+                    !existing ||
+                    (link.confidence_score || 0) > (existing.confidence_score || 0)
+                ) {
+                    linksBySessionId.set(link.session_id, link);
+                }
+            });
+
+            state.sessions = state.sessions.map(session => {
+                const historicalBackblast = linksBySessionId.get(session.id);
+
+                return {
+                    ...session,
+                    hasHistoricalBackblast: Boolean(historicalBackblast),
+                    historicalBackblastLink: historicalBackblast || null,
+                };
+            });
+
+            state.isHydratingHistoricalBackblasts = false;
+
+            if (
+                state.currentView === "sessionHistory" ||
+                state.currentView === "sessionDetail" ||
+                state.currentView === "dashboard"
+            ) {
+                renderApp();
+            }
+        })
+        .catch(error => {
+            state.isHydratingHistoricalBackblasts = false;
+            console.error("Failed to hydrate historical backblast links:", error);
+        });
+}
+
 async function loadActiveRegionData(profileRegionId) {
     const activeRegionId = profileRegionId;
 
@@ -294,14 +343,18 @@ async function loadActiveRegionData(profileRegionId) {
         return false;
     }
 
-    const [cloudData, exercises] = await Promise.all([
-        loadRegionData(activeRegionId),
-        loadExercises(),
-    ]);
+    const cloudData = await loadRegionData(activeRegionId);
 
     replacePersistedData(cloudData);
-    state.exercises = exercises;
     state.currentRegionId = activeRegionId;
+
+    loadExercises()
+        .then(exercises => {
+            state.exercises = exercises;
+        })
+        .catch(error => {
+            console.error("Failed to load exercises:", error);
+        });
 
     autoHealQSlotsForAdmin();
 
@@ -331,7 +384,10 @@ async function bootApp() {
     }
 
     try {
+        console.time("bootApp");
+        console.time("getCurrentSession");
         let session = await getCurrentSession();
+        console.timeEnd("getCurrentSession");
 
         if (!session) {
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -345,7 +401,9 @@ async function bootApp() {
             hideBootSplash();
             return;
         }
+        console.time("ensureMyProfile");
         const profile = await ensureMyProfile(session.user.id, session);
+        console.timeEnd("ensureMyProfile");
 
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "user";
@@ -356,26 +414,15 @@ async function bootApp() {
         state.customTemplates = profile.custom_templates || state.customTemplates;
         state.hasInitializedQSignupFilter = false;
 
-        const [dbNotificationSettings, regions] = await Promise.all([
-            getNotificationSettings(state.currentUserId),
-            loadAllRegions(),
-        ]);
-        
-        state.notificationSettings = dbNotificationSettings
-            ? {
-                pushEnabled: dbNotificationSettings.push_enabled,
-                timezone: dbNotificationSettings.timezone,
-                PushSubscription: dbNotificationSettings.push_subscription,
-            }
-            : {
-                pushEnabled: false,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                PushSubscription: null,
-            };
-        
+        console.time("settings-and-regions");
+        const regions = await loadAllRegions();
+        console.timeEnd("settings-and-regions");
+                
         state.availableRegions = regions || [];
         
+        console.time("loadActiveRegionData");
         const regionLoaded = await loadActiveRegionData(profile.region_id);
+        console.timeEnd("loadActiveRegionData");
 
         if (!regionLoaded) {
             hideBootSplash();
@@ -406,7 +453,30 @@ async function bootApp() {
                 state.currentView = "dashboard";
             }
         }
+        console.time("first-render");
         renderApp();
+        console.timeEnd("first-render");
+
+        hydrateHistoricalBackblastLinks(state.currentRegionId);
+
+        getNotificationSettings(state.currentUserId)
+            .then(dbNotificationSettings => {
+                state.notificationSettings = dbNotificationSettings
+                    ? {
+                        pushEnabled: dbNotificationSettings.push_enabled,
+                        timezone: dbNotificationSettings.timezone,
+                        pushSubscription: dbNotificationSettings.push_subscription,
+                    }
+                    : {
+                        pushEnabled: false,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        pushSubscription: null,
+                    };
+            })
+            .catch(error => {
+                console.error("Failed to load notification settings:", error);
+            });
+        console.timeEnd("bootApp");
         hideBootSplash();
     } catch (error) {
 

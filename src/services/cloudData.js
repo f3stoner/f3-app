@@ -12,8 +12,22 @@ export async function loadAllSessions(regionId) {
     while (true) {
         const { data, error } = await supabase
             .from("sessions")
-            .select("*")
+            .select(`
+                id,
+                region_id,
+                date,
+                ao_name,
+                attendee_ids,
+                q_ids,
+                q_id,
+                fngs,
+                source_planned_workout_id,
+                created_at,
+                created_by_user_id,
+                unresolved_pax
+            `)
             .eq("region_id", regionId)
+            .order("date", { ascending: false })
             .range(from, from + pageSize - 1);
 
         if (error) throw error;
@@ -27,6 +41,18 @@ export async function loadAllSessions(regionId) {
     }
 
     return allSessions;
+}
+
+export async function getSessionById(sessionId) {
+    const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .single();
+
+    if (error) throw error;
+
+    return mapSessionFromDb(data);
 }
 
 export async function loadAllMembers(regionId) {
@@ -103,7 +129,16 @@ function mapExerciseFromDb(row) {
     };
 }
 
+async function timed(label, promise) {
+    console.time(label);
+    const result = await promise;
+    console.timeEnd(label);
+    return result;
+}
+
 export async function loadRegionData(regionId) {
+    console.time("loadRegionData:total");
+    console.time("loadRegionData:parallelQueries");
     const [
         regionResult,
         memberResult,
@@ -113,41 +148,54 @@ export async function loadRegionData(regionId) {
         qSlotResult,
         adminFlagResult,
         savedPlannerSectionResult,
-        backblastLinkResult,
     ] = await Promise.all([
-        supabase
-            .from("regions")
-            .select("*")
-            .eq("id", regionId)
-            .single(),
+        timed(
+            "loadRegionData:region",
+            supabase
+                .from("regions")
+                .select("*")
+                .eq("id", regionId)
+                .single()
+        ),
 
-        loadAllMembers(regionId),
+        timed("loadRegionData:members", loadAllMembers(regionId)),
 
-        loadAllSessions(regionId),
+        timed("loadRegionData:sessions", loadAllSessions(regionId)),
 
-        supabase
-            .from("planned_workouts")
-            .select("*")
-            .eq("region_id", regionId),
+        timed(
+            "loadRegionData:plannedWorkouts",
+            supabase
+                .from("planned_workouts")
+                .select("*")
+                .eq("region_id", regionId)
+        ),
 
-        supabase
-            .from("aos")
-            .select("*")
-            .eq("region_id", regionId),
+        timed(
+            "loadRegionData:aos",
+            supabase
+                .from("aos")
+                .select("*")
+                .eq("region_id", regionId)
+        ),
 
-        loadAllQSlots(regionId),
+        timed("loadRegionData:qSlots", loadAllQSlots(regionId)),
 
-        loadAdminFlags(regionId),
+        timed("loadRegionData:adminFlags", loadAdminFlags(regionId)),
 
-        supabase
-            .from("saved_planner_sections")
-            .select("*")
-            .eq("region_id", regionId)
-            .order("last_used_at", { ascending: false, nullsFirst: false })
-            .order("created_at", { ascending: false }),
-        
-        loadBackblastLinks(),
+        timed(
+            "loadRegionData:savedPlannerSections",
+            supabase
+                .from("saved_planner_sections")
+                .select("*")
+                .eq("region_id", regionId)
+                .order("last_used_at", { ascending: false, nullsFirst: false })
+                .order("created_at", { ascending: false })
+        ),
     ]);
+
+    const backblastLinksBySessionId = new Map();
+    console.timeEnd("loadRegionData:parallelQueries");
+    console.time("loadRegionData:mapping");
 
     if (regionResult.error) throw regionResult.error;
     if (sessionResult.error) throw sessionResult.error;
@@ -155,20 +203,8 @@ export async function loadRegionData(regionId) {
     if (aoResult.error) throw aoResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
     
-    const backblastLinksBySessionId = new Map();
-
-    (backblastLinkResult || []).forEach(link => {
-        if (!link.session_id) return;
-
-        const existing = backblastLinksBySessionId.get(link.session_id);
-
-        if (
-            !existing ||
-            (link.confidence_score || 0) > (existing.confidence_score || 0)
-        ) {
-            backblastLinksBySessionId.set(link.session_id, link);
-        }
-    });
+    console.timeEnd("loadRegionData:mapping");
+    console.timeEnd("loadRegionData:total");
 
     return {
         regionName: regionResult.data.name,
@@ -1110,7 +1146,7 @@ export async function getBackblastLinkBySessionId(sessionId) {
     return data?.[0] || null;
 }
 
-export async function loadBackblastLinks() {
+export async function loadBackblastLinks(regionId) {
     const { data, error } = await supabase
         .from("session_backblast_links")
         .select(`
@@ -1119,8 +1155,10 @@ export async function loadBackblastLinks() {
             band_post_key,
             link_method,
             confidence_score,
-            created_at
+            created_at,
+            sessions!inner(region_id)
         `)
+        .eq("sessions.region_id", regionId)
         .order("confidence_score", { ascending: false })
         .order("created_at", { ascending: false });
 
