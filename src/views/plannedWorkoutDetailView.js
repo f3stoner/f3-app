@@ -104,6 +104,10 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
 export function renderPlannedWorkoutDetail() {
     removeActiveTimerModal();
 
+    if (state.plannedWorkoutLaunchMode === "execution") {
+        window.scrollTo(0, 0);
+    }
+
     const app = document.getElementById("app");
     app.textContent = "";
 
