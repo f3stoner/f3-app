@@ -5,7 +5,7 @@ import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { signOut } from "../services/auth.js";
-import { checkRegionAccess, loadRegionData } from "../services/cloudData.js";
+import { checkRegionAccess, loadMemberDashboardStats, loadMemberSessionByDate, loadMemberSessions, loadRegionData } from "../services/cloudData.js";
 import { replacePersistedData } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
@@ -1068,7 +1068,28 @@ export function renderDashboard() {
             return null;
         }
 
-        const stats = getMemberStats(memberId);
+        const stats = state.memberDashboardStatsByMemberId?.[memberId] || null;
+
+        if (!stats) {
+            loadMemberDashboardStats(
+                state.currentRegionId,
+                memberId,
+                state.members
+            )
+                .then(loadedStats => {
+                    state.memberDashboardStatsByMemberId = {
+                        ...(state.memberDashboardStatsByMemberId || {}),
+                        [memberId]: loadedStats
+                    };
+
+                    if (state.currentView === "dashboard") {
+                        renderApp();
+                    }
+                })
+                .catch(error => {
+                    console.error("Failed to load member dashboard stats:", error);
+                });
+        }
 
         const section = document.createElement("div");
         section.classList.add("section");
@@ -1084,25 +1105,61 @@ export function renderDashboard() {
         grid.classList.add("stats-grid");
 
         const statItems = [
-            { label: "Posts", value: stats.posts, icon: "posts", action: "posts" },
-            { label: "Qs Led", value: stats.qs, icon: "qs", action: "qs" },
-            { label: "FNGs EH'd", value: stats.fngsEh, icon: "fngsEh" },
-            { label: "Favorite AO", value: stats.favoriteAo || "-", icon: "favoriteAo", action:"favoriteAo" },
+            { label: "Posts", value: stats?.posts ?? "...", icon: "posts", action: "posts" },
+            { label: "Qs Led", value: stats?.qs ?? "...", icon: "qs", action: "qs" },
+            { label: "FNGs EH'd", value: stats?.fngsEh ?? "...", icon: "fngsEh" },
+            { label: "Favorite AO", value: stats?.favoriteAo || "...", icon: "favoriteAo", action:"favoriteAo" },
             { 
                 label: "Last Post",
-                value: stats.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "-",
+                value: stats?.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "...",
                 type: "date",
                 icon: "lastPost",
                 action: "lastPost"
             },
             { 
                 label: "First Post",
-                value: stats.firstPostDate ? formatMonthDayYear(stats.firstPostDate) : "-",
+                value: stats?.firstPostDate ? formatMonthDayYear(stats.firstPostDate) : "...",
                 type: "date",
                 icon: "fngDate",
                 action: "firstPost"
             },
         ];
+
+        async function hydrateMemberSessions(mode) {
+            const cacheKey = `${memberId}__${mode}`;
+            state.memberSessionsLoadedByMode = state.memberSessionsLoadedByMode || {};
+        
+            if (state.memberSessionsLoadedByMode[cacheKey]) {
+                return {
+                    sessions: state.sessions.filter(session => {
+                        const isQ = session.qIds?.includes(memberId);
+                        const attended = session.attendeeIds?.includes(memberId);
+        
+                        if (mode === "q") return isQ;
+                        if (mode === "attended") return attended;
+                        return attended || isQ;
+                    }),
+                    loadedFromNetwork: false,
+                };
+            }
+        
+            const sessions = await loadMemberSessions(
+                state.currentRegionId,
+                memberId,
+                mode
+            );
+        
+            const existingIds = new Set(state.sessions.map(session => session.id));
+            const newSessions = sessions.filter(session => !existingIds.has(session.id));
+        
+            state.sessions = [...state.sessions, ...newSessions];
+            state.memberSessionsLoadedByMode[cacheKey] = true;
+        
+            return {
+                sessions,
+                loadedFromNetwork: true,
+            };
+        }
 
         statItems.forEach(item => {
             const tile = document.createElement("div");
@@ -1131,7 +1188,15 @@ export function renderDashboard() {
             if (item.action === "posts") {
                 tile.classList.add("clickable-stat-tile");
 
-                tile.addEventListener("click", () => {
+                tile.addEventListener("click", async () => {
+                    const cacheKey = `${memberId}__attended`;
+                
+                    if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
+                        showToast("Loading full history...", "info");
+                    }
+                
+                    await hydrateMemberSessions("attended");
+                
                     state.sessionHistoryFilterType = "attended";
                     state.sessionHistoryAoFilter = "";
                     state.sessionHistorySearchTerm = "";
@@ -1142,7 +1207,15 @@ export function renderDashboard() {
             if (item.action === "qs") {
                 tile.classList.add("clickable-stat-tile");
 
-                tile.addEventListener("click", () => {
+                tile.addEventListener("click", async () => {
+                    const cacheKey = `${memberId}__q`;
+                
+                    if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
+                        showToast("Loading full history...", "info");
+                    }
+                
+                    await hydrateMemberSessions("q");
+                
                     state.sessionHistoryFilterType = "q";
                     state.sessionHistoryAoFilter = "";
                     state.sessionHistorySearchTerm = "";
@@ -1153,24 +1226,47 @@ export function renderDashboard() {
             if (item.action === "favoriteAo") {
                 tile.classList.add("clickable-stat-tile");
                 
-                tile.addEventListener("click", () => {
-                    state.sessionHistoryFilterType = "all";
-                    state.sessionHistoryAoFilter = stats.favoriteAo || "";
-                    state.sessionHistorySearchTerm = "";
-                    navigateTo("sessionHistory");
-                });
+                if (item.action === "favoriteAo") {
+                    tile.classList.add("clickable-stat-tile");
+                    
+                    tile.addEventListener("click", async () => {
+                        const cacheKey = `${memberId}__attended`;
+                
+                        if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
+                            showToast("Loading full history...", "info");
+                        }
+                
+                        await hydrateMemberSessions("attended");
+                
+                        state.sessionHistoryFilterType = "attended";
+                        state.sessionHistoryAoFilter = stats?.favoriteAo
+                            ? { aoName: stats.favoriteAo }
+                            : null;
+                        state.sessionHistorySearchTerm = "";
+                
+                        navigateTo("sessionHistory");
+                    });
+                }
             }
 
             if (item.action === "lastPost") {
                 tile.classList.add("clickable-state-tile");
 
-                tile.addEventListener("click", () => {
-                    const session = [...state.sessions]
-                        .filter(session => session.attendeeIds?.includes(memberId))
-                        .sort((a, b) => b.date.localeCompare(a.date))[0];
-
+                tile.addEventListener("click", async () => {
+                    const session = await loadMemberSessionByDate(
+                        state.currentRegionId,
+                        memberId,
+                        stats?.lastPostDate,
+                        "attended"
+                    );
+                
                     if (!session) return;
-
+                
+                    const existingIds = new Set(state.sessions.map(session => session.id));
+                    if (!existingIds.has(session.id)) {
+                        state.sessions = [...state.sessions, session];
+                    }
+                
                     state.selectedSessionId = session.id;
                     navigateTo("sessionDetail");
                 });
@@ -1179,13 +1275,21 @@ export function renderDashboard() {
             if (item.action === "firstPost") {
                 tile.classList.add("clickable-stat-tile");
 
-                tile.addEventListener("click", () => {
-                const session = [...state.sessions]
-                    .filter(session => session.attendeeIds?.includes(memberId))
-                    .sort((a, b) => a.date.localeCompare(b.date))[0];
-
+                tile.addEventListener("click", async () => {
+                    const session = await loadMemberSessionByDate(
+                        state.currentRegionId,
+                        memberId,
+                        stats?.firstPostDate,
+                        "attended"
+                    );
+                
                     if (!session) return;
-
+                
+                    const existingIds = new Set(state.sessions.map(session => session.id));
+                    if (!existingIds.has(session.id)) {
+                        state.sessions = [...state.sessions, session];
+                    }
+                
                     state.selectedSessionId = session.id;
                     navigateTo("sessionDetail");
                 });

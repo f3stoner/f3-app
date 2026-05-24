@@ -1490,7 +1490,8 @@ select:focus,
 }
 
 .toast.info {
-    background: rgba(0, 0, 0, 0.88);
+    background: var(--accent-bright);
+    color: var(--text-inverse);
 }
 
 .admin-flag-list {

@@ -201,6 +201,128 @@ export async function loadExercises() {
     return (data || []).map(mapExerciseFromDb);
 }
 
+export async function loadMemberDashboardStats(regionId, memberId, members = []) {
+    if (!regionId || !memberId) return null;
+
+    const pageSize = 1000;
+    let from = 0;
+    let allSessions = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("sessions")
+            .select("id, date, ao_name, attendee_ids, q_ids, q_id")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allSessions = allSessions.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    const attendedSessions = allSessions.filter(session =>
+        (session.attendee_ids || []).includes(memberId)
+    );
+
+    const qSessions = allSessions.filter(session =>
+        (session.q_ids || []).includes(memberId) ||
+        session.q_id === memberId
+    );
+
+    const aoCounts = new Map();
+
+    attendedSessions.forEach(session => {
+        if (!session.ao_name) return;
+        aoCounts.set(session.ao_name, (aoCounts.get(session.ao_name) || 0) + 1);
+    });
+
+    const favoriteAo = [...aoCounts.entries()]
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+
+    const attendedDates = attendedSessions
+        .map(session => session.date)
+        .filter(Boolean)
+        .sort();
+
+    const fngsEh = (members || [])
+        .filter(member => member.invitedById === memberId)
+        .length;
+
+    return {
+        posts: attendedSessions.length,
+        qs: qSessions.length,
+        fngsEh,
+        favoriteAo,
+        firstPostDate: attendedDates[0] || null,
+        lastPostDate: attendedDates[attendedDates.length - 1] || null,
+    };
+}
+
+export async function loadMemberSessions(regionId, memberId, mode = "attended") {
+    if (!regionId || !memberId) return [];
+
+    const pageSize = 1000;
+    let from = 0;
+    let allSessions = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("sessions")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allSessions = allSessions.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
+
+    return allSessions
+        .map(mapSessionFromDb)
+        .filter(session => {
+            const effectiveQIds = session.qIds || [];
+            const isQ = effectiveQIds.includes(memberId);
+            const attended = session.attendeeIds?.includes(memberId);
+
+            if (mode === "q") return isQ;
+            if (mode === "attended") return attended;
+            return attended || isQ;
+        });
+}
+
+export async function loadMemberSessionByDate(regionId, memberId, date, mode = "attended") {
+    if (!regionId || !memberId || !date) return null;
+
+    const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("date", date);
+
+    if (error) throw error;
+
+    const sessions = (data || []).map(mapSessionFromDb);
+
+    return sessions.find(session => {
+        const effectiveQIds = session.qIds || [];
+        const isQ = effectiveQIds.includes(memberId);
+        const attended = session.attendeeIds?.includes(memberId);
+
+        if (mode === "q") return isQ;
+        if (mode === "attended") return attended;
+        return attended || isQ;
+    }) || null;
+}
+
 function mapExerciseFromDb(row) {
     return {
         id: row.id,
