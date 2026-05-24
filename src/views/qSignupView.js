@@ -638,7 +638,11 @@ export function renderQSignupView() {
             const previewLine = document.createElement("div");
             previewLine.classList.add("stats-line");
             if (isMine) {
-                previewLine.textContent = hasPlannedWorkout ? "BD Ready" : "Needs BD"
+                previewLine.textContent = !hasPlannedWorkout
+                    ? "Needs BD"
+                    : matchingWorkout.isFinalized
+                        ? "BD Ready" 
+                        : "Draft BD"
             } else {
                 previewLine.textContent = ao?.time ? `Start: ${ao.time}` : "No time set";
             }
@@ -658,12 +662,23 @@ export function renderQSignupView() {
                 actionWrap.appendChild(claimButton);
             } else if (isMine) {
                 const workoutButton = document.createElement("button");
-                workoutButton.textContent = hasPlannedWorkout ? "View BD" : "Plan BD";
+                workoutButton.textContent = !hasPlannedWorkout 
+                    ? "Plan BD"
+                    : matchingWorkout.isFinalized 
+                        ? "View BD"
+                        : "Continue Planning";
 
                 workoutButton.addEventListener("click", (event) => {
                     event.stopPropagation();
 
                     if (hasPlannedWorkout) {
+                        if (!matchingWorkout.isFinalized) {
+                            state.editingPlannedWorkoutId = matchingWorkout.id;
+                            state.selectedPlannedWorkoutId = null;
+                            navigateTo("workoutPlanner");
+                            return;
+                        }
+                    
                         state.selectedPlannedWorkoutId = matchingWorkout.id;
                         state.plannedWorkoutLaunchMode = null;
                         navigateTo("plannedWorkoutDetail");
@@ -691,6 +706,7 @@ export function renderQSignupView() {
                             lastModifiedAt: null,
                             createdByUserId: state.currentUserId,
                             isShared: false,
+                            isFinalized: false,
                             timers: [],
                         };
 

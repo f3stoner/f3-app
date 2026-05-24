@@ -257,6 +257,16 @@ export function renderDashboard() {
         return overlay;
     }
 
+    function getWorkoutReadinessLabel(workout) {
+        if (!workout) return "No Workout Planned";
+        return workout.isFinalized ? "Ready to Lead" : "Workout Draft";
+    }
+
+    function getWorkoutReadinessClass(workout) {
+        if (!workout) return "status-needs";
+        return workout.isFinalized ? "status-ready" : "status-draft";
+    }
+
     function findMatchingPlannedWorkoutForSlot(slot) {
         const ao = state.aos.find(a => a.id === slot.aoId);
 
@@ -552,11 +562,10 @@ export function renderDashboard() {
         const nextQPreview = document.createElement("div");
         nextQPreview.classList.add("stats-line");
         nextQPreview.textContent =
-        isTodayQ && isPastTodayWorkout && !loggedSession
-            ? "Workout Time Has Passed"
-            : hasPlannedWorkout
-                ? "BD Ready"
-                : "No Workout Planned";
+            isTodayQ && isPastTodayWorkout && !loggedSession
+                ? "Workout Time Has Passed"
+                : getWorkoutReadinessLabel(matchingWorkout);
+
         const nextQWeatherLine = document.createElement("div");
         nextQWeatherLine.classList.add("stats-line", "next-q-weather-line");
 
@@ -599,24 +608,24 @@ export function renderDashboard() {
                 state.editingSessionId = null;
                 navigateTo("session");
             });
-
+        
             const alreadyLoggedButton = document.createElement("button");
             alreadyLoggedButton.classList.add("secondary-button");
             alreadyLoggedButton.textContent = "Already Logged";
-
+        
             alreadyLoggedButton.addEventListener("click", event => {
                 event.stopPropagation();
                 markQSlotLoggedElsewhere(nextQSlot);
             });
-
+        
             nextQActions.appendChild(alreadyLoggedButton);
-
+        
         } else if (!hasPlannedWorkout) {
             actionButton.textContent = "Plan Workout";
-
-            actionButton.addEventListener("click", (event) => {
+        
+            actionButton.addEventListener("click", event => {
                 event.stopPropagation();
-
+        
                 state.draftPlannedWorkout = {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
@@ -640,49 +649,64 @@ export function renderDashboard() {
                     lastModifiedAt: null,
                     createdByUserId: state.currentUserId,
                     isShared: false,
+                    isFinalized: false,
                     timers: [],
                 };
-
+        
                 state.editingPlannedWorkoutId = null;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
                 navigateTo("workoutPlanner");
             });
+        
+        } else if (matchingWorkout && !matchingWorkout.isFinalized) {
+            actionButton.textContent = "Continue Planning";
+        
+            actionButton.addEventListener("click", event => {
+                event.stopPropagation();
+        
+                state.editingPlannedWorkoutId = matchingWorkout.id;
+                state.selectedPlannedWorkoutId = null;
+                state.returnToViewAfterPlanner = "dashboard";
+                state.returnToLaunchModeAfterPlanner = null;
+                navigateTo("workoutPlanner");
+            });
+        
         } else if (isTodayQ) {
             actionButton.textContent = "Start Today's Workout";
-
-            actionButton.addEventListener("click", (event) => {
+        
+            actionButton.addEventListener("click", event => {
                 event.stopPropagation();
+        
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = "execution";
-
+        
                 navigateTo("plannedWorkoutDetail");
-                try {
-                    logAppEvent({                
-                        type: APP_EVENTS.EXECUTION_STARTED,
-
-                        metadata: {
-                            plannedWorkoutId: matchingWorkout.id,
-                            source: "dashboard_next_q",
-                            aoName: matchingWorkout.aoName || null,
-                            workoutDate: matchingWorkout.date || null,
-                        },
-                
-                    })
-                } catch (error) {"Failed to log execution start:", error};
+        
+                logAppEvent({
+                    type: APP_EVENTS.EXECUTION_STARTED,
+                    metadata: {
+                        plannedWorkoutId: matchingWorkout.id,
+                        source: "dashboard_next_q",
+                        aoName: matchingWorkout.aoName || null,
+                        workoutDate: matchingWorkout.date || null,
+                    },
+                });
             });
+        
         } else {
             actionButton.textContent = "View Workout";
-
-            actionButton.addEventListener("click", (event) => {
+        
+            actionButton.addEventListener("click", event => {
                 event.stopPropagation();
+        
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = null;
                 navigateTo("plannedWorkoutDetail");
             });
         }
-
+        
         if (isTomorrowQ) {
             const preblastButton = document.createElement("button");
             preblastButton.textContent = "Post Preblast";
@@ -750,6 +774,7 @@ export function renderDashboard() {
                     lastModifiedAt: null,
                     createdByUserId: state.currentUserId,
                     isShared: false,
+                    isFinalized: false,
                     timers: [],
                 };
 
@@ -759,6 +784,15 @@ export function renderDashboard() {
                 state.returnToLaunchModeAfterPlanner = null;
                 navigateTo("workoutPlanner");
             } else {
+                if (!matchingWorkout.isFinalized) {
+                    state.editingPlannedWorkoutId = matchingWorkout.id;
+                    state.selectedPlannedWorkoutId = null;
+                    state.returnToViewAfterPlanner = "dashboard";
+                    state.returnToLaunchModeAfterPlanner = null;
+                    navigateTo("workoutPlanner");
+                    return;
+                }
+            
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
                 state.plannedWorkoutLaunchMode = isTodayQ ? "execution" : null;
                 navigateTo("plannedWorkoutDetail");
@@ -951,6 +985,7 @@ export function renderDashboard() {
                         lastModifiedAt: null,
                         createdByUserId: state.currentUserId,
                         isShared: false,
+                        isFinalized: false,
                         timers: [],
                     };
 
@@ -960,20 +995,26 @@ export function renderDashboard() {
                     state.returnToLaunchModeAfterPlanner = null;
                     navigateTo("workoutPlanner");
                 } else {
+                    if (!matchingWorkout.isFinalized) {
+                        state.editingPlannedWorkoutId = matchingWorkout.id;
+                        state.selectedPlannedWorkoutId = null;
+                        state.returnToViewAfterPlanner = "dashboard";
+                        state.returnToLaunchModeAfterPlanner = null;
+                        navigateTo("workoutPlanner");
+                        return;
+                    }
+                
                     state.selectedPlannedWorkoutId = matchingWorkout.id;
                     state.plannedWorkoutLaunchMode =
                         slot.date === today ? "execution" : null;
-
+                
                     navigateTo("plannedWorkoutDetail");
                 }
             });
 
             const ao = state.aos.find(a => a.id === slot.aoId);
-            const hasPlannedWorkout = state.plannedWorkouts.some(workout =>
-                workout.date === slot.date &&
-                workout.createdByUserId === state.currentUserId &&
-                workout.aoName === ao?.name
-            );
+            const matchingWorkout = findMatchingPlannedWorkoutForSlot(slot);
+            const hasPlannedWorkout = Boolean(matchingWorkout);
 
             const title = document.createElement("div");
             title.classList.add("member-name");
@@ -982,9 +1023,11 @@ export function renderDashboard() {
             const status = document.createElement("div");
             status.classList.add(
                 "dashboard-status-pill",
-                hasPlannedWorkout ? "status-ready" : "status-needs"
+                getWorkoutReadinessClass(matchingWorkout),
             );
-            status.textContent = hasPlannedWorkout ? "BD Ready" : "Needs BD";
+            status.textContent = hasPlannedWorkout 
+                ? getWorkoutReadinessLabel(matchingWorkout)
+                : "Needs BD";
 
             const rowText = document.createElement("div");
             rowText.classList.add("upcoming-q-row-text");

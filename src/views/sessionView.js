@@ -689,11 +689,18 @@ saveButton.addEventListener("click", async () => {
 
     const duplicateSession = findPotentialDuplicateSession(draftSession);
     if (duplicateSession) {
-        const confirmed = confirm(
-            `A session already exists for ${draftSession.aoName} on ${formatDate(draftSession.date)}. Save another one anyway?`
+        const shouldViewExisting = confirm(
+            `A session already exists for ${draftSession.aoName} on ${formatDate(draftSession.date)}.\n\nView the existing session?`
         );
 
-        if (!confirmed) return;
+        if (shouldViewExisting) {
+            state.selectedSessionId = duplicateSession.id;
+            state.editingSessionId = null;
+            state.draftSession = null;
+            navigateTo("sessionDetail");
+        }
+
+        return;
     }
 
     if (isSavingSession) return;

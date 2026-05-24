@@ -381,6 +381,7 @@ async function bootApp() {
             hideBootSplash();
             return;
         }
+        
         logAppEvent({
             type: APP_EVENTS.APP_OPENED,
             metadata: {
@@ -388,8 +389,6 @@ async function bootApp() {
                 hasLinkedMember: Boolean(state.currentUserMemberId),
                 restoredFromSharedWorkout: Boolean(sharedWorkoutId),
             },
-        }).catch(error => {
-            console.error("Failed to log app open:", error);
         });
 
         if (sharedWorkoutId) {

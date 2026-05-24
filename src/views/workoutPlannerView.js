@@ -327,6 +327,7 @@ export function renderWorkoutPlanner() {
             ...sourceWorkout,
             id: crypto.randomUUID(),
             isShared: false,
+            isFinalized: false,
             createdByUserId: state.currentUserId,
             lastModifiedAt: Date.now(),
             date: draftWorkout.date || getTodayDate(),
@@ -731,32 +732,44 @@ export function renderWorkoutPlanner() {
     });
     
     const saveButton = document.createElement("button");
-    saveButton.textContent = "Save Workout";
+    saveButton.textContent = "Save Draft";
+
+    const finalizeButton = document.createElement("button");
+    finalizeButton.textContent = "Finalize & Save";
 
     let isSavingWorkout = false;
 
-    async function saveWorkout() {
+    function prepareWorkoutForSave({ finalized = false } = {}) {
+        draftWorkout.lastModifiedAt = Date.now();
+
+        if (!isEditing) {
+            draftWorkout.id ||= crypto.randomUUID();
+        }
+
+        draftWorkout.createdByUserId ||= state.currentUserId;
+        draftWorkout.regionId ||= state.currentRegionId;
+        draftWorkout.date ||= getTodayDate();
+        draftWorkout.aoName ||= "";
+        draftWorkout.isShared = Boolean(draftWorkout.isShared);
+        draftWorkout.isFinalized = finalized ? true : Boolean(draftWorkout.isFinalized);
+
+        return draftWorkout;
+    }
+
+    async function saveWorkout({ finalized = false } = {}) {
         if (isSavingWorkout) return;
         isSavingWorkout = true;
         saveButton.disabled = true;
-        saveButton.textContent = "Saving..."
+        finalizeButton.disabled = true;
+        saveButton.textContent = finalized ? "Saving..." : "Saving...";
+        finalizeButton.textContent = finalized ? "Finalizing..." : "Mark BD Ready";
 
         console.log("isEditing:", isEditing);
         console.log("editingPLannedWorkoutId:", state.editingPlannedWorkoutId);
         console.log("draftWorkout before save:", draftWorkout);
     
         try {
-            draftWorkout.lastModifiedAt = Date.now();
-    
-            if (!isEditing) {
-                draftWorkout.id ||= crypto.randomUUID();
-            }
-    
-            draftWorkout.createdByUserId ||= state.currentUserId;
-            draftWorkout.regionId ||= state.currentRegionId;
-            draftWorkout.date ||= getTodayDate();
-            draftWorkout.aoName ||= "";
-            draftWorkout.isShared = Boolean(draftWorkout.isShared);
+            prepareWorkoutForSave({ finalized });
     
             if (isEditing) {
                 const workoutId = state.editingPlannedWorkoutId || draftWorkout.id;
@@ -805,16 +818,19 @@ export function renderWorkoutPlanner() {
         } finally {
             isSavingWorkout = false;
             saveButton.disabled = false;
-            saveButton.textContent = "Save Workout";
+            finalizeButton.disabled = false;
+            saveButton.textContent = "Save Draft";
+            finalizeButton.textContent = "Finalize & Save";
         }
     }
     
-    saveButton.addEventListener("click", saveWorkout);
+    saveButton.addEventListener("click", () => saveWorkout({ finalized: false }));
+    finalizeButton.addEventListener("click", () => saveWorkout({ finalized: true }));
 
     const primaryActionsRow = document.createElement("div");
     primaryActionsRow.classList.add("button-row", "primary-actions-row", "workout-planner-sticky-actions");
 
-    primaryActionsRow.append(saveButton);
+    primaryActionsRow.append(saveButton, finalizeButton);
 
     app.append(
         header,

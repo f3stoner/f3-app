@@ -2,6 +2,8 @@ import { supabase } from "./supabaseClient.js";
 import { state } from "../modules/state.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 export async function logAppEvent({
     type,
     severity = "info",
@@ -30,11 +32,13 @@ export async function logAppEvent({
 
         const { error } = await supabase.from("app_events").insert(event);
 
-        if (error) {
+        if (error && isDevelopment) {
             console.warn("App event logging failed:", error.message);
         }
     } catch (error) {
+        if (isDevelopment) {
         console.warn("App event logging crashed:", error);
+        }
     }
 }
 
