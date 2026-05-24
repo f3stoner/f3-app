@@ -4,7 +4,7 @@ import { logAppEvent } from "./appEvents.js";
 import { supabase } from "./supabaseClient.js";
 import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
 
-export async function loadAllSessions(regionId) {
+export async function loadAllSessionsPaginated(regionId) {
     const pageSize = 1000;
     let from = 0;
     let allSessions = [];
@@ -41,6 +41,89 @@ export async function loadAllSessions(regionId) {
     }
 
     return allSessions;
+}
+
+export async function loadRecentSessions(regionId, days = 180) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    const cutoff = cutoffDate.toISOString().split("T")[0];
+
+    const { data, error } = await supabase
+        .from("sessions")
+        .select(`
+            id,
+            region_id,
+            date,
+            ao_name,
+            attendee_ids,
+            q_ids,
+            q_id,
+            fngs,
+            notes,
+            workout,
+            source_planned_workout_id,
+            created_at,
+            created_by_user_id,
+            backblast_text,
+            unresolved_pax,
+            weather_snapshot
+        `)
+        .eq("region_id", regionId)
+        .gte("date", cutoff)
+        .order("date", { ascending: false });
+
+    if (error) throw error;
+
+    return data || [];
+}
+
+export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
+    if (!regionId || !beforeDate) return [];
+
+    const { data, error } = await supabase
+        .from("sessions")
+        .select(`
+            id,
+            region_id,
+            date,
+            ao_name,
+            attendee_ids,
+            q_ids,
+            q_id,
+            fngs,
+            notes,
+            workout,
+            source_planned_workout_id,
+            created_at,
+            created_by_user_id,
+            backblast_text,
+            unresolved_pax,
+            weather_snapshot
+        `)
+        .eq("region_id", regionId)
+        .lte("date", beforeDate)
+        .order("date", { ascending: false })
+        .limit(limit);
+    
+    if (error) throw error;
+
+    return (data || []).map(mapSessionFromDb);
+}
+
+export async function loadSessionsByIds(sessionIds = []) {
+    const cleanIds = [...new Set(sessionIds)].filter(Boolean);
+
+    if (cleanIds.length === 0) return [];
+
+    const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .in("id", cleanIds);
+
+    if (error) throw error;
+
+    return (data || []).map(mapSessionFromDb);
 }
 
 export async function getSessionById(sessionId) {
@@ -160,7 +243,7 @@ export async function loadRegionData(regionId) {
 
         timed("loadRegionData:members", loadAllMembers(regionId)),
 
-        timed("loadRegionData:sessions", loadAllSessions(regionId)),
+        timed("loadRegionData:sessions", loadRecentSessions(regionId)),
 
         timed(
             "loadRegionData:plannedWorkouts",

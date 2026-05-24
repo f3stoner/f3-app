@@ -5,7 +5,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { searchHistoricalBackblasts } from "../services/cloudData.js";
+import { loadOlderSessionsPage, loadSessionsByIds, searchHistoricalBackblasts } from "../services/cloudData.js";
 
 state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
 
@@ -249,6 +249,11 @@ function getSessionSearchText(session, mode = "all") {
 const resultsMeta = document.createElement("div");
 resultsMeta.classList.add("detail-value", "session-results-meta");
 
+if (state.hasLoadedAllOlderSessions) {
+    loadOlderButton.textContent = "All Older Sessions Loaded";
+    loadOlderButton.disabled = true;
+}
+
 function renderSessionList() {
 
     sessionList.textContent = "";
@@ -376,6 +381,17 @@ function renderSessionList() {
     
             try {
                 const matchingIds = await searchHistoricalBackblasts(trimmed);
+                const laodedIds = new Set(state.sessions.map(session => session.id));
+                const missingIds = matchingIds.filter(id => !laodedIds.has(id));
+
+                if (missingIds.length > 0) {
+                    const missingSessions = await loadSessionsByIds(missingIds);
+
+                    const existingIds = new Set(state.sessions.map(session => session.id));
+                    const newSessions = missingSessions.filter(session => !existingIds.has(session.id));
+
+                    state.sessions = [...state.sessions, ...newSessions];
+                }
     
                 if (requestId !== historicalSearchRequestId) { 
                     state.isSearchingHistoricalBackblasts = false;   
@@ -424,6 +440,52 @@ function renderSessionList() {
         searchModeRow.appendChild(button);
     });
 
+    const loadOlderButton = document.createElement("button");
+    loadOlderButton.classList.add("secondary-button");
+    loadOlderButton.textContent = "Load Older Sessions";
+
+    loadOlderButton.addEventListener("click", async () => {
+        if (state.isloadingOlderSessions) return;
+
+        const oldestLoadedDate = state.sessions 
+            .map(session => session.date)
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b))[0];
+
+        if (!oldestLoadedDate) return;
+
+        state.isloadingOlderSessions = true;
+        loadOlderButton.textContent = "Loading older sessions...";
+        loadOlderButton.disabled = true;
+
+        try {
+            const rows = await loadOlderSessionsPage(
+                state.currentRegionId,
+                oldestLoadedDate,
+                100
+            );
+
+            const existingIds = new Set(state.sessions.map(session => session.id));
+            const newSessions = rows.filter(session => !existingIds.has(session.id));
+
+            state.sessions = [...state.sessions, ...newSessions];
+
+            if (rows.length < 100) {
+                state.hasLoadedAllOlderSessions = true;
+            }
+
+            renderSessionList();
+        } catch (error) {
+            console.error("Failed to load older sessions:", error);
+        } finally {
+            state.isloadingOlderSessions = false;
+            loadOlderButton.disabled = false;
+            loadOlderButton.textContent = state.hasLoadedAllOlderSessions
+                ? "All Older Sessions Loaded"
+                : "Load Older Sessions";
+        }
+    });
+
     const backButton = document.createElement("button");
     backButton.textContent = "Back to Dashboard";
     backButton.addEventListener("click", () => {
@@ -442,6 +504,7 @@ function renderSessionList() {
         searchModeRow,
         resultsMeta,
         sessionList,
+        loadOlderButton,
         backButton,
         nav
     );

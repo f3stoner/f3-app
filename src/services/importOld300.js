@@ -4,7 +4,7 @@ import {
     updateMemberInCloud,
     insertSessionsBatch,
     loadAllMembers,
-    loadAllSessions,
+    loadAllSessionsPaginated,
     mapMemberFromDb,
     mapSessionFromDb,
 } from "./cloudData.js";
@@ -93,7 +93,7 @@ function isFutureDatePastCutoff(dateString) {
 }
 
 async function loadExistingOld300SessionKeys(regionId) {
-    const existingSessions = await loadAllSessions(regionId);
+    const existingSessions = await loadAllSessionsPaginated(regionId);
 
     return new Set(
         existingSessions.map(row => {
