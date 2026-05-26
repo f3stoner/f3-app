@@ -1104,7 +1104,13 @@ export function renderDashboard() {
             { label: "Posts", value: stats?.posts ?? "...", icon: "posts", action: "posts" },
             { label: "Qs Led", value: stats?.qs ?? "...", icon: "qs", action: "qs" },
             { label: "FNGs EH'd", value: stats?.fngsEh ?? "...", icon: "fngsEh" },
-            { label: "Favorite AO", value: stats?.favoriteAo || "...", icon: "favoriteAo", action:"favoriteAo" },
+            { 
+                label: "Last Q", 
+                value: stats?.lastQDate ? formatMonthDayYear(stats.lastQDate) : "...",
+                type: "date",
+                icon: "qs", 
+                action:"lastQ" 
+            },
             { 
                 label: "Last Post",
                 value: stats?.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "...",
@@ -1263,6 +1269,29 @@ export function renderDashboard() {
                         state.sessions = [...state.sessions, session];
                     }
                 
+                    state.selectedSessionId = session.id;
+                    navigateTo("sessionDetail");
+                });
+            }
+
+            if (item.action === "lastQ") {
+                tile.classList.add("clickable-stat-tile");
+            
+                tile.addEventListener("click", async () => {
+                    const session = await loadMemberSessionByDate(
+                        state.currentRegionId,
+                        memberId,
+                        stats?.lastQDate,
+                        "q"
+                    );
+            
+                    if (!session) return;
+            
+                    const existingIds = new Set(state.sessions.map(session => session.id));
+                    if (!existingIds.has(session.id)) {
+                        state.sessions = [...state.sessions, session];
+                    }
+            
                     state.selectedSessionId = session.id;
                     navigateTo("sessionDetail");
                 });

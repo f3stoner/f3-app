@@ -226,6 +226,7 @@ export async function loadMemberDashboardStats(regionId, memberId) {
             favoriteAo: null,
             lastPostDate: null,
             firstPostDate: null,
+            lastQDate: null,
         };
     }
 
@@ -236,6 +237,7 @@ export async function loadMemberDashboardStats(regionId, memberId) {
         favoriteAo: data.favorite_ao ?? null,
         lastPostDate: data.last_post_date ?? null,
         firstPostDate: data.first_post_date ?? null,
+        lastQDate: data.last_q_date ?? null,
     };
 }
 
