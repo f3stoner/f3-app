@@ -659,10 +659,19 @@ export async function insertSession(regionId, session) {
         },
     });
 
+    rebuildMemberStatsForMembers(
+        regionId,
+        getAffectedMemberIdsFromSession(savedSession)
+    ).catch(error => {
+        console.warn("Failed to rebuild member stats:", error);
+    });
+
     return savedSession;
 }
 
 export async function updateSessionInCloud(regionId, session) {
+    const oldSession = await getSessionById(session.id).catch(() => null);
+
     const { data, error } = await supabase
         .from("sessions")
         .update({
@@ -687,7 +696,16 @@ export async function updateSessionInCloud(regionId, session) {
 
     if (error) throw error;
 
-    return mapSessionFromDb(data);
+const savedSession = mapSessionFromDb(data);
+
+rebuildMemberStatsForMembers(regionId, [
+    ...getAffectedMemberIdsFromSession(oldSession),
+    ...getAffectedMemberIdsFromSession(savedSession),
+]).catch(error => {
+    console.warn("Failed to rebuild member stats:", error);
+});
+
+return savedSession;
 }
 
 export async function insertPlannedWorkout(regionId, workout) {
@@ -837,6 +855,8 @@ export async function insertSessionsBatch(regionId, sessions) {
 
     if (error) throw error;
 
+    await rebuildMemberStatsForRegion(regionId);
+
     return data;
 }
 
@@ -862,13 +882,22 @@ export async function deleteSessionsInDateRangeForRegion(regionId, startDate, en
 }
 
 export async function deleteSessionFromCloud(regionId, sessionId) {
+    const oldSession = await getSessionById(sessionId).catch(() => null);
+
     const { error } = await supabase
         .from("sessions")
         .delete()
         .eq("id", sessionId)
-        .eq("region_id", regionId)
+        .eq("region_id", regionId);
 
     if (error) throw error;
+
+    rebuildMemberStatsForMembers(
+        regionId,
+        getAffectedMemberIdsFromSession(oldSession)
+    ).catch(error => {
+        console.warn("Failed to rebuild member stats:", error);
+    });
 }
 
 export async function deletePlannedWorkoutFromCloud(regionId, workoutId) {
@@ -1416,4 +1445,61 @@ export function subscribeToQSlotChanges(regionId, onChange) {
 export function unsubscribeFromChannel(channel) {
     if (!channel) return;
     supabase.removeChannel(channel);
+}
+
+export function getAffectedMemberIdsFromSession(session) {
+    const ids = new Set();
+
+    (session?.attendeeIds || []).forEach(id => {
+        if (id) ids.add(id);
+    });
+
+    (session?.qIds || []).forEach(id => {
+        if (id) ids.add(id);
+    });
+
+    (session?.fngs || []).forEach(fng => {
+        const invitedById = fng?.invitedById || fng?.invited_by_id;
+
+        if (invitedById) {
+            ids.add(invitedById);
+        }
+    });
+
+    return [...ids];
+}
+
+export async function rebuildMemberStatsForMembers(regionId, memberIds = []) {
+    const uniqueIds = [...new Set(memberIds)].filter(Boolean);
+
+    if (!regionId || uniqueIds.length === 0) return;
+
+    const results = await Promise.allSettled(
+        uniqueIds.map(memberId =>
+            supabase.rpc("rebuild_member_stats_for_member", {
+                target_region_id: regionId,
+                target_member_id: memberId,
+            })
+        )
+    );
+
+    const failed = results.filter(
+        result => result.status === "rejected" || result.value?.error
+    );
+
+    if (failed.length > 0) {
+        console.warn("Some member stats rebuilds failed:", failed);
+    }
+}
+
+export async function rebuildMemberStatsForRegion(regionId) {
+    if (!regionId) return;
+
+    const { error } = await supabase.rpc("rebuild_member_stats_for_region", {
+        target_region_id: regionId,
+    });
+
+    if (error) {
+        console.warn("Failed to rebuild member stats:", error);
+    }
 }

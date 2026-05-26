@@ -1100,24 +1100,46 @@ export function renderDashboard() {
         const grid = document.createElement("div");
         grid.classList.add("stats-grid");
 
+        function getDaysAgoLabel(dateString) {
+            if (!dateString) return "";
+        
+            const today = new Date();
+            const target = new Date(dateString);
+        
+            today.setHours(0, 0, 0, 0);
+            target.setHours(0, 0, 0, 0);
+        
+            const diffDays = Math.floor(
+                (today - target) / (1000 * 60 * 60 * 24)
+            );
+        
+            if (diffDays === 0) return "Today";
+            if (diffDays === 1) return "1 day ago";
+            return `${diffDays} days ago`;
+        }
+
         const statItems = [
             { label: "Posts", value: stats?.posts ?? "...", icon: "posts", action: "posts" },
             { label: "Qs Led", value: stats?.qs ?? "...", icon: "qs", action: "qs" },
-            { label: "FNGs EH'd", value: stats?.fngsEh ?? "...", icon: "fngsEh" },
-            { 
-                label: "Last Q", 
-                value: stats?.lastQDate ? formatMonthDayYear(stats.lastQDate) : "...",
-                type: "date",
-                icon: "qs", 
-                action:"lastQ" 
-            },
             { 
                 label: "Last Post",
                 value: stats?.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "...",
+                subtext: stats?.lastPostDate ? getDaysAgoLabel(stats.lastPostDate) : "",
                 type: "date",
                 icon: "lastPost",
                 action: "lastPost"
             },
+            { 
+                label: "Last Q", 
+                value: stats?.lastQDate ? formatMonthDayYear(stats.lastQDate) : "...",
+                subtext: stats?.lastQDate ? getDaysAgoLabel(stats.lastQDate) : "",
+                type: "date",
+                icon: "qs", 
+                action:"lastQ" 
+            },
+
+            { label: "FNGs EH'd", value: stats?.fngsEh ?? "...", icon: "fngsEh" },
+
             { 
                 label: "First Post",
                 value: stats?.firstPostDate ? formatMonthDayYear(stats.firstPostDate) : "...",
@@ -1185,6 +1207,14 @@ export function renderDashboard() {
             text.classList.add("stat-text");
 
             text.append(value, label);
+
+            if (item.subtext) {
+                const subtext = document.createElement("div");
+                subtext.classList.add("stat-subtext");
+                subtext.textContent = item.subtext;
+                text.appendChild(subtext);
+            } 
+
             tile.append(icon, text);
 
             if (item.action === "posts") {
@@ -1252,7 +1282,7 @@ export function renderDashboard() {
             }
 
             if (item.action === "lastPost") {
-                tile.classList.add("clickable-state-tile");
+                tile.classList.add("clickable-stat-tile");
 
                 tile.addEventListener("click", async () => {
                     const session = await loadMemberSessionByDate(

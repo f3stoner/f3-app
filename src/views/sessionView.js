@@ -3,11 +3,9 @@ import { createSession } from "../modules/sessions.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { state } from "../modules/state.js";
 import { generateBackblast } from "../modules/backblast.js";
-import { renderBackblastView } from "./backblastView.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { addSession, updateSession } from "../services/appData.js";
-import { REGION_AOS } from "../config.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
@@ -16,6 +14,8 @@ import { logSaveFailure } from "../services/appEvents.js";
 import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { getAffectedMemberIdsFromSession } from "../services/cloudData.js";
+import { invalidateMemberStatsCache } from "../utils/memberStatsCache.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -758,6 +758,9 @@ saveButton.addEventListener("click", async () => {
 
 try {
     let savedSession;
+    const oldSession = isEditing
+        ? state.sessions.find(session => session.id === sessionId) || null
+        : null;
 
     if (isEditing) {
         await updateSession(sessionId, draftSession);
@@ -769,6 +772,13 @@ try {
         };
         savedSession = await addSession(sessionToCreate);
         }
+
+    const affectedMemberIds = [
+        ...getAffectedMemberIdsFromSession(oldSession),
+        ...getAffectedMemberIdsFromSession(savedSession),
+    ];
+    
+    invalidateMemberStatsCache(affectedMemberIds);
 
     const flags = createDuplicateFngNameFlags(
         savedSession,

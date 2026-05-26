@@ -3223,3 +3223,9 @@ body.menu-open {
     font-size: 26px;
     line-height: 1.7;
 }
+
+.stat-subtext {
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
