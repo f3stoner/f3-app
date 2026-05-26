@@ -831,14 +831,13 @@ export function renderQSignupView() {
 
             const previewLine = document.createElement("div");
             previewLine.classList.add("stats-line");
+            
             if (isMine) {
                 previewLine.textContent = !hasPlannedWorkout
                     ? "Needs BD"
                     : matchingWorkout.isFinalized
                         ? "BD Ready"
                         : "Draft BD";
-            } else {
-                previewLine.textContent = slot.qUserId ? "Q filled" : "Q open";
             }
 
             const timeLine = document.createElement("div");
@@ -1007,10 +1006,16 @@ export function renderQSignupView() {
 
             const cardContent = document.createElement("div");
 
+            cardContent.append(topLine);
+
             if (displayEmphasis) {
-                cardContent.append(topLine, emphasisLine, titleLine, timeLine, previewLine);
-            } else {
-                cardContent.append(topLine, titleLine, timeLine, previewLine);
+                cardContent.append(emphasisLine);
+            }
+
+            cardContent.append(titleLine, timeLine);
+
+            if (isMine) {
+                cardContent.append(previewLine);
             }
                         
             mainRow.append(cardContent, actionWrap);

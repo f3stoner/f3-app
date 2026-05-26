@@ -280,16 +280,33 @@ Deno.serve(async (req) => {
       wind_speed_unit: "mph",
       precipitation_unit: "inch",
       timezone: "auto",
-      forecast_days: "7",
+      forecast_days: "10",
     });
 
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+    console.log("Open-Meteo URL", weatherUrl);
+    
     const weatherResponse = await fetch(weatherUrl);
-
+    
     if (!weatherResponse.ok) {
-      return jsonResponse({ error: "Weather provider request failed" }, 502);
+      const errorText = await weatherResponse.text();
+    
+      console.error("Weather provider request failed", {
+        status: weatherResponse.status,
+        statusText: weatherResponse.statusText,
+        errorText,
+        weatherUrl,
+      });
+    
+      return jsonResponse({
+        weatherUnavailable: true,
+        reason: "Weather provider request failed",
+        providerStatus: weatherResponse.status,
+        providerError: errorText,
+        source: PROVIDER,
+        fetchedAt: new Date().toISOString(),
+      });
     }
-
     const rawWeather = await weatherResponse.json();
     const normalizedWeather = normalizeWeather(rawWeather, ao, targetHourKey);
     const expiresAt = getCacheExpiration(forecastDate);
@@ -304,7 +321,6 @@ Deno.serve(async (req) => {
           forecast_hour: forecastHour,
           provider: PROVIDER,
           normalized_weather: normalizedWeather,
-          raw_weather: rawWeather,
           fetched_at: new Date().toISOString(),
           expires_at: expiresAt.toISOString(),
         },
@@ -325,7 +341,9 @@ Deno.serve(async (req) => {
     console.error("get-ao-weather error", error);
 
     return jsonResponse({
-      error: "Unexpected weather function error",
-    }, 500);
-  }
+      weatherUnavailable: true,
+      reason: "Unexpected weather function error",
+      source: PROVIDER,
+      fetchedAt: new Date().toISOString(),
+    });  }
 });

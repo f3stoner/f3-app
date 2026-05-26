@@ -8,6 +8,7 @@ import { logActionFailure } from "../services/appEvents.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { getAoWeather } from "../services/weather.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -52,6 +53,34 @@ export function renderBackblastView () {
     const session = state.sessions.find(
         s => s.id === state.selectedSessionId
     );
+
+    async function addWeatherToBackblast(session, textArea) {
+        if (!session || state.hasAddedBackblastWeather) return;
+    
+        const ao = state.aos.find(a => a.name === session.aoName);
+    
+        if (!ao?.id || !ao?.time || !session.date) return;
+    
+        try {
+            const targetDateTime = `${session.date}T${ao.time}:00`;
+            const startingText = state.draftBackblastText || "";
+
+            const weather = await getAoWeather(ao.id, targetDateTime);
+            
+            if (!weather || weather.weatherUnavailable) return;
+            
+            if ((state.draftBackblastText || "") !== startingText) return;
+            
+            const weatherLine = `\n\nWeather: ${weather.temp ?? "--"}° • ${weather.condition || "Unknown"}${weather.windMph != null ? ` • Wind ${weather.windMph} mph` : ""}`;
+            
+            state.draftBackblastText = `${startingText}${weatherLine}`;            state.hasAddedBackblastWeather = true;
+    
+            textArea.value = state.draftBackblastText;
+            autoResize(textArea);
+        } catch (error) {
+            console.error("Failed to add weather to backblast:", error);
+        }
+    }
 
     if (!state.draftBackblastText && session) {
         state.draftBackblastText = generateBackblast(session, state.members);
@@ -167,6 +196,8 @@ export function renderBackblastView () {
 
     autoResize(textArea);
     autoResize(templateTextArea);
+
+    addWeatherToBackblast(session, textArea);
 
     templateTextArea.addEventListener("input", () => {
         autoResize(templateTextArea);

@@ -171,6 +171,10 @@ function createSelectedPillStrip(qMembers, selectedMembers) {
 
             if (!confirmed) return;
 
+            if (member.isQ && preventRemovingOnlyQ(member.id)) {
+                return;
+            }
+
             draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
             draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
 
@@ -259,6 +263,38 @@ function getLastPostAtAo(memberId, aoName) {
     return dates[dates.length - 1];
 }
 
+function normalizeId(id) {
+    return String(id || "").trim();
+}
+
+function getKnownMemberIds() {
+    return new Set(state.members.map(member => normalizeId(member.id)));
+}
+
+function getUniqueQIds() {
+    return [...new Set((draftSession.qIds || []).map(normalizeId))].filter(Boolean);
+}
+
+function getKnownUniqueQIds() {
+    const knownMemberIds = getKnownMemberIds();
+
+    return getUniqueQIds().filter(qId => knownMemberIds.has(qId));
+}
+
+function isOnlyQ(memberId) {
+    const normalizedMemberId = normalizeId(memberId);
+    const knownQIds = getKnownUniqueQIds();
+
+    return knownQIds.length === 1 && knownQIds[0] === normalizedMemberId;
+}
+
+function preventRemovingOnlyQ(memberId) {
+    if (!isOnlyQ(memberId)) return false;
+
+    showToast("A session must have at least one Q.", "info");
+    return true;
+}
+
 function clearSessionSearch() {
     state.sessionSearchTerm = "";
     searchInput.value = "";
@@ -280,7 +316,9 @@ function createMemberCard(member) {
     qButton.addEventListener("click", (event) => {
         event.stopPropagation();
 
-        const isSelectedQ = (draftSession.qIds || []).includes(member.id);
+        const isSelectedQ = getUniqueQIds().includes(normalizeId(member.id));        if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
+            return;
+        }
         if (isSelectedQ) {
             draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
         } else {
@@ -297,17 +335,22 @@ function createMemberCard(member) {
 card.append(qButton, name);
 card.addEventListener("click", () => {
     const isPresent = draftSession.attendeeIds.includes(member.id);
+    const isSelectedQ = (draftSession.qIds || []).includes(member.id);
 
     if (!isPresent) {
         draftSession.attendeeIds.push(member.id);
     } else {
+        if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
+            return;
+        }
+
         draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
         draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
     }
-    clearSessionSearch();
-    renderMemberList();
+        clearSessionSearch();
+        renderMemberList();
     });
-return card;
+    return card;
 }
 
 function createMemberSection(titleText, members, options = {}) {
@@ -385,6 +428,10 @@ function createSelectedSection(qMembers, selectedMembers) {
         const removeButton = document.createElement("button");
         removeButton.textContent = "Remove";
         removeButton.addEventListener("click", () => {
+            if (member.isQ && preventRemovingOnlyQ(member.id)) {
+                return;
+            }
+
             draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
             draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
             renderMemberList();
@@ -466,8 +513,9 @@ function renderMemberList() {
 
     return paxName.includes(searchTerm) || realName.includes(searchTerm);
     });
+    
     const qMembers = activeMembers.filter(member => 
-        (draftSession.qIds || []).includes(member.id)
+        getUniqueQIds().includes(normalizeId(member.id))
     );
 
     const selectedMembers = filteredMembers.filter(member =>
@@ -719,9 +767,8 @@ try {
             ...draftSession,
             createdByUserId: state.currentUserId,
         };
-        const sessionWithWeather = await attachWeatherSnapshot(sessionToCreate);
-        savedSession = await addSession(sessionWithWeather);
-    }
+        savedSession = await addSession(sessionToCreate);
+        }
 
     const flags = createDuplicateFngNameFlags(
         savedSession,
