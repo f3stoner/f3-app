@@ -1071,11 +1071,7 @@ export function renderDashboard() {
         const stats = state.memberDashboardStatsByMemberId?.[memberId] || null;
 
         if (!stats) {
-            loadMemberDashboardStats(
-                state.currentRegionId,
-                memberId,
-                state.members
-            )
+            loadMemberDashboardStats(state.currentRegionId, memberId)
                 .then(loadedStats => {
                     state.memberDashboardStatsByMemberId = {
                         ...(state.memberDashboardStatsByMemberId || {}),

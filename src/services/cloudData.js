@@ -201,65 +201,41 @@ export async function loadExercises() {
     return (data || []).map(mapExerciseFromDb);
 }
 
-export async function loadMemberDashboardStats(regionId, memberId, members = []) {
-    if (!regionId || !memberId) return null;
+export async function loadMemberDashboardStats(regionId, memberId) {
+    console.log("member_stats lookup:", { regionId, memberId });
 
-    const pageSize = 1000;
-    let from = 0;
-    let allSessions = [];
+    const { data, error } = await supabase
+        .from("member_stats")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("member_id", memberId)
+        .maybeSingle();
 
-    while (true) {
-        const { data, error } = await supabase
-            .from("sessions")
-            .select("id, date, ao_name, attendee_ids, q_ids, q_id")
-            .eq("region_id", regionId)
-            .range(from, from + pageSize - 1);
+    console.log("member_stats result:", { data, error });
 
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-
-        allSessions = allSessions.concat(data);
-
-        if (data.length < pageSize) break;
-
-        from += pageSize;
+    if (error) {
+        console.warn("Failed to load member_stats:", error);
+        return null;
     }
 
-    const attendedSessions = allSessions.filter(session =>
-        (session.attendee_ids || []).includes(memberId)
-    );
-
-    const qSessions = allSessions.filter(session =>
-        (session.q_ids || []).includes(memberId) ||
-        session.q_id === memberId
-    );
-
-    const aoCounts = new Map();
-
-    attendedSessions.forEach(session => {
-        if (!session.ao_name) return;
-        aoCounts.set(session.ao_name, (aoCounts.get(session.ao_name) || 0) + 1);
-    });
-
-    const favoriteAo = [...aoCounts.entries()]
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || "";
-
-    const attendedDates = attendedSessions
-        .map(session => session.date)
-        .filter(Boolean)
-        .sort();
-
-    const fngsEh = (members || [])
-        .filter(member => member.invitedById === memberId)
-        .length;
+    if (!data) {
+        return {
+            posts: 0,
+            qs: 0,
+            fngsEh: 0,
+            favoriteAo: null,
+            lastPostDate: null,
+            firstPostDate: null,
+        };
+    }
 
     return {
-        posts: attendedSessions.length,
-        qs: qSessions.length,
-        fngsEh,
-        favoriteAo,
-        firstPostDate: attendedDates[0] || null,
-        lastPostDate: attendedDates[attendedDates.length - 1] || null,
+        posts: data.total_posts ?? 0,
+        qs: data.total_qs ?? 0,
+        fngsEh: data.fngs_eh ?? 0,
+        favoriteAo: data.favorite_ao ?? null,
+        lastPostDate: data.last_post_date ?? null,
+        firstPostDate: data.first_post_date ?? null,
     };
 }
 
