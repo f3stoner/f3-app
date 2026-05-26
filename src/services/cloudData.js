@@ -571,6 +571,7 @@ function mapQSlotFromDb(row) {
         overrideTime: row.override_time || null,
         overrideEmphasis: row.override_emphasis || null,
         overrideTitle: row.override_title || null,
+        customEmphasisLabel: row.custom_emphasis_label || null,
     };
 }
 
@@ -985,6 +986,7 @@ export async function insertQSlot(regionId, qSlot) {
                 override_time: qSlot.overrideTime || null,
                 override_emphasis: qSlot.overrideEmphasis || null,
                 override_title: qSlot.overrideTitle || null,
+                custom_emphasis_label: qSlot.customEmphasisLabel || null,
             },
         ])
         .select()
@@ -1010,6 +1012,7 @@ export async function updateQSlotInCloud(regionId, qSlot) {
             override_time: qSlot.overrideTime || null,
             override_emphasis: qSlot.overrideEmphasis || null,
             override_title: qSlot.overrideTitle || null,
+            custom_emphasis_label: qSlot.customEmphasisLabel || null,
         })
         .eq("id", qSlot.id)
         .eq("region_id", regionId)

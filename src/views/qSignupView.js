@@ -835,11 +835,15 @@ export function renderQSignupView() {
                 previewLine.textContent = !hasPlannedWorkout
                     ? "Needs BD"
                     : matchingWorkout.isFinalized
-                        ? "BD Ready" 
-                        : "Draft BD"
+                        ? "BD Ready"
+                        : "Draft BD";
             } else {
-                previewLine.textContent = displayTime ? `Start: ${displayTime}` : "No time set";
-                    }
+                previewLine.textContent = slot.qUserId ? "Q filled" : "Q open";
+            }
+
+            const timeLine = document.createElement("div");
+            timeLine.classList.add("stats-line");
+            timeLine.textContent = displayTime ? `Start: ${displayTime}` : "No time set";
 
             const actionWrap = document.createElement("div");
             actionWrap.classList.add("q-slot-actions");
@@ -1004,9 +1008,9 @@ export function renderQSignupView() {
             const cardContent = document.createElement("div");
 
             if (displayEmphasis) {
-                cardContent.append(topLine, emphasisLine, titleLine, previewLine);
+                cardContent.append(topLine, emphasisLine, titleLine, timeLine, previewLine);
             } else {
-                cardContent.append(topLine, titleLine, previewLine);
+                cardContent.append(topLine, titleLine, timeLine, previewLine);
             }
                         
             mainRow.append(cardContent, actionWrap);

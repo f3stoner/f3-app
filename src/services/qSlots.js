@@ -25,6 +25,10 @@ export async function unclaimQSlot(slot, { bypassDropGuard = false } = []) {
     const updatedSlot = await updateQSlotInCloud(state.currentRegionId, {
         ...slot,
         qUserId: null,
+        overrideTime: null,
+        overrideEmphasis: null,
+        customEmphasisLabel: null,
+        overrideTitle: null,
     });
 
     const index = state.qSlots.findIndex(q => q.id === slot.id);
