@@ -21,6 +21,16 @@ let timerActionInProgress = false;
 const TIMER_SOUND_URL =
     `${window.location.origin}${process.env.NODE_ENV === "production" ? "/f3-app" : ""}/sounds/timer-complete.wav`;
 
+const EXECUTION_TEXT_SIZE_KEY = "theQExecutionTextSize";
+
+function getExecutionTextSize() {
+    return localStorage.getItem(EXECUTION_TEXT_SIZE_KEY) || "large";
+}
+
+function setExecutionTextSize(size) {
+    localStorage.setItem(EXECUTION_TEXT_SIZE_KEY, size);
+}
+
 function getTimerAudio() {
     if (!timerAudio) {
         timerAudio = new Audio(TIMER_SOUND_URL);
@@ -122,6 +132,16 @@ export function renderPlannedWorkoutDetail() {
     const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";
     const isTodayWorkout = workout?.date === getTodayDate();
 
+    app.classList.remove(
+        "execution-text-size-normal",
+        "execution-text-size-large",
+        "execution-text-size-xl"
+    );
+    
+    if (isExecutionMode) {
+        app.classList.add(`execution-text-size-${getExecutionTextSize()}`);
+    }
+
     if (!workout) {
         console.warn("Missing workout. Redirecting to safe view.");
         navigateTo("plannedWorkoutList");
@@ -200,6 +220,43 @@ export function renderPlannedWorkoutDetail() {
         executionBanner = document.createElement("div");
         executionBanner.classList.add("loaded-workout-banner");
         executionBanner.textContent = `Running workout at ${workout.aoName || "AO"}`;
+    }
+
+    function createExecutionTextSizeControls() {
+        if (!isExecutionMode) return null;
+    
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("execution-text-size-controls");
+    
+        const label = document.createElement("div");
+        label.classList.add("detail-label");
+        label.textContent = "Text Size";
+    
+        const buttonRow = document.createElement("div");
+        buttonRow.classList.add("button-row", "execution-text-size-row");
+    
+        ["normal", "large", "xl"].forEach(size => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent =
+                size === "normal" ? "Normal" :
+                size === "large" ? "Large" :
+                "XL";
+    
+            if (getExecutionTextSize() === size) {
+                button.classList.add("active");
+            }
+    
+            button.addEventListener("click", () => {
+                setExecutionTextSize(size);
+                renderApp();
+            });
+    
+            buttonRow.appendChild(button);
+        });
+    
+        wrapper.append(label, buttonRow);
+        return wrapper;
     }
 
     function createTimerButtonsForSection(section) {
@@ -949,9 +1006,12 @@ export function renderPlannedWorkoutDetail() {
 
     const activeTimerPanel = createActiveTimerPanel();
 
+    const executionTextSizeControls = createExecutionTextSizeControls();
+
     app.append(
         header,
         ...(executionBanner ? [executionBanner] : []),
+        ...(executionTextSizeControls ? [executionTextSizeControls] : []),
         ...(dateSection ? [dateSection] : []),
         ...(aoSection ? [aoSection] : []),
         ...(!isExecutionMode ? [visibilitySection] : []),

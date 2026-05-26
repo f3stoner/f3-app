@@ -3195,3 +3195,31 @@ body.menu-open {
     width: auto;
     flex: 0 0 auto;
 }
+
+.execution-text-size-controls {
+    margin-bottom: 14px;
+}
+
+.execution-text-size-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 0;
+}
+
+.execution-text-size-row button {
+    margin: 0;
+}
+
+#app.execution-text-size-normal .execution-text {
+    font-size: 18px;
+}
+
+#app.execution-text-size-large .execution-text {
+    font-size: 22px;
+}
+
+#app.execution-text-size-xl .execution-text {
+    font-size: 26px;
+    line-height: 1.7;
+}
