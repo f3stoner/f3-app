@@ -1272,7 +1272,7 @@ select:focus,
 .q-slot-card {
     display: block;
     background: var(--surface-raised);
-    border: 1px aolid var(--border-strong);
+    border: 1px solid var(--border-strong);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
     padding: 18px;
 }
@@ -2092,186 +2092,6 @@ select:focus,
     height: 12px;
     flex-shrink: 0;
     opacity: 0.85;
-}
-
-.weekly-q-export-wrap {
-    position: fixed;
-    left: -9999px;
-    top: 0;
-    width: 900px;
-    pointer-events: none;
-}
-
-.weekly-q-export-card {
-    width: 900px;
-    padding: 42px 40px 36px;
-    background:
-        radial-gradient(circle at top left, rgba(246, 200, 95, 0.16), transparent 260px),
-        radial-gradient(circle at top right, rgba(143, 211, 255, 0.10), transparent 260px),
-        #090a0b;
-    color: var(--text);
-    font-family: var(--font-body);
-    border-radius: 28px;
-    box-sizing: border-box;
-    border: 1px solid rgba(255,255,255,0.16);
-}
-
-.weekly-q-export-title {
-    font-family: var(--font-display);
-    font-size: 52px;
-    line-height: 0.9;
-    letter-spacing: -0.03em;
-    font-weight: 900;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-}
-
-.weekly-q-export-subtitle {
-    font-size: 19px;
-    color: var(--muted);
-    opacity: 0.78;
-    margin-bottom: 30px;
-}
-
-.weekly-q-export-day {
-    margin-top: 36px;
-}
-
-.weekly-q-export-day:first-of-type {
-    margin-top: 18px;
-}
-
-.weekly-q-export-day-title {
-    display: inline-block;
-    padding: 7px 12px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #f6d365, #fda085);
-    color: #101010;
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 14px;
-}
-
-.weekly-q-export-slot {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.13);
-    font-size: 24px;
-}
-
-.weekly-q-export-slot.empty {
-    opacity: 0.6;
-    font-style: italic;
-}
-
-.weekly-q-export-slot-left {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 0;
-}
-
-.weekly-q-export-slot-top-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.weekly-q-export-ao-name {
-    font-family: var(--font-display);
-    font-size: 30px;
-    font-weight: 900;
-    line-height: 1;
-}
-
-.weekly-q-export-slot .filled,
-.weekly-q-export-slot .open {
-    font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 900;
-    white-space: nowrap;
-    padding-top: 1px;
-}
-
-.weekly-q-export-slot .filled {
-    color: var(--text);
-    font-weight: 800;
-    opacity: 0.92;
-}
-
-.weekly-q-export-slot .open {
-    color: #f6c85f;
-}
-
-.weekly-q-export-emphasis-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-family: var(--font-display);
-    font-size: 15px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    background: rgba(143, 211, 255, 0.16);
-    border: 1px solid rgba(143, 211, 255, 0.26);
-    color: #9ecbff;
-    white-space: nowrap;
-}
-
-.weekly-q-export-emphasis-icon {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2.8;
-}
-
-.weekly-q-export-meta-wrap {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    margin-top: 2px;
-}
-
-.weekly-q-export-slot-time {
-    font-size: 18px;
-    color: var(--muted);
-    opacity: 0.9;
-}
-
-.weekly-q-export-weather {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: #9ecbff;
-    font-size: 0.82rem;
-    line-height: 1;
-    opacity: 0.62;
-}
-
-.weekly-q-export-weather-icon {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
-}
-
-.weekly-q-export-footer {
-    margin-top: 34px;
-    padding-top: 18px;
-    border-top: 1px solid rgba(255,255,255,0.12);
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-align: right;
 }
 
 .upcoming-q-row-text {
@@ -3097,4 +2917,273 @@ body.menu-open {
     color: var(--text-inverse);
     min-height: 48px;
     font-weight: 700;
+}
+
+.weekly-q-export-wrap {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 1600px;
+    pointer-events: none;
+}
+
+.weekly-q-export-card {
+    width: 1600px;
+    height: 980px;
+    padding: 24px 28px 18px;
+    background: #050505;
+    color: #f5f5f2;
+    font-family: var(--font-display);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.weekly-q-export-topbar {
+    display: grid;
+    grid-template-columns: 390px 1fr 420px;
+    gap: 28px;
+    align-items: start;
+    margin-bottom: 18px;
+}
+
+.weekly-q-export-logo-text {
+    font-size: 50px;
+    line-height: 0.9;
+    font-weight: 900;
+}
+
+.weekly-q-export-region {
+    margin-top: 8px;
+    font-size: 24px;
+    font-weight: 900;
+    color: rgba(245,245,242,0.72);
+    text-transform: uppercase;
+}
+
+.weekly-q-export-meta {
+    padding-top: 8px;
+    text-align: center;
+}
+
+.weekly-q-export-date-line {
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #2f8cff;
+}
+
+.weekly-q-export-creed {
+    margin-top: 12px;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 900;
+    color: #2f8cff;
+    letter-spacing: 0.12em;
+}
+
+.weekly-q-export-key {
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 16px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.025);
+}
+
+.weekly-q-export-key-title {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.weekly-q-export-key-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+}
+
+.weekly-q-export-key-item {
+    font-size: 15px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.weekly-q-export-columns {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.weekly-q-export-day-column {
+    height: 560px;
+    padding: 18px 16px;
+    border: 1px solid rgba(255,255,255,0.34);
+    border-radius: 16px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.045), rgba(255,255,255,0.01));
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.weekly-q-export-day-header {
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.weekly-q-export-day-name {
+    font-size: 48px;
+    line-height: 0.9;
+    font-weight: 900;
+}
+
+.weekly-q-export-day-date {
+    margin-top: 7px;
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 900;
+    color: rgba(245,245,242,0.72);
+}
+
+.weekly-q-export-day-accent {
+    height: 3px;
+    margin-top: 16px;
+    border-radius: 999px;
+}
+
+.weekly-q-export-slot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.weekly-q-export-slot-line {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+}
+
+.weekly-q-export-slot-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.weekly-q-export-ao,
+.weekly-q-export-q,
+.weekly-q-export-open {
+    font-size: 17px;
+    line-height: 1.05;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.weekly-q-export-q {
+    color: #f5f5f2;
+}
+
+.weekly-q-export-open {
+    color: #33ff70;
+}
+
+.weekly-q-export-emphasis {
+    flex: 0 0 auto;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.weekly-q-export-bottom-bar {
+    display: grid;
+    grid-template-columns: 0.95fr 1.4fr;
+    align-items: center;
+    gap: 34px;
+    height: 112px;
+    margin-top: 14px;
+    padding: 18px 24px;
+    border: 1px solid rgba(255,255,255,0.30);
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.weekly-q-export-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.weekly-q-export-footer-icon {
+    width: 66px;
+    height: 66px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #f5f5f2;
+    border-radius: 10px;
+    font-size: 38px;
+    line-height: 1;
+    font-weight: 900;
+    color: #f5f5f2;
+}
+
+.weekly-q-export-footer-title {
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.weekly-q-export-footer-text {
+    margin-top: 10px;
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 900;
+    color: #2f8cff;
+}
+
+.weekly-q-export-reminders {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    min-width: 0;
+}
+
+.weekly-q-export-reminder-label {
+    font-size: 20px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.weekly-q-export-reminder-items {
+    font-size: 19px;
+    line-height: 1;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.weekly-q-export-micro-footer {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    color: rgba(245,245,242,0.52);
+    text-transform: uppercase;
+}
+
+.weekly-q-export-micro-footer::before,
+.weekly-q-export-micro-footer::after {
+    content: "";
+    height: 1px;
+    width: 420px;
+    background: rgba(255,255,255,0.28);
+}
+
+.q-slot-edit-button {
+    margin: 0;
+    width: auto;
+    flex: 0 0 auto;
 }

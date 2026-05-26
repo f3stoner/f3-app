@@ -510,16 +510,24 @@ function mapPlannedWorkoutFromDb(row) {
 function getDefaultEmphasisScheduleForAo(aoName) {
     const schedule = {};
 
-    AO_WORKOUT_EMPHASIS_RULES
-        .filter(rule => rule.aoName === aoName)
-        .forEach(rule => {
-            schedule[String(rule.dayOfWeek)] = {
-                pattern: rule.pattern || "fixed",
-                values: rule.values || [],
-                startsOnDate: rule.startsOnDate || null,
-            };
-        });
-
+    function getDefaultEmphasisScheduleForAo(aoName) {
+        const schedule = {};
+    
+        AO_WORKOUT_EMPHASIS_RULES
+            .filter(rule => rule.aoName === aoName)
+            .forEach(rule => {
+                const key = rule.dayOfWeek === "*" ? "*" : String(rule.dayOfWeek);
+    
+                schedule[key] = {
+                    pattern: rule.pattern || "fixed",
+                    values: rule.values || [],
+                    startsOnDate: rule.startsOnDate || null,
+                    daysOfWeek: rule.daysOfWeek || [],
+                };
+            });
+    
+        return schedule;
+    }
     return schedule;
 }
 
@@ -560,6 +568,9 @@ function mapQSlotFromDb(row) {
         preblastText: row.preblast_text || "",
         preblastLastModifiedAt: row.preblast_last_modified_at || null,
         preblastPostedAt: row.preblast_posted_at || null,
+        overrideTime: row.override_time || null,
+        overrideEmphasis: row.override_emphasis || null,
+        overrideTitle: row.override_title || null,
     };
 }
 
@@ -971,6 +982,9 @@ export async function insertQSlot(regionId, qSlot) {
                 date: qSlot.date,
                 q_user_id: qSlot.qUserId || null,
                 created_at: qSlot.createdAt,
+                override_time: qSlot.overrideTime || null,
+                override_emphasis: qSlot.overrideEmphasis || null,
+                override_title: qSlot.overrideTitle || null,
             },
         ])
         .select()
@@ -993,6 +1007,9 @@ export async function updateQSlotInCloud(regionId, qSlot) {
             preblast_text: qSlot.preblastText || null,
             preblast_last_modified_at: qSlot.preblastLastModifiedAt || null,
             preblast_posted_at: qSlot.preblastPostedAt || null,
+            override_time: qSlot.overrideTime || null,
+            override_emphasis: qSlot.overrideEmphasis || null,
+            override_title: qSlot.overrideTitle || null,
         })
         .eq("id", qSlot.id)
         .eq("region_id", regionId)

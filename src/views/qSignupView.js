@@ -209,6 +209,40 @@ export function renderQSignupView() {
 
     const listContainer = document.createElement("div");
 
+    const EMPHASIS_OPTIONS = [
+        "heavy",
+        "upper",
+        "lower",
+        "cardio",
+        "ruck",
+        "run",
+        "core",
+        "30/30",
+        "stairs",
+        "bootcamp",
+        "other",
+    ];
+    
+    function createEmphasisSelect(selectedValue = "") {
+        const select = document.createElement("select");
+    
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Use default";
+        select.appendChild(defaultOption);
+    
+        EMPHASIS_OPTIONS.forEach(value => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        });
+    
+        select.value = selectedValue || "";
+    
+        return select;
+    }
+
     async function refreshQSlotsFromCloud() {
         if (!state.currentRegionId) return;
 
@@ -272,6 +306,28 @@ export function renderQSignupView() {
             qSelect.appendChild(option);
         });
 
+        const timeLabel = document.createElement("div");
+        timeLabel.classList.add("detail-label");
+        timeLabel.textContent = "Override Time";
+
+        const timeInput = document.createElement("input");
+        timeInput.type = "text";
+        timeInput.placeholder = "Example: 0500";
+
+        const emphasisLabel = document.createElement("div");
+        emphasisLabel.classList.add("detail-label");
+        emphasisLabel.textContent = "Override Emphasis";
+
+        const emphasisSelect = createEmphasisSelect();
+
+        const titleLabel = document.createElement("div");
+        titleLabel.classList.add("detail-label");
+        titleLabel.textContent = "Override Title";
+
+        const titleInput = document.createElement("input");
+        titleInput.type = "text";
+        titleInput.placeholder = "Example: 0500 Ruck";
+
         const buttonRow = document.createElement("div");
         buttonRow.classList.add("button-row");
 
@@ -318,6 +374,9 @@ export function renderQSignupView() {
                 date: dateInput.value,
                 qUserId: qSelect.value || null,
                 createdAt: new Date().toISOString(),
+                overrideTime: timeInput.value.trim() || null,
+                overrideEmphasis: emphasisSelect.value || null,
+                overrideTitle: titleInput.value.trim() || null,
             };
 
             try {
@@ -342,9 +401,118 @@ export function renderQSignupView() {
             dateInput,
             qLabel,
             qSelect,
+            timeLabel,
+            timeInput,
+            emphasisLabel,
+            emphasisSelect,
+            titleLabel,
+            titleInput,
             buttonRow
         );
 
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    function openEditSlotModal(slot) {
+        const overlay = document.createElement("div");
+        overlay.classList.add("modal-overlay");
+    
+        const modal = document.createElement("div");
+        modal.classList.add("modal");
+    
+        const heading = document.createElement("h2");
+        heading.textContent = "Edit Slot";
+    
+        const timeLabel = document.createElement("div");
+        timeLabel.classList.add("detail-label");
+        timeLabel.textContent = "Override Time";
+    
+        const timeInput = document.createElement("input");
+        timeInput.type = "text";
+        timeInput.placeholder = "Example: 0500";
+        timeInput.value = slot.overrideTime || "";
+    
+        const emphasisLabel = document.createElement("div");
+        emphasisLabel.classList.add("detail-label");
+        emphasisLabel.textContent = "Override Emphasis";
+    
+        const emphasisSelect = createEmphasisSelect(slot.overrideEmphasis || "");
+
+        const customEmphasisLabel = document.createElement("div");
+        customEmphasisLabel.classList.add("detail-label");
+        customEmphasisLabel.textContent = "Custom Emphasis Label";
+
+        const customEmphasisInput = document.createElement("input");
+        customEmphasisInput.type = "text";
+        customEmphasisInput.placeholder = "Example: Murph Prep";
+        customEmphasisInput.value = slot.customEmphasisLabel || "";
+    
+        const titleLabel = document.createElement("div");
+        titleLabel.classList.add("detail-label");
+        titleLabel.textContent = "Override Title";
+    
+        const titleInput = document.createElement("input");
+        titleInput.type = "text";
+        titleInput.placeholder = "Example: 0500 Ruck";
+        titleInput.value = slot.overrideTitle || "";
+    
+        const buttonRow = document.createElement("div");
+        buttonRow.classList.add("button-row");
+    
+        const cancelButton = document.createElement("button");
+        cancelButton.classList.add("secondary-button");
+        cancelButton.textContent = "Cancel";
+    
+        cancelButton.addEventListener("click", () => {
+            overlay.remove();
+        });
+    
+        const saveButton = document.createElement("button");
+        saveButton.textContent = "Save Slot";
+    
+        saveButton.addEventListener("click", async () => {
+            try {
+                const activeRegionId = state.currentRegionId;
+    
+                if (!activeRegionId) {
+                    throw new Error("No active region id");
+                }
+    
+                await updateQSlotInCloud(activeRegionId, {
+                    ...slot,
+                    overrideEmphasis: emphasisSelect.value || null,
+                    customEmphasisLabel: customEmphasisInput.value.trim() || null,
+                    overrideTime: timeInput.value.trim() || null,
+                    overrideTitle: titleInput.value.trim() || null,
+                });
+    
+                await refreshQSlotsFromCloud();
+    
+                overlay.remove();
+                showToast("Q slot updated.", "success");
+                renderApp();
+            } catch (error) {
+                console.error("Failed to update Q slot:", error);
+                showToast("Failed to update Q slot.", "error");
+            }
+        });
+    
+        buttonRow.append(cancelButton, saveButton);
+    
+        modal.append(
+            heading,
+            timeLabel,
+            timeInput,
+            emphasisLabel,
+            emphasisSelect,
+            customEmphasisLabel,
+            customEmphasisInput,
+            titleLabel,
+            titleInput,
+            buttonRow
+        );
+    
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
@@ -597,31 +765,57 @@ export function renderQSignupView() {
             const card = document.createElement("div");
             card.classList.add("member-card", "q-slot-card");
 
+            if (state.currentUserRole === "admin") {
+                card.classList.add("clickable-card");
+
+                card.addEventListener("click", () => {
+                    openEditSlotModal(slot);
+                });
+            }
+
             const ao = state.aos.find(a => a.id === slot.aoId);
             const emphasis = getWorkoutEmphasisForSlot(slot, ao);
+            const displayEmphasis = slot.customEmphasisLabel
+                ? {
+                    key: "custom",
+                    label: slot.customEmphasisLabel,
+                    icon: null,
+                }
+                : emphasis;
+            const displayTime = slot.overrideTime || ao?.time || "";
+            const displayTitle = slot.overrideTitle || "";
             const isMine = slot.qUserId === state.currentUserMemberId;
+            const canEditSlot = state.currentUserRole === "admin" || isMine;
             const qMember = state.members.find(m => m.id === slot.qUserId);
             const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
             const hasPlannedWorkout = Boolean(matchingWorkout);
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
-            topLine.textContent = `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
+            if (state.currentUserRole === "admin") {
+                topLine.title = "Tap card to edit slot";
+            }
+            topLine.textContent = displayTitle
+                ? `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"} - ${displayTitle}`
+                : `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
 
             const emphasisLine = document.createElement("div");
             emphasisLine.classList.add("q-signup-emphasis-row");
 
-            if (emphasis) {
+            if (displayEmphasis) {
                 const emphasisBadge = document.createElement("span");
                 emphasisBadge.classList.add("workout-emphasis-line");
-
-                const icon = createIcon(emphasis.icon);
-                icon.classList.add("workout-emphasis-icon");
-
+            
+                if (displayEmphasis.icon) {
+                    const icon = createIcon(displayEmphasis.icon);
+                    icon.classList.add("workout-emphasis-icon");
+                    emphasisBadge.appendChild(icon);
+                }
+            
                 const label = document.createElement("div");
-                label.textContent = emphasis.label;
-
-                emphasisBadge.append(icon, label);
+                label.textContent = displayEmphasis.label;
+            
+                emphasisBadge.appendChild(label);
                 emphasisLine.appendChild(emphasisBadge);
             }
 
@@ -644,8 +838,8 @@ export function renderQSignupView() {
                         ? "BD Ready" 
                         : "Draft BD"
             } else {
-                previewLine.textContent = ao?.time ? `Start: ${ao.time}` : "No time set";
-            }
+                previewLine.textContent = displayTime ? `Start: ${displayTime}` : "No time set";
+                    }
 
             const actionWrap = document.createElement("div");
             actionWrap.classList.add("q-slot-actions");
@@ -742,6 +936,19 @@ export function renderQSignupView() {
 
             let adminActions = null;
 
+            if (canEditSlot) {
+                const editButton = document.createElement("button");
+                editButton.classList.add("q-slot-edit-button");
+                editButton.textContent = "Edit";
+            
+                editButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    openEditSlotModal(slot);
+                });
+            
+                actionWrap.appendChild(editButton);
+            }
+
             if (state.currentUserRole === "admin") {
                 adminActions = document.createElement("div");
                 adminActions.classList.add("q-slot-admin-actions");
@@ -796,15 +1003,14 @@ export function renderQSignupView() {
 
             const cardContent = document.createElement("div");
 
-            if (emphasis) {
+            if (displayEmphasis) {
                 cardContent.append(topLine, emphasisLine, titleLine, previewLine);
             } else {
                 cardContent.append(topLine, titleLine, previewLine);
             }
-            
+                        
             mainRow.append(cardContent, actionWrap);
-            card.appendChild(mainRow);
-
+            card.appendChild(mainRow);            
             if (state.currentUserRole === "admin") {
                 card.append(adminActions);
             }

@@ -1,21 +1,10 @@
+import html2canvas from "html2canvas";
 import { state } from "../modules/state.js";
 import { formatDate } from "./date.js";
 import { getWorkoutEmphasisForSlot } from "./workoutEmphasis.js";
 
-const WIDTH = 1600;
-const HEIGHT = 900;
-
-const COLORS = {
-    bg: "#050505",
-    panel: "#3f3f3f",
-    panelDark: "#2f2f2f",
-    border: "#d8d8d8",
-    text: "#ffffff",
-    muted: "#d7d7d7",
-    open: "#39ff5a",
-    taken: "#ffffff",
-    accent: "#f5f5f2",
-};
+const EXPORT_WIDTH = 1600;
+const EXPORT_HEIGHT = 980;
 
 const EMPHASIS_EMOJI = {
     heavy: "🏋️",
@@ -27,6 +16,34 @@ const EMPHASIS_EMOJI = {
     "30/30": "💡",
     stairs: "🗼",
     other: "⭕",
+};
+
+const DAY_ACCENTS = [
+    "#2f8cff",
+    "#32c46c",
+    "#f4b63f",
+    "#ff394a",
+    "#9b59ff",
+    "#29c7b8",
+];
+
+const AO_COLOR_OVERRIDES = {
+    "the cave": "#2f8cff",
+    "the forest": "#32c46c",
+    "the iron": "#c9ced6",
+    "the keep": "#b56cff",
+    "the mine": "#f3d33b",
+    "the moat am": "#f06a2f",
+    "the moat pm": "#f06a2f",
+    "the rock": "#ff8a2f",
+    "the watch": "#ff394a",
+    "the watch (d)": "#ff394a",
+    "the watch (w)": "#ff394a",
+    "southie": "#29c7b8",
+    "convergence": "#9b59ff",
+    "convergence (cave)": "#9b59ff",
+    "dads": "#50c878",
+    "dads (the mine)": "#50c878",
 };
 
 function getMemberName(memberId) {
@@ -43,464 +60,309 @@ function getShortDayLabel(dateString) {
 
     return date.toLocaleDateString(undefined, {
         weekday: "short",
-        month: "numeric",
-        day: "numeric",
     }).toUpperCase();
 }
 
-function drawRoundedRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+function getMonthDay(dateString) {
+    const date = new Date(`${dateString}T12:00:00`);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    return `${month}/${day}`;
 }
 
-function drawText(ctx, text, x, y, options = {}) {
-    ctx.fillStyle = options.color || COLORS.text;
-    ctx.font = options.font || "32px Arial";
-    ctx.textAlign = options.align || "left";
-    ctx.textBaseline = options.baseline || "top";
-    ctx.fillText(text, x, y);
-}
-
-function getDaySlots(date) {
-    return state.qSlots
-        .filter(slot => slot.date === date)
-        .sort((a, b) => {
-            const aoA = getAo(a)?.name || "";
-            const aoB = getAo(b)?.name || "";
-
-            return aoA.localeCompare(aoB);
-        });
+function getWeekRangeLabel(weekStart, weekEnd) {
+    return `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
 }
 
 function getEmphasisEmoji(emphasis) {
     if (!emphasis) return "";
 
+    const key = String(emphasis.key || emphasis.type || emphasis.label || "")
+        .trim()
+        .toLowerCase();
+
+    if (EMPHASIS_EMOJI[key]) return EMPHASIS_EMOJI[key];
+
     const label = String(emphasis.label || "").toLowerCase();
-    const icon = String(emphasis.icon || "").toLowerCase();
 
-    return (
-        EMPHASIS_EMOJI[icon] ||
-        EMPHASIS_EMOJI[label] ||
-        "⭕"
-    );
+    if (label.includes("upper")) return EMPHASIS_EMOJI.upper;
+    if (label.includes("lower")) return EMPHASIS_EMOJI.lower;
+    if (label.includes("cardio")) return EMPHASIS_EMOJI.cardio;
+    if (label.includes("ruck")) return EMPHASIS_EMOJI.ruck;
+    if (label.includes("core") || label.includes("ab")) return EMPHASIS_EMOJI.core;
+    if (label.includes("30")) return EMPHASIS_EMOJI["30/30"];
+    if (label.includes("stair")) return EMPHASIS_EMOJI.stairs;
+    if (label.includes("heavy")) return EMPHASIS_EMOJI.heavy;
+
+    return EMPHASIS_EMOJI.other;
 }
 
-function drawScheduleImage({ weekStart, weekEnd, weekDates }) {
-    const canvas = document.createElement("canvas");
+function getAoColor(aoName) {
+    const normalizedAoName = String(aoName || "")
+        .trim()
+        .toLowerCase();
 
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
+    if (AO_COLOR_OVERRIDES[normalizedAoName]) {
+        return AO_COLOR_OVERRIDES[normalizedAoName];
+    }
 
-    const ctx = canvas.getContext("2d");
+    const fallbackColors = [
+        "#2f8cff",
+        "#32c46c",
+        "#f3d33b",
+        "#ff8a2f",
+        "#ff394a",
+        "#b56cff",
+        "#29c7b8",
+        "#c9ced6",
+    ];
 
-    ctx.fillStyle = COLORS.bg;
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    let hash = 0;
 
-    drawText(ctx, "THE Q", 70, 52, {
-        font: "900 54px Arial",
-    });
+    for (let i = 0; i < normalizedAoName.length; i += 1) {
+        hash = normalizedAoName.charCodeAt(i) + ((hash << 5) - hash);
+    }
 
-    drawText(
-        ctx,
-        `${state.regionName || "REGION"} · WEEKLY Q SCHEDULE`,
-        245,
-        65,
-        {
-            font: "900 42px Arial",
-        }
-    );
+    return fallbackColors[Math.abs(hash) % fallbackColors.length];
+}
 
-    drawText(
-        ctx,
-        `${formatDate(weekStart)} - ${formatDate(weekEnd)}`,
-        245,
-        115,
-        {
-            font: "600 24px Arial",
-            color: COLORS.muted,
-        }
-    );
+function createSlotLine(slot, index) {
+    const ao = getAo(slot);
+    const emphasis = getWorkoutEmphasisForSlot(slot, ao);
+    const emoji = getEmphasisEmoji(emphasis);
+    const aoName = ao?.name || "Unknown AO";
+    const qName = slot.qUserId ? getMemberName(slot.qUserId) : "<OPEN>";
 
-    const cardGap = 22;
-    const cardW = 465;
-    const cardH = 210;
+    const row = document.createElement("div");
+    row.classList.add("weekly-q-export-slot-line");
 
-    const startX = 55;
-    const startY = 170;
+    const left = document.createElement("div");
+    left.classList.add("weekly-q-export-slot-left");
 
-    weekDates.slice(0, 6).forEach((date, index) => {
-        const col = index % 3;
-        const row = Math.floor(index / 3);
+    const aoLabel = document.createElement("span");
+    aoLabel.classList.add("weekly-q-export-ao");
+    aoLabel.style.color = getAoColor(aoName);
+    aoLabel.textContent = aoName.toUpperCase();
 
-        const x = startX + col * (cardW + cardGap);
-        const y = startY + row * (cardH + cardGap);
+    const qLabel = document.createElement("span");
+    qLabel.classList.add(slot.qUserId ? "weekly-q-export-q" : "weekly-q-export-open");
+    qLabel.textContent = qName.toUpperCase();
 
-        ctx.fillStyle = COLORS.panel;
-        ctx.strokeStyle = COLORS.border;
-        ctx.lineWidth = 2;
+    left.append(aoLabel, qLabel);
 
-        drawRoundedRect(ctx, x, y, cardW, cardH, 24);
+    const icon = document.createElement("span");
+    icon.classList.add("weekly-q-export-emphasis");
+    icon.textContent = emoji;
 
-        drawText(ctx, getShortDayLabel(date), x + cardW / 2, y + 20, {
-            font: "900 35px Arial",
-            align: "center",
+    row.append(left, icon);
+
+    return row;
+}
+
+function createDayColumn(date, dayIndex) {
+    const dayColumn = document.createElement("div");
+    dayColumn.classList.add("weekly-q-export-day-column");
+
+    const header = document.createElement("div");
+    header.classList.add("weekly-q-export-day-header");
+
+    const dayName = document.createElement("div");
+    dayName.classList.add("weekly-q-export-day-name");
+    dayName.textContent = getShortDayLabel(date);
+
+    const dayDate = document.createElement("div");
+    dayDate.classList.add("weekly-q-export-day-date");
+    dayDate.textContent = getMonthDay(date);
+
+    const accent = document.createElement("div");
+    accent.classList.add("weekly-q-export-day-accent");
+    accent.style.background = DAY_ACCENTS[dayIndex % DAY_ACCENTS.length];
+
+    header.append(dayName, dayDate, accent);
+
+    const list = document.createElement("div");
+    list.classList.add("weekly-q-export-slot-list");
+
+    const daySlots = state.qSlots
+        .filter(slot => slot.date === date)
+        .sort((a, b) => {
+            const aoA = getAo(a)?.name || "";
+            const aoB = getAo(b)?.name || "";
+            return aoA.localeCompare(aoB);
         });
 
-        const slots = getDaySlots(date);
+    if (daySlots.length === 0) {
+        const empty = document.createElement("div");
+        empty.classList.add("weekly-q-export-empty");
 
-        if (slots.length === 0) {
-            drawText(ctx, "NO SLOTS", x + 30, y + 82, {
-                font: "700 26px Arial",
-                color: COLORS.muted,
-            });
+        const sun = document.createElement("div");
+        sun.classList.add("weekly-q-export-empty-icon");
+        sun.textContent = "☀️";
 
-            return;
-        }
+        const text = document.createElement("div");
+        text.textContent = "NO OFFICIAL Q";
 
-        slots.slice(0, 5).forEach((slot, slotIndex) => {
-            const ao = getAo(slot);
+        const subtext = document.createElement("div");
+        subtext.classList.add("weekly-q-export-empty-subtext");
+        subtext.textContent = "GET OUT. STAY READY.";
 
-            const emphasis = getWorkoutEmphasisForSlot(slot, ao);
+        empty.append(sun, text, subtext);
+        list.appendChild(empty);
+    } else {
+        const visibleSlots = daySlots.slice(0, 7);
 
-            const emoji = getEmphasisEmoji(emphasis);
-
-            const lineY = y + 72 + slotIndex * 25;
-
-            const qName = slot.qUserId
-                ? getMemberName(slot.qUserId).toUpperCase()
-                : "<OPEN>";
-
-            const qColor = slot.qUserId
-                ? COLORS.taken
-                : COLORS.open;
-
-            drawText(
-                ctx,
-                `${ao?.name || "UNKNOWN"}:`,
-                x + 30,
-                lineY,
-                {
-                    font: "900 22px Arial",
-                    color: COLORS.accent,
-                }
-            );
-
-            drawText(
-                ctx,
-                qName,
-                x + 195,
-                lineY,
-                {
-                    font: "800 22px Arial",
-                    color: qColor,
-                }
-            );
-
-            if (emoji) {
-                drawText(
-                    ctx,
-                    emoji,
-                    x + 395,
-                    lineY - 2,
-                    {
-                        font: "22px Arial",
-                    }
-                );
-            }
+        visibleSlots.forEach((slot, index) => {
+            list.appendChild(createSlotLine(slot, index));
         });
 
-        if (slots.length > 5) {
-            drawText(
-                ctx,
-                `+${slots.length - 5} more`,
-                x + 30,
-                y + 190,
-                {
-                    font: "700 18px Arial",
-                    color: COLORS.muted,
-                }
-            );
+        if (daySlots.length > visibleSlots.length) {
+            const more = document.createElement("div");
+            more.classList.add("weekly-q-export-more");
+            more.textContent = `+${daySlots.length - visibleSlots.length} more`;
+            list.appendChild(more);
         }
-    });
-
-    const footerY = 655;
-
-    ctx.fillStyle = COLORS.panelDark;
-    ctx.strokeStyle = COLORS.border;
-    ctx.lineWidth = 2;
-
-    drawRoundedRect(ctx, 55, footerY, 1010, 150, 22);
-
-    drawText(ctx, "Generated by The Q", 85, footerY + 30, {
-        font: "900 34px Arial",
-    });
-
-    drawText(ctx, "Claim. Plan. Lead. Log.", 85, footerY + 78, {
-        font: "700 26px Arial",
-        color: COLORS.muted,
-    });
-
-    ctx.fillStyle = COLORS.panel;
-
-    drawRoundedRect(ctx, 1100, footerY, 445, 150, 22);
-
-    drawText(ctx, "KEY", 1130, footerY + 25, {
-        font: "900 28px Arial",
-    });
-
-    drawText(
-        ctx,
-        "💪 UPPER  |  🦵 LOWER  |  ❤️ CARDIO",
-        1130,
-        footerY + 62,
-        {
-            font: "700 20px Arial",
-        }
-    );
-
-    drawText(
-        ctx,
-        "🎒 RUCK  |  🆎 CORE  |  ⭕ OTHER",
-        1130,
-        footerY + 95,
-        {
-            font: "700 20px Arial",
-        }
-    );
-
-    return canvas;
-}
-
-export async function shareWeeklyQScheduleImage({
-    weekStart,
-    weekEnd,
-    weekDates,
-}) {
-    const canvas = drawScheduleImage({
-        weekStart,
-        weekEnd,
-        weekDates,
-    });
-
-    const blob = await new Promise(resolve => {
-        canvas.toBlob(resolve, "image/png");
-    });
-
-    if (!blob) {
-        throw new Error("Could not create schedule image.");
     }
 
-    const file = new File(
-        [blob],
-        "weekly-q-schedule.png",
-        {
-            type: "image/png",
-        }
-    );
-
-    if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-            title: "Weekly Q Schedule",
-            files: [file],
-        });
-
-        return;
-    }
-
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "weekly-q-schedule.png";
-
-    link.click();
-
-    URL.revokeObjectURL(url);
-}
-
-
-/*import html2canvas from "html2canvas";
-import { state } from "../modules/state.js";
-import { formatDate } from "./date.js";
-import { getWorkoutEmphasisForSlot } from "./workoutEmphasis.js";
-import { createIcon, createWeatherIcon } from "./icons.js";
-
-function getMemberName(memberId) {
-    const member = state.members.find(m => m.id === memberId);
-    return member?.paxName || "Filled";
-}
-
-function getAo(slot) {
-    return state.aos.find(ao => ao.id === slot.aoId) || null;
-}
-
-function getWeatherTargetDateTime(date, ao) {
-    if (!date || !ao?.time) {
-        return null;
-    }
-
-    return `${date}T${ao.time}:00-05:00`;
-}
-
-function getWeatherForExport(date, ao) {
-    const targetDateTime = getWeatherTargetDateTime(date, ao);
-
-    if (!ao?.id || !targetDateTime) {
-        return null;
-    }
-
-    const cacheKey = `${ao.id}__${targetDateTime}`;
-    const weather = state.weatherByAoDate?.[cacheKey];
-
-    if (!weather || weather.isLoading || weather.weatherUnavailable) {
-        return null;
-    }
-
-    return weather;
+    dayColumn.append(header, list);
+    return dayColumn;
 }
 
 function createScheduleExportCard({ weekStart, weekEnd, weekDates }) {
     const card = document.createElement("div");
     card.classList.add("weekly-q-export-card");
 
-    const title = document.createElement("div");
-    title.classList.add("weekly-q-export-title");
-    title.textContent = state.regionName || "F3";
+    const exportDates = weekDates.slice(0, 6);
+    const exportEnd = exportDates[exportDates.length - 1] || weekEnd;
 
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("weekly-q-export-subtitle");
-    subtitle.textContent = `Weekly Q Schedule · ${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
-
-    card.append(title, subtitle);
-
-    weekDates.forEach(date => {
-        const daySlots = state.qSlots
-            .filter(slot => slot.date === date)
-            .sort((a, b) => {
-                const aoA = getAo(a)?.name || "";
-                const aoB = getAo(b)?.name || "";
-                return aoA.localeCompare(aoB);
-            });
-
-        const dayBlock = document.createElement("div");
-        dayBlock.classList.add("weekly-q-export-day");
-        const dayTitle = document.createElement("div");
-        dayTitle.classList.add("weekly-q-export-day-title");
-        dayTitle.textContent = formatDate(date);
-        dayBlock.appendChild(dayTitle);
-
-        if (daySlots.length === 0) {
-            const empty = document.createElement("div");
-            empty.classList.add("weekly-q-export-slot", "empty");
-            empty.textContent = "No scheduled Q slots";
-            dayBlock.appendChild(empty);
-
-        } else {
-            daySlots.forEach(slot => {
-                const ao = getAo(slot);
-                const emphasis = getWorkoutEmphasisForSlot(slot, ao);
-
-                const weather = getWeatherForExport(slot.date, ao);
-
-                const row = document.createElement("div");
-                row.classList.add("weekly-q-export-slot");
-
-                const left = document.createElement("div");
-                left.classList.add("weekly-q-export-slot-left");
-                
-                const topRow = document.createElement("div");
-                topRow.classList.add("weekly-q-export-slot-top-row");
-                
-                const aoName = document.createElement("div");
-                aoName.classList.add("weekly-q-export-ao-name");
-                aoName.textContent = ao?.name || "Unknown AO";
-                
-                topRow.appendChild(aoName);
-                
-                if (emphasis) {
-                    const badge = document.createElement("div");
-                    badge.classList.add("weekly-q-export-emphasis-badge");
-
-                    const icon = createIcon(emphasis.icon);
-                    icon.classList.add("weekly-q-export-emphasis-icon");
-
-                    const label = document.createElement("span");
-                    label.textContent = emphasis.label;
-
-                    badge.append(icon, label);
-                    topRow.appendChild(badge);
-                }
-                
-                const timeRow = document.createElement("div");
-                timeRow.classList.add("weekly-q-export-slot-time");
-                timeRow.textContent = ao?.time || "";
-
-                const metaWrap = document.createElement("div");
-                metaWrap.classList.add("weekly-q-export-meta-wrap");
-                metaWrap.appendChild(timeRow);
-
-                if (weather) {
-                    const weatherRow = document.createElement("div");
-                    weatherRow.classList.add("weekly-q-export-weather");
-
-                    const icon = createWeatherIcon(weather.icon, {
-                        size: 11,
-                        className: "weekly-q-export-weather-icon",
-                    });
-
-                    const text = document.createElement("span");
-                    text.textContent = `${weather.temp}° · ${weather.precipChance}%`;
-
-                    weatherRow.append(icon, text);
-                    metaWrap.appendChild(weatherRow);
-                }
-
-                left.append(topRow, metaWrap);                
-                
-                const right = document.createElement("div");
-                right.classList.add(slot.qUserId ? "filled" : "open");
-                right.textContent = slot.qUserId ? getMemberName(slot.qUserId) : "OPEN";
-                row.append(left, right);
-                dayBlock.appendChild(row);
-            });
-        }
-        card.appendChild(dayBlock);
-    });
+    const topBar = document.createElement("div");
+    topBar.classList.add("weekly-q-export-topbar");
     
-    const footer = document.createElement("div");
-    footer.classList.add("weekly-q-export-footer");
-    footer.textContent = "Generated by The Q";
-    card.append(footer);
+    const brand = document.createElement("div");
+    brand.classList.add("weekly-q-export-brand");
+    
+    const logoText = document.createElement("div");
+    logoText.classList.add("weekly-q-export-logo-text");
+    logoText.textContent = state.regionName || "REGION";
+    
+    const regionText = document.createElement("div");
+    regionText.classList.add("weekly-q-export-region");
+    regionText.textContent = "WEEKLY Q SCHEDULE";
+    
+    brand.append(logoText, regionText);
+    
+    const meta = document.createElement("div");
+    meta.classList.add("weekly-q-export-meta");
+    
+    const dateLine = document.createElement("div");
+    dateLine.classList.add("weekly-q-export-date-line");
+    dateLine.textContent = `WEEK OF ${formatDate(weekStart)} – ${formatDate(exportEnd)}`;
+    
+    const creed = document.createElement("div");
+    creed.classList.add("weekly-q-export-creed");
+    creed.textContent = "LEAD. SERVE. ENDURE.";
+    
+    meta.append(dateLine, creed);
+
+    const key = document.createElement("div");
+    key.classList.add("weekly-q-export-key");
+
+    const keyTitle = document.createElement("div");
+    keyTitle.classList.add("weekly-q-export-key-title");
+    keyTitle.textContent = "KEY";
+
+    const keyGrid = document.createElement("div");
+    keyGrid.classList.add("weekly-q-export-key-grid");
+
+    [
+        ["🏋️", "Heavy"],
+        ["💪", "Upper"],
+        ["🦵", "Lower"],
+        ["❤️", "Cardio"],
+        ["🎒", "Ruck"],
+        ["🅰️", "Core"],
+        ["💡", "30/30"],
+        ["🗼", "Stairs"],
+        ["⭕", "Other"],
+    ].forEach(([emoji, label]) => {
+        const item = document.createElement("div");
+        item.classList.add("weekly-q-export-key-item");
+        item.textContent = `${emoji} ${label}`;
+        keyGrid.appendChild(item);
+    });
+
+    key.append(keyTitle, keyGrid);
+    topBar.append(brand, meta, key);
+
+    const columns = document.createElement("div");
+    columns.classList.add("weekly-q-export-columns");
+
+    exportDates.forEach((date, index) => {
+        columns.appendChild(createDayColumn(date, index));
+    });
+
+    const bottomBar = document.createElement("div");
+    bottomBar.classList.add("weekly-q-export-bottom-bar");
+    
+    const footerLeft = document.createElement("div");
+    footerLeft.classList.add("weekly-q-export-footer-left");
+    
+    const footerIcon = document.createElement("div");
+    footerIcon.classList.add("weekly-q-export-footer-icon");
+    footerIcon.textContent = "Q";
+    
+    const footerCopy = document.createElement("div");
+    
+    const footerTitle = document.createElement("div");
+    footerTitle.classList.add("weekly-q-export-footer-title");
+    footerTitle.textContent = "Generated by The Q";
+    
+    const footerText = document.createElement("div");
+    footerText.classList.add("weekly-q-export-footer-text");
+    footerText.textContent = "Claim. Plan. Lead. Log.";
+    
+    footerCopy.append(footerTitle, footerText);
+    footerLeft.append(footerIcon, footerCopy);
+    
+    const reminders = document.createElement("div");
+    reminders.classList.add("weekly-q-export-reminders");
+    
+    const reminderLabel = document.createElement("span");
+    reminderLabel.classList.add("weekly-q-export-reminder-label");
+    reminderLabel.textContent = "REMEMBER:";
+    
+    const reminderItems = document.createElement("span");
+    reminderItems.classList.add("weekly-q-export-reminder-items");
+    reminderItems.textContent = "⏰ SHOW UP EARLY  |  🎒 BRING A FRIEND  |  💧 HYDRATE";
+    
+    reminders.append(reminderLabel, reminderItems);
+    
+    bottomBar.append(footerLeft, reminders);
+        
+    const microFooter = document.createElement("div");
+    microFooter.classList.add("weekly-q-export-micro-footer");
+    microFooter.textContent = "LEAVE NO MAN BEHIND. LEAVE NO MAN WHERE YOU FOUND HIM";
+    
+    card.append(topBar, columns, bottomBar, microFooter);
 
     return card;
 }
 
 export async function shareWeeklyQScheduleImage({ weekStart, weekEnd, weekDates }) {
+
     const exportWrap = document.createElement("div");
     exportWrap.classList.add("weekly-q-export-wrap");
 
     const card = createScheduleExportCard({ weekStart, weekEnd, weekDates });
-
     exportWrap.appendChild(card);
-
     document.body.appendChild(exportWrap);
 
     try {
         const canvas = await html2canvas(card, {
-            backgroundColor: null,
+            backgroundColor: "#050505",
             scale: 2,
+            width: EXPORT_WIDTH,
+            height: EXPORT_HEIGHT,
         });
 
         const blob = await new Promise(resolve => {
@@ -529,8 +391,7 @@ export async function shareWeeklyQScheduleImage({ weekStart, weekEnd, weekDates 
         link.download = "weekly-q-schedule.png";
         link.click();
         URL.revokeObjectURL(url);
-
     } finally {
         exportWrap.remove();
     }
-}*/
+}

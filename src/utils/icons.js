@@ -28,6 +28,8 @@ import {
     ArrowUpRight,
     Shield,
     Medal,
+    Pencil,
+    Pen,
 } from "lucide";
 
 const ICONS = {
@@ -52,6 +54,7 @@ const ICONS = {
     arrowUpRight: ArrowUpRight,
     shield: Shield,
     medal: Medal,
+    pencil: Pencil,
 };
 
 const weatherIconMap = {

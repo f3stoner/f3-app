@@ -35,19 +35,75 @@ function resolveEmphasisRule(rule, slotDateString) {
         return rule.values[safeIndex] || null;
     }
 
+    if (rule.pattern === "rotating-slots") {
+        if (!rule.startsOnDate) {
+            return rule.values[0] || null;
+        }
+
+        const allowedDays = rule.daysOfWeek || [];
+        if (!allowedDays.length) {
+            return rule.values[0] || null;
+        }
+
+        const slotDate = getDateOnly(slotDateString);
+        const startDate = getDateOnly(rule.startsOnDate);
+
+        let slotCount = 0;
+        const cursor = new Date(startDate);
+
+        while (cursor <= slotDate) {
+            const dayMatches = allowedDays.includes(cursor.getDay());
+
+            if (dayMatches) {
+                if (
+                    cursor.getFullYear() === slotDate.getFullYear() &&
+                    cursor.getMonth() === slotDate.getMonth() &&
+                    cursor.getDate() === slotDate.getDate()
+                ) {
+                    return rule.values[slotCount % rule.values.length] || null;
+                }
+
+                slotCount += 1;
+            }
+
+            cursor.setDate(cursor.getDate() + 1);
+        }
+
+        return null;
+    }
+
     return rule.values[0] || null;
 }
 
+export function getWorkoutEmphasisMeta(key) {
+    const normalizedKey = String(key || "").toLowerCase();
+
+    return WORKOUT_EMPHASIS[normalizedKey]
+        ? { key: normalizedKey, ...WORKOUT_EMPHASIS[normalizedKey] }
+        : null;
+}
+
 export function getWorkoutEmphasisForSlot(slot, ao) {
+    if (slot?.overrideEmphasis) {
+        return getWorkoutEmphasisMeta(slot.overrideEmphasis);
+    }
+
     if (!slot?.date || !ao?.emphasisSchedule) return null;
 
     const slotDate = getDateOnly(slot.date);
     const dayOfWeek = String(slotDate.getDay());
-    const rule = ao.emphasisSchedule[dayOfWeek];
+    const rule = ao.emphasisSchedule[dayOfWeek] || ao.emphasisSchedule["*"];
 
     const key = resolveEmphasisRule(rule, slot.date);
 
-    return key
-        ? { key, ...WORKOUT_EMPHASIS[key] }
-        : null;
+    console.log("EMPHASIS DEBUG", {
+        aoName: ao?.name,
+        slotDate: slot?.date,
+        overrideEmphasis: slot?.overrideEmphasis,
+        dayOfWeek,
+        rule,
+        resolvedKey: key,
+    });
+
+    return getWorkoutEmphasisMeta(key);
 }
