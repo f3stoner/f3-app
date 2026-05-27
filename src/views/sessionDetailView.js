@@ -13,6 +13,11 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getBackblastLinkBySessionId } from "../services/cloudData.js";
+import { getAffectedMemberIdsFromSession } from "../services/cloudData.js";
+import {
+    invalidateMemberStatsCache,
+    invalidateRecentMemberActivityCache,
+} from "../utils/memberStatsCache.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -431,8 +436,17 @@ export function renderSessionDetail() {
             if (!confirmed) return;
 
             try {
+                const affectedMemberIds = getAffectedMemberIdsFromSession(session);
+            
                 await deleteSession(session.id);
-
+            
+                state.sessions = state.sessions.filter(
+                    existingSession => existingSession.id !== session.id
+                );
+            
+                invalidateMemberStatsCache(affectedMemberIds);
+                invalidateRecentMemberActivityCache(affectedMemberIds);
+            
                 state.selectedSessionId = null;
                 navigateTo("dashboard");
             } catch (error) {

@@ -15,7 +15,7 @@ import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getAffectedMemberIdsFromSession } from "../services/cloudData.js";
-import { invalidateMemberStatsCache } from "../utils/memberStatsCache.js";
+import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -779,6 +779,7 @@ try {
     ];
     
     invalidateMemberStatsCache(affectedMemberIds);
+    invalidateRecentMemberActivityCache(affectedMemberIds);
 
     const flags = createDuplicateFngNameFlags(
         savedSession,

@@ -54,6 +54,21 @@ export function renderBackblastView () {
         s => s.id === state.selectedSessionId
     );
 
+    function insertWeatherAfterDate(text, weatherLine) {
+        const lines = text.split("\n");
+    
+        const dateLineIndex = lines.findIndex(line =>
+            /^date:/i.test(line.trim())
+        );
+    
+        if (dateLineIndex === -1) {
+            return `${text}\n\n${weatherLine}`;
+        }
+    
+        lines.splice(dateLineIndex + 1, 0, weatherLine);
+        return lines.join("\n");
+    }
+
     async function addWeatherToBackblast(session, textArea) {
         if (!session || state.hasAddedBackblastWeather) return;
     
@@ -71,10 +86,10 @@ export function renderBackblastView () {
             
             if ((state.draftBackblastText || "") !== startingText) return;
             
-            const weatherLine = `\n\nWeather: ${weather.temp ?? "--"}° • ${weather.condition || "Unknown"}${weather.windMph != null ? ` • Wind ${weather.windMph} mph` : ""}`;
-            
-            state.draftBackblastText = `${startingText}${weatherLine}`;            state.hasAddedBackblastWeather = true;
-    
+            const weatherLine = `Weather: ${weather.temp ?? "--"}° • ${weather.condition || "Unknown"}${weather.windMph != null ? ` • Wind ${weather.windMph} mph` : ""}`;
+
+            state.draftBackblastText = insertWeatherAfterDate(startingText, weatherLine);
+                
             textArea.value = state.draftBackblastText;
             autoResize(textArea);
         } catch (error) {

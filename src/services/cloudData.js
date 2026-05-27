@@ -202,16 +202,12 @@ export async function loadExercises() {
 }
 
 export async function loadMemberDashboardStats(regionId, memberId) {
-    console.log("member_stats lookup:", { regionId, memberId });
-
     const { data, error } = await supabase
         .from("member_stats")
         .select("*")
         .eq("region_id", regionId)
         .eq("member_id", memberId)
         .maybeSingle();
-
-    console.log("member_stats result:", { data, error });
 
     if (error) {
         console.warn("Failed to load member_stats:", error);
@@ -320,8 +316,6 @@ async function timed(label, promise) {
 }
 
 export async function loadRegionData(regionId) {
-    console.time("loadRegionData:total");
-    console.time("loadRegionData:parallelQueries");
     const [
         regionResult,
         memberResult,
@@ -377,8 +371,6 @@ export async function loadRegionData(regionId) {
     ]);
 
     const backblastLinksBySessionId = new Map();
-    console.timeEnd("loadRegionData:parallelQueries");
-    console.time("loadRegionData:mapping");
 
     if (regionResult.error) throw regionResult.error;
     if (sessionResult.error) throw sessionResult.error;
@@ -386,9 +378,6 @@ export async function loadRegionData(regionId) {
     if (aoResult.error) throw aoResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
     
-    console.timeEnd("loadRegionData:mapping");
-    console.timeEnd("loadRegionData:total");
-
     return {
         regionName: regionResult.data.name,
         members: memberResult.map(mapMemberFromDb),
@@ -760,9 +749,6 @@ export async function insertPlannedWorkout(regionId, workout) {
 }
 
 export async function updatePlannedWorkoutInCloud(regionId, workout) {
-    console.log("updatePlannedWorkoutInCloud regionId:", regionId);
-    console.log("updatePlannedWorkoutInCloud workout:", workout);
-
     const { data, error } = await supabase
         .from("planned_workouts")
         .update({
@@ -789,9 +775,6 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
         .eq("id", workout.id)
         .select()
         .single();
-
-    console.log("updatePlannedWorkoutInCloud data:", data);
-    console.log("updatePlannedWorkoutInCloud error:", error);
 
     if (error) throw error;
 
@@ -1502,4 +1485,34 @@ export async function rebuildMemberStatsForRegion(regionId) {
     if (error) {
         console.warn("Failed to rebuild member stats:", error);
     }
+}
+
+export async function loadRecentMemberActivity(regionId, memberId, limit = 2) {
+    if (!regionId || !memberId) return [];
+
+    const { data, error } = await supabase
+        .from("sessions")
+        .select(`
+            id,
+            region_id,
+            date,
+            ao_name,
+            attendee_ids,
+            q_ids,
+            q_id,
+            fngs,
+            created_at
+        `)
+        .eq("region_id", regionId)
+        .or(`attendee_ids.cs.["${memberId}"],q_ids.cs.{${memberId}},q_id.eq.${memberId}`)
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+    if (error) {
+        console.warn("Failed to load recent member activity:", error);
+        return [];
+    }
+
+    return (data || []).map(mapSessionFromDb);
 }

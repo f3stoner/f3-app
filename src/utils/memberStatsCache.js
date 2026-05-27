@@ -9,3 +9,13 @@ export function invalidateMemberStatsCache(memberIds = []) {
         }
     });
 }
+
+export function invalidateRecentMemberActivityCache(memberIds = []) {
+    if (!state.recentMemberActivityByMemberId) return;
+
+    memberIds.forEach(memberId => {
+        if (memberId) {
+            delete state.recentMemberActivityByMemberId[memberId];
+        }
+    });
+}

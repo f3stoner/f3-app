@@ -5,7 +5,14 @@ import { importData } from "../utils/importData.js";
 import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { signOut } from "../services/auth.js";
-import { checkRegionAccess, loadMemberDashboardStats, loadMemberSessionByDate, loadMemberSessions, loadRegionData } from "../services/cloudData.js";
+import { 
+    checkRegionAccess,
+    loadMemberDashboardStats, 
+    loadMemberSessionByDate, 
+    loadMemberSessions, 
+    loadRegionData,
+    loadRecentMemberActivity,
+ } from "../services/cloudData.js";
 import { replacePersistedData } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
@@ -1367,50 +1374,61 @@ export function renderDashboard() {
     recentHeading.textContent = "My Recent Activity";
     recentSessionsSection.append(recentHeading);
 
-    const myRecentSessions = state.sessions.filter(session => {
-        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
-
-        return (
-            effectiveQIds.includes(state.currentUserMemberId) ||
-            session.attendeeIds?.includes(state.currentUserMemberId)
-        );
-    });
-
-    const sortedSessions = [...myRecentSessions].sort((a,b) => {
-        if (a.date !== b.date) {
-            return b.date.localeCompare(a.date);
-        }
-
-        const aCreatedAt = a.createdAt || 0;
-        const bCreatedAt = b.createdAt || 0;
-
-        return bCreatedAt - aCreatedAt;
-    })
-    if (sortedSessions.length === 0) {
+    const recentActivityKey = state.currentUserMemberId;
+    const recentActivity =
+        state.recentMemberActivityByMemberId?.[recentActivityKey] || null;
+    
+    if (!recentActivity && state.currentUserMemberId) {
+        loadRecentMemberActivity(
+            state.currentRegionId,
+            state.currentUserMemberId,
+            2
+        )
+            .then(sessions => {
+                state.recentMemberActivityByMemberId = {
+                    ...(state.recentMemberActivityByMemberId || {}),
+                    [recentActivityKey]: sessions,
+                };
+    
+                const existingIds = new Set(state.sessions.map(session => session.id));
+                const newSessions = sessions.filter(session => !existingIds.has(session.id));
+                state.sessions = [...state.sessions, ...newSessions];
+    
+                if (state.currentView === "dashboard") {
+                    renderApp();
+                }
+            })
+            .catch(error => {
+                console.error("Failed to load recent member activity:", error);
+            });
+    }
+    
+    const sortedSessions = recentActivity || [];
+        if (sortedSessions.length === 0) {
         recentSessionList.textContent = "No recent activity.";
-    } else {
-        sortedSessions.slice(0, 2).forEach((session) => {
-            const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+        } else {
+            sortedSessions.slice(0, 2).forEach((session) => {
+                const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
-            const qNames = effectiveQIds
-                .map(qId => state.members.find(m => m.id === qId))
-                .filter(Boolean)
-                .map(member => member.paxName);
-            
-            const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
-            const sessionDetail = document.createElement("div");
-            sessionDetail.classList.add("member-card", "session-history-card", "dashboard-activity-card");
+                const qNames = effectiveQIds
+                    .map(qId => state.members.find(m => m.id === qId))
+                    .filter(Boolean)
+                    .map(member => member.paxName);
+                
+                const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
+                const sessionDetail = document.createElement("div");
+                sessionDetail.classList.add("member-card", "session-history-card", "dashboard-activity-card");
 
-            const topLine = document.createElement("div");
-            topLine.classList.add("member-name");
-            topLine.textContent = `${formatDate(session.date)} · ${session.aoName}`;
+                const topLine = document.createElement("div");
+                topLine.classList.add("member-name");
+                topLine.textContent = `${formatDate(session.date)} · ${session.aoName}`;
 
-            const isQ = effectiveQIds.includes(state.currentUserMemberId);
-            const isSoloQ = isQ && effectiveQIds.length === 1;
-            const isCoQ = isQ && effectiveQIds.length > 1;
+                const isQ = effectiveQIds.includes(state.currentUserMemberId);
+                const isSoloQ = isQ && effectiveQIds.length === 1;
+                const isCoQ = isQ && effectiveQIds.length > 1;
 
-            const typeLine = document.createElement("div");
-            typeLine.classList.add("stats-line", "activity-type");
+                const typeLine = document.createElement("div");
+                typeLine.classList.add("stats-line", "activity-type");
 
             if (isQ) {
                 typeLine.classList.add("q");
