@@ -8,12 +8,19 @@ import { updateRegionWorkoutFieldLabels } from "../services/cloudData.js";
 import { createElement } from "lucide";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderAdminSettingsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS)) {
+        showToast("You do not have access to Admin Settings.", "error");
+        navigateTo("dashboard");
+        return;
+    }
 
     const header = createAppHeader({
         title: "",

@@ -18,6 +18,7 @@ import {
     invalidateMemberStatsCache,
     invalidateRecentMemberActivityCache,
 } from "../utils/memberStatsCache.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -34,10 +35,12 @@ export function renderSessionDetail() {
 
     const session = state.sessions.find(s => s.id === state.selectedSessionId);
 
+    const canManageSessions = hasPermission(PERMISSIONS.MANAGE_SESSIONS);
+
     const canEditSession =
         session &&
         (
-            state.currentUserRole === "admin" ||
+            canManageSessions ||
             session.createdByUserId === state.currentUserId
         );
 
@@ -426,7 +429,7 @@ export function renderSessionDetail() {
     }
     secondaryActionsRow.append(copyToPlanButton);
 
-    if (state.currentUserRole === "admin") {
+    if (canManageSessions) {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete Session";
         deleteButton.classList.add("danger-button");

@@ -1,6 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { navigateTo } from "../utils/navigation.js";
+import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
 
 export function openMainMenu() {
     state.isMainMenuOpen = true;
@@ -24,7 +25,8 @@ export function cleanupMainMenu() {
 }
 
 export function createMainMenu() {
-    const isAdmin = state.currentUserRole === "admin";
+    const canViewRegionInsights = hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS);
+    const canAccessAdminSettings = hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS);
 
     const overlay = document.createElement("div");
     overlay.classList.add("main-menu-overlay");
@@ -56,9 +58,14 @@ export function createMainMenu() {
         { label: "My Templates", view: "templateHub" },
         { label: "Session History", view: "sessionHistory" },
         { label: "Roster", view: "roster" },
-        ...(isAdmin
+        ...(canViewRegionInsights
             ? [
                 { label: "Region Insights", view: "regionInsights" },
+            ]
+            : []),
+        
+        ...(canAccessAdminSettings
+            ? [
                 { label: "Admin Settings", view: "adminSettings" },
             ]
             : []),

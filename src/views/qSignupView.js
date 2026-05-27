@@ -17,6 +17,7 @@ import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 let qSlotRealtimeChannel = null;
 let qSlotRealtimeRegionId = null;
@@ -82,6 +83,9 @@ export function renderQSignupView() {
 
     setupQSlotRealtime();
     cleanupMainMenu();
+
+    const canManageQSlots = hasPermission(PERMISSIONS.MANAGE_Q_SLOTS);
+    const canManageAos = hasPermission(PERMISSIONS.MANAGE_AOS);
 
     const header = createAppHeader({
         title: "",
@@ -159,15 +163,21 @@ export function renderQSignupView() {
     let manageAosButton = null;
     let addSlotButton = null;
 
-    if (state.currentUserRole === "admin") {
+    if (canManageQSlots) {
         generateButton = document.createElement("button");
         generateButton.textContent = isGeneratingQSlots
             ? "Generating..."
             : "Generate Next 365 Days";
         generateButton.disabled = isGeneratingQSlots;
 
-        manageAosButton = document.createElement("button");
-        manageAosButton.textContent = "Manage AOs";
+        if (canManageAos) {
+            manageAosButton = document.createElement("button");
+            manageAosButton.textContent = "Manage AOs";
+
+            manageAosButton.addEventListener("click", () => {
+                navigateTo("aoManagement");
+            });
+        }
 
         generateButton.addEventListener("click", async () => {
             if (state.isGeneratingQSlots) return;
@@ -186,10 +196,6 @@ export function renderQSignupView() {
                 state.isGeneratingQSlots = false;
                 renderApp();
             }
-        });
-
-        manageAosButton.addEventListener("click", () => {
-            navigateTo("aoManagement");
         });
 
         addSlotButton = document.createElement("button");
@@ -765,7 +771,7 @@ export function renderQSignupView() {
             const card = document.createElement("div");
             card.classList.add("member-card", "q-slot-card");
 
-            if (state.currentUserRole === "admin") {
+            if (canManageQSlots) {
                 card.classList.add("clickable-card");
 
                 card.addEventListener("click", () => {
@@ -785,14 +791,14 @@ export function renderQSignupView() {
             const displayTime = slot.overrideTime || ao?.time || "";
             const displayTitle = slot.overrideTitle || "";
             const isMine = slot.qUserId === state.currentUserMemberId;
-            const canEditSlot = state.currentUserRole === "admin" || isMine;
+            const canEditSlot = canManageQSlots || isMine;
             const qMember = state.members.find(m => m.id === slot.qUserId);
             const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
             const hasPlannedWorkout = Boolean(matchingWorkout);
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
-            if (state.currentUserRole === "admin") {
+            if (canManageQSlots) {
                 topLine.title = "Tap card to edit slot";
             }
             topLine.textContent = displayTitle
@@ -952,7 +958,7 @@ export function renderQSignupView() {
                 actionWrap.appendChild(editButton);
             }
 
-            if (state.currentUserRole === "admin") {
+            if (canManageQSlots) {
                 adminActions = document.createElement("div");
                 adminActions.classList.add("q-slot-admin-actions");
 
@@ -1019,8 +1025,9 @@ export function renderQSignupView() {
             }
                         
             mainRow.append(cardContent, actionWrap);
-            card.appendChild(mainRow);            
-            if (state.currentUserRole === "admin") {
+            card.appendChild(mainRow);  
+
+            if (canManageQSlots && adminActions) {
                 card.append(adminActions);
             }
 

@@ -7,6 +7,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderMemberDetail () {
     const app = document.getElementById("app");
@@ -98,9 +99,11 @@ export function renderMemberDetail () {
         }
     });
 
+    const canManageMembers = hasPermission(PERMISSIONS.MANAGE_MEMBERS);
+
     const canEditMember =
-    state.currentUserRole === "admin" ||
-    member.id === state.currentUserMemberId;
+        canManageMembers ||
+        member.id === state.currentUserMemberId;
 
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Member";
@@ -122,9 +125,10 @@ export function renderMemberDetail () {
         lastPostSection
     );
     
-    if (state.currentUserRole === "admin") {
+    if (canManageMembers) {
         app.append(toggleStatusButton);
-    }
+    }    
+    
     if (canEditMember) {
     app.append(editButton);
     }

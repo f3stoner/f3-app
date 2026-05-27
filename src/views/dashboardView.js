@@ -1,8 +1,6 @@
 import { state } from "../modules/state.js";
 import { bootApp, renderApp } from "../index.js";
 import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
-import { importData } from "../utils/importData.js";
-import { exportState } from "../utils/export.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { signOut } from "../services/auth.js";
 import { 
@@ -16,19 +14,14 @@ import {
 import { replacePersistedData } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
-import { upsertNotificationSettings } from "../services/cloudData.js";
-import { getUpcomingReminders } from "../utils/upcomingReminders.js";
-import { subscribeToPush } from "../services/pushNotifications.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
-import { getMemberStats } from "../modules/stats.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
-import { buildRegionInsights } from "../modules/insights.js";
-import { shouldShowQReminderPrompt } from "../utils/notificationOptIn.js";
-import { createQReminderPrompt } from "../components/qReminderPrompt.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { logAppEvent } from "../services/appEvents.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -65,7 +58,7 @@ export function renderDashboard() {
     let regionSwitcher = null;
     let regionSwitcherLabel = null;
 
-    if (state.currentUserRole === "admin" && state.availableRegions?.length) {
+    if (hasPermission(PERMISSIONS.ACCESS_DEBUG_TOOLS) && state.availableRegions?.length) {
         regionSwitcherLabel = document.createElement("div");
         regionSwitcherLabel.classList.add("detail-label");
         regionSwitcherLabel.textContent = "Debug Region";
@@ -131,8 +124,16 @@ export function renderDashboard() {
 
     const roleBadge = document.createElement("span");
     roleBadge.classList.add("role-badge");
-    roleBadge.dataset.role = state.currentUserRole;
-    roleBadge.textContent = state.currentUserRole === "admin" ? "Admin" : "User";
+
+    const role = state.currentUserRole || "pax";
+
+    roleBadge.dataset.role = role;
+    roleBadge.textContent =
+        role === "superadmin" ? "Superadmin" :
+        role === "dataq" ? "Data Q" :
+        role === "slt" ? "SLT" :
+        role === "aoq" ? "AOQ" :
+        "PAX";
 
     const linkedMember = state.members.find(
         member => member.id === state.currentUserMemberId
@@ -186,83 +187,7 @@ export function renderDashboard() {
         }
     });
 
-    const isAdmin = state.currentUserRole === "admin";
-
-    function createDashboardMenu() {
-        const overlay = document.createElement("div");
-        overlay.classList.add("main-menu-overlay");
-
-        const drawer = document.createElement("div");
-        drawer.classList.add("main-menu-drawer");
-
-        const header = document.createElement("div");
-        header.classList.add("main-menu-header");
-
-        const heading = document.createElement("h2");
-        heading.textContent = "Menu";
-
-        const closeButton = document.createElement("button");
-        closeButton.type = "button";
-        closeButton.classList.add("secondary-button");
-        closeButton.textContent = "Close";
-
-        closeButton.addEventListener("click", () => {
-            state.isMainMenuOpen = false;
-            document.body.classList.remove("menu-open");
-            overlay.remove();
-            renderApp();
-        });
-
-        header.append(heading, closeButton);
-
-        const menuItems = [
-            { label: "Workout Library", view: "plannedWorkoutList" },
-            { label: "My Templates", view: "templateHub" },
-            { label: "Session History", view: "sessionHistory" },
-            { label: "Roster", view: "roster" },
-            ...(isAdmin
-                ? [
-                    { label: "Region Insights", view: "regionInsights" },
-                    { label: "Admin Settings", view: "adminSettings" },
-                ]
-            : []),
-        ];
-
-        const list = document.createElement("div");
-        list.classList.add("main-menu-list");
-
-        menuItems.forEach(item => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.classList.add("main-menu-item");
-            button.textContent = item.label;
-
-            button.addEventListener("click", () => {
-                state.isMainMenuOpen = false;
-                document.body.classList.remove("menu-open");
-                overlay.remove();
-                navigateTo(item.view);
-            });
-
-            list.appendChild(button);
-        });
-
-        drawer.append(header, list);
-        overlay.append(drawer);
-
-        overlay.addEventListener("click", () => {
-            state.isMainMenuOpen = false;
-            document.body.classList.remove("menu-open");
-            overlay.remove();
-            renderApp();
-        });
-
-        drawer.addEventListener("click", event => {
-            event.stopPropagation();
-        });
-
-        return overlay;
-    }
+    userRow.append(userLeft, signOutButton);
 
     function getWorkoutReadinessLabel(workout) {
         if (!workout) return "No Workout Planned";
@@ -1479,156 +1404,7 @@ export function renderDashboard() {
     }
     recentSessionsSection.append(recentSessionList);
 
-    const importInput = document.createElement("input");
-    importInput.type = "file";
-    importInput.accept = ".json";
-    importInput.style.display = "none";
-
-    const importButton = document.createElement("button");
-    importButton.textContent = "Import Data";
-
-    importButton.addEventListener("click", () => {
-        importInput.click();
-    });
-
-    importInput.addEventListener("change", async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        try {
-            const text = await file.text();
-            const data = JSON.parse(text);
-
-            importData(data);
-            renderApp();
-        } catch (error) {
-            console.error("Import failed:", error);
-            alert("Import failed. Please choose a valid JSON file.");
-        }
-
-        importInput.value = "";
-    })
-
-    const exportButton = document.createElement("button");
-    exportButton.textContent = "Export Data";
-
-    exportButton.addEventListener("click", () => {
-        exportState(state);
-        showToast("Data exported!", "success");
-    });
-
-    const stalePaxButton = document.createElement("button");
-    stalePaxButton.textContent = "Review Stale PAX";
-    stalePaxButton.addEventListener("click", () => {
-        navigateTo("stalePax");
-    });
-
-    const adminFlagsButton = document.createElement("button");
-    const openFlagsCount = (state.adminFlags || [])
-        .filter(f => f.status === "open").length;
-    adminFlagsButton.textContent = `Admin Flags (${openFlagsCount})`;
-    adminFlagsButton.addEventListener("click", () => {
-        navigateTo("adminFlags");
-    })
-
-    const manageAosButton = document.createElement("button");
-    manageAosButton.textContent = "Manage AOs";
-    manageAosButton.addEventListener("click", () => {
-        navigateTo("aoManagement");
-    })
-
-    const adminSettingsButton = document.createElement("button");
-    adminSettingsButton.textContent = "Admin Settings";
-    adminSettingsButton.addEventListener("click", () => {
-        navigateTo("adminSettings");
-    });
-
-    const dataToolsHeading = document.createElement("div");
-    dataToolsHeading.textContent = "Data Tools";
-    dataToolsHeading. classList.add("detail-label");
-
-    const dataToolsRow = document.createElement("div");
-    dataToolsRow.classList.add("button-row");
-
-    userRow.append(userLeft, signOutButton);
-
-    const notificationRow = document.createElement("div");
-    notificationRow.classList.add("section");
-
-    const notificationLabel = document.createElement("div");
-    notificationLabel.classList.add("detail-label");
-    notificationLabel.textContent = "Reminders";
-
-    const notificationToggle = document.createElement("button");
-    notificationToggle.classList.add("secondary-button");
-
-    const isEnabled = state.notificationSettings?.pushEnabled;
-
-    notificationToggle.textContent = isEnabled
-        ? "On"
-        : "Off";
-
-    notificationToggle.addEventListener("click", async () => {
-        const nextValue = !state.notificationSettings?.pushEnabled;
-        try {
-            let pushSubscription = state.notificationSettings?.pushSubscription ?? null;
-            
-            if (nextValue) {
-                const subscription = await subscribeToPush();
-                pushSubscription = subscription?.toJSON() ?? null;
-            }
-            await upsertNotificationSettings(state.currentUserId, {
-                push_enabled: nextValue,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                push_subscription: pushSubscription,
-            });
-        
-            state.notificationSettings = {
-                ...state.notificationSettings,
-                pushEnabled: nextValue,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                pushSubscription,
-            };
-            renderApp();
-        } catch (error) {
-            console.error("Failed to update notification settings:", error);
-            alert("Failed to update reminders.");
-        }
-    });
-
-    if(isAdmin){
-        dataToolsRow.append(
-            importButton,
-            exportButton,
-            manageAosButton,
-            adminSettingsButton, 
-            adminFlagsButton, 
-            stalePaxButton
-        );
-    }
-
     const nav = createGlobalNav();
-    notificationRow.append(notificationLabel, notificationToggle);
-
-    const testNotificationButton = document.createElement("button");
-    testNotificationButton.textContent = "Test Reminders";
-
-    testNotificationButton.addEventListener("click", () => {
-        const reminders = getUpcomingReminders(state);
-        console.log("Reminders:", reminders);
-
-        if (reminders.length === 0) {
-            alert("No reminders");
-            return;
-        }
-        alert(reminders.map(r => r.message).join("\n\n"));
-
-        reminders.forEach(r => {
-            state.sentNotificationKeys.push(r.key);
-        });
-
-        console.log("sent keys:", state.sentNotificationKeys);
-    });
 
     const primaryActionsRow = createPrimaryActionsRow();
 
@@ -1645,10 +1421,6 @@ export function renderDashboard() {
         recentSessionsSection,
         nav
     );
-
-   /* if (isAdmin) {
-        app.append(dataToolsHeading, dataToolsRow, importInput, testNotificationButton);
-    }*/
 
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());

@@ -640,6 +640,31 @@ select:focus,
     background: var(--surface-raised);
 }
 
+.role-badge[data-role="superadmin"] {
+    background: var(--danger);
+    color: #fff;
+}
+
+.role-badge[data-role="slt"] {
+    background: var(--accent);
+    color: var(--text-inverse);
+}
+
+.role-badge[data-role="dataq"] {
+    background: var(--accent-bright);
+    color: var(--text-inverse);
+}
+
+.role-badge[data-role="aoq"] {
+    background: var(--success);
+    color: var(--text-inverse);
+}
+
+.role-badge[data-role="pax"] {
+    background: #111;
+    color: #fff;
+}
+
 .role-badge[data-role="admin"] {
     background: var(--accent);
     color: var(--text-inverse);

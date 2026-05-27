@@ -13,6 +13,7 @@ import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { normalizeThangSections } from "../utils/thangs.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -702,10 +703,7 @@ export function renderPlannedWorkoutDetail() {
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Workout";
     editButton.addEventListener("click", () => {
-        if (
-            state.currentUserRole !== "admin" &&
-            workout.createdByUserId !== state.currentUserId
-        ) {
+        if (!canManageWorkouts && workout.createdByUserId !== state.currentUserId) {
             alert("You do not have permission to edit this workout.");
             return;
         }
@@ -832,20 +830,21 @@ export function renderPlannedWorkoutDetail() {
         navigateTo("workoutPlanner");
     })
 
+    const canManageWorkouts = hasPermission(PERMISSIONS.MANAGE_WORKOUTS);
     const isWorkoutOwner = workout.createdByUserId === state.currentUserId;
     const isSharedViewer = state.sharedWorkoutViewMode && !isWorkoutOwner;
 
     const canEditWorkout = 
         !state.sharedWorkoutViewMode &&
         (
-            state.currentUserRole === "admin" ||
+            canManageWorkouts ||
             workout.createdByUserId === state.currentUserId
         );
 
     const canDeleteWorkout = 
         !state.sharedWorkoutViewMode &&
         (
-            state.currentUserRole === "admin" ||
+            canManageWorkouts ||
             workout.createdByUserId === state.currentUserId
         );
 

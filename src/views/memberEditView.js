@@ -6,6 +6,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderMemberEdit () {
     
@@ -35,9 +36,11 @@ export function renderMemberEdit () {
         return;
     }
 
+    const canManageMembers = hasPermission(PERMISSIONS.MANAGE_MEMBERS);
+
     const canEditMember =
-    state.currentUserRole === "admin" ||
-    member?.id === state.currentUserMemberId;
+        canManageMembers ||
+        member.id === state.currentUserMemberId;
 
     if (!canEditMember) {
         alert("You can only edit your own profile.");

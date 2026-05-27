@@ -43,6 +43,7 @@ import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit
 import { renderImportRunsView } from "./views/importRunsView.js";
 import { importOld300AttendanceCsv } from "./services/importOld300.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
+import { hasPermission, PERMISSIONS } from "./utils/permissions.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -260,7 +261,7 @@ function hideBootSplash() {
 }
 
 function autoHealQSlotsForAdmin() {
-    if (state.currentUserRole !== "admin") return;
+    if (!hasPermission(PERMISSIONS.MANAGE_Q_SLOTS)) return;
     if (state.isGeneratingQSlots) return;
     if (state.autoHealedQSlotsRegionId === state.currentRegionId) return;
     if (!state.currentRegionId) return;
@@ -406,7 +407,7 @@ async function bootApp() {
         console.timeEnd("ensureMyProfile");
 
         state.currentUserId = session.user.id;
-        state.currentUserRole = profile.role || "user";
+        state.currentUserRole = profile.role || "pax";
         state.currentUserDisplayName = profile.display_name || "User";
         state.profileRegionId = profile.region_id;
         state.regionOverrideId = null;
