@@ -12,6 +12,11 @@ import { updateCustomTemplates } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 
+function getTemplateSingularLabel(sectionType) {
+    if (sectionType === "thang") return "Thang";
+    return getWorkoutFieldLabel(state, sectionType);
+}
+
 export function renderTemplateHubView() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -30,14 +35,14 @@ export function renderTemplateHubView() {
 
     const intro = document.createElement("div");
     intro.classList.add("stats-line");
-    intro.textContent = "Manage reusable workout sections and future post templates.";
+    intro.textContent = "Manage saved thangs, workout sections, and reusable post templates.";
 
     const activeSection = state.activeTemplateHubSection || "planner";
 
     const plannerSection = createTemplateGroup({
         sectionKey: "planner",
-        title: "Planner Templates",
-        subtitle: "Saved sections you can reuse while planning a BD.",
+        title: "Workout Building Blocks",
+        subtitle: "Saved warmups, thangs, finishers, and notes you can reuse while planning a BD.",
         open: activeSection === "planner",
         content: createPlannerTemplatesContent(),
     });
@@ -152,7 +157,7 @@ function createPlannerTemplatesContent() {
     const sectionTypes = [
         "introduction",
         "warmorama",
-        "thangs",
+        "thang",
         "finisher",
         "notes",
     ];
@@ -181,7 +186,7 @@ function createPlannerTemplatesContent() {
         addButton.textContent = "+";
         addButton.setAttribute(
             "aria-label",
-            `Add ${getWorkoutFieldLabel(state, sectionType)} Template`
+            `Add ${getTemplateSingularLabel(sectionType)} Template`
         );
 
         addButton.addEventListener("click", () => {
@@ -257,7 +262,10 @@ function createPlannerTemplateCard(section) {
 
         try {
             await deleteSavedPlannerSection(section.id);
-            showToast("Template deleted.", "success");
+            showToast(
+                section.sectionType === "thang" ? "Thang deleted." : "Template deleted.",
+                "success"
+            );
             renderApp();
         } catch (error) {
             console.error("failed to delete template:", error);
@@ -298,11 +306,15 @@ function createEditPlannerTemplateModal() {
     modal.classList.add("modal");
 
     const title = document.createElement("h2");
-    title.textContent = "Edit Template";
+    title.textContent = section.sectionType === "thang"
+        ? "Edit Thang"
+        : "Edit Template";
 
     const nameLabel = document.createElement("div");
     nameLabel.classList.add("detail-label");
-    nameLabel.textContent = "Template Name";
+    nameLabel.textContent = section.sectionType === "thang"
+        ? "Thang Name"
+        : "Template Name";
 
     const nameInput = document.createElement("input");
     nameInput.type = "text";
@@ -310,7 +322,9 @@ function createEditPlannerTemplateModal() {
 
     const contentLabel = document.createElement("div");
     contentLabel.classList.add("detail-label");
-    contentLabel.textContent = "Template Content";
+    contentLabel.textContent = section.sectionType === "thang"
+        ? "Thang Content"
+        : "Template Content";
 
     const contentInput = document.createElement("textarea");
     contentInput.classList.add("notes");
@@ -331,7 +345,9 @@ function createEditPlannerTemplateModal() {
 
     const saveButton = document.createElement("button");
     saveButton.type = "button";
-    saveButton.textContent = "Save Template";
+    saveButton.textContent = section.sectionType === "thang"
+        ? "Save Thang"
+        : "Save Template";
 
     saveButton.addEventListener("click", async () => {
         const name = nameInput.value.trim();
@@ -353,7 +369,10 @@ function createEditPlannerTemplateModal() {
 
             state.editingPlannerTemplateId = null;
 
-            showToast("Template updated.", "success");
+            showToast(
+                section.sectionType === "thang" ? "Thang updated." : "Template updated.",
+                "success"
+            );
             renderApp();
 
         } catch (error) {
@@ -387,7 +406,7 @@ function createEditPlannerTemplateModal() {
 
 function createCreatePlannerTemplateModal() {
     const sectionType = state.creatingPlannerTemplateType;
-    const sectionLabel = getWorkoutFieldLabel(state, sectionType);
+    const sectionLabel = getTemplateSingularLabel(sectionType);
 
     const overlay = document.createElement("div");
     overlay.classList.add("modal-overlay");
@@ -396,18 +415,24 @@ function createCreatePlannerTemplateModal() {
     modal.classList.add("modal");
 
     const title = document.createElement("h2");
-    title.textContent = `Add ${sectionLabel} Template`;
+    title.textContent = sectionType === "thang"
+        ? "Add Thang"
+        : `Add ${sectionLabel} Template`;
 
     const nameLabel = document.createElement("div");
     nameLabel.classList.add("detail-label");
-    nameLabel.textContent = "Template Name";
+    nameLabel.textContent = sectionType === "thang"
+        ? "Thang Name"
+        : "Template Name";
 
     const nameInput = document.createElement("input");
     nameInput.type = "text";
 
     const contentLabel = document.createElement("div");
     contentLabel.classList.add("detail-label");
-    contentLabel.textContent = "Template Content";
+    contentLabel.textContent = sectionType === "thang"
+        ? "Thang Content"
+        : "Template Content";
 
     const contentInput = document.createElement("textarea");
     contentInput.classList.add("notes");
@@ -427,15 +452,22 @@ function createCreatePlannerTemplateModal() {
 
     const saveButton = document.createElement("button");
     saveButton.type = "button";
-    saveButton.textContent = "Save Template";
+    saveButton.textContent = sectionType === "thang"
+        ? "Save Thang"
+        : "Save Template";
 
     saveButton.addEventListener("click", async () => {
         const name = nameInput.value.trim();
         const content = contentInput.value.trim();
 
         if (!name || !content) {
-            showToast("Template name and content are required.", "error");
-            return;
+            showToast(
+                sectionType === "thang"
+                    ? "Thang name and content are required."
+                    : "Template name and content are required.",
+                "error"
+            );
+        return;
         }
 
         const newSection = createSavedPlannerSection({
@@ -449,7 +481,10 @@ function createCreatePlannerTemplateModal() {
         try {
             await addSavedPlannerSection(newSection);
             state.creatingPlannerTemplateType = null;
-            showToast("Template saved.", "success");
+            showToast(
+                sectionType === "thang" ? "Thang saved." : "Template saved.",
+                "success"
+            );
             renderApp();
 
         } catch (error) {

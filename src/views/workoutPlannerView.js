@@ -113,7 +113,9 @@ export function renderWorkoutPlanner() {
         const saveButton = document.createElement("button");
         saveButton.type = "button";
         saveButton.classList.add("secondary-button");
-        saveButton.textContent = "Save Section as Template";
+        saveButton.textContent = sectionType === "thang"
+            ? "Save Thang"
+            : "Save Section as Template";
 
         saveButton.addEventListener("click", async () => {
             const content = input.value.trim();
@@ -147,7 +149,9 @@ export function renderWorkoutPlanner() {
         const insertButton = document.createElement("button");
         insertButton.type ="button";
         insertButton.classList.add("secondary-button");
-        insertButton.textContent = "Insert Saved Template";
+        insertButton.textContent = sectionType === "thang"
+            ? "Insert Saved Thang"
+            : "Insert Saved Template";
 
         insertButton.addEventListener("click", () => {
             state.plannerSectionModalOpen = true;
@@ -1109,7 +1113,9 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
     modal.classList.add("modal");
     
     const title = document.createElement("h2");
-    title.textContent = "Insert Saved Section";
+    title.textContent = sectionType === "thang"
+        ? "Saved Thangs"
+        : "Insert Saved Section";
 
     const closeButton = document.createElement("button");
     closeButton.type = "button";
@@ -1120,7 +1126,9 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
     if (savedSections.length === 0) {
         const emptyMessage = document.createElement("div");
         emptyMessage.classList.add("stats-line");
-        emptyMessage.textContent = "No saved sections yet.";
+        emptyMessage.textContent = sectionType === "thang"
+            ? "No saved thangs yet."
+            : "No saved sections yet.";
 
         modal.append(title, emptyMessage, closeButton);
     } else {
@@ -1144,7 +1152,9 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
 
             const replaceButton = document.createElement("button");
             replaceButton.type = "button";
-            replaceButton.textContent = "Replace Section";
+            replaceButton.textContent = sectionType === "thang"
+                ? "Replace Thang"
+                : "Replace Section";
 
             replaceButton.addEventListener("click", async () => {
                 if (sectionType === "thang") {
@@ -1183,7 +1193,9 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
             const appendButton = document.createElement("button");
             appendButton.type = "button";
             appendButton.classList.add("button");
-            appendButton.textContent = "Add to Section";
+            appendButton.textContent = sectionType === "thang"
+                ? "Add to Thang"
+                : "Add to Section";
 
             appendButton.addEventListener("click", async () => {
                 if (sectionType === "thang") {
