@@ -29,8 +29,8 @@ export function cleanupQSlotRealtime() {
         qSlotRefreshTimerId = null;
     }
 
-    if (qSlotRealtimeChannel) {
-        unsubscribeFromChannel(qSlotRealtimeChannel);
+    if (qSlotRealtimeRegionId) {
+        unsubscribeFromChannel(`q-slots-${qSlotRealtimeRegionId}`);
         qSlotRealtimeChannel = null;
     }
 
@@ -49,8 +49,8 @@ function setupQSlotRealtime() {
         return;
     }
 
-    if (qSlotRealtimeChannel) {
-        unsubscribeFromChannel(qSlotRealtimeChannel);
+    if (qSlotRealtimeRegionId) {
+        unsubscribeFromChannel(`q-slots-${qSlotRealtimeRegionId}`);
     }
 
     qSlotRealtimeRegionId = state.currentRegionId;

@@ -3,6 +3,7 @@ import { generateBackblast } from "../modules/backblast.js";
 import { logAppEvent } from "./appEvents.js";
 import { supabase } from "./supabaseClient.js";
 import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
+import { subscribeToManagedChannel, unsubscribeManagedChannel } from "./realtime.js";
 
 export async function loadAllSessionsPaginated(regionId) {
     const pageSize = 1000;
@@ -1410,24 +1411,34 @@ export async function loadMappedQSlots(regionId) {
 export function subscribeToQSlotChanges(regionId, onChange) {
     if (!regionId) return null;
 
-    return supabase
-        .channel(`q-slots-${regionId}`)
-        .on(
-            "postgres_changes",
-            {
-                event: "*",
-                schema: "public",
-                table: "q_slots",
-                filter: `region_id=eq.${regionId}`,
-            },
-            onChange
-        )
-        .subscribe();
+    const channelKey = `q-slots-${regionId}`;
+
+    return subscribeToManagedChannel(channelKey, () =>
+        supabase
+            .channel(channelKey)
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "q_slots",
+                    filter: `region_id=eq.${regionId}`,
+                },
+                onChange
+            )
+            .subscribe()
+    );
 }
 
-export function unsubscribeFromChannel(channel) {
-    if (!channel) return;
-    supabase.removeChannel(channel);
+export function unsubscribeFromChannel(channelOrKey) {
+    if (!channelOrKey) return;
+
+    if (typeof channelOrKey === "string") {
+        unsubscribeManagedChannel(channelOrKey);
+        return;
+    }
+
+    supabase.removeChannel(channelOrKey);
 }
 
 export function getAffectedMemberIdsFromSession(session) {

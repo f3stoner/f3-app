@@ -22,6 +22,7 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { logAppEvent } from "../services/appEvents.js";
+import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -98,6 +99,8 @@ export function renderDashboard() {
                 return;
             }
 
+            unsubscribeAllManagedChannels();
+
             const cloudData = await loadRegionData(activeRegionId);
             replacePersistedData(cloudData);
 
@@ -152,6 +155,8 @@ export function renderDashboard() {
 
     signOutButton.addEventListener("click", async () => {
         try{
+            unsubscribeAllManagedChannels();
+
             await signOut();
             localStorage.removeItem("f3AppState");
             state.regionName = "";
