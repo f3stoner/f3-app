@@ -116,8 +116,6 @@ export function renderDashboard() {
 
             localStorage.removeItem("draftPlannedWorkout");
             
-            console.log("Switching to Region:", activeRegionId);
-
             renderApp();
         });
 }
@@ -870,6 +868,43 @@ export function renderDashboard() {
         return section;
     }
 
+    function renderAnnouncementsSection() {
+        const announcements = state.announcements || [];
+    
+        if (announcements.length === 0) {
+            return null;
+        }
+    
+        const section = document.createElement("div");
+        section.classList.add("section", "dashboard-announcements-section", "compact-announcements-section");    
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = "Announcements";
+    
+        const list = document.createElement("div");
+        list.classList.add("announcement-list");
+    
+        announcements.forEach(announcement => {
+            const card = document.createElement("div");
+            card.classList.add("member-card", "announcement-card", "dashboard-announcement-card");    
+            const title = document.createElement("div");
+            title.classList.add("member-name");
+            title.textContent = announcement.title;
+    
+            const body = document.createElement("div");
+            body.classList.add("stats-line");
+            body.textContent = announcement.body;
+    
+            card.append(title, body);
+    
+            list.appendChild(card);
+        });
+    
+        section.append(heading, list);
+    
+        return section;
+    }
+
     function renderMyUpcomingQs() {
         const mySlots = myUpcomingQSlots.slice(1);
 
@@ -998,6 +1033,8 @@ export function renderDashboard() {
 
     const myUpcomingQsSection = renderMyUpcomingQs();
 
+    const announcementsSection = renderAnnouncementsSection();
+
     function renderMyStatsSection() {
         const memberId = state.currentUserMemberId;
 
@@ -1005,14 +1042,15 @@ export function renderDashboard() {
             return null;
         }
 
-        const stats = state.memberDashboardStatsByMemberId?.[memberId] || null;
-
+        const memberStatsKey = `${state.currentRegionId}__${memberId}`;
+        const stats = state.memberDashboardStatsByMemberId?.[memberStatsKey] || null;
+        
         if (!stats) {
             loadMemberDashboardStats(state.currentRegionId, memberId)
                 .then(loadedStats => {
                     state.memberDashboardStatsByMemberId = {
                         ...(state.memberDashboardStatsByMemberId || {}),
-                        [memberId]: loadedStats
+                        [memberStatsKey]: loadedStats
                     };
 
                     if (state.currentView === "dashboard") {
@@ -1087,7 +1125,7 @@ export function renderDashboard() {
         ];
 
         async function hydrateMemberSessions(mode) {
-            const cacheKey = `${memberId}__${mode}`;
+            const cacheKey = `${state.currentRegionId}__${memberId}__${mode}`;
             state.memberSessionsLoadedByMode = state.memberSessionsLoadedByMode || {};
         
             if (state.memberSessionsLoadedByMode[cacheKey]) {
@@ -1158,7 +1196,7 @@ export function renderDashboard() {
                 tile.classList.add("clickable-stat-tile");
 
                 tile.addEventListener("click", async () => {
-                    const cacheKey = `${memberId}__attended`;
+                    const cacheKey = `${state.currentRegionId}__${memberId}__attended`;
                 
                     if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
                         showToast("Loading full history...", "info");
@@ -1177,7 +1215,7 @@ export function renderDashboard() {
                 tile.classList.add("clickable-stat-tile");
 
                 tile.addEventListener("click", async () => {
-                    const cacheKey = `${memberId}__q`;
+                    const cacheKey = `${state.currentRegionId}__${memberId}__q`;
                 
                     if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
                         showToast("Loading full history...", "info");
@@ -1190,32 +1228,6 @@ export function renderDashboard() {
                     state.sessionHistorySearchTerm = "";
                     navigateTo("sessionHistory");
                 });
-            }
-
-            if (item.action === "favoriteAo") {
-                tile.classList.add("clickable-stat-tile");
-                
-                if (item.action === "favoriteAo") {
-                    tile.classList.add("clickable-stat-tile");
-                    
-                    tile.addEventListener("click", async () => {
-                        const cacheKey = `${memberId}__attended`;
-                
-                        if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
-                            showToast("Loading full history...", "info");
-                        }
-                
-                        await hydrateMemberSessions("attended");
-                
-                        state.sessionHistoryFilterType = "attended";
-                        state.sessionHistoryAoFilter = stats?.favoriteAo
-                            ? { aoName: stats.favoriteAo }
-                            : null;
-                        state.sessionHistorySearchTerm = "";
-                
-                        navigateTo("sessionHistory");
-                    });
-                }
             }
 
             if (item.action === "lastPost") {
@@ -1304,7 +1316,7 @@ export function renderDashboard() {
     recentHeading.textContent = "My Recent Activity";
     recentSessionsSection.append(recentHeading);
 
-    const recentActivityKey = state.currentUserMemberId;
+    const recentActivityKey = `${state.currentRegionId}__${state.currentUserMemberId}`;
     const recentActivity =
         state.recentMemberActivityByMemberId?.[recentActivityKey] || null;
     
@@ -1420,6 +1432,7 @@ export function renderDashboard() {
         userRow,
         //notificationRow,
         dashboardCtaSection,
+        ...(announcementsSection ? [announcementsSection] : []),
         primaryActionsRow,
         myUpcomingQsSection,
        ...(myStatsSection ? [myStatsSection] : []),

@@ -3254,3 +3254,81 @@ body.menu-open {
     font-size: 0.8rem;
     opacity: 0.75;
 }
+
+input,
+textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    box-sizing: border-box;
+}
+
+.compact-announcements-section {
+    margin-top: 0.75rem;
+}
+
+.announcement-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.dashboard-announcement-card {
+    padding: 0.75rem 0.9rem;
+}
+
+.dashboard-announcement-card .member-name {
+    font-size: 0.95rem;
+}
+
+.dashboard-announcement-card .stats-line {
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+.announcement-card-inactive {
+    opacity: 0.55;
+    border-style: dashed;
+}
+
+.dashboard-announcement-card {
+    display: block;
+    min-height: 0;
+    cursor: default;
+}
+
+.dashboard-announcement-card:hover {
+    background: var(--surface);
+}
+
+.admin-announcement-card {
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.admin-announcement-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.admin-announcement-card .member-name {
+    margin-bottom: 0.35rem;
+    line-height: 1.1;
+}
+
+.admin-announcement-card .stats-line {
+    line-height: 1.3;
+}
+
+.admin-announcement-card .q-slot-actions {
+    width: 92px;
+    flex-shrink: 0;
+}
+
+.admin-announcement-card .q-slot-actions button {
+    text-align: right;
+}

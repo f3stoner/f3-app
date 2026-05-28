@@ -44,6 +44,7 @@ import { renderImportRunsView } from "./views/importRunsView.js";
 import { importOld300AttendanceCsv } from "./services/importOld300.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
 import { hasPermission, PERMISSIONS } from "./utils/permissions.js";
+import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -85,6 +86,7 @@ const RESTORABLE_VIEWS = new Set([
     "adminSettings",
     "regionInsights",
     "importRuns",
+    "announcementManagement",
 ]);
 
 function restoreNavState(nav) {
@@ -242,6 +244,8 @@ function renderApp() {
         renderAoInsightsView();
     } else if (state.currentView === "importRuns") {
         renderImportRunsView();
+    } else if (state.currentView === "announcementManagement") {
+        renderAnnouncementManagementView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

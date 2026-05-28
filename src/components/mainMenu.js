@@ -27,6 +27,7 @@ export function cleanupMainMenu() {
 export function createMainMenu() {
     const canViewRegionInsights = hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS);
     const canAccessAdminSettings = hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS);
+    const canManageAnnouncements = hasPermission(PERMISSIONS.MANAGE_ANNOUNCEMENTS);
 
     const overlay = document.createElement("div");
     overlay.classList.add("main-menu-overlay");
@@ -61,6 +62,12 @@ export function createMainMenu() {
         ...(canViewRegionInsights
             ? [
                 { label: "Region Insights", view: "regionInsights" },
+            ]
+            : []),
+
+        ...(canManageAnnouncements
+            ? [
+                { label: "Announcements", view: "announcementManagement" },
             ]
             : []),
         

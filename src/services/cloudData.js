@@ -1,5 +1,4 @@
 import { APP_EVENTS } from "../constants/appEvents.js";
-import { generateBackblast } from "../modules/backblast.js";
 import { logAppEvent } from "./appEvents.js";
 import { supabase } from "./supabaseClient.js";
 import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
@@ -326,6 +325,7 @@ export async function loadRegionData(regionId) {
         qSlotResult,
         adminFlagResult,
         savedPlannerSectionResult,
+        announcementResult,
     ] = await Promise.all([
         timed(
             "loadRegionData:region",
@@ -369,6 +369,8 @@ export async function loadRegionData(regionId) {
                 .order("last_used_at", { ascending: false, nullsFirst: false })
                 .order("created_at", { ascending: false })
         ),
+
+        timed("loadRegionData:announcements", loadAnnouncements(regionId)),
     ]);
 
     const backblastLinksBySessionId = new Map();
@@ -401,6 +403,7 @@ export async function loadRegionData(regionId) {
         savedPlannerSections: (savedPlannerSectionResult.data || [])
             .map(mapSavedPlannerSectionFromDb),
         workoutFieldLabels: regionResult.data.workout_field_labels || {},
+        announcements: announcementResult,
     };
 }
 
@@ -1526,4 +1529,111 @@ export async function loadRecentMemberActivity(regionId, memberId, limit = 2) {
     }
 
     return (data || []).map(mapSessionFromDb);
+}
+
+export async function loadAnnouncements(regionId) {
+    const today = new Date().toISOString().split("T")[0];
+
+    const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("is_active", true)
+        .or(`starts_on.is.null,starts_on.lte.${today}`)
+        .or(`ends_on.is.null,ends_on.gte.${today}`)
+        .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(mapAnnouncementFromDb);
+}
+
+export async function loadAllAnnouncements(regionId) {
+    console.log("loadAllAnnouncements regionId", regionId);
+
+const { data, error } = await supabase
+    .from("announcements")
+    .select("*")
+    .eq("region_id", regionId)
+    .order("is_active", { ascending: false })
+    .order("created_at", { ascending: false });
+
+console.log("loadAllAnnouncements result", { data, error });
+
+    if (error) throw error;
+
+    return (data || []).map(mapAnnouncementFromDb);
+}
+
+    export async function insertAnnouncement(regionId, announcement) {
+        const payload = {
+            id: announcement.id,
+            region_id: regionId,
+            scope: announcement.scope || "region",
+            ao_id: announcement.aoId || null,
+            title: announcement.title || "",
+            body: announcement.body || "",
+            starts_on: announcement.startsOn || null,
+            ends_on: announcement.endsOn || null,
+            is_active: announcement.isActive ?? true,
+            created_by_user_id: announcement.createdByUserId || null,
+        };
+    
+        const { error } = await supabase
+            .from("announcements")
+            .insert(payload);
+    
+        if (error) throw error;
+    
+        return mapAnnouncementFromDb(payload);
+    }
+
+    export async function updateAnnouncementInCloud(regionId, announcement) {
+    const { data, error } = await supabase
+        .from("announcements")
+        .update({
+            scope: announcement.scope || "region",
+            ao_id: announcement.aoId || null,
+            title: announcement.title || "",
+            body: announcement.body || "",
+            starts_on: announcement.startsOn || null,
+            ends_on: announcement.endsOn || null,
+            is_active: announcement.isActive ?? true,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", announcement.id)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapAnnouncementFromDb(data);
+}
+
+export async function deleteAnnouncementFromCloud(regionId, announcementId) {
+    const { error } = await supabase
+        .from("announcements")
+        .delete()
+        .eq("id", announcementId)
+        .eq("region_id", regionId);
+
+    if (error) throw error;
+}
+
+function mapAnnouncementFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        scope: row.scope,
+        aoId: row.ao_id,
+        title: row.title,
+        body: row.body,
+        startsOn: row.starts_on,
+        endsOn: row.ends_on,
+        isActive: row.is_active,
+        createdByUserId: row.created_by_user_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
 }

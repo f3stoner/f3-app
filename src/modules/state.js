@@ -107,6 +107,8 @@ export const state = {
     rosterFilter: null,
     exercises: [],
     isMainMenuOpen: false,
+    announcements: [],
+    allAnnouncements: [],
 };
 
 state.runHistoricImport = async function () {

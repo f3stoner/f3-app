@@ -160,7 +160,18 @@ export function removeMemberFromState(memberId) {
     persistAppData();
 }
 
-export function replacePersistedData({ regionName, members, sessions, plannedWorkouts, aos, qSlots, adminFlags, savedPlannerSections, workoutFieldLabels }) {
+export function replacePersistedData({
+    regionName,
+    members,
+    sessions,
+    plannedWorkouts,
+    aos,
+    qSlots,
+    adminFlags,
+    savedPlannerSections,
+    workoutFieldLabels,
+    announcements,
+}) {
     state.regionName = regionName;
     state.members = members;
     state.sessions = sessions;
@@ -170,6 +181,12 @@ export function replacePersistedData({ regionName, members, sessions, plannedWor
     state.adminFlags = adminFlags || [];
     state.savedPlannerSections = savedPlannerSections || [];
     state.workoutFieldLabels = workoutFieldLabels || {};
+    state.announcements = announcements || [];
+
+    state.allAnnouncements = null;
+    state.hasLoadedAllAnnouncements = false;
+    state.isLoadingAllAnnouncements = false;
+
     state.selectedMemberId = null;
     state.selectedAoId = null;
     state.editingAoId = null;
