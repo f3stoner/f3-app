@@ -1577,6 +1577,7 @@ console.log("loadAllAnnouncements result", { data, error });
             ends_on: announcement.endsOn || null,
             is_active: announcement.isActive ?? true,
             created_by_user_id: announcement.createdByUserId || null,
+            include_in_backblast: announcement.includeInBackblast ?? false,
         };
     
         const { error } = await supabase
@@ -1600,6 +1601,7 @@ console.log("loadAllAnnouncements result", { data, error });
             ends_on: announcement.endsOn || null,
             is_active: announcement.isActive ?? true,
             updated_at: new Date().toISOString(),
+            include_in_backblast: announcement.includeInBackblast ?? false,
         })
         .eq("id", announcement.id)
         .eq("region_id", regionId)
@@ -1635,5 +1637,6 @@ function mapAnnouncementFromDb(row) {
         createdByUserId: row.created_by_user_id,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
+        includeInBackblast: row.include_in_backblast ?? false,
     };
 }

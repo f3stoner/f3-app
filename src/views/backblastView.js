@@ -54,6 +54,20 @@ export function renderBackblastView () {
         s => s.id === state.selectedSessionId
     );
 
+    function appendAnnouncementsToBackblast(text) {
+        const announcements = state.announcements || [];
+    
+        if (announcements.length === 0) {
+            return text;
+        }
+    
+        const announcementText = announcements
+            .map(announcement => `${announcement.title}\n${announcement.body}`)
+            .join("\n\n");
+    
+        return `${text.trim()}\n\nANNOUNCEMENTS\n${announcementText}`;
+    }
+
     function insertWeatherAfterDate(text, weatherLine) {
         const lines = text.split("\n");
     
@@ -223,6 +237,25 @@ export function renderBackblastView () {
         state.draftBackblastText = textArea.value;
     })
 
+    const addAnnouncementsButton = document.createElement("button");
+    addAnnouncementsButton.textContent = "Add Announcements";
+
+    addAnnouncementsButton.addEventListener("click", () => {
+        if (!state.announcements?.length) {
+            showToast("No active announcements to add.", "info");
+            return;
+        }
+
+        state.draftBackblastText = appendAnnouncementsToBackblast(
+            state.draftBackblastText || textArea.value || ""
+        );
+
+        textArea.value = state.draftBackblastText;
+        autoResize(textArea);
+
+        showToast("Announcements added.", "success");
+    });
+
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");
 
@@ -373,7 +406,7 @@ export function renderBackblastView () {
     const actionRow = document.createElement("div");
     actionRow.classList.add("button-row");
 
-    actionRow.append(shareButton, copyButton, resetButton, doneButton);
+    actionRow.append(addAnnouncementsButton, shareButton, copyButton, resetButton, doneButton);
 
     app.append(
         header,
