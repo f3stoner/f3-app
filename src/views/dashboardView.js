@@ -134,6 +134,7 @@ export function renderDashboard() {
         role === "dataq" ? "Data Q" :
         role === "slt" ? "SLT" :
         role === "aoq" ? "AOQ" :
+        role === "gay" ? "GAY":
         "PAX";
 
     const linkedMember = state.members.find(
