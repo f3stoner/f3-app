@@ -177,13 +177,13 @@ function renderAnnouncementList(container, controls) {
         card.classList.toggle("announcement-card-inactive", !announcement.isActive);
 
         const title = document.createElement("div");
-        title.classList.add("member-name");
-        title.textContent = announcement.title;
-
+        title.classList.add("member-name", "announcement-title");
+        title.textContent = announcement.title || "📣 Announcement";
+        
         const body = document.createElement("div");
-        body.classList.add("stats-line");
-        body.textContent = announcement.body;
-
+        body.classList.add("stats-line", "announcement-body");
+        body.textContent = announcement.body || "";
+        
         const meta = document.createElement("div");
         meta.classList.add("stats-line");
 
