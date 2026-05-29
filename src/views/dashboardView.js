@@ -886,17 +886,17 @@ export function renderDashboard() {
     
         announcements.forEach(announcement => {
             const card = document.createElement("div");
-            card.classList.add("member-card", "announcement-card", "dashboard-announcement-card");    
+            card.classList.add("member-card", "announcement-card", "dashboard-announcement-card");
+        
             const title = document.createElement("div");
-            title.classList.add("member-name");
-            title.textContent = announcement.title;
-    
+            title.classList.add("member-name", "announcement-title");
+            title.textContent = announcement.title || "📣 Announcement";
+        
             const body = document.createElement("div");
-            body.classList.add("stats-line");
-            body.textContent = announcement.body;
-    
+            body.classList.add("stats-line", "announcement-body");
+            body.textContent = announcement.body || "";
+        
             card.append(title, body);
-    
             list.appendChild(card);
         });
     

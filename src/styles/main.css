@@ -3332,3 +3332,17 @@ textarea {
 .admin-announcement-card .q-slot-actions button {
     text-align: right;
 }
+
+.announcement-card {
+    cursor: pointer;
+}
+
+.announcement-body {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
