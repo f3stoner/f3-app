@@ -1147,6 +1147,8 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
         state.currentUserId
     );
 
+    const searchTerm = state.savedThangSearchTerm || "";
+
     const overlay = document.createElement("div");
     overlay.classList.add("modal-overlay");
 
@@ -1162,7 +1164,20 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
     closeButton.type = "button";
     closeButton.textContent = "x";
     closeButton.classList.add("secondary-button", "modal-close-button");
-    closeButton.addEventListener("click", onClose);
+    
+    function closeSavedSectionModal() {
+        state.savedThangSearchTerm = "";
+        onClose();
+    }
+    
+    closeButton.addEventListener("click", closeSavedSectionModal);
+    overlay.addEventListener("click", closeSavedSectionModal);
+    
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.classList.add("template-search-input");
+    searchInput.placeholder = "Search saved thangs...";
+    searchInput.value = searchTerm;
 
     if (savedSections.length === 0) {
         const emptyMessage = document.createElement("div");
@@ -1171,12 +1186,43 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
             ? "No saved thangs yet."
             : "No saved sections yet.";
 
-        modal.append(title, emptyMessage, closeButton);
+        modal.append(title, closeButton, emptyMessage);
     } else {
         const list = document.createElement("div");
         list.classList.add("saved-section-list");
-
-        savedSections.forEach(section => {
+        
+        function renderSavedSectionList() {
+            list.textContent = "";
+        
+            const currentSearchTerm = searchInput.value || "";
+        
+            const visibleSections = savedSections.filter(section => {
+                if (sectionType !== "thang") return true;
+        
+                const query = currentSearchTerm.trim().toLowerCase();
+                if (!query) return true;
+        
+                const haystack = [
+                    section.name,
+                    section.content,
+                    ...(section.tags || []),
+                ]
+                    .join(" ")
+                    .toLowerCase();
+        
+                return haystack.includes(query);
+            });
+        
+            if (sectionType === "thang" && visibleSections.length === 0) {
+                const emptySearch = document.createElement("div");
+                emptySearch.classList.add("stats-line");
+                emptySearch.textContent = "No saved thangs match that search.";
+                list.appendChild(emptySearch);
+                return;
+            }
+        
+            visibleSections.forEach(section => {
+            
             const card = document.createElement("div");
             card.classList.add("workout-browse-card");
 
@@ -1227,7 +1273,7 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
                 }
 
                 persistDraft();
-                onClose();
+                closeSavedSectionModal();
                 showToast("Section inserted.", "success");
             });
 
@@ -1279,7 +1325,7 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
                 }
 
                 persistDraft();
-                onClose();
+                closeSavedSectionModal();
                 showToast("Section inserted.", "success");
             });
 
@@ -1306,13 +1352,24 @@ function createSavedSectionModal({ draftWorkout, persistDraft, onClose }) {
             card.append(name, preview, actions);
             list.append(card);
         });
+    }
 
-        modal.append(title, closeButton, list);
+    searchInput.addEventListener("input", event => {
+        state.savedThangSearchTerm = event.target.value;
+        renderSavedSectionList();
+    });
+
+    renderSavedSectionList();
+
+        if (sectionType === "thang") {
+            modal.append(title, closeButton, searchInput, list);
+        } else {
+            modal.append(title, closeButton, list);
+        }
     }
 
     overlay.appendChild(modal);
 
-    overlay.addEventListener("click", onClose);
     modal.addEventListener("click", event => event.stopPropagation());
 
     return overlay;
@@ -1471,9 +1528,8 @@ function createWorkoutBrowseModal(onClose, onCopyWorkout) {
     if (!selectedWorkout) {
         preview.style.display = "none";
     }
-
+    
     closeButton.addEventListener("click", onClose);
-
     overlay.addEventListener("click", onClose);
 
     modal.addEventListener("click", (event) => {

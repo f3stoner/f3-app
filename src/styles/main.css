@@ -3359,3 +3359,9 @@ textarea {
 .building-blocks-promo button {
     margin-top: 0.75rem;
 }
+
+.template-modal {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding-bottom: 5rem;
+}

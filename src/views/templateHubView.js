@@ -17,6 +17,17 @@ function getTemplateSingularLabel(sectionType) {
     return getWorkoutFieldLabel(state, sectionType);
 }
 
+function parseTagInput(value) {
+    return (value || "")
+        .split(",")
+        .map(tag => tag.trim().toLowerCase())
+        .filter(Boolean);
+}
+
+function formatTagInput(tags = []) {
+    return tags.join(", ");
+}
+
 export function renderTemplateHubView() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -248,6 +259,10 @@ function createPlannerTemplateCard(section) {
     preview.classList.add("template-preview");
     preview.textContent = section.content || "";
 
+    const tagLine = document.createElement("div");
+    tagLine.classList.add("stats-line");
+    tagLine.textContent = (section.tags || []).map(tag => `#${tag}`).join(" ");
+
     const actions = document.createElement("div");
     actions.classList.add("button-row");
 
@@ -284,8 +299,11 @@ function createPlannerTemplateCard(section) {
     });
 
     actions.append(editButton, deleteButton);
-    card.append(name, preview, actions);
-
+    if (section.sectionType === "thang" && section.tags?.length) {
+        card.append(name, preview, tagLine, actions);
+    } else {
+        card.append(name, preview, actions);
+    }
     return card;
 }
 
@@ -303,7 +321,7 @@ function createEditPlannerTemplateModal() {
     overlay.classList.add("modal-overlay");
 
     const modal = document.createElement("div");
-    modal.classList.add("modal");
+    modal.classList.add("modal", "template-modal");
 
     const title = document.createElement("h2");
     title.textContent = section.sectionType === "thang"
@@ -329,6 +347,15 @@ function createEditPlannerTemplateModal() {
     const contentInput = document.createElement("textarea");
     contentInput.classList.add("notes");
     contentInput.value = section.content || "";
+
+    const tagsLabel = document.createElement("div");
+    tagsLabel.classList.add("detail-label");
+    tagsLabel.textContent = "Tags";
+
+    const tagsInput = document.createElement("input");
+    tagsInput.type = "text";
+    tagsInput.value = formatTagInput(section.tags || []);
+    tagsInput.placeholder = "partner, dora, upper, coupon";
 
     const actions = document.createElement("div");
     actions.classList.add("button-row");
@@ -363,6 +390,10 @@ function createEditPlannerTemplateModal() {
             name,
             content,
         };
+        
+        if (section.sectionType === "thang") {
+            updatedSection.tags = parseTagInput(tagsInput.value);
+        }
 
         try {
             await updateSavedPlannerSection(updatedSection);
@@ -383,14 +414,27 @@ function createEditPlannerTemplateModal() {
 
     actions.append(cancelButton, saveButton);
 
-    modal.append(
-        title,
-        nameLabel,
-        nameInput,
-        contentLabel,
-        contentInput,
-        actions
-    );
+    if (section.sectionType === "thang") {
+        modal.append(
+            title,
+            nameLabel,
+            nameInput,
+            contentLabel,
+            contentInput,
+            tagsLabel,
+            tagsInput,
+            actions
+        );
+    } else {
+        modal.append(
+            title,
+            nameLabel,
+            nameInput,
+            contentLabel,
+            contentInput,
+            actions
+        );
+    }
 
     overlay.appendChild(modal);
 
@@ -412,7 +456,7 @@ function createCreatePlannerTemplateModal() {
     overlay.classList.add("modal-overlay");
 
     const modal = document.createElement("div");
-    modal.classList.add("modal");
+    modal.classList.add("modal", "template-modal");
 
     const title = document.createElement("h2");
     title.textContent = sectionType === "thang"
@@ -436,6 +480,14 @@ function createCreatePlannerTemplateModal() {
 
     const contentInput = document.createElement("textarea");
     contentInput.classList.add("notes");
+
+    const tagsLabel = document.createElement("div");
+    tagsLabel.classList.add("detail-label");
+    tagsLabel.textContent = "Tags";
+
+const tagsInput = document.createElement("input");
+tagsInput.type = "text";
+tagsInput.placeholder = "partner, dora, upper, coupon";
 
     const actions = document.createElement("div");
     actions.classList.add("button-row");
@@ -477,6 +529,10 @@ function createCreatePlannerTemplateModal() {
             content,
             createdByUserId: state.currentUserId,
         });
+        
+        if (sectionType === "thang") {
+            newSection.tags = parseTagInput(tagsInput.value);
+        }
 
         try {
             await addSavedPlannerSection(newSection);
@@ -495,14 +551,27 @@ function createCreatePlannerTemplateModal() {
 
     actions.append(cancelButton, saveButton);
 
-    modal.append(
-        title,
-        nameLabel,
-        nameInput,
-        contentLabel,
-        contentInput,
-        actions
-    );
+    if (sectionType === "thang") {
+        modal.append(
+            title,
+            nameLabel,
+            nameInput,
+            contentLabel,
+            contentInput,
+            tagsLabel,
+            tagsInput,
+            actions
+        );
+    } else {
+        modal.append(
+            title,
+            nameLabel,
+            nameInput,
+            contentLabel,
+            contentInput,
+            actions
+        );
+    }
 
     overlay.appendChild(modal);
 
@@ -690,7 +759,7 @@ function createPreblastTemplateModal({
     overlay.classList.add("modal-overlay");
 
     const modal = document.createElement("div");
-    modal.classList.add("modal");
+    modal.classList.add("modal", "template-modal");
 
     const title = document.createElement("h2");
     title.textContent = titleText;
