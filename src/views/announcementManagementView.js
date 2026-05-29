@@ -10,6 +10,7 @@ import {
 import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { updateAnnouncementDisplayOrder } from "../services/cloudData.js";
 
 export function renderAnnouncementManagementView() {
     const app = document.getElementById("app");
@@ -102,6 +103,12 @@ export function renderAnnouncementManagementView() {
                 state.editingAnnouncementId = null;
                 showToast("Announcement updated.", "success");
             } else {
+                const nextDisplayOrder =
+                    Math.max(
+                        0,
+                        ...(state.allAnnouncements || []).map(a => a.displayOrder || 0)
+                    ) + 1;
+
                 await insertAnnouncement(state.currentRegionId, {
                     id: crypto.randomUUID(),
                     scope: "region",
@@ -111,6 +118,7 @@ export function renderAnnouncementManagementView() {
                     endsOn: endsInput.value || null,
                     isActive: true,
                     createdByUserId: state.currentUserId,
+                    displayOrder: nextDisplayOrder,
                 });
 
                 showToast("Announcement created.", "success");
@@ -158,6 +166,57 @@ function label(text) {
     return el;
 }
 
+async function moveAnnouncement(announcementId, direction) {
+    const announcements = [...(state.allAnnouncements || [])];
+    const currentIndex = announcements.findIndex(a => a.id === announcementId);
+    const nextIndex = currentIndex + direction;
+
+    if (currentIndex === -1 || nextIndex < 0 || nextIndex >= announcements.length) {
+        return;
+    }
+
+    const current = announcements[currentIndex];
+    const target = announcements[nextIndex];
+
+    console.log("moving announcement", {
+        currentIndex,
+        nextIndex,
+        currentId: current.id,
+        currentOrder: current.displayOrder,
+        targetId: target.id,
+        targetOrder: target.displayOrder,
+    });
+    
+    const currentOrder = current.displayOrder ?? currentIndex;
+    const targetOrder = target.displayOrder ?? nextIndex;
+    
+    try {
+        await Promise.all([
+            updateAnnouncementDisplayOrder(
+                state.currentRegionId,
+                current.id,
+                nextIndex
+            ),
+            updateAnnouncementDisplayOrder(
+                state.currentRegionId,
+                target.id,
+                currentIndex
+            ),
+        ]);
+
+        console.log("reorder update complete");
+
+        state.announcements = await loadAnnouncements(state.currentRegionId);
+        state.allAnnouncements = await loadAllAnnouncements(state.currentRegionId);
+        state.hasLoadedAllAnnouncements = true;
+
+        renderApp();
+    } catch (error) {
+        console.error("Failed to reorder announcements:", error);
+        showToast("Failed to reorder announcements.", "error");
+    }
+}
+
 function renderAnnouncementList(container, controls) {
     container.textContent = "";
 
@@ -171,7 +230,7 @@ function renderAnnouncementList(container, controls) {
         return;
     }
 
-    announcements.forEach(announcement => {
+    announcements.forEach((announcement, index) => {
         const card = document.createElement("div");
         card.classList.add("member-card", "admin-announcement-card");
         card.classList.toggle("announcement-card-inactive", !announcement.isActive);
@@ -183,7 +242,7 @@ function renderAnnouncementList(container, controls) {
         const body = document.createElement("div");
         body.classList.add("stats-line", "announcement-body");
         body.textContent = announcement.body || "";
-        
+
         const meta = document.createElement("div");
         meta.classList.add("stats-line");
 
@@ -195,7 +254,25 @@ function renderAnnouncementList(container, controls) {
             `${announcement.endsOn || "No Expiration"}`;
 
         const actions = document.createElement("div");
-        actions.classList.add("q-slot-actions");
+        actions.classList.add("announcement-admin-actions");
+
+        const moveUpButton = document.createElement("button");
+        moveUpButton.classList.add("secondary-button", "move-btn");
+        moveUpButton.textContent = "↑";
+        moveUpButton.disabled = index === 0;
+
+        moveUpButton.addEventListener("click", async () => {
+            await moveAnnouncement(announcement.id, -1);
+        });
+
+        const moveDownButton = document.createElement("button");
+        moveDownButton.classList.add("secondary-button", "move-btn");
+        moveDownButton.textContent = "↓";
+        moveDownButton.disabled = index === announcements.length - 1;
+
+        moveDownButton.addEventListener("click", async () => {
+            await moveAnnouncement(announcement.id, 1);
+        });
 
         const editButton = document.createElement("button");
         editButton.classList.add("secondary-button");
@@ -250,7 +327,7 @@ function renderAnnouncementList(container, controls) {
         });
 
         const deleteButton = document.createElement("button");
-        deleteButton.classList.add("secondary-button");
+        deleteButton.classList.add("secondary-button", "delete-btn");
         deleteButton.textContent = "Delete";
 
         deleteButton.addEventListener("click", async () => {
@@ -286,7 +363,7 @@ function renderAnnouncementList(container, controls) {
 
         content.append(title, body, meta);
 
-        actions.append(editButton, toggleButton, deleteButton);
+        actions.append(moveUpButton, moveDownButton, editButton, toggleButton, deleteButton);
 
         card.append(content, actions);
 

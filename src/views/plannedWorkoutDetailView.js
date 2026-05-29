@@ -695,6 +695,11 @@ export function renderPlannedWorkoutDetail() {
         .filter(Boolean);
     const finisherSection = createDetailSection(getWorkoutFieldLabel(state, "finisher"), workout.finisher || "-", { hideIfEmpty: isExecutionMode });
     const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : getWorkoutFieldLabel(state, "notes"), workout.notes || "-", { hideIfEmpty: isExecutionMode });
+    const announcementSection = createDetailSection(
+        "Announcements",
+        workout.announcementText || "-",
+        { hideIfEmpty: isExecutionMode }
+    );
     const visibilitySection = createDetailSection(
         "Visibility",
         workout.isShared ? "Workout Library" : "My Planner"
@@ -740,6 +745,7 @@ export function renderPlannedWorkoutDetail() {
             thangSections: normalizeThangSections(workout),
             finisher: workout.finisher,
             notes: workout.notes,
+            announcementText: workout.announcementText || "",
         };
         session.sourcePlannedWorkoutId = workout.id;
 
@@ -1029,6 +1035,7 @@ export function renderPlannedWorkoutDetail() {
         ...(finisherSection ? [finisherSection] : []),
         ...createTimerButtonsForSection("finisher"),
         ...(notesSection ? [notesSection] : []),
+        ...(announcementSection ? [announcementSection] : []),
         primaryActionsRow,
         ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
     );

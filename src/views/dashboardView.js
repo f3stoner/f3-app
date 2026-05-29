@@ -875,32 +875,80 @@ export function renderDashboard() {
             return null;
         }
     
+        const isExpanded = Boolean(state.dashboardAnnouncementsExpanded);
+    
         const section = document.createElement("div");
-        section.classList.add("section", "dashboard-announcements-section", "compact-announcements-section");    
+        section.classList.add(
+            "section",
+            "dashboard-announcements-section",
+            "compact-announcements-section"
+        );
+    
+        const headerButton = document.createElement("button");
+        headerButton.type = "button";
+        headerButton.classList.add("announcement-toggle-row");
+    
         const heading = document.createElement("div");
         heading.classList.add("detail-label");
-        heading.textContent = "Announcements";
+        heading.textContent = `Announcements (${announcements.length})`;
+    
+        const toggleText = document.createElement("div");
+        toggleText.classList.add("stats-line");
+        toggleText.textContent = isExpanded ? "Hide" : "Show";
+    
+        headerButton.append(heading, toggleText);
+    
+        headerButton.addEventListener("click", () => {
+            state.dashboardAnnouncementsExpanded = !state.dashboardAnnouncementsExpanded;
+        
+            if (!state.dashboardAnnouncementsExpanded) {
+                state.expandedDashboardAnnouncementId = null;
+            }
+        
+            renderApp();
+        });
     
         const list = document.createElement("div");
         list.classList.add("announcement-list");
     
-        announcements.forEach(announcement => {
-            const card = document.createElement("div");
-            card.classList.add("member-card", "announcement-card", "dashboard-announcement-card");
-        
-            const title = document.createElement("div");
-            title.classList.add("member-name", "announcement-title");
-            title.textContent = announcement.title || "📣 Announcement";
-        
-            const body = document.createElement("div");
-            body.classList.add("stats-line", "announcement-body");
-            body.textContent = announcement.body || "";
-        
-            card.append(title, body);
-            list.appendChild(card);
-        });
+        const visibleAnnouncements = isExpanded
+            ? announcements
+            : announcements.slice(0, 1);
     
-        section.append(heading, list);
+            visibleAnnouncements.forEach(announcement => {
+                const isAnnouncementExpanded =
+                    state.expandedDashboardAnnouncementId === announcement.id;
+            
+                const row = document.createElement("button");
+                row.type = "button";
+                row.classList.add("announcement-inline-row", "announcement-title-only-row");
+            
+                const title = document.createElement("div");
+                title.classList.add("member-name", "announcement-title");
+                title.textContent = announcement.title || "📣 Announcement";
+            
+                row.appendChild(title);
+            
+                row.addEventListener("click", () => {
+                    state.expandedDashboardAnnouncementId = isAnnouncementExpanded
+                        ? null
+                        : announcement.id;
+            
+                    renderApp();
+                });
+            
+                list.appendChild(row);
+            
+                if (isAnnouncementExpanded) {
+                    const body = document.createElement("div");
+                    body.classList.add("stats-line", "announcement-body", "announcement-expanded-body");
+                    body.textContent = announcement.body || "";
+            
+                    list.appendChild(body);
+                }
+            });
+    
+        section.append(headerButton, list);
     
         return section;
     }

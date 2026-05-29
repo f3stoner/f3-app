@@ -876,6 +876,52 @@ export function renderWorkoutPlanner() {
 
     primaryActionsRow.append(saveButton, finalizeButton);
 
+    function buildAnnouncementText() {
+        const announcements = state.announcements || [];
+    
+        return announcements
+            .map(announcement => `${announcement.title}\n${announcement.body}`)
+            .join("\n\n");
+    }
+
+    const announcementsLabel = document.createElement("div");
+    announcementsLabel.textContent = "Announcements";
+    announcementsLabel.classList.add("detail-label");
+
+    const announcementsInput = document.createElement("textarea");
+    announcementsInput.classList.add("notes");
+    announcementsInput.value = draftWorkout.announcementText || "";
+    announcementsInput.placeholder = "Announcements for this BD...";
+
+    announcementsInput.addEventListener("input", event => {
+        draftWorkout.announcementText = event.target.value;
+        persistDraft();
+    });
+
+    const addAnnouncementsButton = document.createElement("button");
+    addAnnouncementsButton.type = "button";
+    addAnnouncementsButton.classList.add("secondary-button");
+    addAnnouncementsButton.textContent = "Add Active Announcements";
+
+    addAnnouncementsButton.addEventListener("click", () => {
+        const announcementText = buildAnnouncementText();
+    
+        if (!announcementText) {
+            showToast("No active announcements.", "error");
+            return;
+        }
+    
+        draftWorkout.announcementText = announcementText;
+        announcementsInput.value = draftWorkout.announcementText;
+    
+        persistDraft();
+    
+        addAnnouncementsButton.disabled = true;
+        addAnnouncementsButton.textContent = "Announcements Added";
+    
+        showToast("Announcements added.", "success");
+    });
+
     app.append(
         header,
         title,
@@ -906,6 +952,9 @@ export function renderWorkoutPlanner() {
         notesLabel,
         notesInput,
         notesTemplateControls,
+        announcementsLabel,
+        announcementsInput,
+        addAnnouncementsButton,
         shareLabel,
         shareSelect,
         primaryActionsRow,

@@ -286,6 +286,12 @@ export function renderSessionDetail() {
         return section;
     }
 
+    function cleanAnnouncementText(text = "") {
+        return String(text)
+            .replace(/^announcements\s*:?\s*/i, "")
+            .trim();
+    }
+
     function createWorkoutSection() {
         const section = document.createElement("div");
         section.classList.add("section");
@@ -324,6 +330,14 @@ export function renderSessionDetail() {
             parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
+        if (workout.announcementText) {
+            const cleanText = cleanAnnouncementText(workout.announcementText);
+        
+            if (cleanText) {
+                parts.push(`Announcements:\n${cleanText}`);
+            }
+        }
+        
         value.textContent = parts.length > 0
             ? parts.join("\n\n")
             : "-";
@@ -383,6 +397,7 @@ export function renderSessionDetail() {
             newWorkout.thangs = session.workout.thangs || "";
             newWorkout.finisher = session.workout.finisher || "";
             newWorkout.notes = session.workout.notes || "";
+            newWorkout.announcementText = session.workout.announcementText || "";
         } else {
             newWorkout.notes = session.notes || "";
         }

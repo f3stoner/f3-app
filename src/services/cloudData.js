@@ -475,6 +475,7 @@ function mapPlannedWorkoutFromDb(row) {
         preblastText: row.preblast_text || "",
         preblastLastModifiedAt: row.preblast_last_modified_at || null,
         thangSections: row.thang_sections || null,
+        announcementText: row.announcement_text || "",
     };
 }
 
@@ -726,6 +727,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 preblast_text: workout.preblastText || null,
                 preblast_last_modified_at: workout.preblastLastModifiedAt || null,
                 thang_sections: workout.thangSections || null,
+                announcement_text: workout.announcementText || null,
             },
         ])
         .select()
@@ -775,6 +777,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             preblast_text: workout.preblastText || null,
             preblast_last_modified_at: workout.preblastLastModifiedAt || null,
             thang_sections: workout.thangSections || null,
+            announcement_text: workout.announcementText || null,
         })
         .eq("id", workout.id)
         .select()
@@ -1544,6 +1547,7 @@ export async function loadAnnouncements(regionId) {
         .eq("is_active", true)
         .or(`starts_on.is.null,starts_on.lte.${today}`)
         .or(`ends_on.is.null,ends_on.gte.${today}`)
+        .order("display_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -1554,14 +1558,14 @@ export async function loadAnnouncements(regionId) {
 export async function loadAllAnnouncements(regionId) {
     console.log("loadAllAnnouncements regionId", regionId);
 
-const { data, error } = await supabase
+    const { data, error } = await supabase
     .from("announcements")
     .select("*")
     .eq("region_id", regionId)
-    .order("is_active", { ascending: false })
+    .order("display_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
-console.log("loadAllAnnouncements result", { data, error });
+    console.log("loadAllAnnouncements result", { data, error });
 
     if (error) throw error;
 
@@ -1581,6 +1585,7 @@ console.log("loadAllAnnouncements result", { data, error });
             is_active: announcement.isActive ?? true,
             created_by_user_id: announcement.createdByUserId || null,
             include_in_backblast: announcement.includeInBackblast ?? false,
+            display_order: announcement.displayOrder ?? Date.now(),
         };
     
         const { error } = await supabase
@@ -1605,6 +1610,7 @@ console.log("loadAllAnnouncements result", { data, error });
             is_active: announcement.isActive ?? true,
             updated_at: new Date().toISOString(),
             include_in_backblast: announcement.includeInBackblast ?? false,
+            display_order: announcement.displayOrder ?? 0,
         })
         .eq("id", announcement.id)
         .eq("region_id", regionId)
@@ -1641,5 +1647,16 @@ function mapAnnouncementFromDb(row) {
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         includeInBackblast: row.include_in_backblast ?? false,
+        displayOrder: row.display_order ?? 999,
     };
+}
+
+export async function updateAnnouncementDisplayOrder(regionId, announcementId, displayOrder) {
+    const { error } = await supabase.rpc("reorder_announcement", {
+        target_region_id: regionId,
+        announcement_id: announcementId,
+        new_display_order: displayOrder,
+    });
+
+    if (error) throw error;
 }

@@ -140,6 +140,14 @@ export function generateBackblast (session, members) {
             parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
+        const announcementText = (workout.announcementText || "")
+            .replace(/^ANNOUNCEMENTS\s*/i, "")
+            .trim();
+
+        if (announcementText) {
+            parts.push(`ANNOUNCEMENTS\n\n${announcementText}`);
+        }
+
         if (session.notes) {
             parts.push(`Session Notes:\n${session.notes}`);
         }
