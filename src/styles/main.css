@@ -3347,3 +3347,7 @@ textarea {
     overflow: hidden;
 }
 
+.backblast-template-helper {
+    text-transform: none;
+    letter-spacing: normal;
+}

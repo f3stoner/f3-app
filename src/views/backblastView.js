@@ -133,11 +133,14 @@ export function renderBackblastView () {
     const templateTitle = document.createElement("h2");
     templateTitle.textContent = "Backblast Opener";
 
+    const DEFAULT_BACKBLAST_OPENER =
+    "{paxCount} PAX including YHC joined together in the gloom this morning at {aoName}.";
+
     const templateHelper = document.createElement("div");
-    templateHelper.classList.add("detail-label");
+    templateHelper.classList.add("detail-label", "backblast-template-helper");
     templateHelper.textContent = hasSavedOpener
         ? "Saved opener is active for generated backblasts."
-        : "No saved opener yet. Supports {paxCount}, {aonName}, {date}, and {qNames}.";
+        : "Available tags: {paxCount}, {aoName}, {date}, and {qNames}. Tags are case-sensitive.";
 
     const templateTextArea = document.createElement("textarea");
     templateTextArea.classList.add("preblast-textarea");
@@ -145,7 +148,7 @@ export function renderBackblastView () {
     templateTextArea.style.maxHeight = "160px";
     templateTextArea.style.overflowY = "auto";
     templateTextArea.value = state.customTemplates?.backblastIntro || "";
-    templateTextArea.placeholder = "{paxCount} PAX including YHC joined together in the gloom this morning at {aoName}.";
+    templateTextArea.placeholder = DEFAULT_BACKBLAST_OPENER;
     templateTextArea.style.display = "none";
 
 
@@ -154,13 +157,17 @@ export function renderBackblastView () {
     saveTemplateButton.style.display = "none";
 
     const toggleTemplateButton = document.createElement("button");
-    toggleTemplateButton.textContent = hasSavedOpener ? "Edit" : "Add";
+    toggleTemplateButton.textContent = hasSavedOpener ? "Edit" : "Customize";
 
     saveTemplateButton.addEventListener("click", async () => {
         try {
+            const openerText =
+                templateTextArea.value.trim() ||
+                DEFAULT_BACKBLAST_OPENER;
+
             const updatedTemplates = {
                 ...(state.customTemplates || {}),
-                backblastIntro: templateTextArea.value.trim(),
+                backblastIntro: openerText,
             };
 
             await updateCustomTemplates(state.currentUserId, updatedTemplates);
@@ -181,8 +188,10 @@ export function renderBackblastView () {
         templateTextArea.style.display = openerExpanded ? "block" : "none";
         saveTemplateButton.style.display = openerExpanded ? "inline-block" : "none";
 
-        toggleTemplateButton.textContent = openerExpanded ? "Hide" : (hasSavedOpener ? "Edit" : "Add");
-
+        toggleTemplateButton.textContent = openerExpanded
+        ? "Hide"
+        : (hasSavedOpener ? "Edit" : "Customize");
+        
         if (openerExpanded) {
             autoResize(templateTextArea);
         }
