@@ -228,6 +228,43 @@ export function renderWorkoutPlanner() {
         return wrap;
     }
 
+    function createBuildingBlocksPromo() {
+        const savedThangs = getSavedSectionsByType(
+            state.savedPlannerSections,
+            "thang",
+            state.currentUserId
+        );
+    
+        const card = document.createElement("div");
+        card.classList.add("section", "building-blocks-promo");
+    
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = "Workout Building Blocks";
+    
+        const text = document.createElement("div");
+        text.classList.add("stats-line");
+        text.textContent = savedThangs.length > 0
+            ? `${savedThangs.length} saved thang${savedThangs.length === 1 ? "" : "s"} available.`
+            : "Save reusable thangs and workout ideas for future BDs.";
+    
+        const button = document.createElement("button");
+        button.type = "button";
+        button.classList.add("secondary-button");
+        button.textContent = "Open Building Blocks";
+    
+        button.addEventListener("click", () => {
+            persistDraft();
+            state.activeTemplateHubSection = "planner";
+            state.currentView = "templateHub";
+            renderApp();
+        });
+    
+        card.append(heading, text, button);
+    
+        return card;
+    }
+
     function renderThangSections() {
         const wrap = document.createElement("div");
         wrap.classList.add("thang-sections-list");
@@ -663,6 +700,9 @@ export function renderWorkoutPlanner() {
         getWorkoutFieldLabel(state, "warmorama")
     );
 
+    const buildingBlocksPromo = createBuildingBlocksPromo();
+
+
     const thangsLabel = document.createElement("div");
     thangsLabel.textContent = getWorkoutFieldLabel(state, "thangs");
     thangsLabel.classList.add("detail-label");
@@ -855,6 +895,7 @@ export function renderWorkoutPlanner() {
         warmoramaSuggestions,
         warmoramaTemplateControls,
         warmoramaTimers,
+        buildingBlocksPromo,
         thangsLabel,
         thangSectionsList,
         finisherLabel,
