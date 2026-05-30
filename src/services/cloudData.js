@@ -884,13 +884,18 @@ export async function deleteSessionsInDateRangeForRegion(regionId, startDate, en
 export async function deleteSessionFromCloud(regionId, sessionId) {
     const oldSession = await getSessionById(sessionId).catch(() => null);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("sessions")
         .delete()
         .eq("id", sessionId)
-        .eq("region_id", regionId);
+        .eq("region_id", regionId)
+        .select("id");
 
     if (error) throw error;
+
+    if (!data || data.length === 0) {
+        throw new Error("Session delete failed: no matching session was deleted.");
+    }
 
     rebuildMemberStatsForMembers(
         regionId,
