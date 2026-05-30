@@ -108,10 +108,19 @@ export function renderBackblastView () {
             
             const weatherLine = `Weather: ${weather.temp ?? "--"}° • ${weather.condition || "Unknown"}${weather.windMph != null ? ` • Wind ${weather.windMph} mph` : ""}`;
 
+            const alreadyHasWeather = /^weather:/im.test(startingText);
+
+            if (alreadyHasWeather) {
+                state.hasAddedBackblastWeather = true;
+                return;
+            }
+
             state.draftBackblastText = insertWeatherAfterDate(startingText, weatherLine);
-                
+            state.hasAddedBackblastWeather = true;
+
             textArea.value = state.draftBackblastText;
             autoResize(textArea);
+
         } catch (error) {
             console.error("Failed to add weather to backblast:", error);
         }
@@ -357,22 +366,43 @@ export function renderBackblastView () {
                     sharePromise = navigator.share({ text });
                 }
 
-                sharePromise.catch((error) => {
-                    if (error.name === "AbortError") return;
+                sharePromise
+                    .then(async () => {
+                        const session = state.sessions.find(
+                            s => s.id === state.selectedSessionId
+                        );
 
-                    console.error("Share failed:", error);
-                    showToast("Share failed.", "error");
+                        if (!session) return;
 
-                    logActionFailure("shareBackblast", error, {
-                        sessionId: state.selectedSessionId || null,
-                        mediaFileCount: mediaFiles.length,
-                        imageFileCount: imageFiles.length,
-                        videoFileCount: videoFiles.length,
-                        sharedFileCount: filesToShare.length,
-                        usedFilesShare: Boolean(filesToShare.length && navigator.canShare?.({ files: filesToShare })),
+                        const updatedSession = {
+                            ...session,
+                            backblastText: state.draftBackblastText || "",
+                            backblastStatus: "shared",
+                            backblastPostedAt: new Date().toISOString(),
+                        };
+
+                        await updateSession(session.id, updatedSession);
+                        Object.assign(session, updatedSession);
+
+                        showToast("Backblast marked as shared.", "success");
+                    })
+                    .catch((error) => {
+                        if (error.name === "AbortError") return;
+
+                        console.error("Share failed:", error);
+                        showToast("Share failed.", "error");
+
+                        logActionFailure("shareBackblast", error, {
+                            sessionId: state.selectedSessionId || null,
+                            mediaFileCount: mediaFiles.length,
+                            imageFileCount: imageFiles.length,
+                            videoFileCount: videoFiles.length,
+                            sharedFileCount: filesToShare.length,
+                            usedFilesShare: Boolean(filesToShare.length && navigator.canShare?.({ files: filesToShare })),
+                        });
                     });
                 });
-        });
+
     }
 
     const doneButton = document.createElement("button");

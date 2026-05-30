@@ -11,7 +11,7 @@ import {
     loadRegionData,
     loadRecentMemberActivity,
  } from "../services/cloudData.js";
-import { replacePersistedData } from "../services/appData.js";
+import { replacePersistedData, updateSession } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
 import { showToast } from "../utils/toast.js";
@@ -280,9 +280,11 @@ export function renderDashboard() {
                 const isCurrentUserQ = effectiveQIds.includes(state.currentUserMemberId);
                 const isRecent = session.date >= cutoff && session.date <= today;
                 const isNotPosted =
-                    !session.backblastText &&
-                    session.backblastStatus !== "posted_elsewhere";
-    
+                    !session.backblastPostedAt &&
+                    session.backblastStatus !== "posted" &&
+                    session.backblastStatus !== "shared" &&
+                    session.backblastStatus !== "posted_elsewhere";    
+
                 return isCurrentUserQ && isRecent && isNotPosted;
             })
             .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
@@ -846,13 +848,25 @@ export function renderDashboard() {
         alreadyPostedButton.classList.add("secondary-button");
         alreadyPostedButton.textContent = "Already Posted";
 
-        alreadyPostedButton.addEventListener("click", event => {
+        alreadyPostedButton.addEventListener("click", async event => {
             event.stopPropagation();
 
-            session.backblastStatus = "posted_elsewhere";
+            const updatedSession = {
+                ...session,
+                backblastStatus: "posted_elsewhere",
+                backblastPostedAt: new Date().toISOString(),
+            };
 
-            showToast("Backblast marked as posted.", "success");
-            renderApp();
+            try {
+                await updateSession(session.id, updatedSession);
+                Object.assign(session, updatedSession);
+
+                showToast("Backblast marked as posted.", "success");
+                renderApp();
+            } catch (error) {
+                console.error("Failed to mark backblast as posted:", error);
+                showToast("Failed to update backblast status.", "error");
+            }
         });
     
         card.addEventListener("click", () => {

@@ -66,6 +66,8 @@ export async function loadRecentSessions(regionId, days = 180) {
             created_at,
             created_by_user_id,
             backblast_text,
+            backblast_status,
+            backblast_posted_at,
             unresolved_pax,
             weather_snapshot
         `)
@@ -98,6 +100,8 @@ export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
             created_at,
             created_by_user_id,
             backblast_text,
+            backblast_status,
+            backblast_posted_at,
             unresolved_pax,
             weather_snapshot
         `)
@@ -448,6 +452,8 @@ export function mapSessionFromDb(row) {
         createdAt: row.created_at,
         createdByUserId: row.created_by_user_id || null,
         backblastText: row.backblast_text || "",
+        backblastStatus: row.backblast_status || null,
+        backblastPostedAt: row.backblast_posted_at || null,
         unresolvedPax: row.unresolved_pax || [],
         weatherSnapshot: row.weather_snapshot || null,
     };
@@ -629,6 +635,8 @@ export async function insertSession(regionId, session) {
                 created_at: session.createdAt,
                 created_by_user_id: session.createdByUserId,
                 backblast_text: session.backblastText || "",
+                backblast_status: session.backblastStatus || null,
+                backblastPostedAt: session.backblast_posted_at || null,
                 unresolved_pax: session.unresolvedPax || [],
                 weather_snapshot: session.weatherSnapshot || null,
             },
@@ -681,6 +689,8 @@ export async function updateSessionInCloud(regionId, session) {
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
             created_at: session.createdAt,
             backblast_text: session.backblastText || "",
+            backblast_status: session.backblastStatus || null,
+            backblast_posted_at: session.backblastPostedAt || null,
             unresolved_pax: session.unresolvedPax || [],
             weather_snapshot: session.weatherSnapshot || null,
         })
