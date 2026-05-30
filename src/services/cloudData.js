@@ -636,7 +636,7 @@ export async function insertSession(regionId, session) {
                 created_by_user_id: session.createdByUserId,
                 backblast_text: session.backblastText || "",
                 backblast_status: session.backblastStatus || null,
-                backblastPostedAt: session.backblastPostedAt || null,
+                backblast_posted_at: session.backblastPostedAt || null,
                 unresolved_pax: session.unresolvedPax || [],
                 weather_snapshot: session.weatherSnapshot || null,
             },
