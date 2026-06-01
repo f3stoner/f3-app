@@ -829,23 +829,30 @@ export function renderWorkoutPlanner() {
                 await addPlannedWorkout(draftWorkout);
             }
     
-            const destinationView = draftWorkout.isShared ? "plannedWorkoutList" : "myPlanner";
-            const successMessage = draftWorkout.isShared
-                ? "Workout shared to Workout Library."
-                : "Saved to My Planner.";
-    
-            showToast(successMessage, "success");
-    
-            if (state.returnToViewAfterPlanner) {
-                returnAfterPlanner(destinationView);
-                return;
-            }
-    
-            state.draftPlannedWorkout = null;
-            state.currentView = destinationView;
-            localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
+            const successMessage = finalized
+            ? "Workout finalized and saved."
+            : "Draft saved.";
+        
+        showToast(successMessage, "success");
+        
+        state.draftPlannedWorkout = null;
+        localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
+        
+        if (finalized) {
+            state.editingPlannedWorkoutId = null;
+            state.returnToViewAfterPlanner = null;
+            state.returnToLaunchModeAfterPlanner = null;
+            state.plannedWorkoutLaunchMode = null;
+            state.currentView = "dashboard";
             renderApp();
-    
+            return;
+        }
+        
+        // Save Draft should preserve planner context
+        state.editingPlannedWorkoutId = draftWorkout.id;
+        state.currentView = "workoutPlanner";
+        renderApp();
+
         } catch (error) {
             console.error("Failed to save workout:", error);
             showToast("Failed to save workout.", "error");
@@ -864,7 +871,7 @@ export function renderWorkoutPlanner() {
             saveButton.disabled = false;
             finalizeButton.disabled = false;
             saveButton.textContent = "Save Draft";
-            finalizeButton.textContent = "Finalize & Save";
+            finalizeButton.textContent = "Finalize BD";
         }
     }
     
