@@ -631,6 +631,7 @@ function normalizeSessionForSave(session) {
     const rawQIds = session.qIds || (session.qId ? [session.qId] : []);
     const qIds = [...new Set(session.qIds || [])].filter(Boolean);
     const attendeeIds = [...new Set([...(session.attendeeIds || []), ...qIds])].filter(Boolean);
+    const ao = state.aos.find(ao => ao.name === session.aoName);
 
     return {
         ...session,
@@ -640,6 +641,7 @@ function normalizeSessionForSave(session) {
         qIds,
         fngs: session.fngs || [],
         notes: session.notes || "",
+        startTime: session.startTime || ao?.time || null,
     };
 }
 
@@ -664,7 +666,8 @@ function findPotentialDuplicateSession(session) {
     return state.sessions.find(existingSession =>
         existingSession.id !== session.id &&
         existingSession.date === session.date &&
-        existingSession.aoName === session.aoName
+        existingSession.aoName === session.aoName &&
+        (existingSession.startTime || "") === (session.startTime || "")
     ) || null;
 }
 

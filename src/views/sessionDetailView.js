@@ -350,6 +350,7 @@ export function renderSessionDetail() {
     const paxSection = createDetailSection(`PAX (${paxNamesArray.length})`, paxNames);
     const fngSection = createFngSection();
     const workoutSection = createWorkoutSection();
+    workoutSection.classList.add("session-detail-workout-section");
     const notesSection = createDetailSection("Notes", notesText);
 
     const backblastButton = document.createElement("button");

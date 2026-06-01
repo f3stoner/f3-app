@@ -700,6 +700,9 @@ export function renderPlannedWorkoutDetail() {
         workout.announcementText || "-",
         { hideIfEmpty: isExecutionMode }
     );
+    
+    announcementSection?.classList.add("workout-announcement-section");
+    
     const visibilitySection = createDetailSection(
         "Visibility",
         workout.isShared ? "Workout Library" : "My Planner"
