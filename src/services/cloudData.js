@@ -456,6 +456,7 @@ export function mapSessionFromDb(row) {
         backblastPostedAt: row.backblast_posted_at || null,
         unresolvedPax: row.unresolved_pax || [],
         weatherSnapshot: row.weather_snapshot || null,
+        startTime: row.start_time || null,
     };
 }
 
@@ -639,6 +640,7 @@ export async function insertSession(regionId, session) {
                 backblast_posted_at: session.backblastPostedAt || null,
                 unresolved_pax: session.unresolvedPax || [],
                 weather_snapshot: session.weatherSnapshot || null,
+                start_time: session.startTime || null,
             },
         ])
         .select()
@@ -693,6 +695,7 @@ export async function updateSessionInCloud(regionId, session) {
             backblast_posted_at: session.backblastPostedAt || null,
             unresolved_pax: session.unresolvedPax || [],
             weather_snapshot: session.weatherSnapshot || null,
+            start_time: session.startTime || null,
         })
         .eq("id", session.id)
         .select()
