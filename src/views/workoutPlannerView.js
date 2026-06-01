@@ -824,34 +824,40 @@ export function renderWorkoutPlanner() {
                 };
             
                 await updatePlannedWorkout(workoutId, workoutToSave);
-                state.editingPlannedWorkoutId = null;
             } else {
                 await addPlannedWorkout(draftWorkout);
+                isEditing = true;
             }
     
-            const successMessage = finalized
-            ? "Workout finalized and saved."
-            : "Draft saved.";
-        
-        showToast(successMessage, "success");
-        
-        state.draftPlannedWorkout = null;
-        localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
-        
-        if (finalized) {
+            if (!finalized) {
+                showToast("Draft saved.", "success");
+            
+                state.editingPlannedWorkoutId = draftWorkout.id;
+                state.draftPlannedWorkout = { ...draftWorkout };
+            
+                localStorage.setItem(
+                    SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+                    JSON.stringify(state.draftPlannedWorkout)
+                );
+            
+                renderApp();
+                return;
+            }
+            
+            showToast("Workout finalized and saved.", "success");
+            
+            state.draftPlannedWorkout = null;
             state.editingPlannedWorkoutId = null;
+            
+            localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
+            
             state.returnToViewAfterPlanner = null;
             state.returnToLaunchModeAfterPlanner = null;
             state.plannedWorkoutLaunchMode = null;
             state.currentView = "dashboard";
+            
             renderApp();
             return;
-        }
-        
-        // Save Draft should preserve planner context
-        state.editingPlannedWorkoutId = draftWorkout.id;
-        state.currentView = "workoutPlanner";
-        renderApp();
 
         } catch (error) {
             console.error("Failed to save workout:", error);
