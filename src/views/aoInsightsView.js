@@ -63,6 +63,50 @@ function createInsightsRow({ title, subtitle, value, onClick, tone }) {
     return row;
 }
 
+function createHealthSummary(insights) {
+    const card = document.createElement("div");
+    card.classList.add("section", "insights-summary-card");
+
+    const eyebrow = document.createElement("div");
+    eyebrow.classList.add("stat-label");
+    eyebrow.textContent = "AO Health";
+
+    const title = document.createElement("div");
+    title.classList.add("stat-value");
+    title.textContent = insights.healthStatus;
+
+    const subtitle = document.createElement("div");
+    subtitle.classList.add("detail-value");
+    subtitle.textContent = insights.healthSubtitle;
+
+    const bullets = document.createElement("ul");
+    bullets.classList.add("insights-summary-list");
+
+    const summaryItems = [
+        `${insights.totalSessions} sessions this month`,
+        `${insights.averageAttendance} average attendance`,
+        `${insights.uniqueQs} unique Qs`,
+    ];
+
+    if (insights.topThreeQShare) {
+        summaryItems.push(`Top 3 Qs led ${insights.topThreeQShare}% of sessions`);
+    }
+
+    if (insights.potentialNewQs.length > 0) {
+        summaryItems.push(`${insights.potentialNewQs.length} potential future Qs identified`);
+    }
+
+    summaryItems.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        bullets.appendChild(li);
+    });
+
+    card.append(eyebrow, title, subtitle, bullets);
+
+    return card;
+}
+
 function getMemberName(memberId) {
     const member = state.members.find(m => m.id === memberId);
     return member?.paxName || "Unknown";
@@ -159,15 +203,6 @@ function getPotentialNewQs({ aoSessions, allAoSessions }) {
             postCount,
         }))
         .sort((a, b) => b.postCount - a.postCount);
-}
-
-function formatInsightsRangeLabel({ startDate, endDate }) {
-    if (!startDate || !endDate) return "";
-
-    const start = formatDate(startDate);
-    const end = formatDate(endDate);
-
-    return start === end ? start : `${start} - ${end}`;
 }
 
 function getMonthStart(dateString) {
@@ -454,6 +489,62 @@ function buildAoInsights({ aoName, startDate, endDate }) {
     };
 }
 
+function createCollapsibleSection({
+    title,
+    content,
+    defaultExpanded = false,
+    badge = null,
+}) {
+    const section = document.createElement("div");
+    section.classList.add("section");
+
+    const header = document.createElement("button");
+    header.type = "button";
+    header.classList.add("collapsible-header");
+
+    const left = document.createElement("div");
+    left.classList.add("collapsible-header-left");
+
+    const titleEl = document.createElement("div");
+    titleEl.classList.add("insights-section-title");
+    titleEl.textContent = title;
+
+    left.appendChild(titleEl);
+
+    if (badge !== null) {
+        const badgeEl = document.createElement("span");
+        badgeEl.classList.add("section-badge");
+        badgeEl.textContent = badge;
+        left.appendChild(badgeEl);
+    }
+
+    const arrow = document.createElement("span");
+    arrow.classList.add("collapsible-arrow");
+    arrow.textContent = defaultExpanded ? "▼" : "▶";
+
+    header.append(left, arrow);
+
+    const body = document.createElement("div");
+    body.classList.add("collapsible-body");
+
+    if (!defaultExpanded) {
+        body.style.display = "none";
+    }
+
+    body.appendChild(content);
+
+    header.addEventListener("click", () => {
+        const expanded = body.style.display !== "none";
+
+        body.style.display = expanded ? "none" : "";
+        arrow.textContent = expanded ? "▶" : "▼";
+    });
+
+    section.append(header, body);
+
+    return section;
+}
+
 function createSection(title, content) {
     const section = document.createElement("div");
     section.classList.add("section");
@@ -500,7 +591,11 @@ export function renderAoInsightsView() {
         onBack: () => navigateTo("regionInsights"),
     });
 
-    const insightsNav = createInsightsNav(insights);
+    const stickyInsightsNav = document.createElement("div");
+    stickyInsightsNav.classList.add("sticky-insights-nav");
+    stickyInsightsNav.appendChild(createInsightsNav(insights));
+
+    const healthSummary = createHealthSummary(insights);
 
     const overviewGrid = document.createElement("div");
     overviewGrid.classList.add("stats-grid");
@@ -555,7 +650,11 @@ export function renderAoInsightsView() {
         value: insights.attendanceStability.label,
     }));
 
-    const leadershipSection = createSection("Leadership Health", leadershipList);
+    const leadershipSection = createCollapsibleSection({
+        title: "Leadership Health",
+        content: leadershipList,
+        defaultExpanded: true,
+    });
 
     const qRotationList = document.createElement("div");
     qRotationList.classList.add("insights-list");
@@ -579,7 +678,11 @@ export function renderAoInsightsView() {
         });
     }
 
-    const qRotationSection = createSection("Q Rotation", qRotationList);
+    const qRotationSection = createCollapsibleSection({
+        title: "Q Rotation",
+        content: qRotationList,
+        badge: insights.qRotation.length,
+    });
 
     const pipelineList = document.createElement("div");
     pipelineList.classList.add("insights-list");
@@ -603,7 +706,11 @@ export function renderAoInsightsView() {
         });
     }
 
-    const pipelineSection = createSection("Leadership Pipeline", pipelineList);
+    const pipelineSection = createCollapsibleSection({
+        title: "Leadership Pipeline",
+        content: pipelineList,
+        badge: insights.potentialNewQs.length,
+    });
 
     const recentList = document.createElement("div");
     recentList.classList.add("insights-list");
@@ -631,19 +738,18 @@ export function renderAoInsightsView() {
         recentList.appendChild(empty);
     }
 
-    const recentSection = createSection("Recent Sessions", recentList);
-
-    const backButton = document.createElement("button");
-    backButton.textContent = "Back to Region Insights";
-    backButton.addEventListener("click", () => {
-        navigateTo("regionInsights");
+    const recentSection = createCollapsibleSection({
+        title: "Recent Sessions",
+        content: recentList,
+        badge: insights.recentSessions.length,
     });
 
     const nav = createGlobalNav();
 
     app.append(
         header,
-        insightsNav,
+        stickyInsightsNav,
+        healthSummary,
         overviewSection,
         leadershipSection,
         qRotationSection,
