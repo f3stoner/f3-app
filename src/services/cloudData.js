@@ -330,6 +330,7 @@ export async function loadRegionData(regionId) {
         adminFlagResult,
         savedPlannerSectionResult,
         announcementResult,
+        memberStatsResult,
     ] = await Promise.all([
         timed(
             "loadRegionData:region",
@@ -375,6 +376,8 @@ export async function loadRegionData(regionId) {
         ),
 
         timed("loadRegionData:announcements", loadAnnouncements(regionId)),
+
+        timed("loadRegionData:memberStats", loadRegionMemberStats(regionId)),
     ]);
 
     const backblastLinksBySessionId = new Map();
@@ -408,6 +411,10 @@ export async function loadRegionData(regionId) {
             .map(mapSavedPlannerSectionFromDb),
         workoutFieldLabels: regionResult.data.workout_field_labels || {},
         announcements: announcementResult,
+        memberStats: memberStatsResult,
+        memberStatsByMemberId: Object.fromEntries(
+            memberStatsResult.map(stats => [stats.memberId, stats])
+        ),
     };
 }
 
@@ -1677,4 +1684,49 @@ export async function updateAnnouncementDisplayOrder(regionId, announcementId, d
     });
 
     if (error) throw error;
+}
+
+export async function loadRegionMemberStats(regionId) {
+    if (!regionId) return [];
+
+    const pageSize = 1000;
+    let from = 0;
+    let allStats = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("member_stats")
+            .select("*")
+            .eq("region_id", regionId)
+            .range(from, from + pageSize - 1);
+
+        if (error) {
+            console.warn("Failed to load member_stats:", error);
+            return [];
+        }
+
+        if (!data || data.length === 0) break;
+
+        allStats = allStats.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return allStats.map(mapMemberStatsFromDb);
+}
+
+function mapMemberStatsFromDb(row) {
+    return {
+        memberId: row.member_id,
+        regionId: row.region_id,
+        posts: row.total_posts ?? 0,
+        qs: row.total_qs ?? 0,
+        fngsEh: row.fngs_eh ?? 0,
+        favoriteAo: row.favorite_ao ?? null,
+        lastPostDate: row.last_post_date ?? null,
+        firstPostDate: row.first_post_date ?? null,
+        lastQDate: row.last_q_date ?? null,
+    };
 }

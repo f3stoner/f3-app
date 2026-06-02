@@ -2708,16 +2708,29 @@ details.section {
     background: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: flex-end;
+    overflow-y: auto;
 }
 
 .main-menu-drawer {
     width: min(82vw, 340px);
-    min-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     background: var(--surface);
     border-left: 1px solid var(--border);
     padding: 1rem;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
     box-shadow: -12px 0 30px rgba(0, 0, 0, 0.45);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+body.menu-open {
+    overflow: hidden;
+}
+
+body.menu-open .global-nav {
+    display: none;
 }
 
 .main-menu-header {
@@ -2742,11 +2755,6 @@ details.section {
     text-align: left;
     justify-content: flex-start;
     min-height: 48px;
-}
-
-body.menu-open {
-    overflow: hidden;
-    touch-action: none;
 }
 
 .dashboard-primary-actions {

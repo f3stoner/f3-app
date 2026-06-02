@@ -109,6 +109,8 @@ export const state = {
     isMainMenuOpen: false,
     announcements: [],
     allAnnouncements: [],
+    memberStats: [],
+    memberStatsByMemberId: {},
 };
 
 state.runHistoricImport = async function () {
