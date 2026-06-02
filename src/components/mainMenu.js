@@ -3,6 +3,39 @@ import { renderApp } from "../index.js";
 import { navigateTo } from "../utils/navigation.js";
 import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
 
+function getMonthStart(dateString) {
+    const date = new Date(`${dateString}T00:00:00`);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+function getMonthEnd(dateString) {
+    const date = new Date(`${dateString}T00:00:00`);
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0)
+        .toISOString()
+        .slice(0, 10);
+}
+
+function getDefaultAoInsightsSelection() {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const memberStats =
+        state.memberStatsByMemberId?.[state.currentMemberId];
+
+    const favoriteAo = memberStats?.favoriteAo;
+
+    const fallbackAo = state.aos
+        .filter(ao => ao.isActive !== false)
+        .map(ao => ao.name)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b))[0];
+
+    return {
+        aoName: favoriteAo || fallbackAo,
+        startDate: getMonthStart(today),
+        endDate: getMonthEnd(today),
+    };
+}
+
 export function openMainMenu() {
     state.isMainMenuOpen = true;
     document.body.classList.add("menu-open");
@@ -62,6 +95,7 @@ export function createMainMenu() {
         ...(canViewRegionInsights
             ? [
                 { label: "Region Insights", view: "regionInsights" },
+                { label: "AO Insights", view: "aoInsights" },
             ]
             : []),
 
@@ -95,6 +129,11 @@ export function createMainMenu() {
         } else {
             button.addEventListener("click", () => {
                 closeMainMenu();
+
+                if (item.view === "aoInsights" && !state.selectedAoInsights) {
+                    state.selectedAoInsights = getDefaultAoInsightsSelection();
+                }
+
                 navigateTo(item.view);
             });
         }
@@ -116,3 +155,4 @@ export function createMainMenu() {
 
     return overlay;
 }
+

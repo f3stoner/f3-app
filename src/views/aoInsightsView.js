@@ -4,6 +4,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { formatDate } from "../utils/date.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { loadAoInsightMonths, loadAoInsightSessions } from "../services/cloudData.js";
+import { goBack } from "../utils/navigation.js";
 
 function normalizeAoName(name = "") {
     return name
@@ -496,7 +497,7 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
     const allAoSessions = state.sessions.filter(session => {
         return normalizeAoName(session.aoName) === normalizeAoName(aoName);
     });
-    
+
     console.log("AO INSIGHTS DEBUG", {
         selected: { aoName, startDate, endDate },
         allSessionsForAo: state.sessions
@@ -741,7 +742,7 @@ export async function renderAoInsightsView() {
     const header = createAppHeader({
         title: "AO Insights",
         showBack: true,
-        onBack: () => navigateTo("regionInsights"),
+        fallbackView: "regionInsights",
     });
 
     const stickyInsightsNav = document.createElement("div");
