@@ -3,6 +3,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { formatDate } from "../utils/date.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { loadAoInsightMonths, loadAoInsightSessions } from "../services/cloudData.js";
 
 function normalizeAoName(name = "") {
     return name
@@ -65,7 +66,11 @@ function createInsightsRow({ title, subtitle, value, onClick, tone }) {
 
 function createHealthSummary(insights) {
     const card = document.createElement("div");
-    card.classList.add("section", "insights-summary-card");
+    card.classList.add(
+        "section",
+        "insights-summary-card",
+        `insights-summary-${insights.healthStatus.toLowerCase().replace(/\s+/g, "-")}`
+    );
 
     const eyebrow = document.createElement("div");
     eyebrow.classList.add("stat-label");
@@ -79,30 +84,11 @@ function createHealthSummary(insights) {
     subtitle.classList.add("detail-value");
     subtitle.textContent = insights.healthSubtitle;
 
-    const bullets = document.createElement("ul");
-    bullets.classList.add("insights-summary-list");
-
-    const summaryItems = [
-        `${insights.totalSessions} sessions this month`,
-        `${insights.averageAttendance} average attendance`,
-        `${insights.uniqueQs} unique Qs`,
-    ];
-
-    if (insights.topThreeQShare) {
-        summaryItems.push(`Top 3 Qs led ${insights.topThreeQShare}% of sessions`);
-    }
-
-    if (insights.potentialNewQs.length > 0) {
-        summaryItems.push(`${insights.potentialNewQs.length} potential future Qs identified`);
-    }
-
-    summaryItems.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        bullets.appendChild(li);
-    });
-
-    card.append(eyebrow, title, subtitle, bullets);
+    card.append(
+        eyebrow,
+        title,
+        subtitle
+    );
 
     return card;
 }
@@ -158,23 +144,23 @@ function getAttendanceStability(sessions) {
     const standardDeviation = Math.sqrt(variance);
     const roundedDeviation = Math.round(standardDeviation * 10) / 10;
 
-    if (standardDeviation <= 2) {
+    if (standardDeviation <= 3) {
         return {
-            label: "Stable",
+            label: "Consistent",
             subtitle: `Attendance usually stays within about ${roundedDeviation} PAX.`,
         };
     }
-
-    if (standardDeviation <= 4) {
+    
+    if (standardDeviation <= 6) {
         return {
-            label: "Variable",
-            subtitle: `Attendance swings by about ${roundedDeviation} PAX.`,
+            label: "Normal Variation",
+            subtitle: `Attendance varies by about ${roundedDeviation} PAX, which is normal for most AOs.`,
         };
     }
-
+    
     return {
-        label: "Volatile",
-        subtitle: `Attendance swings heavily, about ${roundedDeviation} PAX.`,
+        label: "Wide Swings",
+        subtitle: `Attendance is swinging by about ${roundedDeviation} PAX from session to session.`,
     };
 }
 
@@ -258,6 +244,159 @@ function getAdjacentAoName(currentAoName, offset) {
     return aoNames[nextIndex];
 }
 
+function getAvailableMonthsForAo(aoName) {
+    const monthKeys = new Set();
+
+    state.sessions.forEach(session => {
+        if (!session.date || !session.aoName) return;
+
+        const matchesAo =
+            normalizeAoName(session.aoName) === normalizeAoName(aoName);
+
+        if (!matchesAo) return;
+
+        monthKeys.add(session.date.slice(0, 7)); // YYYY-MM
+    });
+
+    return [...monthKeys]
+        .sort((a, b) => b.localeCompare(a)); // newest first
+}
+
+function formatMonthKey(monthKey) {
+    return formatMonthLabel(`${monthKey}-01`);
+}
+
+async function openMonthPicker(insights) {
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay", "bottom-sheet-overlay");
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal", "bottom-sheet-modal");
+
+    const title = document.createElement("h2");
+    title.textContent = "Select Month";
+
+    const helper = document.createElement("div");
+    helper.classList.add("stats-line");
+    helper.textContent = "Loading months...";
+
+    const list = document.createElement("div");
+    list.classList.add("insights-picker-list");
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.classList.add("secondary-button");
+    closeButton.textContent = "Cancel";
+    closeButton.addEventListener("click", () => overlay.remove());
+
+    overlay.addEventListener("click", event => {
+        if (event.target === overlay) {
+            overlay.remove();
+        }
+    });
+
+    modal.append(title, helper, list, closeButton);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    try {
+        const currentMonthKey = insights.startDate.slice(0, 7);
+
+        const monthKeys = await loadAoInsightMonths({
+            regionId: state.currentRegionId,
+            aoName: insights.aoName,
+        });
+
+        helper.textContent = monthKeys.length
+            ? "Showing months with logged sessions."
+            : "No logged months found for this AO.";
+
+        list.textContent = "";
+
+        monthKeys.forEach(monthKey => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.classList.add("insights-picker-option");
+            button.textContent = formatMonthKey(monthKey);
+
+            if (monthKey === currentMonthKey) {
+                button.classList.add("active");
+            }
+
+            button.addEventListener("click", () => {
+                const newStartDate = `${monthKey}-01`;
+
+                state.selectedAoInsights = {
+                    ...state.selectedAoInsights,
+                    startDate: getMonthStart(newStartDate),
+                    endDate: getMonthEnd(newStartDate),
+                };
+
+                overlay.remove();
+                renderAoInsightsView();
+            });
+
+            list.appendChild(button);
+        });
+    } catch (error) {
+        console.error("Failed to load AO insight months", error);
+        helper.textContent = "Could not load months.";
+    }
+}
+
+function openAoPicker(currentAoName) {
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay", "bottom-sheet-overlay");
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal", "bottom-sheet-modal");
+
+    const title = document.createElement("h2");
+    title.textContent = "Select AO";
+
+    const list = document.createElement("div");
+    list.classList.add("insights-picker-list");
+
+    getAoNames().forEach(aoName => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.classList.add("insights-picker-option");
+        button.textContent = aoName;
+
+        if (normalizeAoName(aoName) === normalizeAoName(currentAoName)) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => {
+            state.selectedAoInsights = {
+                ...state.selectedAoInsights,
+                aoName,
+            };
+
+            overlay.remove();
+            renderAoInsightsView();
+        });
+
+        list.appendChild(button);
+    });
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.classList.add("secondary-button");
+    closeButton.textContent = "Cancel";
+    closeButton.addEventListener("click", () => overlay.remove());
+
+    overlay.addEventListener("click", event => {
+        if (event.target === overlay) {
+            overlay.remove();
+        }
+    });
+
+    modal.append(title, list, closeButton);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
+
 function createInsightsNav(insights) {
     const nav = document.createElement("div");
     nav.classList.add("insights-nav");
@@ -282,6 +421,9 @@ function createInsightsNav(insights) {
     aoTitle.type = "button";
     aoTitle.classList.add("insights-nav-title");
     aoTitle.textContent = insights.aoName.toUpperCase();
+    aoTitle.addEventListener("click", () => {
+        openAoPicker(insights.aoName);
+    });
 
     const nextAoButton = document.createElement("button");
     nextAoButton.type = "button";
@@ -321,6 +463,9 @@ function createInsightsNav(insights) {
     monthTitle.type = "button";
     monthTitle.classList.add("insights-nav-title", "insights-nav-title-secondary");
     monthTitle.textContent = formatMonthLabel(insights.startDate);
+    monthTitle.addEventListener("click", () => {
+        openMonthPicker(insights);
+    });
 
     const nextMonthButton = document.createElement("button");
     nextMonthButton.type = "button";
@@ -345,15 +490,13 @@ function createInsightsNav(insights) {
     return nav;
 }
 
-function buildAoInsights({ aoName, startDate, endDate }) {
+function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions = null }) {
+    const sessions = loadedSessions || [];
+
     const allAoSessions = state.sessions.filter(session => {
         return normalizeAoName(session.aoName) === normalizeAoName(aoName);
     });
     
-    const sessions = allAoSessions.filter(session => {
-        return session.date >= startDate && session.date <= endDate;
-    });
-
     console.log("AO INSIGHTS DEBUG", {
         selected: { aoName, startDate, endDate },
         allSessionsForAo: state.sessions
@@ -419,6 +562,8 @@ function buildAoInsights({ aoName, startDate, endDate }) {
         allAoSessions,
     });
 
+    const strongEmergingQs = potentialNewQs.filter(member => member.postCount >= 5);
+
     const topQ = qRotation[0] || null;
     const uniqueQs = qRotation.length;
 
@@ -459,12 +604,9 @@ function buildAoInsights({ aoName, startDate, endDate }) {
     } else if (leadershipRisk === "High") {
         healthStatus = "At Risk";
         healthSubtitle = "Leadership is concentrated and may create burnout risk.";
-    } else if (attendanceStability.label === "Volatile") {
-        healthStatus = "Watch";
-        healthSubtitle = "Attendance is swinging heavily from session to session.";
-    } else if (potentialNewQs.length >= 3) {
+    } else if (strongEmergingQs.length >= 2) {
         healthStatus = "Opportunity";
-        healthSubtitle = "Several consistent PAX may be ready to step into Qing.";
+        healthSubtitle = "Multiple regular PAX may be ready to step into Qing.";
     }
 
     return {
@@ -486,6 +628,7 @@ function buildAoInsights({ aoName, startDate, endDate }) {
         healthStatus,
         healthSubtitle,
         recentSessions,
+        strongEmergingQs,
     };
 }
 
@@ -558,7 +701,7 @@ function createSection(title, content) {
     return section;
 }
 
-export function renderAoInsightsView() {
+export async function renderAoInsightsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -583,7 +726,17 @@ export function renderAoInsightsView() {
         return;
     }
 
-    const insights = buildAoInsights(selected);
+    const selectedSessions = await loadAoInsightSessions({
+        regionId: state.currentRegionId,
+        aoName: selected.aoName,
+        startDate: selected.startDate,
+        endDate: selected.endDate,
+    });
+    
+    const insights = buildAoInsights({
+        ...selected,
+        sessions: selectedSessions,
+    });
 
     const header = createAppHeader({
         title: "AO Insights",
@@ -611,13 +764,6 @@ export function renderAoInsightsView() {
 
     const leadershipList = document.createElement("div");
     leadershipList.classList.add("insights-list");
-
-    leadershipList.appendChild(createInsightsRow({
-        title: "AO Health",
-        subtitle: insights.healthSubtitle,
-        value: insights.healthStatus,
-        tone: insights.healthStatus.toLowerCase().replace(/\s+/g, "-"),
-    }));
 
     leadershipList.appendChild(createInsightsRow({
         title: "Leadership Risk",
@@ -648,6 +794,14 @@ export function renderAoInsightsView() {
         title: "Attendance Stability",
         subtitle: insights.attendanceStability.subtitle,
         value: insights.attendanceStability.label,
+    }));
+
+    leadershipList.appendChild(createInsightsRow({
+        title: "Emerging Qs",
+        subtitle: insights.strongEmergingQs.length
+            ? "Regular PAX who may be ready to step into Qing"
+            : "No strong emerging Q candidates identified this month.",
+        value: insights.strongEmergingQs.length,
     }));
 
     const leadershipSection = createCollapsibleSection({
@@ -707,7 +861,7 @@ export function renderAoInsightsView() {
     }
 
     const pipelineSection = createCollapsibleSection({
-        title: "Leadership Pipeline",
+        title: "Emerging Q Candidates",
         content: pipelineList,
         badge: insights.potentialNewQs.length,
     });
