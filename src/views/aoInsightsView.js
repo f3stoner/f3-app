@@ -704,7 +704,6 @@ function createSection(title, content) {
 
 export async function renderAoInsightsView() {
     const app = document.getElementById("app");
-    app.textContent = "";
 
     const selected = state.selectedAoInsights;
 
@@ -900,6 +899,8 @@ export async function renderAoInsightsView() {
     });
 
     const nav = createGlobalNav();
+
+    app.textContent = "";
 
     app.append(
         header,
