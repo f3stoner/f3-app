@@ -75,6 +75,12 @@ function setupQSlotRealtime() {
     );
 }
 
+function patchQSlotInState(updatedSlot) {
+    state.qSlots = state.qSlots.map(slot =>
+        slot.id === updatedSlot.id ? { ...slot, ...updatedSlot } : slot
+    );
+}
+
 export function renderQSignupView() {
     const isGeneratingQSlots = Boolean(state.isGeneratingQSlots);
 
@@ -605,12 +611,13 @@ export function renderQSignupView() {
 
             const ao = state.aos.find(a => a.id === slot.aoId);
 
-            await updateQSlotInCloud(activeRegionId, {
+            const updatedSlot = {
                 ...slot,
                 qUserId: state.currentUserMemberId,
-            });
+            };
             
-            await refreshQSlotsFromCloud();
+            await updateQSlotInCloud(activeRegionId, updatedSlot);
+            patchQSlotInState(updatedSlot);
 
             logAppEvent({
                 type: APP_EVENTS.Q_SLOT_CLAIMED,
@@ -654,12 +661,15 @@ export function renderQSignupView() {
                 return;
             }
 
-            await updateQSlotInCloud(activeRegionId, {
+            const updatedSlot = {
                 ...slot,
                 qUserId: memberId,
-            });
-            
-            await refreshQSlotsFromCloud();
+            };
+
+            await updateQSlotInCloud(activeRegionId, updatedSlot);
+
+            patchQSlotInState(updatedSlot);
+
             renderApp();
         } catch (error) {
             console.error("failed to assign Q slot:", error);
@@ -925,7 +935,12 @@ export function renderQSignupView() {
                     event.stopPropagation();
                     try {
                         await unclaimQSlot(slot);
-                        await refreshQSlotsFromCloud();
+
+                        patchQSlotInState({
+                            ...slot,
+                            qUserId: null,
+                        });
+
                         renderApp();
                     } catch (error) {
                         console.error("Failed to unclaim Q slot:", error);
@@ -980,7 +995,12 @@ export function renderQSignupView() {
                     
                     try{
                         await unclaimQSlot(slot, { bypassDropGuard: true });
-                        await refreshQSlotsFromCloud();
+
+                        patchQSlotInState({
+                            ...slot,
+                            qUserId: null,
+                        });
+                        
                         renderApp();
                     } catch (error) {
                         console.error("Failed to clear Q slot:", error);
