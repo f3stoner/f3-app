@@ -13,6 +13,7 @@ import { normalizeThangSections, serializeThangSections } from "../utils/thangs.
 import { searchExercises } from "../utils/exerciseSearch.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -781,6 +782,28 @@ export function renderWorkoutPlanner() {
     const finalizeButton = document.createElement("button");
     finalizeButton.textContent = "Finalize & Save";
 
+    const previewButton = document.createElement("button");
+    previewButton.type = "button";
+    previewButton.classList.add("secondary-button");
+    previewButton.textContent = "Preview";
+
+    previewButton.addEventListener("click", () => {
+        persistDraft();
+    
+        draftWorkout.id ||= crypto.randomUUID();
+        draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+    
+        state.draftPlannedWorkout = { ...draftWorkout };
+
+        localStorage.setItem(
+            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+            JSON.stringify(state.draftPlannedWorkout)
+        );
+
+        launchWorkoutPreview({ ...draftWorkout });
+        });
+
     let isSavingWorkout = false;
 
     function prepareWorkoutForSave({ finalized = false } = {}) {
@@ -795,7 +818,7 @@ export function renderWorkoutPlanner() {
         draftWorkout.date ||= getTodayDate();
         draftWorkout.aoName ||= "";
         draftWorkout.isShared = Boolean(draftWorkout.isShared);
-        draftWorkout.isFinalized = finalized ? true : Boolean(draftWorkout.isFinalized);
+        draftWorkout.isFinalized = Boolean(finalized);
 
         return draftWorkout;
     }
@@ -887,7 +910,7 @@ export function renderWorkoutPlanner() {
     const primaryActionsRow = document.createElement("div");
     primaryActionsRow.classList.add("button-row", "primary-actions-row", "workout-planner-sticky-actions");
 
-    primaryActionsRow.append(saveButton, finalizeButton);
+    primaryActionsRow.append(previewButton, saveButton, finalizeButton);
 
     function buildAnnouncementText() {
         const announcements = state.announcements || [];

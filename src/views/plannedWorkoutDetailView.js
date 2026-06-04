@@ -71,6 +71,24 @@ function removeActiveTimerModal() {
     });
 }
 
+export function launchWorkoutPreview(workout) {
+    state.executionContext = {
+        plannedWorkoutId: workout.id,
+        launchSource: "workoutPlanner",
+        startedAt: Date.now(),
+        executionDate: workout.date || getTodayDate(),
+        allowSessionLogging: false,
+    };
+
+    state.previewWorkout = workout;
+    state.selectedPlannedWorkoutId = workout.id;
+    state.plannedWorkoutLaunchMode = "preview";
+    state.currentView = "plannedWorkoutDetail";
+
+    saveNavState(state);
+    renderApp();
+}
+
 function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") {
     const executionDate = workout.date || getTodayDate();
     
@@ -122,16 +140,21 @@ export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    const workout = state.plannedWorkouts.find(
-        w => w.id === state.selectedPlannedWorkoutId
-    );
+    const workout = state.plannedWorkoutLaunchMode === "preview"
+        ? state.previewWorkout
+        : state.plannedWorkouts.find(
+            w => w.id === state.selectedPlannedWorkoutId
+        );
 
     const currentMember = state.members.find(
         member => member.id === state.currentUserMemberId
     );
 
-    const isExecutionMode = state.plannedWorkoutLaunchMode === "execution";
-    const isTodayWorkout = workout?.date === getTodayDate();
+    const isExecutionMode =
+    state.plannedWorkoutLaunchMode === "execution" ||
+    state.plannedWorkoutLaunchMode === "preview";
+
+    const isPreviewMode = state.plannedWorkoutLaunchMode === "preview";    
 
     app.classList.remove(
         "execution-text-size-normal",
@@ -178,10 +201,11 @@ export function renderPlannedWorkoutDetail() {
         }
 
         if (isExecutionMode) {
-            const confirmed = confirm("Exit workout view?");
-            if (!confirmed) return;
-    
+            const confirmed = isPreviewMode || confirm("Exit workout view?");
+            if (!confirmed) return;   
+             
             state.plannedWorkoutLaunchMode = null;
+            state.previewWorkout = null;
             state.executionContext = {
                 plannedWorkoutId: null,
                 launchSource: null,
@@ -199,7 +223,9 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerPhase = null;
             state.activeWorkoutTimerRound = null;
 
-            state.currentView = "plannedWorkoutDetail";
+            state.currentView = isPreviewMode
+                ? "workoutPlanner"
+                : "plannedWorkoutDetail";
             saveNavState(state);
             renderApp();
             return;
@@ -220,8 +246,10 @@ export function renderPlannedWorkoutDetail() {
     if (isExecutionMode) {
         executionBanner = document.createElement("div");
         executionBanner.classList.add("loaded-workout-banner");
-        executionBanner.textContent = `Running workout at ${workout.aoName || "AO"}`;
-    }
+        executionBanner.textContent = isPreviewMode
+            ? `Previewing workout at ${workout.aoName || "AO"}`
+            : `Running workout at ${workout.aoName || "AO"}`; 
+        }
 
     function createExecutionTextSizeControls() {
         if (!isExecutionMode) return null;
@@ -702,7 +730,7 @@ export function renderPlannedWorkoutDetail() {
     );
     
     announcementSection?.classList.add("workout-announcement-section");
-    
+
     const visibilitySection = createDetailSection(
         "Visibility",
         workout.isShared ? "Workout Library" : "My Planner"
@@ -711,6 +739,14 @@ export function renderPlannedWorkoutDetail() {
     const editButton = document.createElement("button");
     editButton.textContent = "Edit Workout";
     editButton.addEventListener("click", () => {
+        if (isPreviewMode) {
+            state.plannedWorkoutLaunchMode = null;
+            state.previewWorkout = null;
+            state.currentView = "workoutPlanner";
+            renderApp();
+            return;
+        }
+
         if (!canManageWorkouts && workout.createdByUserId !== state.currentUserId) {
             alert("You do not have permission to edit this workout.");
             return;
@@ -958,15 +994,19 @@ export function renderPlannedWorkoutDetail() {
     secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
 
     if (isExecutionMode) {
-        logButton.textContent = "Finish & Log Session";
-        logButton.classList.add("primary-button");
-
-        editButton.textContent = "Edit Workout";
+        editButton.textContent = isPreviewMode ? "Back to Edit" : "Edit Workout";
         editButton.classList.add("secondary-button");
-        primaryActionsRow.append(logButton);
-
-        if (canEditWorkout) {
-            secondaryActionsRow.append(editButton);
+    
+        if (isPreviewMode) {
+            primaryActionsRow.append(editButton);
+        } else {
+            logButton.textContent = "Finish & Log Session";
+            logButton.classList.add("primary-button");
+            primaryActionsRow.append(logButton);
+    
+            if (canEditWorkout) {
+                secondaryActionsRow.append(editButton);
+            }
         }
     } else {
         primaryActionsRow.append(runWorkoutButton);
@@ -996,7 +1036,7 @@ export function renderPlannedWorkoutDetail() {
     const headerActions = document.createElement("div");
     headerActions.classList.add("view-header-actions");
 
-    if (canEditWorkout) {
+    if (canEditWorkout && !isPreviewMode) {
         const headerEditButton = document.createElement("button");
         headerEditButton.type = "button";
         headerEditButton.classList.add("secondary-button");
