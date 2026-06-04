@@ -49,6 +49,48 @@ function buildInsertRows(matches = []) {
         }));
 }
 
+async function fetchExistingBackblastLinks() {
+    const pageSize = 1000;
+    let from = 0;
+    let rows = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("session_backblast_links")
+            .select("session_id, band_post_key")
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        rows = rows.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return {
+        linkedSessionIds: new Set(rows.map(row => row.session_id)),
+        linkedBandPostKeys: new Set(rows.map(row => row.band_post_key)),
+    };
+}
+
+async function fetchSessionsWithAppBackblasts() {
+    const { data, error } = await supabase
+        .from("sessions")
+        .select("id, backblast_text")
+        .not("backblast_text", "is", null);
+
+    if (error) throw error;
+
+    return new Set(
+        data
+            .filter(row => row.backblast_text && row.backblast_text.trim())
+            .map(row => row.id)
+    );
+}
+
 async function main() {
     const report = JSON.parse(fs.readFileSync(REPORT_PATH, "utf8"));
 
@@ -57,9 +99,39 @@ async function main() {
         ...(report.probableMatches || []),
     ];
 
-    const rows = buildInsertRows(matches);
+    const candidateRows = buildInsertRows(matches);
 
-    console.log(`Prepared ${rows.length} rows`);
+    const { linkedSessionIds, linkedBandPostKeys } =
+        await fetchExistingBackblastLinks();
+
+    const sessionsWithAppBackblasts =
+        await fetchSessionsWithAppBackblasts();
+
+    const rows = candidateRows.filter(row => {
+        if (linkedSessionIds.has(row.session_id)) return false;
+        if (linkedBandPostKeys.has(row.band_post_key)) return false;
+        if (sessionsWithAppBackblasts.has(row.session_id)) return false;
+
+        return true;
+    });
+
+    console.log(`Safe candidate rows: ${candidateRows.length}`);
+    console.log(`Prepared new gap-fill rows: ${rows.length}`);
+
+    if (process.argv.includes("--dry-run")) {
+        console.log("Dry run only. First 25 rows:");
+
+        console.table(rows.slice(0, 25).map(row => ({
+            date: row.backblast_date,
+            ao: row.backblast_ao_name,
+            q: row.backblast_q_names?.join(", "),
+            method: row.link_method,
+            session_id: row.session_id,
+            band_post_key: row.band_post_key,
+        })));
+
+        return;
+    }
 
     const chunkSize = 500;
 

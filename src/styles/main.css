@@ -3299,10 +3299,6 @@ textarea {
     gap: 0.5rem;
 }
 
-.dashboard-announcement-card {
-    padding: 0.75rem 0.9rem;
-}
-
 .dashboard-announcement-card .member-name {
     font-size: 0.95rem;
 }
@@ -3320,7 +3316,9 @@ textarea {
 .dashboard-announcement-card {
     display: block;
     min-height: 0;
+    padding: 0.75rem 0.9rem;
     cursor: default;
+    -webkit-overflow-scrolling: touch;
 }
 
 .dashboard-announcement-card:hover {
@@ -3421,6 +3419,13 @@ textarea {
     border: 0;
     text-align: left;
     cursor: pointer;
+}
+
+.announcement-title-only-row,
+.announcement-toggle-row {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
 }
 
 .announcement-expanded-body {
@@ -3749,4 +3754,28 @@ textarea {
     content: " ▼";
     font-size: 0.7em;
     opacity: 0.55;
+}
+
+/* Dashboard announcements: allow full content */
+.view-dashboard .announcement-inline-row,
+.view-dashboard .announcement-title-only-row,
+.view-dashboard .announcement-toggle-row,
+.view-dashboard .announcement-expanded-body,
+.view-dashboard .dashboard-announcement-card {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+}
+
+.view-dashboard .announcement-body,
+.view-dashboard .announcement-expanded-body .detail-value,
+.view-dashboard .dashboard-announcement-card .stats-line {
+    display: block;
+    white-space: pre-wrap;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
 }
