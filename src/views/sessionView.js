@@ -468,10 +468,19 @@ const sessionControls = document.createElement("div");
 sessionControls.classList.add("section");
 sessionControls.append(aoLabel, aoSelect);
 
-function getSortedActiveMembers(lastPostMap) {
+function getSortedSelectableMembers() {
     return state.members
-        .filter(m => m.status === "active")
-        .sort((a, b) => a.paxName.localeCompare(b.paxName));
+        .filter(member => member.status === "active" || member.status === "inactive")
+        .sort((a, b) => {
+            const aInactive = a.status === "inactive";
+            const bInactive = b.status === "inactive";
+
+            if (aInactive !== bInactive) {
+                return aInactive ? 1 : -1;
+            }
+
+            return a.paxName.localeCompare(b.paxName);
+        });
 }
 
 function buildLastPostMapForAo(aoName) {
@@ -503,18 +512,18 @@ function renderMemberList() {
     memberList.textContent = "";
 
     const lastPostMap = buildLastPostMapForAo(draftSession.aoName);
-    const activeMembers = getSortedActiveMembers(lastPostMap);
+    const selectableMembers = getSortedSelectableMembers();
 
     const searchTerm = (state.sessionSearchTerm || "").trim().toLowerCase();
 
-    const filteredMembers = activeMembers.filter(member => {
+    const filteredMembers = selectableMembers.filter(member => {
     const paxName = (member.paxName || "").toLowerCase();
     const realName = (member.realName || "").toLowerCase();
 
     return paxName.includes(searchTerm) || realName.includes(searchTerm);
     });
     
-    const qMembers = activeMembers.filter(member => 
+    const qMembers = selectableMembers.filter(member => 
         getUniqueQIds().includes(normalizeId(member.id))
     );
 
