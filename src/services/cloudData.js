@@ -1754,3 +1754,53 @@ export async function loadAoInsightSessions({ regionId, aoName, startDate, endDa
 
     return (data || []).map(mapSessionFromDb);
 }
+
+export async function loadSessionBackblastLinks() {
+    const pageSize = 1000;
+    let from = 0;
+    let rows = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("session_backblast_links")
+            .select("session_id, band_post_key")
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        rows = rows.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return rows;
+}
+
+export async function insertSessionBackblastLink(row) {
+    const { data, error } = await supabase
+        .from("session_backblast_links")
+        .insert(row)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function insertBackblastReviewDecision(row) {
+    const { data, error } = await supabase
+        .from("backblast_review_decisions")
+        .upsert(row, {
+            onConflict: "region_id,band_post_key",
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
