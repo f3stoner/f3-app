@@ -5,8 +5,10 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { goBack } from "../utils/navigation.js";
 import { 
     loadSessionBackblastLinks,
+    loadBackblastReviewDecisions,
     insertSessionBackblastLink,
     insertBackblastReviewDecision,
+    searchOpenSessionsForBackblastReview,
  } from "../services/cloudData.js";
 
 export async function renderBackblastReview() {
@@ -42,11 +44,12 @@ export async function renderBackblastReview() {
     app.appendChild(content);
 
     try {
-        const [report, existingLinks] = await Promise.all([
+        const [report, existingLinks, reviewDecisions] = await Promise.all([
             loadBackblastReviewReport(),
             loadSessionBackblastLinks(),
+            loadBackblastReviewDecisions(),
         ]);
-        
+
         const linkedSessionIds = new Set(
             existingLinks.map(link => link.session_id || link.sessionId)
         );
@@ -54,13 +57,20 @@ export async function renderBackblastReview() {
         const linkedBandPostKeys = new Set(
             existingLinks.map(link => link.band_post_key || link.bandPostKey)
         );
+
+        const ignoredBandPostKeys = new Set(
+            reviewDecisions
+                .filter(decision => decision.decision_type === "ignored")
+                .map(decision => decision.band_post_key || decision.bandPostKey)
+        );
         
         content.textContent = "";
         content.appendChild(createReviewSummary(report));
         content.appendChild(createAmbiguousReviewSection(
             report.ambiguousMatches || [],
             linkedSessionIds,
-            linkedBandPostKeys
+            linkedBandPostKeys,
+            ignoredBandPostKeys
         ));
     } catch (error) {
         console.error("Failed to load backblast review report:", error);
@@ -112,13 +122,18 @@ function createReviewSummary(report) {
     return section;
 }
 
-function createAmbiguousReviewSection(ambiguousMatches, linkedSessionIds, linkedBandPostKeys) {
+function createAmbiguousReviewSection(ambiguousMatches, linkedSessionIds, linkedBandPostKeys, ignoredBandPostKeys) {
     const section = document.createElement("div");
     section.classList.add("section");
 
-    const unresolvedMatches = ambiguousMatches.filter(match =>
-        !linkedBandPostKeys.has(match.backblast?.postKey)
-    );
+    const unresolvedMatches = ambiguousMatches.filter(match => {
+        const postKey = match.backblast?.postKey;
+    
+        if (linkedBandPostKeys.has(postKey)) return false;
+        if (ignoredBandPostKeys.has(postKey)) return false;
+    
+        return true;
+    });
 
     const heading = document.createElement("div");
     heading.classList.add("detail-label");
@@ -135,13 +150,13 @@ function createAmbiguousReviewSection(ambiguousMatches, linkedSessionIds, linked
     }
 
     unresolvedMatches.slice(0, 25).forEach(match => {
-        section.appendChild(createAmbiguousMatchCard(match, linkedSessionIds, linkedBandPostKeys));
+        section.appendChild(createAmbiguousMatchCard(match, linkedSessionIds, linkedBandPostKeys, ignoredBandPostKeys));
     });
 
     return section;
 }
 
-function createAmbiguousMatchCard(match, linkedSessionIds, linkedBandPostKeys) {
+function createAmbiguousMatchCard(match, linkedSessionIds, linkedBandPostKeys, ignoredBandPostKeys) {
     const card = document.createElement("div");
     card.classList.add("admin-card");
 
@@ -205,7 +220,37 @@ function createAmbiguousMatchCard(match, linkedSessionIds, linkedBandPostKeys) {
         finder.appendChild(createSessionFinder(match, linkedSessionIds, linkedBandPostKeys, card));
     });
 
-    finder.appendChild(findButton);
+    const skipButton = document.createElement("button");
+    skipButton.textContent = "Skip / Ignore";
+
+    skipButton.addEventListener("click", async () => {
+        const confirmed = confirm("Skip this backblast from review?");
+        if (!confirmed) return;
+
+        skipButton.disabled = true;
+        skipButton.textContent = "Skipping...";
+
+        try {
+            await insertBackblastReviewDecision({
+                region_id: state.activeRegionId || state.currentRegionId,
+                band_post_key: match.backblast?.postKey,
+                session_id: null,
+                decision_type: "ignored",
+                decided_by_user_id: state.currentUserId || null,
+                notes: "Manually ignored from backblast review.",
+            });
+
+            ignoredBandPostKeys.add(match.backblast?.postKey);
+            card.remove();
+        } catch (error) {
+            console.error("Failed to skip backblast:", error);
+            alert("Failed to skip backblast.");
+            skipButton.disabled = false;
+            skipButton.textContent = "Skip / Ignore";
+        }
+    });
+
+    finder.append(findButton, skipButton);
 
     card.append(title, meta, preview, candidates, finder);
     return card;
@@ -245,25 +290,42 @@ function createSessionFinder(match, linkedSessionIds,linkedBandPostKeys, card) {
     const results = document.createElement("div");
     results.classList.add("section");
 
-    searchButton.addEventListener("click", () => {
+    searchButton.addEventListener("click", async () => {
         results.textContent = "";
-
-        const matches = findOpenSessionsForReview({
+    
+        const matches = await searchOpenSessionsForBackblastReview({
+            regionId: state.activeRegionId || state.currentRegionId,
             date: dateInput.value,
             aoName: aoSelect.value,
-            linkedSessionIds,
+            linkedSessionIds: [...linkedSessionIds],
         });
+    
+        console.log("Review search results:", matches.length, matches);
+    
+        const openMatches = matches.filter(session =>
+            !linkedSessionIds.has(session.id) &&
+            !session.backblast_text &&
+            !session.historical_backblast_text
+        );
 
-        if (matches.length === 0) {
+        if (openMatches.length === 0) {
             const empty = document.createElement("div");
             empty.classList.add("detail-value");
             empty.textContent = "No open sessions found for that search.";
             results.appendChild(empty);
             return;
         }
-
-        matches.slice(0, 25).forEach(session => {
-            results.appendChild(createManualSessionResultRow(match, session, linkedSessionIds, linkedBandPostKeys, card));
+    
+        openMatches.slice(0, 25).forEach(session => {
+            results.appendChild(
+                createManualSessionResultRow(
+                    match,
+                    session,
+                    linkedSessionIds,
+                    linkedBandPostKeys,
+                    card
+                )
+            );
         });
     });
 
@@ -297,13 +359,19 @@ function createCandidateSessionRow(match, candidate, linkedSessionIds, linkedBan
 
     const label = document.createElement("span");
     label.style.cursor = "pointer";
+
+    const sessionAoName = session.aoName || session.ao_name || "No AO";
+    const startTime = session.startTime || session.start_time || null;
+    const qNames = session.qNames || getSessionQNames(session);
+    
     label.textContent = [
         session.date || "No date",
-        session.aoName || "No AO",
-        session.qNames?.length ? `Q: ${session.qNames.join(", ")}` : null,
+        startTime ? startTime : null,
+        sessionAoName,
+        qNames.length ? `Q: ${qNames.join(", ")}` : null,
         candidate.dateOffset ? `Offset: ${candidate.dateOffset}` : null,
     ].filter(Boolean).join(" • ");
-
+    
     label.addEventListener("click", () => {
         console.log("Candidate session clicked:", {
             candidateSession: session,
@@ -323,7 +391,7 @@ function createCandidateSessionRow(match, candidate, linkedSessionIds, linkedBan
 
     button.addEventListener("click", async () => {
         const confirmed = confirm(
-            `Link this backblast to ${session.date} • ${session.aoName}?`
+            `Link this backblast to ${session.date} • ${sessionAoName}?`
         );
     
         if (!confirmed) return;
@@ -357,13 +425,19 @@ function createManualSessionResultRow(match, session, linkedSessionIds, linkedBa
     const row = document.createElement("div");
     row.classList.add("selected-summary-row");
 
+    const sessionAoName = session.aoName || session.ao_name || "No AO";
+    const attendeeIds = session.attendeeIds || session.attendee_ids || [];
+    const startTime = session.startTime || session.start_time || null;
+    const qNames = getSessionQNames(session);
+
     const label = document.createElement("span");
     label.style.cursor = "pointer";
     label.textContent = [
         session.date || "No date",
-        session.aoName || "No AO",
-        getSessionQNames(session).length ? `Q: ${getSessionQNames(session).join(", ")}` : null,
-        `PAX: ${(session.attendeeIds || []).length}`,
+        startTime ? startTime : null,
+        sessionAoName,
+        qNames.length ? `Q: ${qNames.join(", ")}` : null,
+        `PAX: ${attendeeIds.length}`,
     ].filter(Boolean).join(" • ");
 
     label.addEventListener("click", () => {
@@ -375,7 +449,7 @@ function createManualSessionResultRow(match, session, linkedSessionIds, linkedBa
 
     button.addEventListener("click", async () => {
         const confirmed = confirm(
-            `Link this backblast to ${session.date} • ${session.aoName}?`
+            `Link this backblast to ${session.date} • ${sessionAoName}?`
         );
 
         if (!confirmed) return;
@@ -439,15 +513,40 @@ function openSessionPreviewModal(sessionId, fallbackSession = null) {
     modal.classList.add("modal");
 
     const heading = document.createElement("h2");
-    heading.textContent = `${session.date || "No date"} • ${session.aoName || "No AO"}`;
+
+    const sessionAoName =
+        session.aoName ||
+        session.ao_name ||
+        "No AO";
+    
+    heading.textContent =
+        `${session.date || "No date"} • ${sessionAoName}`;
+
+    const attendeeIds =
+        session.attendeeIds ||
+        session.attendee_ids ||
+        [];
+
+    const fngs =
+        session.fngs ||
+        [];
+
+    const startTime =
+        session.startTime ||
+        session.start_time;
 
     const meta = document.createElement("div");
     meta.classList.add("detail-value");
+
     meta.textContent = [
-        session.startTime ? `Time: ${session.startTime}` : null,
-        getSessionQNames(session).length ? `Q: ${getSessionQNames(session).join(", ")}` : null,
-        `PAX: ${(session.attendeeIds || []).length}`,
-        (session.fngs || []).length ? `FNGs: ${session.fngs.length}` : null,
+        startTime ? `Time: ${startTime}` : null,
+        getSessionQNames(session).length
+            ? `Q: ${getSessionQNames(session).join(", ")}`
+            : null,
+        `PAX: ${attendeeIds.length}`,
+        fngs.length
+            ? `FNGs: ${fngs.length}`
+            : null,
     ].filter(Boolean).join(" • ");
 
     const attendeesHeading = document.createElement("div");

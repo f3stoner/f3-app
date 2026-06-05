@@ -1804,3 +1804,56 @@ export async function insertBackblastReviewDecision(row) {
 
     return data;
 }
+
+export async function loadBackblastReviewDecisions() {
+    const pageSize = 1000;
+    let from = 0;
+    let rows = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("backblast_review_decisions")
+            .select("band_post_key, decision_type, session_id")
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        rows = rows.concat(data);
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return rows;
+}
+
+export async function searchOpenSessionsForBackblastReview({
+    regionId,
+    date,
+    aoName,
+    linkedSessionIds = [],
+}) {
+    let query = supabase
+        .from("sessions")
+        .select("id, date, ao_name, start_time, q_ids, attendee_ids, fngs, notes, backblast_text")
+        .eq("region_id", regionId)
+        .order("date", { ascending: true })
+        .order("start_time", { ascending: true })
+        .limit(50);
+
+    if (date) {
+        query = query.eq("date", date);
+    }
+
+    if (aoName) {
+        query = query.eq("ao_name", aoName);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return data || [];
+}
