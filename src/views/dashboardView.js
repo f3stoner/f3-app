@@ -23,6 +23,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { logAppEvent } from "../services/appEvents.js";
 import { unsubscribeAllManagedChannels } from "../services/realtime.js";
+import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -510,9 +511,20 @@ export function renderDashboard() {
             nextQWeatherLine.dataset.nextQWeatherKey = weatherCacheKey;
         }
 
+        const emphasisBadge = createWorkoutEmphasisBadge(nextQSlot, ao);
+
         renderNextQWeatherLine(nextQWeatherLine, nextQWeather);
 
-        nextQCardContent.append(nextQTitle, nextQSubtitle, nextQPreview);
+        nextQCardContent.append(
+            nextQTitle, 
+        );
+        if (emphasisBadge) {
+            nextQCardContent.appendChild(emphasisBadge);
+        };
+        nextQCardContent.append(
+            nextQSubtitle, 
+            nextQPreview
+        );
 
         if (weatherCacheKey) {
             nextQCardContent.appendChild(nextQWeatherLine);

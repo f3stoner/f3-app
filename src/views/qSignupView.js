@@ -18,6 +18,7 @@ import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 
 let qSlotRealtimeChannel = null;
 let qSlotRealtimeRegionId = null;
@@ -790,14 +791,7 @@ export function renderQSignupView() {
             }
 
             const ao = state.aos.find(a => a.id === slot.aoId);
-            const emphasis = getWorkoutEmphasisForSlot(slot, ao);
-            const displayEmphasis = slot.customEmphasisLabel
-                ? {
-                    key: "custom",
-                    label: slot.customEmphasisLabel,
-                    icon: null,
-                }
-                : emphasis;
+            const emphasisBadge = createWorkoutEmphasisBadge(slot, ao);
             const displayTime = slot.overrideTime || ao?.time || "";
             const displayTitle = slot.overrideTitle || "";
             const isMine = slot.qUserId === state.currentUserMemberId;
@@ -815,25 +809,6 @@ export function renderQSignupView() {
                 ? `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"} - ${displayTitle}`
                 : `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
 
-            const emphasisLine = document.createElement("div");
-            emphasisLine.classList.add("q-signup-emphasis-row");
-
-            if (displayEmphasis) {
-                const emphasisBadge = document.createElement("span");
-                emphasisBadge.classList.add("workout-emphasis-line");
-            
-                if (displayEmphasis.icon) {
-                    const icon = createIcon(displayEmphasis.icon);
-                    icon.classList.add("workout-emphasis-icon");
-                    emphasisBadge.appendChild(icon);
-                }
-            
-                const label = document.createElement("div");
-                label.textContent = displayEmphasis.label;
-            
-                emphasisBadge.appendChild(label);
-                emphasisLine.appendChild(emphasisBadge);
-            }
 
             const titleLine = document.createElement("div");
             titleLine.classList.add("stats-line");
@@ -1034,8 +1009,8 @@ export function renderQSignupView() {
 
             cardContent.append(topLine);
 
-            if (displayEmphasis) {
-                cardContent.append(emphasisLine);
+            if (emphasisBadge) {
+                cardContent.append(emphasisBadge);
             }
 
             cardContent.append(titleLine, timeLine);
