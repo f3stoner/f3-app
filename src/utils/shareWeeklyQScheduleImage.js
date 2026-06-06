@@ -15,6 +15,9 @@ const EMPHASIS_EMOJI = {
     core: "🆎",
     "30/30": "💡",
     stairs: "🗼",
+    bootcamp: "🛡️",
+    murph_training: "🏅",
+    benchmark: "📋",
     other: "⭕",
 };
 
@@ -280,9 +283,12 @@ function createScheduleExportCard({ weekStart, weekEnd, weekDates }) {
         ["🦵", "Lower"],
         ["❤️", "Cardio"],
         ["🎒", "Ruck"],
-        ["🅰️", "Core"],
+        ["🆎", "Core"],
         ["💡", "30/30"],
         ["🗼", "Stairs"],
+        ["🛡️", "Bootcamp"],
+        ["🏅", "Murph Training"],
+        ["📋", "Benchmark"],
         ["⭕", "Other"],
     ].forEach(([emoji, label]) => {
         const item = document.createElement("div");
