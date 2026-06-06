@@ -69,7 +69,9 @@ export async function loadRecentSessions(regionId, days = 180) {
             backblast_status,
             backblast_posted_at,
             unresolved_pax,
-            weather_snapshot
+            weather_snapshot,
+            attendance_review_status,
+            attendance_review_notes
         `)
         .eq("region_id", regionId)
         .gte("date", cutoff)
@@ -103,7 +105,9 @@ export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
             backblast_status,
             backblast_posted_at,
             unresolved_pax,
-            weather_snapshot
+            weather_snapshot,
+            attendance_review_status,
+            attendance_review_notes
         `)
         .eq("region_id", regionId)
         .lte("date", beforeDate)
@@ -464,6 +468,8 @@ export function mapSessionFromDb(row) {
         unresolvedPax: row.unresolved_pax || [],
         weatherSnapshot: row.weather_snapshot || null,
         startTime: row.start_time || null,
+        attendanceReviewStatus: row.attendance_review_status || "not_required",
+        attendanceReviewNotes: row.attendance_review_notes || "",
     };
 }
 
@@ -703,6 +709,8 @@ export async function updateSessionInCloud(regionId, session) {
             unresolved_pax: session.unresolvedPax || [],
             weather_snapshot: session.weatherSnapshot || null,
             start_time: session.startTime || null,
+            attendance_review_status: session.attendanceReviewStatus || "not_required",
+            attendance_review_notes: session.attendanceReviewNotes || null,
         })
         .eq("id", session.id)
         .select()
@@ -1813,7 +1821,7 @@ export async function loadBackblastReviewDecisions() {
     while (true) {
         const { data, error } = await supabase
             .from("backblast_review_decisions")
-            .select("band_post_key, decision_type, session_id")
+            .select("band_post_key, decision_type, session_id, notes")
             .range(from, from + pageSize - 1);
 
         if (error) throw error;
@@ -1837,7 +1845,7 @@ export async function searchOpenSessionsForBackblastReview({
 }) {
     let query = supabase
         .from("sessions")
-        .select("id, date, ao_name, start_time, q_ids, attendee_ids, fngs, notes, backblast_text")
+        .select("id, date, ao_name, start_time, q_ids, attendee_ids, fngs, notes, backblast_text, attendance_review_status, attendance_review_notes")
         .eq("region_id", regionId)
         .order("date", { ascending: true })
         .order("start_time", { ascending: true })
@@ -1856,4 +1864,77 @@ export async function searchOpenSessionsForBackblastReview({
     if (error) throw error;
 
     return data || [];
+}
+
+export async function insertSessionFromBackblastReview(regionId, session) {
+    const { data, error } = await supabase
+        .from("sessions")
+        .insert({
+            region_id: regionId,
+            id: session.id,
+            date: session.date,
+            ao_name: session.aoName,
+            q_ids: session.qIds || [],
+            attendee_ids: session.attendeeIds || [],
+            fngs: session.fngs || [],
+            notes: session.notes || "",
+            backblast_text: session.backblastText || null,
+            start_time: session.startTime || null,
+            created_by_user_id: session.createdByUserId || null,
+            created_at: session.createdAt,
+            attendance_review_status: session.attendanceReviewStatus || "not_required",
+            attendance_review_notes: session.attendanceReviewNotes || null,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function loadAttendanceReviewSessions(regionId) {
+    if (!regionId) return [];
+
+    const { data, error } = await supabase
+        .from("sessions")
+        .select(`
+            id,
+            region_id,
+            date,
+            ao_name,
+            attendee_ids,
+            q_ids,
+            q_id,
+            fngs,
+            notes,
+            backblast_text,
+            start_time,
+            attendance_review_status,
+            attendance_review_notes
+        `)
+        .eq("region_id", regionId)
+        .eq("attendance_review_status", "pending")
+        .order("date", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(mapSessionFromDb);
+}
+
+export async function updateSessionAttendanceReviewStatus(regionId, sessionId, status, notes = null) {
+    const { data, error } = await supabase
+        .from("sessions")
+        .update({
+            attendance_review_status: status,
+            attendance_review_notes: notes,
+        })
+        .eq("id", sessionId)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapSessionFromDb(data);
 }

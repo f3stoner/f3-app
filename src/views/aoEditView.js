@@ -429,7 +429,7 @@ export function renderAoEditView() {
 
     const daysLabel = document.createElement("div");
     daysLabel.classList.add("detail-label");
-    daysLabel.textContent = "Days of Week";
+    daysLabel.textContent = "Recurring Days";
 
     const daysWrap = document.createElement("div");
     daysWrap.classList.add("section", "ao-days-grid");
@@ -502,10 +502,11 @@ export function renderAoEditView() {
             return;
         }
 
-        if (!draftAo.daysOfWeek.length) {
-            alert("Please select at least one day.");
-            return;
-        }
+        // No recurring days is allowed - This supports blackops/emerginAOs.
+        //if (!draftAo.daysOfWeek.length) {
+        //    alert("Please select at least one day.");
+        //    return;
+        //}
 
         const activeRegionId = state.currentRegionId;
         if (!activeRegionId) {

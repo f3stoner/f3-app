@@ -50,6 +50,14 @@ const AO_CANONICAL_MAP = {
     watch: "thewatch",
     thewatchw: "thewatchw",
     watchd: "thewatchd",
+
+    franklin: "f3franklin",
+    f3franklin: "f3franklin",
+    theranch: "f3franklin",
+    ranch: "f3franklin",
+
+    austinscolony: "austinscolony",
+    austincolony: "austinscolony",
 };
 
 function normalizeName(value = "") {

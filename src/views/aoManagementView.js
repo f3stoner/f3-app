@@ -66,8 +66,8 @@ if (sortedAos.length === 0) {
 
         const dayText = ao.daysOfWeek?.length
             ? ao.daysOfWeek.map(day => DAY_LABELS[day]).join(", ")
-            : "No days selected";
-
+            : "No recurring schedule";
+            
         const timeText = ao.time || "No time set";
 
         scheduleLine.textContent = `${dayText} • ${timeText}`;

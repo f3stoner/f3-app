@@ -7,6 +7,9 @@ import { getMemberDisplayName } from "../utils/memberDisplay.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { insertMember } from "../services/cloudData.js";
+import { showToast } from "../utils/toast.js";
+import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
 
 function renderRosterList(rosterContainer, members) {
     rosterContainer.textContent = "";
@@ -187,6 +190,21 @@ export function renderRoster() {
   const title = document.createElement("h1");
   title.textContent = "Roster";
 
+  const titleRow = document.createElement("div");
+  titleRow.classList.add("section-header-row");
+
+  const addPaxButton = document.createElement("button");
+  addPaxButton.textContent = "Add PAX";
+  addPaxButton.addEventListener("click", () => {
+    openAddPaxModal();
+  });
+
+  titleRow.appendChild(title);
+
+  if (hasPermission(PERMISSIONS.MANAGE_MEMBERS)) {
+    titleRow.appendChild(addPaxButton);
+  }
+
   const rosterContainer = document.createElement("div");
 
   const searchInput = document.createElement("input");
@@ -240,7 +258,7 @@ export function renderRoster() {
   if (activeFilterNotice) {
     app.append(
       header,
-      title,
+      titleRow,
       activeFilterNotice,
       searchInput,
       rosterContainer,
@@ -250,7 +268,7 @@ export function renderRoster() {
   } else {
     app.append(
       header,
-      title,
+      titleRow,
       searchInput,
       rosterContainer,
       backButton,
@@ -260,4 +278,114 @@ export function renderRoster() {
   if (state.isMainMenuOpen) {
     document.body.appendChild(createMainMenu());
   }
+}
+
+function openAddPaxModal() {
+  const overlay = document.createElement("div");
+  overlay.classList.add("modal-overlay");
+
+  const modal = document.createElement("div");
+  modal.classList.add("modal");
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Add PAX";
+
+  const paxInput = document.createElement("input");
+  paxInput.type = "text";
+  paxInput.placeholder = "PAX name";
+
+  const realInput = document.createElement("input");
+  realInput.type = "text";
+  realInput.placeholder = "Real name optional";
+
+  const aoSelect = document.createElement("select");
+
+  const blankAo = document.createElement("option");
+  blankAo.value = "";
+  blankAo.textContent = "Home AO optional";
+  aoSelect.appendChild(blankAo);
+
+  [...state.aos]
+    .filter(ao => ao.isActive)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(ao => {
+      const option = document.createElement("option");
+      option.value = ao.name;
+      option.textContent = ao.name;
+      aoSelect.appendChild(option);
+    });
+
+  const buttonRow = document.createElement("div");
+  buttonRow.classList.add("button-row");
+
+  const cancelButton = document.createElement("button");
+  cancelButton.classList.add("secondary-button");
+  cancelButton.textContent = "Cancel";
+  cancelButton.addEventListener("click", () => overlay.remove());
+
+  const saveButton = document.createElement("button");
+  saveButton.textContent = "Save PAX";
+
+  saveButton.addEventListener("click", async () => {
+    const paxName = paxInput.value.trim();
+    const realName = realInput.value.trim();
+
+    if (!paxName) {
+      alert("PAX name is required.");
+      return;
+    }
+
+    const duplicate = state.members.some(member =>
+      getMemberDisplayName(member).trim().toLowerCase() === paxName.toLowerCase()
+    );
+    
+    if (duplicate) {
+      alert("A PAX with that name already exists.");
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+
+    try {
+      const member = {
+        id: crypto.randomUUID(),
+        paxName,
+        realName: realName || null,
+        homeAo: aoSelect.value || null,
+        invitedById: null,
+        firstPostDate: null,
+        status: "active",
+      };
+
+      const savedMember = await insertMember(
+        state.activeRegionId || state.currentRegionId,
+        member
+      );
+
+      state.members.push(savedMember);
+
+      overlay.remove();
+      showToast("PAX added.");
+      renderRoster();
+    } catch (error) {
+      console.error("Failed to add PAX:", error);
+      alert("Failed to add PAX.");
+      saveButton.disabled = false;
+      saveButton.textContent = "Save PAX";
+    }
+  });
+
+  buttonRow.append(cancelButton, saveButton);
+
+  modal.append(
+    heading,
+    paxInput,
+    realInput,
+    aoSelect,
+    buttonRow
+  );
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 }

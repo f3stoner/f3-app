@@ -48,11 +48,22 @@ const AO_HASHTAG_MAP = {
     "#f3dads": "Dads",
     "#dads": "Dads",
 
-    "#f3franklin": "Franklin",
-    "#franklin": "Franklin",
+    "#f3franklin": "F3 Franklin",
+    "#franklin": "F3 Franklin",
+    "#theranch": "F3 Franklin",
+    "#ranch": "F3 Franklin",
+
+    "#austinscolony": "Austin's Colony",
+    "#austincolony": "Austin's Colony",
+    "#austins-colony": "Austin's Colony",
 };
 
 const AO_PHRASE_MAP = [
+    { regex: /\bf3 franklin\b/i, aoName: "F3 Franklin" },
+    { regex: /\bfranklin\b/i, aoName: "F3 Franklin" },
+    { regex: /\bthe ranch\b/i, aoName: "F3 Franklin" },
+    { regex: /\baustin['’]?s colony\b/i, aoName: "Austin's Colony" },
+    { regex: /\baustins colony\b/i, aoName: "Austin's Colony" },
     { regex: /\bthe dominion\b/i, aoName: "The Watch (D)" },
     { regex: /\bthe rock\b/i, aoName: "The Rock" },
     { regex: /\bthe mine\b/i, aoName: "The Mine" },
@@ -64,8 +75,6 @@ const AO_PHRASE_MAP = [
     { regex: /\bthe moat\b/i, aoName: "The Moat" },
     { regex: /\bthe watch\b/i, aoName: "The Watch" },
     { regex: /\bthe hub\b/i, aoName: "The Hub" },
-    { regex: /\bfranklin\b/i, aoName: "Franklin" },
-    { regex: /\bthe ranch\b/i, aoName: "Franklin" },
 ];
 
 function ensureOutputDir() {
