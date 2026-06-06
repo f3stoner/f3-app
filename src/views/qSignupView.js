@@ -233,6 +233,8 @@ export function renderQSignupView() {
         "30/30",
         "stairs",
         "bootcamp",
+        "benchmark",
+        "murph_training",
         "other",
     ];
     
