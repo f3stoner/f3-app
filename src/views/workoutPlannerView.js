@@ -14,6 +14,7 @@ import { searchExercises } from "../utils/exerciseSearch.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
+import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
@@ -105,6 +106,20 @@ export function renderWorkoutPlanner() {
                 JSON.stringify(state.draftPlannedWorkout)
             );
         }, 300);
+    }
+
+    function persistDraftNow() {
+        draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+    
+        state.draftPlannedWorkout = { ...draftWorkout };
+    
+        clearTimeout(persistDraftTimeout);
+    
+        localStorage.setItem(
+            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
+            JSON.stringify(state.draftPlannedWorkout)
+        );
     }
 
     function createSectionTemplateControls(sectionType, input, labelText, targetThangId = null) {
@@ -452,6 +467,27 @@ export function renderWorkoutPlanner() {
     const title = document.createElement("h1");
     title.textContent = isEditing ? "Edit Workout" : "Plan Workout";
 
+    function findMatchingQSlotForDraftWorkout() {
+        const ao = state.aos.find(a => a.name === draftWorkout.aoName);
+    
+        if (!ao) return null;
+    
+        return state.qSlots.find(slot =>
+            slot.date === draftWorkout.date &&
+            slot.aoId === ao.id
+        );
+    }
+    
+    const plannerAo = state.aos.find(a => a.name === draftWorkout.aoName);
+    const plannerQSlot = findMatchingQSlotForDraftWorkout();
+    const plannerEmphasisBadge = plannerQSlot
+        ? createWorkoutEmphasisBadge(plannerQSlot, plannerAo)
+        : null;
+    
+    if (plannerEmphasisBadge) {
+        plannerEmphasisBadge.classList.add("planner-emphasis-badge");
+    }
+
     const browseWorkoutsButton = document.createElement("button");
     browseWorkoutsButton.textContent = "Browse & Copy Workouts";
     browseWorkoutsButton.classList.add("browse-workout-button");
@@ -501,7 +537,9 @@ export function renderWorkoutPlanner() {
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;
         dateDisplay.textContent = formatDate(draftWorkout.date);
-        persistDraft();
+    
+        persistDraftNow();
+        renderApp();
     }
 
     dateInput.addEventListener("change", updateDraftDate);
@@ -558,7 +596,9 @@ export function renderWorkoutPlanner() {
     
     aoSelect.addEventListener("change", (event) => {
         draftWorkout.aoName = event.target.value;
-        persistDraft();
+    
+        persistDraftNow();
+        renderApp();
     });
 
     const workoutTitleLabel = document.createElement("div");
@@ -961,6 +1001,7 @@ export function renderWorkoutPlanner() {
     app.append(
         header,
         title,
+        ...(plannerEmphasisBadge ? [plannerEmphasisBadge] : []),
         browseRow,
         divider,
         dateLabel,

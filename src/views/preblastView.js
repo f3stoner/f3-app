@@ -8,6 +8,7 @@ import { getAoWeather } from "../services/weather.js";
 import { updateCustomTemplates, updatePlannedWorkoutInCloud, updateQSlotInCloud } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 
 export function renderPreblastView() {
 
@@ -89,6 +90,8 @@ export function renderPreblastView() {
 
     const preblastAo = getPreblastAo(preblastQSlot, preblastWorkout);
     const targetDateTime = getTargetDateTime(preblastQSlot, preblastWorkout, preblastAo);
+    
+    upsertEmphasisHashtag();
 
     if (preblastAo?.id && targetDateTime && !state.hasAddedPreblastForecast) {
         state.hasAddedPreblastForecast = true;
@@ -238,6 +241,72 @@ export function renderPreblastView() {
                 : "wind unavailable";
 
         return `Forecast: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}.`;
+    }
+
+    function buildEmphasisHashtag() {
+        const emphasis = preblastQSlot
+            ? getWorkoutEmphasisForSlot(preblastQSlot, preblastAo)
+            : null;
+    
+        const label = preblastQSlot?.customEmphasisLabel || emphasis?.label;
+    
+        if (!label) return "";
+    
+    
+        return `#${label.toLowerCase()}`;
+    }
+    
+    function upsertEmphasisHashtag() {
+        const hashtag = buildEmphasisHashtag();
+    
+        if (!hashtag) return;
+    
+        const currentText = state.draftPreblastText || "";
+        const emphasisLabels = [
+            "Heavy",
+            "Upper",
+            "Lower",
+            "Cardio",
+            "Ruck",
+            "Run",
+            "Core",
+            "30/30",
+            "Stairs",
+            "Bootcamp",
+            "MurphTraining",
+            "Other",
+        ];
+        
+        const emphasisRegex = new RegExp(
+            `\\s+#(?:${emphasisLabels.map(label =>
+                label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            ).join("|")})`,
+            "gi"
+        );
+        
+        const withoutOldEmphasis = currentText.replace(emphasisRegex, "");
+
+        if (withoutOldEmphasis.toLowerCase().includes(hashtag.toLowerCase())) {
+            state.draftPreblastText = withoutOldEmphasis;
+            textInput.value = withoutOldEmphasis;
+            return;
+        }
+    
+        const lines = withoutOldEmphasis.split("\n");
+        const firstNonEmptyIndex = lines.findIndex(line => line.trim());
+
+        if (firstNonEmptyIndex === -1) {
+            state.draftPreblastText = hashtag;
+            textInput.value = hashtag;
+            return;
+        }
+
+        lines[firstNonEmptyIndex] = `${lines[firstNonEmptyIndex].trimEnd()} ${hashtag}`;
+
+        const nextText = lines.join("\n");    
+        
+        state.draftPreblastText = nextText;
+        textInput.value = nextText;
     }
 
     function upsertForecastLine(forecastLine = "Forecast: checking conditions...") {

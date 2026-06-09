@@ -9,6 +9,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getAoWeather } from "../services/weather.js";
+import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -126,9 +127,92 @@ export function renderBackblastView () {
         }
     }
 
+    function getBackblastAo() {
+        return state.aos.find(ao => ao.name === session?.aoName);
+    }
+    
+    function getBackblastQSlot() {
+        const ao = getBackblastAo();
+    
+        if (!session || !ao) return null;
+    
+        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+    
+        return state.qSlots.find(slot =>
+            slot.date === session.date &&
+            slot.aoId === ao.id &&
+            (!slot.qUserId || effectiveQIds.includes(slot.qUserId))
+        );
+    }
+    
+    function buildEmphasisHashtag() {
+        const ao = getBackblastAo();
+        const qSlot = getBackblastQSlot();
+    
+        if (!qSlot) return "";
+    
+        const emphasis = getWorkoutEmphasisForSlot(qSlot, ao);
+        const label = qSlot.customEmphasisLabel || emphasis?.label;
+    
+        if (!label) return "";
+    
+        return `#${label.toLowerCase()}`;
+    }
+    
+    function upsertEmphasisHashtag() {
+        const hashtag = buildEmphasisHashtag();
+    
+        if (!hashtag) return;
+    
+        const currentText = state.draftBackblastText || "";
+    
+        const emphasisLabels = [
+            "Heavy",
+            "Upper",
+            "Lower",
+            "Cardio",
+            "Ruck",
+            "Run",
+            "Core",
+            "30/30",
+            "Stairs",
+            "Bootcamp",
+            "MurphTraining",
+            "Other",
+        ];
+    
+        const emphasisRegex = new RegExp(
+            `\\s+#(?:${emphasisLabels.map(label =>
+                label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            ).join("|")})`,
+            "gi"
+        );
+    
+        const withoutOldEmphasis = currentText.replace(emphasisRegex, "");
+    
+        if (withoutOldEmphasis.toLowerCase().includes(hashtag.toLowerCase())) {
+            state.draftBackblastText = withoutOldEmphasis;
+            return;
+        }
+    
+        const lines = withoutOldEmphasis.split("\n");
+        const firstNonEmptyIndex = lines.findIndex(line => line.trim());
+    
+        if (firstNonEmptyIndex === -1) {
+            state.draftBackblastText = hashtag;
+            return;
+        }
+    
+        lines[firstNonEmptyIndex] = `${lines[firstNonEmptyIndex].trimEnd()} ${hashtag}`;
+    
+        state.draftBackblastText = lines.join("\n");
+    }
+
     if (!state.draftBackblastText && session) {
         state.draftBackblastText = generateBackblast(session, state.members);
     }
+
+    upsertEmphasisHashtag();
 
 
     const title = document.createElement("h1");

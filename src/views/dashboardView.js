@@ -1077,7 +1077,15 @@ export function renderDashboard() {
 
             const rowText = document.createElement("div");
             rowText.classList.add("upcoming-q-row-text");
+            
+            const emphasisBadge = createWorkoutEmphasisBadge(slot, ao);
+            
             rowText.append(title);
+            
+            if (emphasisBadge) {
+                emphasisBadge.classList.add("dashboard-q-emphasis");
+                rowText.appendChild(emphasisBadge);
+            }
 
             const rowActions = document.createElement("div");
             rowActions.classList.add("upcoming-q-row-actions");
