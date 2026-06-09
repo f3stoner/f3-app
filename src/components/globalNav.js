@@ -5,8 +5,6 @@ import { closeMainMenu } from "./mainMenu.js";
 const EDIT_ACTION_VIEWS = new Set([
     "workoutPlanner",
     "session",
-    "memberEdit",
-    "aoEdit",
 ]);
 
 export function createGlobalNav () {

@@ -3779,3 +3779,38 @@ textarea {
     -webkit-line-clamp: unset;
     -webkit-box-orient: unset;
 }
+
+.thang-review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.thang-review-card textarea {
+    min-height: 180px;
+}
+
+.checkbox-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 14px;
+}
+
+.checkbox-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.checkbox-chip input {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+}

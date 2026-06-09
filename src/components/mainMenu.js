@@ -97,6 +97,7 @@ export function createMainMenu() {
                 { label: "Region Insights", view: "regionInsights" },
                 { label: "AO Insights", view: "aoInsights" },
                 { label: "Backblast Review", view: "backblastReview"},
+                { label: "Thang Review", view: "thangReview" },
             ]
             : []),
 

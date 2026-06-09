@@ -1938,3 +1938,273 @@ export async function updateSessionAttendanceReviewStatus(regionId, sessionId, s
 
     return mapSessionFromDb(data);
 }
+
+function mapThangCandidateFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        sourceSessionId: row.source_session_id,
+        sourceAoName: row.source_ao_name || "",
+        sourceDate: row.source_date || null,
+        sourceQIds: row.source_q_ids || [],
+        title: row.title || "",
+        content: row.content || "",
+        suggestedEmphasis: row.suggested_emphasis || "",
+        couponRequirement: row.coupon_requirement || "unknown",
+        terrain: row.terrain || [],
+        accessories: row.accessories || [],
+        status: row.status || "needs_review",
+        reviewedByUserId: row.reviewed_by_user_id || null,
+        reviewedAt: row.reviewed_at || null,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        sourceBackblastLinkId: row.source_backblast_link_id || null,
+        terrainOther: row.terrain_other || "",
+        accessoriesOther: row.accessories_other || "",
+    };
+}
+
+function mapThangLibraryItemFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        title: row.title || "",
+        content: row.content || "",
+        emphasis: row.emphasis || "",
+        couponRequirement: row.coupon_requirement || "unknown",
+        terrain: row.terrain || [],
+        accessories: row.accessories || [],
+        sourceType: row.source_type || "backblast",
+        sourceSessionId: row.source_session_id || null,
+        sourceAoName: row.source_ao_name || "",
+        sourceDate: row.source_date || null,
+        sourceQIds: row.source_q_ids || [],
+        submittedByUserId: row.submitted_by_user_id || null,
+        approvedByUserId: row.approved_by_user_id || null,
+        approvedAt: row.approved_at || null,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        sourceBackblastLinkId: row.source_backblast_link_id || null,
+        terrainOther: row.terrain_other || "",
+        accessoriesOther: row.accessories_other || "",
+    };
+}
+
+export async function loadThangCandidates(regionId, { limit = 25, offset = 0 } = {}) {
+    const { data, error } = await supabase
+        .from("thang_candidates")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("status", "needs_review")
+        .order("source_date", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    return (data || []).map(mapThangCandidateFromDb);
+}
+
+export async function insertThangCandidates(regionId, candidates = []) {
+    if (!regionId || candidates.length === 0) return [];
+
+    const payload = candidates.map(candidate => ({
+        id: candidate.id || crypto.randomUUID(),
+        region_id: regionId,
+        source_session_id: candidate.sourceSessionId || null,
+        source_ao_name: candidate.sourceAoName || null,
+        source_date: candidate.sourceDate || null,
+        source_q_ids: candidate.sourceQIds || [],
+        title: candidate.title || "",
+        content: candidate.content || "",
+        suggested_emphasis: candidate.suggestedEmphasis || null,
+        coupon_requirement: candidate.couponRequirement || "unknown",
+        terrain: candidate.terrain || [],
+        accessories: candidate.accessories || [],
+        status: candidate.status || "needs_review",
+        source_backblast_link_id: candidate.sourceBackblastLinkId || null,
+        terrain_other: candidate.terrainOther || null,
+        accessories_other: candidate.accessoriesOther || null,
+    }));
+
+    const { data, error } = await supabase
+    .from("thang_candidates")
+    .upsert(payload, {
+        onConflict: "region_id,source_backblast_link_id",
+        ignoreDuplicates: true,
+    })
+    .select();
+
+    if (error) throw error;
+
+    return (data || []).map(mapThangCandidateFromDb);
+}
+
+export async function updateThangCandidateInCloud(regionId, candidate) {
+    const { data, error } = await supabase
+        .from("thang_candidates")
+        .update({
+            title: candidate.title || "",
+            content: candidate.content || "",
+            suggested_emphasis: candidate.suggestedEmphasis || null,
+            coupon_requirement: candidate.couponRequirement || "unknown",
+            terrain: candidate.terrain || [],
+            accessories: candidate.accessories || [],
+            status: candidate.status || "needs_review",
+            reviewed_by_user_id: candidate.reviewedByUserId || null,
+            reviewed_at: candidate.reviewedAt || null,
+            updated_at: new Date().toISOString(),
+            terrain_other: candidate.terrainOther || null,
+            accessories_other: candidate.accessoriesOther || null,
+        })
+        .eq("id", candidate.id)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapThangCandidateFromDb(data);
+}
+
+export async function approveThangCandidate(regionId, candidate, approvedByUserId) {
+    const approvedAt = new Date().toISOString();
+
+    const { data: libraryItem, error: libraryError } = await supabase
+        .from("thang_library_items")
+        .insert({
+            region_id: regionId,
+            title: candidate.title || "Untitled Thang",
+            content: candidate.content || "",
+            emphasis: candidate.suggestedEmphasis || null,
+            coupon_requirement: candidate.couponRequirement || "unknown",
+            terrain: candidate.terrain || [],
+            accessories: candidate.accessories || [],
+            source_type: "backblast",
+            source_session_id: candidate.sourceSessionId || null,
+            source_ao_name: candidate.sourceAoName || null,
+            source_date: candidate.sourceDate || null,
+            source_q_ids: candidate.sourceQIds || [],
+            approved_by_user_id: approvedByUserId || null,
+            approved_at: approvedAt,
+            source_backblast_link_id: candidate.sourceBackblastLinkId || null,
+            terrain_other: candidate.terrainOther || null,
+            accessories_other: candidate.accessoriesOther || null,
+        })
+        .select()
+        .single();
+
+    if (libraryError) throw libraryError;
+
+    await updateThangCandidateInCloud(regionId, {
+        ...candidate,
+        status: "approved",
+        reviewedByUserId: approvedByUserId || null,
+        reviewedAt: approvedAt,
+    });
+
+    return mapThangLibraryItemFromDb(libraryItem);
+}
+
+export async function rejectThangCandidate(regionId, candidateId, reviewedByUserId) {
+    const { data, error } = await supabase
+        .from("thang_candidates")
+        .update({
+            status: "rejected",
+            reviewed_by_user_id: reviewedByUserId || null,
+            reviewed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", candidateId)
+        .eq("region_id", regionId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapThangCandidateFromDb(data);
+}
+
+export async function loadThangLibraryItems(regionId) {
+    const { data, error } = await supabase
+        .from("thang_library_items")
+        .select("*")
+        .eq("region_id", regionId)
+        .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(mapThangLibraryItemFromDb);
+}
+
+export async function loadSessionsWithBackblastsForThangExtraction(regionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let rows = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("sessions")
+            .select(`
+                id,
+                region_id,
+                date,
+                ao_name,
+                q_ids,
+                q_id,
+                workout,
+                backblast_text
+            `)
+            .eq("region_id", regionId)
+            .not("backblast_text", "is", null)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        rows = rows.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
+
+    return rows.map(mapSessionFromDb);
+}
+
+export async function loadHistoricalBackblastsForThangExtraction(regionId) {
+    const pageSize = 1000;
+    let from = 0;
+    let rows = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("session_backblast_links")
+            .select(`
+                id,
+                session_id,
+                cleaned_content,
+                sessions!inner(
+                    id,
+                    region_id,
+                    date,
+                    ao_name,
+                    q_ids,
+                    q_id,
+                    workout
+                )
+            `)
+            .eq("sessions.region_id", regionId)
+            .not("cleaned_content", "is", null)
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        rows = rows.concat(data);
+
+        if (data.length < pageSize) break;
+        from += pageSize;
+    }
+
+    return rows;
+}

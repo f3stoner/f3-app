@@ -46,6 +46,7 @@ import { loadBackblastLinks } from "./services/cloudData.js";
 import { hasPermission, PERMISSIONS } from "./utils/permissions.js";
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
 import { renderBackblastReview } from "./views/backblastReviewView.js";
+import { renderThangReviewView } from "./views/thangReviewView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -250,6 +251,8 @@ function renderApp() {
         renderAnnouncementManagementView();
     } else if (state.currentView === "backblastReview") {
         renderBackblastReview();
+    } else if (state.currentView === "thangReview") {
+        renderThangReviewView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 
