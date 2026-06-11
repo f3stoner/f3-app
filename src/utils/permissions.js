@@ -15,6 +15,8 @@ export const PERMISSIONS = {
     VIEW_IMPORTS: "view_imports",
     RUN_IMPORTS: "run_imports",
 
+    VIEW_Q_READINESS: "view_q_readiness",
+
     ACCESS_DEBUG_TOOLS: "access_debug_tools",
     ACCESS_ADMIN_SETTINGS: "access_admin_settings",
 };
@@ -35,6 +37,7 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.ACCESS_ADMIN_SETTINGS,
         PERMISSIONS.MANAGE_MEMBERS,
         PERMISSIONS.MANAGE_ANNOUNCEMENTS,
+        PERMISSIONS.VIEW_Q_READINESS,
     ],
 
     dataq: [

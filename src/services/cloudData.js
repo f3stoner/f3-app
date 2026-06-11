@@ -2208,3 +2208,108 @@ export async function loadHistoricalBackblastsForThangExtraction(regionId) {
 
     return rows;
 }
+
+export async function loadQReadiness(regionId, startDate, endDate) {
+    const { data: slots, error: slotsError } = await supabase
+        .from("q_slots")
+        .select(`
+            id,
+            region_id,
+            ao_id,
+            date,
+            q_user_id,
+            preblast_text,
+            preblast_posted_at,
+            override_time,
+            override_title,
+            aos (
+                id,
+                name
+            )
+        `)
+        .eq("region_id", regionId)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .not("q_user_id", "is", null)
+        .order("date", { ascending: true });
+
+    if (slotsError) throw slotsError;
+
+    const slotDates = [...new Set((slots || []).map(slot => slot.date))];
+
+    const { data: members, error: membersError } = await supabase
+        .from("members")
+        .select("id, pax_name")
+        .eq("region_id", regionId);
+
+    if (membersError) throw membersError;
+
+    const { data: workouts, error: workoutsError } = await supabase
+    .from("planned_workouts")
+    .select(`
+        id,
+        region_id,
+        date,
+        ao_name,
+        is_finalized,
+        preblast_text
+    `)
+    .eq("region_id", regionId)
+    .in("date", slotDates);
+
+    if (workoutsError) throw workoutsError;
+
+    const memberMap = new Map(
+        (members || []).map(member => [member.id, member])
+    );
+
+    const workoutMap = new Map();
+
+    (workouts || []).forEach((workout) => {
+        const normalizedAoName = normalizeReadinessAoName(workout.ao_name);
+        const key = `${workout.date}|${normalizedAoName}`;
+    
+        workoutMap.set(key, workout);
+    });
+
+    return (slots || []).map((slot) => {
+        const aoName = slot.aos?.name || "Unknown AO";
+        const normalizedAoName = normalizeReadinessAoName(aoName);
+        const workoutKey =
+        `${slot.date}|${normalizedAoName}`;
+        const workout = workoutMap.get(workoutKey);
+        const member = memberMap.get(slot.q_user_id);
+
+        return {
+            slotId: slot.id,
+            date: slot.date,
+            time: slot.override_time || "",
+            aoId: slot.ao_id,
+            aoName,
+            qId: slot.q_user_id,
+            qName: member?.pax_name || "Unknown Q",
+            workoutId: workout?.id || null,
+            hasWorkout: Boolean(workout),
+            isFinalized: Boolean(workout?.is_finalized),
+            hasPreblast: Boolean(
+                slot.preblast_posted_at ||
+                slot.preblast_text ||
+                workout?.preblast_text
+            ),
+            status: getReadinessStatus(workout, slot),
+        };
+    });
+}
+
+function normalizeReadinessAoName(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase();
+}
+
+function getReadinessStatus(workout, slot) {
+    if (!workout) return "Needs workout";
+    if (!workout.is_finalized) return "Workout draft";
+    if (!(slot.preblast_posted_at || slot.preblast_text || workout.preblast_text)) return "Needs preblast";
+    return "Ready";
+}

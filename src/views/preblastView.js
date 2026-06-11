@@ -404,6 +404,37 @@ export function renderPreblastView() {
 
     mediaSection.append(mediaInput, mediaHelperText, mediaPreviewWrapper);
 
+    async function persistPreblastDraft({ showSuccessToast = false } = {}) {
+        if (!preblastQSlot) {
+            return null;
+        }
+    
+        const savedAt = new Date().toISOString();
+    
+        const updatedQSlot = {
+            ...preblastQSlot,
+            preblastText: textInput.value,
+            preblastLastModifiedAt: savedAt,
+        };
+    
+        const savedQSlot = await updateQSlotInCloud(
+            state.currentRegionId,
+            updatedQSlot
+        );
+    
+        state.qSlots = state.qSlots.map(slot =>
+            slot.id === savedQSlot.id ? savedQSlot : slot
+        );
+    
+        state.draftPreblastText = savedQSlot.preblastText || "";
+    
+        if (showSuccessToast) {
+            showToast("Preblast saved.");
+        }
+    
+        return savedQSlot;
+    }
+
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save Draft";
 
@@ -412,31 +443,13 @@ export function renderPreblastView() {
             showToast("No Q slot found for this preblast.", "error");
             return;
         }
+    
         try {
-            const savedAt = new Date().toISOString();
-
-            const updatedQSlot = {
-                ...preblastQSlot,
-                preblastText: textInput.value,
-                preblastLastModifiedAt: savedAt,
-            };
-
-            const savedQSlot = await updateQSlotInCloud(
-                state.currentRegionId,
-                updatedQSlot
-            );
-
-            state.qSlots = state.qSlots.map(slot =>
-                slot.id === savedQSlot.id ? savedQSlot : slot
-            );
-
-            state.draftPreblastText = savedQSlot.preblastText || "";
-
-            showToast("Preblast saved.");
+            await persistPreblastDraft({ showSuccessToast: true });
         } catch (error) {
             console.error("Failed to save preblast:", error);
             showToast("Failed to save preblast.", "error");
-
+    
             logActionFailure("savePreblast", error, {
                 qSlotId: preblastQSlot.id,
                 plannedWorkoutId: state.selectedPreblastWorkoutId || null,
@@ -449,14 +462,22 @@ export function renderPreblastView() {
 
     copyButton.addEventListener("click", async () => {
         try {
+            await persistPreblastDraft();
+    
             await navigator.clipboard.writeText(textInput.value || "");
             copyButton.textContent = "Copied";
+    
             setTimeout(() => {
                 copyButton.textContent = "Copy Preblast";
             }, 1500);
         } catch (error) {
             console.error("Copy failed:", error);
             showToast("Failed to copy preblast.", "error");
+    
+            logActionFailure("copyPreblast", error, {
+                qSlotId: preblastQSlot?.id || null,
+                plannedWorkoutId: state.selectedPreblastWorkoutId || null,
+            });
         }
     });
 
@@ -467,33 +488,37 @@ export function renderPreblastView() {
         shareButton.disabled = true;
         shareButton.textContent = "Share Not Available";
     } else {
-        shareButton.addEventListener("click", () => {
-            const text = textInput.value || "";
-            const mediaFiles = state.draftPreblastMediaFiles || [];
+        shareButton.addEventListener("click", async () => {
+            try {
+                await persistPreblastDraft();
 
-            let sharePromise;
+                const text = textInput.value || "";
+                const mediaFiles = state.draftPreblastMediaFiles || [];
 
-            if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
-                sharePromise = navigator.share({
-                    text,
-                    files: mediaFiles,
-                });
-            } else {
-                sharePromise = navigator.share({ text });
-            }
-
-            sharePromise.catch((error) => {
+                if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
+                    await navigator.share({
+                        text,
+                        files: mediaFiles,
+                    });
+                } else {
+                    await navigator.share({ text });
+                }
+            } catch (error) {
                 if (error.name === "AbortError") return;
 
                 console.error("Share failed:", error);
                 showToast("Share failed.", "error");
 
                 logActionFailure("sharePreblast", error, {
+                    qSlotId: preblastQSlot?.id || null,
                     plannedWorkoutId: state.selectedPreblastWorkoutId || state.selectedPlannedWorkoutId || null,
-                    mediaFileCount: mediaFiles.length,
-                    usedFilesShare: Boolean(mediaFiles.length && navigator.canShare?.({ files: mediaFiles })),
+                    mediaFileCount: state.draftPreblastMediaFiles?.length || 0,
+                    usedFilesShare: Boolean(
+                        state.draftPreblastMediaFiles?.length &&
+                        navigator.canShare?.({ files: state.draftPreblastMediaFiles })
+                    ),
                 });
-            });
+            }
         });
     }
 

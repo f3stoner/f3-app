@@ -47,6 +47,7 @@ import { hasPermission, PERMISSIONS } from "./utils/permissions.js";
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
 import { renderBackblastReview } from "./views/backblastReviewView.js";
 import { renderThangReviewView } from "./views/thangReviewView.js";
+import { renderQReadinessView } from "./views/qReadinessView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -253,6 +254,8 @@ function renderApp() {
         renderBackblastReview();
     } else if (state.currentView === "thangReview") {
         renderThangReviewView();
+    } else if (state.currentView === "qReadiness") {
+        renderQReadinessView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

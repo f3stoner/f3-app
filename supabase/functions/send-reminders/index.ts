@@ -236,9 +236,18 @@ function getErrorStatusCode(error: unknown) {
 }
 
 serve(async () => {
+  const todayKey = formatDateKey();
+  const tomorrowKey = addDaysToDateKey(todayKey, 1);
+  const timeParts = getTimeParts();
+
   const summary = {
+    todayKey,
+    tomorrowKey,
+    timeParts,
     checkedUsers: 0,
     generatedReminders: 0,
+    qSlotsTomorrow: 0,
+    pushUsersWithTomorrowQ: 0,
     sent: 0,
     skippedDuplicates: 0,
     failed: 0,
@@ -264,12 +273,23 @@ serve(async () => {
     ]);
 
     if (settingsError) throw settingsError;
-
     if (qSlotsError) throw qSlotsError;
-
     if (aosError) throw aosError;
-
     if (profilesError) throw profilesError;
+
+    summary.qSlotsTomorrow = (qSlots || []).filter(
+      (slot) => slot.date === tomorrowKey && slot.q_user_id
+    ).length;
+    
+    summary.pushUsersWithTomorrowQ = (settingsRows || []).filter((settings) => {
+      const profile = profiles?.find((p) => p.id === settings.user_id);
+    
+      return (qSlots || []).some(
+        (slot) =>
+          slot.q_user_id === profile?.member_id &&
+          slot.date === tomorrowKey
+      );
+    }).length;
 
     for (const settings of settingsRows || []) {
       summary.checkedUsers++;

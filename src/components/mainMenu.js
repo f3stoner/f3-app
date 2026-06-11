@@ -104,6 +104,7 @@ export function createMainMenu() {
         ...(canManageAnnouncements
             ? [
                 { label: "Announcements", view: "announcementManagement" },
+                { label: "Q Readiness", view: "qReadiness"},
             ]
             : []),
         

@@ -3814,3 +3814,72 @@ textarea {
     width: 14px;
     height: 14px;
 }
+
+.readiness-date-block {
+    margin-bottom: var(--space-3);
+}
+
+.readiness-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr auto;
+    gap: var(--space-2);
+    align-items: center;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.readiness-row:last-child {
+    border-bottom: none;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.badge.success {
+    background: rgba(85, 168, 104, 0.18);
+}
+
+.badge.warning {
+    background: rgba(244, 182, 63, 0.18);
+}
+
+.badge.danger {
+    background: rgba(239, 68, 68, 0.18);
+}
+
+.readiness-table-header,
+.readiness-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.25fr .5fr;
+    gap: 12px;
+    align-items: center;
+}
+
+.readiness-table-header {
+    padding: 8px 0;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.readiness-table-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.readiness-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.readiness-pb {
+    text-align: center;
+}
