@@ -252,6 +252,10 @@ serve(async () => {
     skippedDuplicates: 0,
     failed: 0,
     disabledDeadSubscriptions: 0,
+    targetSlotSeen: false,
+    targetProfileSeen: false,
+    targetSettingSeen: false,
+    targetMatchSeen: false,
   };
 
   try {
@@ -267,7 +271,11 @@ serve(async () => {
         .select("user_id, push_enabled, push_subscription")
         .eq("push_enabled", true)
         .not("push_subscription", "is", null),
-      supabase.from("q_slots").select("id, ao_id, date, q_user_id"),
+        supabase
+          .from("q_slots")
+          .select("id, ao_id, date, q_user_id")
+          .gte("date", todayKey)
+          .lt("date", addDaysToDateKey(todayKey, 7)),      
       supabase.from("aos").select("id, name, time"),
       supabase.from("profiles").select("id, member_id"),
     ]);
@@ -276,6 +284,35 @@ serve(async () => {
     if (qSlotsError) throw qSlotsError;
     if (aosError) throw aosError;
     if (profilesError) throw profilesError;
+
+    const TARGET_USER_ID = "4b8cbc35-d1ba-45f9-a311-eb3022f9367e";
+    const TARGET_MEMBER_ID = "a6a71044-fc8b-496a-a10e-0fc2bea766fc";
+    const TARGET_SLOT_ID = "21987b1e-e7d3-4d99-9503-2d1fc3ba9862";
+
+    summary.targetSlotSeen = (qSlots || []).some(
+      (slot) => slot.id === TARGET_SLOT_ID
+    );
+
+    summary.targetProfileSeen = (profiles || []).some(
+      (profile) =>
+        profile.id === TARGET_USER_ID &&
+        profile.member_id === TARGET_MEMBER_ID
+    );
+
+    summary.targetSettingSeen = (settingsRows || []).some(
+      (settings) => settings.user_id === TARGET_USER_ID
+    );
+
+    summary.targetMatchSeen = (settingsRows || []).some((settings) => {
+      const profile = profiles?.find((p) => p.id === settings.user_id);
+
+      return (qSlots || []).some(
+        (slot) =>
+          slot.id === TARGET_SLOT_ID &&
+          slot.q_user_id === profile?.member_id &&
+          slot.date === tomorrowKey
+      );
+    });
 
     summary.qSlotsTomorrow = (qSlots || []).filter(
       (slot) => slot.date === tomorrowKey && slot.q_user_id

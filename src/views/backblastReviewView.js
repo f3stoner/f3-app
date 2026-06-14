@@ -37,6 +37,10 @@ export async function renderBackblastReview() {
 
     app.append(header, title, intro);
 
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
+
     const content = document.createElement("div");
     content.classList.add("section");
 
@@ -122,10 +126,6 @@ export async function renderBackblastReview() {
         errorMessage.textContent = "Unable to load backblast review report.";
 
         content.appendChild(errorMessage);
-    }
-
-    if (state.isMainMenuOpen) {
-        document.body.appendChild(createMainMenu());
     }
 }
 

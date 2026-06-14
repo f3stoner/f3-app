@@ -5,6 +5,7 @@ import { formatDate } from "../utils/date.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { loadAoInsightMonths, loadAoInsightSessions } from "../services/cloudData.js";
 import { goBack } from "../utils/navigation.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 
 function normalizeAoName(name = "") {
     return name
@@ -705,6 +706,15 @@ function createSection(title, content) {
 export async function renderAoInsightsView() {
     const app = document.getElementById("app");
 
+    cleanupMainMenu();
+
+    const header = createAppHeader({
+        title: "AO Insights",
+        showBack: true,
+        showMenu: true,
+        fallbackView: "regionInsights",
+    })
+
     const selected = state.selectedAoInsights;
 
     if (!selected) {
@@ -736,12 +746,6 @@ export async function renderAoInsightsView() {
     const insights = buildAoInsights({
         ...selected,
         sessions: selectedSessions,
-    });
-
-    const header = createAppHeader({
-        title: "AO Insights",
-        showBack: true,
-        fallbackView: "regionInsights",
     });
 
     const stickyInsightsNav = document.createElement("div");
@@ -913,4 +917,8 @@ export async function renderAoInsightsView() {
         recentSection,
         nav,
     );
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }
