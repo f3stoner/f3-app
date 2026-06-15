@@ -2228,6 +2228,10 @@ export async function loadQReadiness(regionId, startDate, endDate) {
             aos (
                 id,
                 name
+            ),
+            members!q_slots_q_user_id_fkey (
+                id,
+                pax_name
             )
         `)
         .eq("region_id", regionId)
@@ -2239,13 +2243,6 @@ export async function loadQReadiness(regionId, startDate, endDate) {
     if (slotsError) throw slotsError;
 
     const slotDates = [...new Set((slots || []).map(slot => slot.date))];
-
-    const { data: members, error: membersError } = await supabase
-        .from("members")
-        .select("id, pax_name")
-        .eq("region_id", regionId);
-
-    if (membersError) throw membersError;
 
     const { data: workouts, error: workoutsError } = await supabase
     .from("planned_workouts")
@@ -2262,10 +2259,6 @@ export async function loadQReadiness(regionId, startDate, endDate) {
 
     if (workoutsError) throw workoutsError;
 
-    const memberMap = new Map(
-        (members || []).map(member => [member.id, member])
-    );
-
     const workoutMap = new Map();
 
     (workouts || []).forEach((workout) => {
@@ -2281,7 +2274,7 @@ export async function loadQReadiness(regionId, startDate, endDate) {
         const workoutKey =
         `${slot.date}|${normalizedAoName}`;
         const workout = workoutMap.get(workoutKey);
-        const member = memberMap.get(slot.q_user_id);
+        const member = slot.members;
 
         return {
             slotId: slot.id,

@@ -115,12 +115,23 @@ function createReadinessRow(row) {
 
     const preblastLabel = row.hasPreblast ? "✅" : "❌";
 
-    rowElement.innerHTML = `
-        <div class="readiness-cell readiness-q">${row.qName}</div>
-        <div class="readiness-cell readiness-ao">${row.aoName}</div>
-        <div class="readiness-cell readiness-status">${statusLabel}</div>
-        <div class="readiness-cell readiness-pb">${preblastLabel}</div>
-    `;
+    const qCell = document.createElement("div");
+    qCell.classList.add("readiness-cell", "readiness-q");
+    qCell.textContent = row.qName;
+
+    const aoCell = document.createElement("div");
+    aoCell.classList.add("readiness-cell", "readiness-ao");
+    aoCell.textContent = row.aoName;
+
+    const statusCell = document.createElement("div");
+    statusCell.classList.add("readiness-cell", "readiness-status");
+    statusCell.textContent = statusLabel;
+
+    const pbCell = document.createElement("div");
+    pbCell.classList.add("readiness-cell", "readiness-pb");
+    pbCell.textContent = preblastLabel;
+
+    rowElement.append(qCell, aoCell, statusCell, pbCell);
 
     return rowElement;
 }
@@ -129,12 +140,17 @@ function createTableHeader() {
     const header = document.createElement("div");
     header.classList.add("readiness-table-header");
 
-    header.innerHTML = `
-        <div class="readiness-cell readiness-q">Q Name</div>
-        <div class="readiness-cell readiness-ao">AO</div>
-        <div class="readiness-cell readiness-status">Status</div>
-        <div class="readiness-cell readiness-pb">PB</div>
-    `;
+    [
+        ["readiness-q", "Q Name"],
+        ["readiness-ao", "AO"],
+        ["readiness-status", "Status"],
+        ["readiness-pb", "PB"],
+    ].forEach(([className, text]) => {
+        const cell = document.createElement("div");
+        cell.classList.add("readiness-cell", className);
+        cell.textContent = text;
+        header.appendChild(cell);
+    });
 
     return header;
 }
