@@ -794,7 +794,12 @@ export function renderQSignupView() {
 
             const ao = state.aos.find(a => a.id === slot.aoId);
             const emphasisBadge = createWorkoutEmphasisBadge(slot, ao);
-            const displayTime = slot.overrideTime || ao?.time || "";
+            const dayKey = String(new Date(`${slot.date}T00:00:00`).getDay());
+            const displayTime =
+                slot.overrideTime ||
+                ao?.timeSchedule?.[dayKey] ||
+                ao?.time ||
+                "";
             const displayTitle = slot.overrideTitle || "";
             const isMine = slot.qUserId === state.currentUserMemberId;
             const canEditSlot = canManageQSlots || isMine;

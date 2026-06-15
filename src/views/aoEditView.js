@@ -73,6 +73,7 @@ export function renderAoEditView() {
         ...existingAo, 
         daysOfWeek: [...(existingAo.daysOfWeek || [])],
         emphasisSchedule: { ...(existingAo.emphasisSchedule || {}) },
+        timeSchedule: { ...(existingAo.timeSchedule || {}) },
      }
     : {
         id: crypto.randomUUID(),
@@ -89,6 +90,7 @@ export function renderAoEditView() {
         time: "05:30",
         isActive: true,
         createdAt: new Date().toISOString(),
+        timeSchedule: {},
     };
 
     const title = document.createElement("h1");
@@ -417,7 +419,7 @@ export function renderAoEditView() {
 
     const timeLabel = document.createElement("div");
     timeLabel.classList.add("detail-label");
-    timeLabel.textContent = "Time";
+    timeLabel.textContent = "Default Time";
 
     const timeInput = document.createElement("input");
     timeInput.type = "time";
@@ -434,6 +436,45 @@ export function renderAoEditView() {
     const daysWrap = document.createElement("div");
     daysWrap.classList.add("section", "ao-days-grid");
 
+    const timeScheduleLabel = document.createElement("div");
+    timeScheduleLabel.classList.add("detail-label");
+    timeScheduleLabel.textContent = "Day-Specific Times";
+
+    const timeScheduleWrap = document.createElement("div");
+    timeScheduleWrap.classList.add("section");
+
+    const timeRowsByDay = {};
+
+    DAY_OPTIONS.forEach(day => {
+        const dayKey = String(day.value);
+
+        const row = document.createElement("div");
+        row.classList.add("form-row", "ao-time-day-card");
+        row.hidden = !draftAo.daysOfWeek.includes(day.value);
+        timeRowsByDay[dayKey] = row;
+
+        const label = document.createElement("div");
+        label.classList.add("detail-label");
+        label.textContent = day.label;
+
+        const input = document.createElement("input");
+        input.type = "time";
+        input.value = draftAo.timeSchedule?.[dayKey] || "";
+
+        input.addEventListener("input", event => {
+            const value = event.target.value;
+
+            if (value) {
+                draftAo.timeSchedule[dayKey] = value;
+            } else {
+                delete draftAo.timeSchedule[dayKey];
+            }
+        });
+
+        row.append(label, input);
+        timeScheduleWrap.appendChild(row);
+    });
+
     DAY_OPTIONS.forEach(day => {
         const label = document.createElement("label");
         label.classList.add("ao-day-option");
@@ -444,6 +485,16 @@ export function renderAoEditView() {
 
         checkbox.addEventListener("change", (event) => {
             const dayKey = String(day.value);
+
+            const timeRow = timeRowsByDay[dayKey];
+
+            if (timeRow) {
+                timeRow.hidden = !event.target.checked;
+            }
+
+            if (!event.target.checked) {
+                delete draftAo.timeSchedule[dayKey];
+            }
         
             if (event.target.checked) {
                 if (!draftAo.daysOfWeek.includes(day.value)) {
@@ -494,9 +545,6 @@ export function renderAoEditView() {
     saveButton.addEventListener("click", async () => {
         if (saveButton.disabled) return;
 
-        saveButton.disabled = true;
-        saveButton.textContent = "Saving...";
-
         if (!draftAo.name.trim()) {
             alert("Please enter an AO name.");
             return;
@@ -540,6 +588,16 @@ export function renderAoEditView() {
         draftAo.weatherLocationLabel = (draftAo.weatherLocationLabel || "").trim();
         draftAo.weatherEnabled = Boolean(draftAo.weatherEnabled);
         draftAo.emphasisSchedule = draftAo.emphasisSchedule || {};
+        draftAo.timeSchedule = draftAo.timeSchedule || {};
+
+        Object.keys(draftAo.timeSchedule).forEach(dayKey => {
+            if (!draftAo.daysOfWeek.includes(Number(dayKey))) {
+                delete draftAo.timeSchedule[dayKey];
+            }
+        })
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
 
         try {
             if (isEditing) {
@@ -630,6 +688,8 @@ export function renderAoEditView() {
         timeInput,
         daysLabel,
         daysWrap,
+        timeScheduleLabel,
+        timeScheduleWrap,
         emphasisLabel,
         emphasisWrap,
         activeLabel,

@@ -295,9 +295,11 @@ export function renderDashboard() {
         if (slot.date !== getTodayDate()) return false;
     
         const ao = state.aos.find(a => a.id === slot.aoId);
-        if (!ao?.time) return false;
-    
-        const [hourString, minuteString] = ao.time.split(":");
+        const displayTime = getSlotDisplayTime(slot, ao);
+        
+        if (!displayTime) return false;
+        
+        const [hourString, minuteString] = displayTime.split(":");
         const hour = Number(hourString);
         const minute = Number(minuteString || 0);
     
@@ -310,11 +312,13 @@ export function renderDashboard() {
     }
 
     function getNextQTargetDateTime(slot, ao) {
-        if (!slot || !ao?.time) {
+        const displayTime = getSlotDisplayTime(slot, ao);
+    
+        if (!slot || !ao || !displayTime) {
             return null;
         }
-
-        return `${slot.date}T${ao.time}:00`;
+    
+        return `${slot.date}T${displayTime}:00`;
     }
 
     function getWeatherCacheKey(slot, ao) {
@@ -436,6 +440,24 @@ export function renderDashboard() {
             .sort((a, b) => a.date.localeCompare(b.date));
     }
 
+    function getDayOfWeekFromDateKey(dateKey) {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        return new Date(year, month - 1, day).getDay();
+    }
+    
+    function getSlotDisplayTime(slot, ao) {
+        if (!slot || !ao) return "";
+    
+        const dayKey = String(getDayOfWeekFromDateKey(slot.date));
+    
+        return (
+            slot.overrideTime ||
+            ao.timeSchedule?.[dayKey] ||
+            ao.time ||
+            ""
+        );
+    }
+
     const tomorrowDate = new Date();
     tomorrowDate.setDate(tomorrowDate.getDate() + 1);
 
@@ -456,6 +478,7 @@ export function renderDashboard() {
 
     if (nextQSlot && !unpostedQSession) {
         const ao = state.aos.find(a => a.id === nextQSlot.aoId);
+        const displayTime = getSlotDisplayTime(nextQSlot, ao);
         const weatherCacheKey = getWeatherCacheKey(nextQSlot, ao);
         const nextQWeather = weatherCacheKey
             ? state.weatherByAoDate?.[weatherCacheKey]
@@ -492,9 +515,9 @@ export function renderDashboard() {
         nextQSubtitle.classList.add("stats-line");
 
         nextQSubtitle.textContent = isTodayQ
-            ? (ao?.time ? `Today • ${ao.time}` : "Today")
-            : (ao?.time
-                ? `${formatShortDate(nextQSlot.date)} • ${ao.time}`
+            ? (displayTime ? `Today • ${displayTime}` : "Today")
+            : (displayTime
+                ? `${formatShortDate(nextQSlot.date)} • ${displayTime}`
                 : formatShortDate(nextQSlot.date));
 
         const nextQPreview = document.createElement("div");
