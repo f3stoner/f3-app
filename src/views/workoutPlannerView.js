@@ -953,12 +953,15 @@ export function renderWorkoutPlanner() {
     primaryActionsRow.append(previewButton, saveButton, finalizeButton);
 
     function buildAnnouncementText() {
-        const announcements = state.announcements || [];
-    
-        return announcements
+        return (state.announcements || [])
             .map(announcement => `${announcement.title}\n${announcement.body}`)
             .join("\n\n");
     }
+    
+    if (!draftWorkout.announcementText) {
+        draftWorkout.announcementText = buildAnnouncementText();
+    }
+    
 
     const announcementsLabel = document.createElement("div");
     announcementsLabel.textContent = "Announcements";
@@ -972,30 +975,6 @@ export function renderWorkoutPlanner() {
     announcementsInput.addEventListener("input", event => {
         draftWorkout.announcementText = event.target.value;
         persistDraft();
-    });
-
-    const addAnnouncementsButton = document.createElement("button");
-    addAnnouncementsButton.type = "button";
-    addAnnouncementsButton.classList.add("secondary-button");
-    addAnnouncementsButton.textContent = "Add Active Announcements";
-
-    addAnnouncementsButton.addEventListener("click", () => {
-        const announcementText = buildAnnouncementText();
-    
-        if (!announcementText) {
-            showToast("No active announcements.", "error");
-            return;
-        }
-    
-        draftWorkout.announcementText = announcementText;
-        announcementsInput.value = draftWorkout.announcementText;
-    
-        persistDraft();
-    
-        addAnnouncementsButton.disabled = true;
-        addAnnouncementsButton.textContent = "Announcements Added";
-    
-        showToast("Announcements added.", "success");
     });
 
     app.append(
@@ -1031,7 +1010,6 @@ export function renderWorkoutPlanner() {
         notesTemplateControls,
         announcementsLabel,
         announcementsInput,
-        addAnnouncementsButton,
         shareLabel,
         shareSelect,
         primaryActionsRow,

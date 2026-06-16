@@ -69,12 +69,41 @@ export function renderAnnouncementManagementView() {
     const saveButton = document.createElement("button");
     saveButton.textContent = "Create Announcement";
 
+    const actionRow = document.createElement("div");
+    actionRow.classList.add("button-row");
+
+    const copyAnnouncementsButton = document.createElement("button");
+    copyAnnouncementsButton.type = "button";
+    copyAnnouncementsButton.textContent = "Copy Announcements";
+
+    // no secondary-button class
+
+    copyAnnouncementsButton.addEventListener("click", async () => {
+        const text = buildAnnouncementsCopyText(state.allAnnouncements || []);
+
+        if (!text) {
+            showToast("No active announcements to copy.", "error");
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast("Announcements copied.", "success");
+        } catch (error) {
+            console.error("Failed to copy announcements:", error);
+            showToast("Failed to copy announcements.", "error");
+        }
+    });
+
+    actionRow.append(saveButton, copyAnnouncementsButton);
+
+
     form.append(
         label("Title"), titleInput,
         label("Body"), bodyInput,
         label("Starts On Optional"), startsInput,
         label("Expires After Optional"), endsInput,
-        saveButton,
+        actionRow,
         cancelEditButton,
     );
 
@@ -164,6 +193,13 @@ function label(text) {
     el.classList.add("detail-label");
     el.textContent = text;
     return el;
+}
+
+function buildAnnouncementsCopyText(announcements = []) {
+    return announcements
+        .filter(announcement => announcement.isActive)
+        .map(announcement => `${announcement.title}\n${announcement.body}`)
+        .join("\n\n");
 }
 
 async function moveAnnouncement(announcementId, direction) {
