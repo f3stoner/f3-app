@@ -1613,39 +1613,44 @@ export async function loadAllAnnouncements(regionId) {
     return (data || []).map(mapAnnouncementFromDb);
 }
 
-    export async function insertAnnouncement(regionId, announcement) {
-        const payload = {
-            id: announcement.id,
+export async function insertAnnouncement(regionId, announcement) {
+    const payload = {
+        id: announcement.id,
+        region_id: regionId,
+        scope: announcement.scope || "region",
+        ao_id: announcement.aoId || null,
+        title: announcement.title || "",
+        body: announcement.body || "",
+        starts_on: announcement.startsOn || null,
+        ends_on: announcement.endsOn || null,
+        is_active: announcement.isActive ?? true,
+        created_by_user_id: announcement.createdByUserId || null,
+        include_in_backblast: announcement.includeInBackblast ?? false,
+        display_order: announcement.displayOrder ?? Date.now(),
+        link_url: announcement.linkUrl || null,
+        link_label: announcement.linkLabel || null,
+    };
+
+    const { error } = await supabase
+        .from("announcements")
+        .insert(payload);
+
+    if (error) throw error;
+
+    return mapAnnouncementFromDb(payload);
+}
+
+export async function updateAnnouncementInCloud(regionId, announcement) {
+    const { data, error } = await supabase
+        .from("announcements")
+        .update({
             region_id: regionId,
             scope: announcement.scope || "region",
             ao_id: announcement.aoId || null,
             title: announcement.title || "",
             body: announcement.body || "",
-            starts_on: announcement.startsOn || null,
-            ends_on: announcement.endsOn || null,
-            is_active: announcement.isActive ?? true,
-            created_by_user_id: announcement.createdByUserId || null,
-            include_in_backblast: announcement.includeInBackblast ?? false,
-            display_order: announcement.displayOrder ?? Date.now(),
-        };
-    
-        const { error } = await supabase
-            .from("announcements")
-            .insert(payload);
-    
-        if (error) throw error;
-    
-        return mapAnnouncementFromDb(payload);
-    }
-
-    export async function updateAnnouncementInCloud(regionId, announcement) {
-    const { data, error } = await supabase
-        .from("announcements")
-        .update({
-            scope: announcement.scope || "region",
-            ao_id: announcement.aoId || null,
-            title: announcement.title || "",
-            body: announcement.body || "",
+            link_url: announcement.linkUrl || null,
+            link_label: announcement.linkLabel || null,
             starts_on: announcement.startsOn || null,
             ends_on: announcement.endsOn || null,
             is_active: announcement.isActive ?? true,
@@ -1654,13 +1659,15 @@ export async function loadAllAnnouncements(regionId) {
             display_order: announcement.displayOrder ?? 0,
         })
         .eq("id", announcement.id)
-        .eq("region_id", regionId)
-        .select()
-        .single();
+        .select();
 
     if (error) throw error;
 
-    return mapAnnouncementFromDb(data);
+    if (!data?.length) {
+        throw new Error(`Announcement update failed: no row found for id ${announcement.id}`);
+    }
+
+    return mapAnnouncementFromDb(data[0]);
 }
 
 export async function deleteAnnouncementFromCloud(regionId, announcementId) {
@@ -1668,7 +1675,6 @@ export async function deleteAnnouncementFromCloud(regionId, announcementId) {
         .from("announcements")
         .delete()
         .eq("id", announcementId)
-        .eq("region_id", regionId);
 
     if (error) throw error;
 }
@@ -1689,6 +1695,8 @@ function mapAnnouncementFromDb(row) {
         updatedAt: row.updated_at,
         includeInBackblast: row.include_in_backblast ?? false,
         displayOrder: row.display_order ?? 999,
+        linkUrl: row.link_url || "",
+        linkLabel: row.link_label || "",
     };
 }
 

@@ -12,6 +12,10 @@ import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 
 export function renderPreblastView() {
 
+    function removeUrlProtocol(text = "") {
+        return text.replace(/https?:\/\//gi, "");
+    }
+
     console.log("selectedPreblastWorkoutId:", state.selectedPreblastWorkoutId);
     console.log("selectedPlannedWorkoutId:", state.selectedPlannedWorkoutId);
     console.log("editingPlannedWorkoutId:", state.editingPlannedWorkoutId);
@@ -518,9 +522,14 @@ export function renderPreblastView() {
             try {
                 await persistPreblastDraft();
 
-                const text = textInput.value || "";
                 const mediaFiles = state.draftPreblastMediaFiles || [];
-
+                const rawText = textInput.value || "";
+                const text = mediaFiles.length ? removeUrlProtocol(rawText) : rawText;
+                
+                if (mediaFiles.length && rawText !== text) {
+                    showToast("Links simplified so BAND keeps media attached.", "success");
+                }
+                
                 const sharePayload = {
                     text,
                     ...(mediaFiles.length ? { files: mediaFiles } : {}),

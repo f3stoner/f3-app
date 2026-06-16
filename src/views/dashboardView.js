@@ -992,8 +992,19 @@ export function renderDashboard() {
                     const body = document.createElement("div");
                     body.classList.add("stats-line", "announcement-body", "announcement-expanded-body");
                     body.textContent = announcement.body || "";
-            
+                
                     list.appendChild(body);
+                
+                    if (announcement.linkUrl) {
+                        const link = document.createElement("a");
+                        link.href = announcement.linkUrl;
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                        link.textContent = announcement.linkLabel || "Open Link";
+                        link.classList.add("secondary-button", "announcement-link-button");
+                
+                        list.appendChild(link);
+                    }
                 }
             });
     

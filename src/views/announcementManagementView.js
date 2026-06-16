@@ -55,6 +55,12 @@ export function renderAnnouncementManagementView() {
     const bodyInput = document.createElement("textarea");
     bodyInput.placeholder = "Announcement text";
 
+    const linkUrlInput = document.createElement("input");
+    linkUrlInput.placeholder = "Optional link URL";
+
+    const linkLabelInput = document.createElement("input");
+    linkLabelInput.placeholder = "Optional link label";
+
     const startsInput = document.createElement("input");
     startsInput.type = "date";
 
@@ -101,6 +107,8 @@ export function renderAnnouncementManagementView() {
     form.append(
         label("Title"), titleInput,
         label("Body"), bodyInput,
+        label("Link URL Optional"), linkUrlInput,
+        label("Link Label Optional"), linkLabelInput,
         label("Starts On Optional"), startsInput,
         label("Expires After Optional"), endsInput,
         actionRow,
@@ -125,6 +133,8 @@ export function renderAnnouncementManagementView() {
                     ...existingAnnouncement,
                     title: titleInput.value.trim(),
                     body: bodyInput.value.trim(),
+                    linkUrl: linkUrlInput.value.trim() || null,
+                    linkLabel: linkLabelInput.value.trim() || null,
                     startsOn: startsInput.value || null,
                     endsOn: endsInput.value || null,
                 });
@@ -143,6 +153,8 @@ export function renderAnnouncementManagementView() {
                     scope: "region",
                     title: titleInput.value.trim(),
                     body: bodyInput.value.trim(),
+                    linkUrl: linkUrlInput.value.trim() || null,
+                    linkLabel: linkLabelInput.value.trim() || null,
                     startsOn: startsInput.value || null,
                     endsOn: endsInput.value || null,
                     isActive: true,
@@ -169,6 +181,8 @@ export function renderAnnouncementManagementView() {
     
         titleInput.value = "";
         bodyInput.value = "";
+        linkUrlInput.value = "";
+        linkLabelInput.value = "";
         startsInput.value = "";
         endsInput.value = "";
     
@@ -179,6 +193,8 @@ export function renderAnnouncementManagementView() {
     renderAnnouncementList(list, {
         titleInput,
         bodyInput,
+        linkUrlInput,
+        linkLabelInput,
         startsInput,
         endsInput,
         saveButton,
@@ -198,7 +214,20 @@ function label(text) {
 function buildAnnouncementsCopyText(announcements = []) {
     return announcements
         .filter(announcement => announcement.isActive)
-        .map(announcement => `${announcement.title}\n${announcement.body}`)
+        .map(announcement => {
+            const parts = [
+                announcement.title,
+                announcement.body,
+            ];
+
+            if (announcement.linkUrl) {
+                parts.push(
+                    `${announcement.linkLabel || "Link"}: ${announcement.linkUrl}`
+                );
+            }
+
+            return parts.filter(Boolean).join("\n");
+        })
         .join("\n\n");
 }
 
@@ -319,6 +348,8 @@ function renderAnnouncementList(container, controls) {
 
             controls.titleInput.value = announcement.title || "";
             controls.bodyInput.value = announcement.body || "";
+            controls.linkUrlInput.value = announcement.linkUrl || "";
+            controls.linkLabelInput.value = announcement.linkLabel || "";
             controls.startsInput.value = announcement.startsOn || "";
             controls.endsInput.value = announcement.endsOn || "";
 
@@ -398,6 +429,16 @@ function renderAnnouncementList(container, controls) {
         content.classList.add("admin-announcement-content");
 
         content.append(title, body, meta);
+
+        if (announcement.linkUrl) {
+            const link = document.createElement("a");
+            link.href = announcement.linkUrl;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = announcement.linkLabel || "Open Link";
+            link.classList.add("secondary-button", "announcement-link-button");
+            content.appendChild(link);
+        }
 
         actions.append(moveUpButton, moveDownButton, editButton, toggleButton, deleteButton);
 
