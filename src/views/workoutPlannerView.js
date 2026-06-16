@@ -47,6 +47,12 @@ export function renderWorkoutPlanner() {
         renderApp();
     }
 
+    function buildQSourceText() {
+        return (state.qSources || [])
+            .map(qSource => `${qSource.title}\n${qSource.body}`)
+            .join("\n\n");
+    }
+
     if (state.draftPlannedWorkout) {
         draftWorkout = { ...state.draftPlannedWorkout };
     } else if (isEditing) {
@@ -779,6 +785,19 @@ export function renderWorkoutPlanner() {
     notesLabel.textContent = getWorkoutFieldLabel(state, "notes");
     notesLabel.classList.add("detail-label");
 
+    const qSourceText = buildQSourceText();
+
+    console.log("planner q source debug", {
+        qSources: state.qSources,
+        qSourceText,
+        draftNotes: draftWorkout.notes,
+    });
+
+    if (!draftWorkout.notes && qSourceText) {
+        draftWorkout.notes = qSourceText;
+        persistDraftNow();
+    }
+    
     const notesInput = document.createElement("textarea");
     notesInput.classList.add("notes");
     notesInput.value = draftWorkout.notes || "";
@@ -961,7 +980,6 @@ export function renderWorkoutPlanner() {
     if (!draftWorkout.announcementText) {
         draftWorkout.announcementText = buildAnnouncementText();
     }
-    
 
     const announcementsLabel = document.createElement("div");
     announcementsLabel.textContent = "Announcements";

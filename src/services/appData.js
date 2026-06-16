@@ -171,6 +171,7 @@ export function replacePersistedData({
     savedPlannerSections,
     workoutFieldLabels,
     announcements,
+    qSources,
     memberStats,
     memberStatsByMemberId,
 }) {
@@ -184,6 +185,7 @@ export function replacePersistedData({
     state.savedPlannerSections = savedPlannerSections || [];
     state.workoutFieldLabels = workoutFieldLabels || {};
     state.announcements = announcements || [];
+    state.qSources = qSources || [];
 
     state.memberStats = memberStats = memberStats || [];
     state.memberStatsByMemberId = memberStatsByMemberId || {};
@@ -191,6 +193,10 @@ export function replacePersistedData({
     state.allAnnouncements = null;
     state.hasLoadedAllAnnouncements = false;
     state.isLoadingAllAnnouncements = false;
+
+    state.allQSources = null;
+    state.hasLoadedAllQSources = false;
+    state.isLoadingAllQSources = false;
 
     state.selectedMemberId = null;
     state.selectedAoId = null;

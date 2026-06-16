@@ -92,6 +92,7 @@ export function renderPreblastView() {
     const targetDateTime = getTargetDateTime(preblastQSlot, preblastWorkout, preblastAo);
     
     upsertEmphasisHashtag();
+    upsertQSourceText();
 
     if (preblastAo?.id && targetDateTime && !state.hasAddedPreblastForecast) {
         state.hasAddedPreblastForecast = true;
@@ -254,6 +255,31 @@ export function renderPreblastView() {
     
     
         return `#${label.toLowerCase()}`;
+    }
+
+    function buildQSourceText() {
+        return (state.qSources || [])
+            .map(qSource => `${qSource.title}\n${qSource.body}`)
+            .join("\n\n");
+    }
+
+    function upsertQSourceText() {
+        const qSourceText = buildQSourceText().trim();
+    
+        if (!qSourceText) return;
+    
+        const qSourceBlock = `Q Source:\n${qSourceText}`;
+    
+        const currentText = state.draftPreblastText || "";
+    
+        if (currentText.includes(qSourceBlock)) return;
+    
+        const nextText = currentText.trim()
+            ? `${currentText.trim()}\n\n${qSourceBlock}`
+            : qSourceBlock;
+    
+        state.draftPreblastText = nextText;
+        textInput.value = nextText;
     }
     
     function upsertEmphasisHashtag() {

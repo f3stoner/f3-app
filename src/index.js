@@ -48,6 +48,7 @@ import { renderAnnouncementManagementView } from "./views/announcementManagement
 import { renderBackblastReview } from "./views/backblastReviewView.js";
 import { renderThangReviewView } from "./views/thangReviewView.js";
 import { renderQReadinessView } from "./views/qReadinessView.js";
+import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -256,6 +257,8 @@ function renderApp() {
         renderThangReviewView();
     } else if (state.currentView === "qReadiness") {
         renderQReadinessView();
+    } else if (state.currentView === "qSourceManagement") {
+        renderQSourceManagementView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

@@ -3,6 +3,7 @@ import { logAppEvent } from "./appEvents.js";
 import { supabase } from "./supabaseClient.js";
 import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
 import { subscribeToManagedChannel, unsubscribeManagedChannel } from "./realtime.js";
+import { getTodayDate } from "../utils/date.js";
 
 export async function loadAllSessionsPaginated(regionId) {
     const pageSize = 1000;
@@ -334,6 +335,7 @@ export async function loadRegionData(regionId) {
         adminFlagResult,
         savedPlannerSectionResult,
         announcementResult,
+        qSourceResult,
         memberStatsResult,
     ] = await Promise.all([
         timed(
@@ -381,6 +383,8 @@ export async function loadRegionData(regionId) {
 
         timed("loadRegionData:announcements", loadAnnouncements(regionId)),
 
+        timed("loadRegionData:qSources", loadQSources(regionId)),
+
         timed("loadRegionData:memberStats", loadRegionMemberStats(regionId)),
     ]);
 
@@ -415,6 +419,7 @@ export async function loadRegionData(regionId) {
             .map(mapSavedPlannerSectionFromDb),
         workoutFieldLabels: regionResult.data.workout_field_labels || {},
         announcements: announcementResult,
+        qSources: qSourceResult,
         memberStats: memberStatsResult,
         memberStatsByMemberId: Object.fromEntries(
             memberStatsResult.map(stats => [stats.memberId, stats])
@@ -2308,4 +2313,115 @@ function getReadinessStatus(workout, slot) {
     if (!workout.is_finalized) return "Workout draft";
     if (!(slot.preblast_posted_at || slot.preblast_text || workout.preblast_text)) return "Needs preblast";
     return "Ready";
+}
+
+export async function loadQSources(regionId) {
+    const today = getTodayDate();
+
+    const { data, error } = await supabase
+        .from("q_sources")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("is_active", true)
+        .or(`starts_on.is.null,starts_on.lte.${today}`)
+        .or(`ends_on.is.null,ends_on.gte.${today}`)
+        .order("display_order", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map(mapQSourceFromCloud);
+}
+
+export async function loadAllQSources(regionId) {
+    const { data, error } = await supabase
+        .from("q_sources")
+        .select("*")
+        .eq("region_id", regionId)
+        .order("display_order", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map(mapQSourceFromCloud);
+}
+
+export async function insertQSource(regionId, qSource) {
+    const { data, error } = await supabase
+        .from("q_sources")
+        .insert(mapQSourceToCloud(regionId, qSource))
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapQSourceFromCloud(data);
+}
+
+export async function updateQSourceInCloud(regionId, qSource) {
+    const { data, error } = await supabase
+        .from("q_sources")
+        .update(mapQSourceToCloud(regionId, qSource))
+        .eq("region_id", regionId)
+        .eq("id", qSource.id)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapQSourceFromCloud(data);
+}
+
+export async function deleteQSourceFromCloud(regionId, qSourceId) {
+    const { error } = await supabase
+        .from("q_sources")
+        .delete()
+        .eq("region_id", regionId)
+        .eq("id", qSourceId);
+
+    if (error) throw error;
+}
+
+export async function updateQSourceDisplayOrder(regionId, qSourceId, displayOrder) {
+    const { error } = await supabase
+        .from("q_sources")
+        .update({
+            display_order: displayOrder,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("region_id", regionId)
+        .eq("id", qSourceId);
+
+    if (error) throw error;
+}
+
+function mapQSourceFromCloud(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        scope: row.scope,
+        title: row.title,
+        body: row.body,
+        startsOn: row.starts_on,
+        endsOn: row.ends_on,
+        isActive: row.is_active,
+        createdByUserId: row.created_by_user_id,
+        displayOrder: row.display_order,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
+}
+
+function mapQSourceToCloud(regionId, qSource) {
+    return {
+        id: qSource.id,
+        region_id: regionId,
+        scope: qSource.scope || "region",
+        title: qSource.title || "",
+        body: qSource.body || "",
+        starts_on: qSource.startsOn || null,
+        ends_on: qSource.endsOn || null,
+        is_active: qSource.isActive ?? true,
+        created_by_user_id: qSource.createdByUserId || null,
+        display_order: qSource.displayOrder ?? 0,
+        updated_at: new Date().toISOString(),
+    };
 }

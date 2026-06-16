@@ -10,6 +10,7 @@ export const PERMISSIONS = {
     MANAGE_WORKOUTS: "manage_workouts",
     MANAGE_SESSIONS: "manage_sessions",
     MANAGE_ANNOUNCEMENTS: "manage_announcements",
+    MANAGE_Q_SOURCE: "manage_q_source",
 
     VIEW_TELEMETRY: "view_telemetry",
     VIEW_IMPORTS: "view_imports",
@@ -38,6 +39,7 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.MANAGE_MEMBERS,
         PERMISSIONS.MANAGE_ANNOUNCEMENTS,
         PERMISSIONS.VIEW_Q_READINESS,
+        PERMISSIONS.MANAGE_Q_SOURCE,
     ],
 
     dataq: [

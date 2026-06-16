@@ -61,6 +61,7 @@ export function createMainMenu() {
     const canViewRegionInsights = hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS);
     const canAccessAdminSettings = hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS);
     const canManageAnnouncements = hasPermission(PERMISSIONS.MANAGE_ANNOUNCEMENTS);
+    const canManageQSource = hasPermission(PERMISSIONS.MANAGE_Q_SOURCE);
 
     const overlay = document.createElement("div");
     overlay.classList.add("main-menu-overlay");
@@ -105,6 +106,12 @@ export function createMainMenu() {
             ? [
                 { label: "Announcements", view: "announcementManagement" },
                 { label: "Q Readiness", view: "qReadiness"},
+            ]
+            : []),
+            
+        ...(canManageQSource
+            ?[
+                {label: "Q Source", view: "qSourceManagement"},
             ]
             : []),
         
