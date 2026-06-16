@@ -363,7 +363,7 @@ export function renderBackblastView () {
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "BAND heads up: videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND."
+    mediaHelperText.textContent = "BAND heads up: videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND.";
 
     const mediaPreviewWrapper = document.createElement("div");
     mediaPreviewWrapper.classList.add("preblast-media-preview-wrapper");
@@ -425,23 +425,11 @@ export function renderBackblastView () {
                 const mediaFiles = state.draftBackblastMediaFiles || [];
                 const text = state.draftBackblastText || "";
     
-                const imageFiles = mediaFiles.filter(file =>
-                    file.type.startsWith("image/")
-                );
-    
-                const videoFiles = mediaFiles.filter(file =>
-                    file.type.startsWith("video/")
-                );
-    
-                const hasVideo = videoFiles.length > 0;
-                const filesToShare = hasVideo ? imageFiles : mediaFiles;
-    
-                if (hasVideo) {
-                    showToast("Sharing text/images only. Add videos separately in BAND.", "success");
-                }
-                let sharePromise;
+                const filesToShare = mediaFiles;
 
-                if (filesToShare.length && navigator.canShare?.({ files: filesToShare})) {
+                let sharePromise;
+                
+                if (filesToShare.length && navigator.canShare?.({ files: filesToShare })) {
                     sharePromise = navigator.share({
                         text,
                         files: filesToShare,
@@ -479,10 +467,11 @@ export function renderBackblastView () {
                         logActionFailure("shareBackblast", error, {
                             sessionId: state.selectedSessionId || null,
                             mediaFileCount: mediaFiles.length,
-                            imageFileCount: imageFiles.length,
-                            videoFileCount: videoFiles.length,
                             sharedFileCount: filesToShare.length,
-                            usedFilesShare: Boolean(filesToShare.length && navigator.canShare?.({ files: filesToShare })),
+                            usedFilesShare: Boolean(
+                                filesToShare.length &&
+                                navigator.canShare?.({ files: filesToShare })
+                            ),
                         });
                     });
                 });

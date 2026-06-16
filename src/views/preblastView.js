@@ -281,7 +281,7 @@ export function renderPreblastView() {
         state.draftPreblastText = nextText;
         textInput.value = nextText;
     }
-    
+
     function upsertEmphasisHashtag() {
         const hashtag = buildEmphasisHashtag();
     
@@ -381,7 +381,7 @@ export function renderPreblastView() {
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "BAND heads up: videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND.";
+    mediaHelperText.textContent = "BAND heads up: GIFs/videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND.";
 
     const mediaInput = document.createElement("input");
     mediaInput.classList.add("media-input");
@@ -521,11 +521,18 @@ export function renderPreblastView() {
                 const text = textInput.value || "";
                 const mediaFiles = state.draftPreblastMediaFiles || [];
 
-                if (mediaFiles.length && navigator.canShare?.({ files: mediaFiles })) {
-                    await navigator.share({
-                        text,
-                        files: mediaFiles,
-                    });
+                const sharePayload = {
+                    text,
+                    ...(mediaFiles.length ? { files: mediaFiles } : {}),
+                };
+
+                if (mediaFiles.length) {
+                    if (navigator.canShare?.({ files: mediaFiles })) {
+                        await navigator.share(sharePayload);
+                    } else {
+                        showToast("This device cannot share those media files. Try copy + manual upload.", "error");
+                        return;
+                    }
                 } else {
                     await navigator.share({ text });
                 }
