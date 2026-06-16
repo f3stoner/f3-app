@@ -44,6 +44,13 @@ export function renderBackblastView () {
         renderApp();
     }
 
+    function stripUrls(text = "") {
+        return text.replace(
+            /https?:\/\//gi,
+            ""
+        );
+    }
+
     const header = createAppHeader({
         title: "",
         showBack: true,
@@ -422,10 +429,15 @@ export function renderBackblastView () {
         shareButton.textContent = "Share Not Available";
     } else {
         shareButton.addEventListener("click", () => {
-                const mediaFiles = state.draftBackblastMediaFiles || [];
-                const text = state.draftBackblastText || "";
-    
-                const filesToShare = mediaFiles;
+            const mediaFiles = state.draftBackblastMediaFiles || [];
+            const rawText = state.draftBackblastText || "";
+            const text = mediaFiles.length ? stripUrls(rawText) : rawText;
+            
+            const filesToShare = mediaFiles;
+            
+            if (mediaFiles.length && rawText !== text) {
+                showToast("Links simplified so BAND keeps media attached.", "success");
+            }
 
                 let sharePromise;
                 
