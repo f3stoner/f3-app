@@ -16,6 +16,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getAffectedMemberIdsFromSession } from "../services/cloudData.js";
 import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
+import { doesSearchMatch } from "../utils/search.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -514,15 +515,19 @@ function renderMemberList() {
     const lastPostMap = buildLastPostMapForAo(draftSession.aoName);
     const selectableMembers = getSortedSelectableMembers();
 
-    const searchTerm = (state.sessionSearchTerm || "").trim().toLowerCase();
+    const searchTerm = state.sessionSearchTerm || "";
 
-    const filteredMembers = selectableMembers.filter(member => {
-    const paxName = (member.paxName || "").toLowerCase();
-    const realName = (member.realName || "").toLowerCase();
-
-    return paxName.includes(searchTerm) || realName.includes(searchTerm);
-    });
+    function stripParentheticals(value = "") {
+        return String(value).replace(/\([^)]*\)/g, "");
+    }
     
+    const filteredMembers = selectableMembers.filter(member => {
+        return (
+            doesSearchMatch(member.paxName, searchTerm) ||
+            doesSearchMatch(stripParentheticals(member.realName), searchTerm)
+        );
+    });
+
     const qMembers = selectableMembers.filter(member => 
         getUniqueQIds().includes(normalizeId(member.id))
     );
