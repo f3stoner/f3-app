@@ -398,6 +398,7 @@ export async function loadRegionData(regionId) {
     
     return {
         regionName: regionResult.data.name,
+        fngNamingPostNumber: regionResult.data.fng_naming_post_number ?? 1,
         members: memberResult.map(mapMemberFromDb),
         sessions: sessionResult.map(row => {
             const session = mapSessionFromDb(row);
@@ -1322,6 +1323,7 @@ function mapRegionFromDb(row) {
         name: row.name,
         workoutFieldLabels: row.workout_field_labels || null,
         regionPassword: row.region_password || null,
+        fngNamingPostNumber: row.fng_naming_post_number ?? 1,
     };
 }
 

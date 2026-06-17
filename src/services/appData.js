@@ -237,8 +237,10 @@ export function replacePersistedData({
     qSources,
     memberStats,
     memberStatsByMemberId,
+    fngNamingPostNumber,
 }) {
     state.regionName = regionName;
+    state.fngNamingPostNumber = fngNamingPostNumber || 1;
     state.members = members;
     state.sessions = sessions;
     state.plannedWorkouts = plannedWorkouts;

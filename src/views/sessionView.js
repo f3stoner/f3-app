@@ -5,7 +5,7 @@ import { state } from "../modules/state.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
-import { addSession, updateSession } from "../services/appData.js";
+import { addSession, updateSession, updateMember } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
@@ -14,7 +14,7 @@ import { logSaveFailure } from "../services/appEvents.js";
 import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { getAffectedMemberIdsFromSession } from "../services/cloudData.js";
+import { getAffectedMemberIdsFromSession, loadMemberDashboardStats } from "../services/cloudData.js";
 import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
 import { doesSearchMatch } from "../utils/search.js";
 
@@ -301,6 +301,41 @@ function clearSessionSearch() {
     searchInput.value = "";
 }
 
+function getFngNamingPostNumber() {
+    return Number(state.fngNamingPostNumber || 1);
+}
+
+function isUnnamedFng(member) {
+    return !member.paxName;
+}
+
+function getPriorPostCount(memberId) {
+    return state.sessions.filter(session =>
+        session.attendeeIds?.includes(memberId)
+    ).length;
+}
+
+async function maybePromptForFngName(member) {
+    if (!isUnnamedFng(member)) return;
+
+    const priorPostCount = getPriorPostCount(member.id);
+    const projectedPostCount = priorPostCount + 1;
+
+    if (projectedPostCount < getFngNamingPostNumber()) return;
+
+    const displayName = getMemberDisplayName(member);
+    const paxName = prompt(`${displayName} is posting for the ${projectedPostCount} time. Enter F3 name?`);
+
+    if (!paxName?.trim()) return;
+
+    const updatedMember = {
+        ...member,
+        paxName: paxName.trim(),
+    };
+
+    await updateMember(member.id, updatedMember);
+}
+
 function createMemberCard(member) {
     const card = document.createElement("div");
     card.classList.add("member-card");
@@ -314,7 +349,7 @@ function createMemberCard(member) {
     if ((draftSession.qIds || []).includes(member.id)) {
         qButton.classList.add("q-selected");
     }
-    qButton.addEventListener("click", (event) => {
+    qButton.addEventListener("click", async (event) => {
         event.stopPropagation();
 
         const isSelectedQ = getUniqueQIds().includes(normalizeId(member.id));        if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
@@ -328,18 +363,20 @@ function createMemberCard(member) {
 
         if (!draftSession.attendeeIds.includes(member.id)) {
             draftSession.attendeeIds.push(member.id);
+            await maybePromptForFngName(member);
         }
         clearSessionSearch();
         renderMemberList();
     });
 
 card.append(qButton, name);
-card.addEventListener("click", () => {
+card.addEventListener("click", async () => {
     const isPresent = draftSession.attendeeIds.includes(member.id);
     const isSelectedQ = (draftSession.qIds || []).includes(member.id);
 
     if (!isPresent) {
         draftSession.attendeeIds.push(member.id);
+        await maybePromptForFngName(member);
     } else {
         if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
             return;
@@ -823,7 +860,29 @@ try {
         
         invalidateMemberStatsCache(affectedMemberIds);
         invalidateRecentMemberActivityCache(affectedMemberIds);
+
+        await Promise.all(
+            affectedMemberIds.map(async memberId => {
+                const stats = await loadMemberDashboardStats(state.currentRegionId, memberId);
         
+                if (!stats) return;
+        
+                state.memberStatsByMemberId = {
+                    ...(state.memberStatsByMemberId || {}),
+                    [memberId]: stats,
+                };
+        
+                state.memberStats = [
+                    ...(state.memberStats || []).filter(existing => existing.memberId !== memberId),
+                    {
+                        memberId,
+                        regionId: state.currentRegionId,
+                        ...stats,
+                    },
+                ];
+            })
+        );
+
     const flags = createDuplicateFngNameFlags(
         savedSession,
         state.members,
