@@ -24,6 +24,7 @@ import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { logAppEvent } from "../services/appEvents.js";
 import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
+import { releaseWakeLock } from "../utils/wakelock.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -339,6 +340,7 @@ export function renderDashboard() {
             event.stopPropagation();
     
             clearActiveWorkoutExecution();
+            releaseWakeLock();
             showToast("Workout cleared.", "success");
             renderApp();
         });

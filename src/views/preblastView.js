@@ -16,6 +16,40 @@ export function renderPreblastView() {
         return text.replace(/https?:\/\//gi, "");
     }
 
+    async function copyTextToClipboard(text) {
+        const safeText = text || "";
+    
+        if (!safeText.trim()) {
+            showToast("Nothing to copy.", "error");
+            return false;
+        }
+    
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(safeText);
+            return true;
+        }
+    
+        const fallbackTextarea = document.createElement("textarea");
+        fallbackTextarea.value = safeText;
+        fallbackTextarea.setAttribute("readonly", "");
+        fallbackTextarea.style.position = "fixed";
+        fallbackTextarea.style.left = "-9999px";
+        fallbackTextarea.style.top = "0";
+    
+        document.body.appendChild(fallbackTextarea);
+        fallbackTextarea.focus();
+        fallbackTextarea.select();
+    
+        const successful = document.execCommand("copy");
+        fallbackTextarea.remove();
+    
+        if (!successful) {
+            throw new Error("Fallback copy failed.");
+        }
+    
+        return true;
+    }
+
     console.log("selectedPreblastWorkoutId:", state.selectedPreblastWorkoutId);
     console.log("selectedPlannedWorkoutId:", state.selectedPlannedWorkoutId);
     console.log("editingPlannedWorkoutId:", state.editingPlannedWorkoutId);
@@ -491,11 +525,13 @@ export function renderPreblastView() {
     copyButton.textContent = "Copy Preblast";
 
     copyButton.addEventListener("click", async () => {
-        try {
-            await persistPreblastDraft();
+        const textToCopy = textInput.value || "";
     
-            await navigator.clipboard.writeText(textInput.value || "");
+        try {
+            await copyTextToClipboard(textToCopy);
+    
             copyButton.textContent = "Copied";
+            showToast("Preblast copied.", "success");
     
             setTimeout(() => {
                 copyButton.textContent = "Copy Preblast";
@@ -508,9 +544,17 @@ export function renderPreblastView() {
                 qSlotId: preblastQSlot?.id || null,
                 plannedWorkoutId: state.selectedPreblastWorkoutId || null,
             });
+    
+            return;
+        }
+    
+        try {
+            await persistPreblastDraft();
+        } catch (error) {
+            console.error("Copied, but failed to save preblast:", error);
+            showToast("Copied, but draft was not saved.", "error");
         }
     });
-
     const shareButton = document.createElement("button");
     shareButton.textContent = "Share Preblast";
 
@@ -529,7 +573,7 @@ export function renderPreblastView() {
                 if (mediaFiles.length && rawText !== text) {
                     showToast("Links simplified so BAND keeps media attached.", "success");
                 }
-                
+
                 const sharePayload = {
                     text,
                     ...(mediaFiles.length ? { files: mediaFiles } : {}),

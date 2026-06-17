@@ -229,7 +229,7 @@ export function renderBackblastView () {
     helper.classList.add("detail-label");
     helper.textContent = "Edit before sharing";
 
-    const hasSavedOpener = Boolean(state.customTemplates?.backblastIntro);
+    /*const hasSavedOpener = Boolean(state.customTemplates?.backblastIntro);
 
     let openerExpanded = false;
 
@@ -321,7 +321,7 @@ export function renderBackblastView () {
         renderApp();
     });
 
-    templateSection.append(templateTitle, templateHelper, toggleTemplateButton, applyTemplateButton, templateTextArea, saveTemplateButton);
+    templateSection.append(templateTitle, templateHelper, toggleTemplateButton, applyTemplateButton, templateTextArea, saveTemplateButton);*/
 
     const textArea = document.createElement("textarea");
     textArea.classList.add("preblast-textarea");
@@ -330,22 +330,20 @@ export function renderBackblastView () {
     function autoResize(textarea) {
         textarea.style.height = "auto";
     
-        const maxHeight = textarea === templateTextArea
-            ? 160
-            : Math.floor(window.innerHeight * 0.65);
+        const maxHeight = Math.floor(window.innerHeight * 0.65);
     
         textarea.style.height =
             Math.min(textarea.scrollHeight, maxHeight) + "px";
     }
 
     autoResize(textArea);
-    autoResize(templateTextArea);
+   /* autoResize(templateTextArea);*/
 
     addWeatherToBackblast(session, textArea);
 
-    templateTextArea.addEventListener("input", () => {
+    /*templateTextArea.addEventListener("input", () => {
         autoResize(templateTextArea);
-    })
+    })*/
 
     textArea.addEventListener("input", () => {
         autoResize(textArea);
@@ -410,15 +408,64 @@ export function renderBackblastView () {
 
     mediaSection.append(mediaInput, mediaHelperText, mediaPreviewWrapper);
 
+    async function copyTextToClipboard(text) {
+        const safeText = text || "";
+    
+        if (!safeText.trim()) {
+            showToast("Nothing to copy.", "error");
+            return false;
+        }
+    
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(safeText);
+            return true;
+        }
+    
+        const fallbackTextarea = document.createElement("textarea");
+        fallbackTextarea.value = safeText;
+        fallbackTextarea.setAttribute("readonly", "");
+        fallbackTextarea.style.position = "fixed";
+        fallbackTextarea.style.left = "-9999px";
+        fallbackTextarea.style.top = "0";
+    
+        document.body.appendChild(fallbackTextarea);
+        fallbackTextarea.focus();
+        fallbackTextarea.select();
+    
+        const successful = document.execCommand("copy");
+        fallbackTextarea.remove();
+    
+        if (!successful) {
+            throw new Error("Fallback copy failed.");
+        }
+    
+        return true;
+    }
+
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy Backblast";
-    copyButton.addEventListener("click", () => {
-        console.log("COPYING:", state.draftBackblastText || "");
-        navigator.clipboard.writeText(state.draftBackblastText || "");
-        copyButton.textContent = "Copied";
-        setTimeout(() => {
-            copyButton.textContent = "Copy Backblast"
-        }, 1500);
+    copyButton.addEventListener("click", async () => {
+        const textToCopy = textArea.value || state.draftBackblastText || "";
+    
+        try {
+            await copyTextToClipboard(textToCopy);
+    
+            state.draftBackblastText = textToCopy;
+    
+            copyButton.textContent = "Copied";
+            showToast("Backblast copied.", "success");
+    
+            setTimeout(() => {
+                copyButton.textContent = "Copy Backblast";
+            }, 1500);
+        } catch (error) {
+            console.error("Copy failed:", error);
+            showToast("Failed to copy backblast.", "error");
+    
+            logActionFailure("copyBackblast", error, {
+                sessionId: state.selectedSessionId || null,
+            });
+        }
     });
 
     const shareButton = document.createElement("button");
@@ -524,7 +571,7 @@ export function renderBackblastView () {
         title,
         helper,
         textArea,
-        templateSection,
+        /*templateSection,*/
         mediaSection,
         actionRow
     );

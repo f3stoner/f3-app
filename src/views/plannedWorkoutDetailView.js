@@ -14,6 +14,7 @@ import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { normalizeThangSections } from "../utils/thangs.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { releaseWakeLock, requestWakeLock } from "../utils/wakelock.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -109,6 +110,8 @@ export function launchWorkoutPreview(workout) {
 
 function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") {
     const executionDate = workout.date || getTodayDate();
+
+    requestWakeLock();
     
     state.executionContext = {
         plannedWorkoutId: workout.id,
@@ -787,6 +790,7 @@ export function renderPlannedWorkoutDetail() {
     logButton.addEventListener("click", () => {
         if (isExecutionMode && !isPreviewMode) {
             clearActiveWorkoutExecution();
+            releaseWakeLock();
         }
     
         const sessionDate =
@@ -933,6 +937,7 @@ export function renderPlannedWorkoutDetail() {
                 await deletePlannedWorkout(workout.id);
 
                 clearActiveWorkoutExecution();
+                releaseWakeLock();
 
                 state.selectedPlannedWorkoutId = null;
                 state.editingPlannedWorkoutId = null;
