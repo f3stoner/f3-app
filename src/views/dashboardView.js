@@ -244,6 +244,120 @@ export function renderDashboard() {
         return row;
     }
 
+    function getActiveWorkoutExecution() {
+        try {
+            const activeExecution = JSON.parse(
+                localStorage.getItem("activeWorkoutExecution") || "null"
+            );
+    
+            if (!activeExecution?.plannedWorkoutId) {
+                return null;
+            }
+    
+            const lastUpdatedAt = activeExecution.lastUpdatedAt
+                ? new Date(activeExecution.lastUpdatedAt).getTime()
+                : null;
+    
+            const isStale =
+                lastUpdatedAt &&
+                Date.now() - lastUpdatedAt > 8 * 60 * 60 * 1000;
+    
+            if (isStale) {
+                localStorage.removeItem("activeWorkoutExecution");
+                return null;
+            }
+    
+            return activeExecution;
+        } catch (error) {
+            console.warn("Invalid active workout execution state:", error);
+            localStorage.removeItem("activeWorkoutExecution");
+            return null;
+        }
+    }
+    
+    function clearActiveWorkoutExecution() {
+        localStorage.removeItem("activeWorkoutExecution");
+    }
+    
+    function renderResumeWorkoutSection(activeExecution) {
+        if (!activeExecution?.plannedWorkoutId) return null;
+    
+        const workout = state.plannedWorkouts.find(
+            workout => workout.id === activeExecution.plannedWorkoutId
+        );
+    
+        if (!workout) {
+            clearActiveWorkoutExecution();
+            return null;
+        }
+    
+        const section = document.createElement("div");
+        section.classList.add("section");
+    
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = "Workout In Progress";
+    
+        const card = document.createElement("div");
+        card.classList.add("member-card", "dashboard-next-q-card");
+    
+        const content = document.createElement("div");
+    
+        const title = document.createElement("div");
+        title.classList.add("member-name");
+        title.textContent = workout.title || "Untitled Workout";
+    
+        const subtitle = document.createElement("div");
+        subtitle.classList.add("stats-line");
+        subtitle.textContent = `${formatDate(workout.date)} • ${workout.aoName || "Unknown AO"}`;
+    
+        const preview = document.createElement("div");
+        preview.classList.add("stats-line");
+        preview.textContent = "Reopen your running workout.";
+    
+        const actions = document.createElement("div");
+        actions.classList.add("q-slot-actions");
+    
+        const resumeButton = document.createElement("button");
+        resumeButton.classList.add("primary-button");
+        resumeButton.textContent = "Resume Workout";
+    
+        resumeButton.addEventListener("click", event => {
+            event.stopPropagation();
+    
+            state.selectedPlannedWorkoutId = workout.id;
+            state.plannedWorkoutLaunchMode = "execution";
+    
+            navigateTo("plannedWorkoutDetail");
+        });
+    
+        const clearButton = document.createElement("button");
+        clearButton.classList.add("secondary-button");
+        clearButton.textContent = "Clear";
+    
+        clearButton.addEventListener("click", event => {
+            event.stopPropagation();
+    
+            clearActiveWorkoutExecution();
+            showToast("Workout cleared.", "success");
+            renderApp();
+        });
+    
+        card.addEventListener("click", () => {
+            state.selectedPlannedWorkoutId = workout.id;
+            state.plannedWorkoutLaunchMode = "execution";
+    
+            navigateTo("plannedWorkoutDetail");
+        });
+    
+        content.append(title, subtitle, preview);
+        actions.append(resumeButton, clearButton);
+        card.append(content, actions);
+        section.append(heading, card);
+    
+        return section;
+    }
+
     function findLoggedSessionForSlot(slot) {
         const ao = state.aos.find(a => a.id === slot.aoId);
 
@@ -412,6 +526,18 @@ export function renderDashboard() {
         );
     }
 
+    function saveActiveWorkoutExecution(workout, launchSource = "dashboard_next_q") {
+        localStorage.setItem("activeWorkoutExecution", JSON.stringify({
+            plannedWorkoutId: workout.id,
+            launchSource,
+            workoutDate: workout.date || null,
+            aoName: workout.aoName || null,
+            title: workout.title || null,
+            startedAt: new Date().toISOString(),
+            lastUpdatedAt: new Date().toISOString(),
+        }));
+    }
+
     function getMyUpcomingQSlots() {
         const today = getTodayDate();
 
@@ -471,6 +597,9 @@ export function renderDashboard() {
     const myUpcomingQSlots = getMyUpcomingQSlots();
     const nextQSlot = myUpcomingQSlots[0] || null;
     const unpostedQSession = findMostRecentUnpostedQSession();
+    
+    const activeExecution = getActiveWorkoutExecution();
+    const resumeWorkoutSection = renderResumeWorkoutSection(activeExecution);
 
     let dashboardCtaSection = unpostedQSession
         ? renderPostBackblastCtaSection(unpostedQSession)
@@ -555,6 +684,8 @@ export function renderDashboard() {
 
         const actionButton = document.createElement("button");
         actionButton.classList.add("primary-button");
+
+        const allowLateWorkoutStart = hasPermission(PERMISSIONS.ACCESS_DEBUG_TOOLS);
 
         if (isTodayQ && isPastTodayWorkout && !loggedSession) {
             actionButton.textContent = "Log Session";
@@ -651,11 +782,12 @@ export function renderDashboard() {
             actionButton.addEventListener("click", event => {
                 event.stopPropagation();
         
+                saveActiveWorkoutExecution(matchingWorkout, "dashboard_next_q");
+                        
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
-                state.plannedWorkoutLaunchMode = "execution";
-        
+                state.plannedWorkoutLaunchMode = isTodayQ ? "execution" : null;
                 navigateTo("plannedWorkoutDetail");
-        
+
                 logAppEvent({
                     type: APP_EVENTS.EXECUTION_STARTED,
                     metadata: {
@@ -756,13 +888,29 @@ export function renderDashboard() {
                 state.returnToLaunchModeAfterPlanner = null;
                 navigateTo("workoutPlanner");
             } else {
-                if (!matchingWorkout.isFinalized) {
-                    state.editingPlannedWorkoutId = matchingWorkout.id;
-                    state.selectedPlannedWorkoutId = null;
-                    state.returnToViewAfterPlanner = "dashboard";
-                    state.returnToLaunchModeAfterPlanner = null;
-                    navigateTo("workoutPlanner");
+                if (matchingWorkout && isTodayQ && isPastTodayWorkout && !loggedSession) {
+                    state.draftSession = {
+                        id: crypto.randomUUID(),
+                        date: nextQSlot.date,
+                        aoName: ao?.name || "",
+                        qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
+                        attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
+                        fngs: [],
+                        notes: "",
+                        workout: matchingWorkout || null,
+                        sourcePlannedWorkoutId: matchingWorkout?.id || null,
+                        createdByUserId: state.currentUserId,
+                        createdAt: Date.now(),
+                        backblastText: "",
+                    };
+            
+                    state.editingSessionId = null;
+                    navigateTo("session");
                     return;
+                }
+            
+                if (isTodayQ) {
+                    saveActiveWorkoutExecution(matchingWorkout, "dashboard_next_q_card");
                 }
             
                 state.selectedPlannedWorkoutId = matchingWorkout.id;
@@ -1546,12 +1694,12 @@ export function renderDashboard() {
         ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
         ...(regionSwitcher ? [regionSwitcher] : []),
         userRow,
-        //notificationRow,
+        ...(resumeWorkoutSection ? [resumeWorkoutSection] : []),
         dashboardCtaSection,
         ...(announcementsSection ? [announcementsSection] : []),
         primaryActionsRow,
         myUpcomingQsSection,
-       ...(myStatsSection ? [myStatsSection] : []),
+        ...(myStatsSection ? [myStatsSection] : []),
         recentSessionsSection,
         nav
     );

@@ -24,6 +24,24 @@ const TIMER_SOUND_URL =
 
 const EXECUTION_TEXT_SIZE_KEY = "theQExecutionTextSize";
 
+const ACTIVE_WORKOUT_EXECUTION_KEY = "activeWorkoutExecution";
+
+function saveActiveWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") {
+    localStorage.setItem(ACTIVE_WORKOUT_EXECUTION_KEY, JSON.stringify({
+        plannedWorkoutId: workout.id,
+        launchSource,
+        workoutDate: workout.date || null,
+        aoName: workout.aoName || null,
+        title: workout.title || null,
+        startedAt: new Date().toISOString(),
+        lastUpdatedAt: new Date().toISOString(),
+    }));
+}
+
+function clearActiveWorkoutExecution() {
+    localStorage.removeItem(ACTIVE_WORKOUT_EXECUTION_KEY);
+}
+
 function getExecutionTextSize() {
     return localStorage.getItem(EXECUTION_TEXT_SIZE_KEY) || "large";
 }
@@ -99,6 +117,8 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
         executionDate,
         allowSessionLogging: true,
     };
+
+    saveActiveWorkoutExecution(workout, launchSource);
 
     state.selectedPlannedWorkoutId = workout.id;
     state.plannedWorkoutLaunchMode = "execution";
@@ -203,7 +223,7 @@ export function renderPlannedWorkoutDetail() {
         if (isExecutionMode) {
             const confirmed = isPreviewMode || confirm("Exit workout view?");
             if (!confirmed) return;   
-             
+        
             state.plannedWorkoutLaunchMode = null;
             state.previewWorkout = null;
             state.executionContext = {
@@ -212,7 +232,7 @@ export function renderPlannedWorkoutDetail() {
                 startedAt: null,
                 executionDate: null,
                 allowSessionLogging: true,
-            }
+            };
 
             clearActiveTimerInterval();
 
@@ -225,7 +245,8 @@ export function renderPlannedWorkoutDetail() {
 
             state.currentView = isPreviewMode
                 ? "workoutPlanner"
-                : "plannedWorkoutDetail";
+                : "dashboard";
+
             saveNavState(state);
             renderApp();
             return;
@@ -764,6 +785,10 @@ export function renderPlannedWorkoutDetail() {
     const logButton = document.createElement("button");
     logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
+        if (isExecutionMode && !isPreviewMode) {
+            clearActiveWorkoutExecution();
+        }
+    
         const sessionDate =
             workout.date ||
             state.executionContext?.executionDate ||
@@ -906,6 +931,8 @@ export function renderPlannedWorkoutDetail() {
 
             try {
                 await deletePlannedWorkout(workout.id);
+
+                clearActiveWorkoutExecution();
 
                 state.selectedPlannedWorkoutId = null;
                 state.editingPlannedWorkoutId = null;
