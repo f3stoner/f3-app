@@ -17,6 +17,17 @@ export function renderBackblastView () {
 
     cleanupMainMenu();
 
+    function returnToDashboardAfterShare() {
+        state.draftBackblastMediaFiles = [];
+        state.draftBackblastText = "";
+        state.hasAddedBackblastWeather = false;
+        state.selectedSessionId = null;
+        state.currentView = "dashboard";
+    
+        showToast("Backblast shared.", "success");
+        renderApp();
+    }
+
     async function exitBackblastView() {
         const session = state.sessions.find(
             s => s.id === state.selectedSessionId
@@ -514,8 +525,8 @@ export function renderBackblastView () {
 
                         await updateSession(session.id, updatedSession);
                         Object.assign(session, updatedSession);
-
-                        showToast("Backblast marked as shared.", "success");
+                        
+                        returnToDashboardAfterShare();
                     })
                     .catch((error) => {
                         if (error.name === "AbortError") return;

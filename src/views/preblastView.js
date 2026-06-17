@@ -59,6 +59,19 @@ export function renderPreblastView() {
 
     cleanupMainMenu();
 
+    function returnToDashboardAfterShare() {
+        state.draftPreblastMediaFiles = [];
+        state.draftPreblastText = "";
+        state.activePreblastWorkoutId = null;
+        state.hasAddedPreblastForecast = false;
+        state.selectedPreblastQSlotId = null;
+        state.selectedPreblastWorkoutId = null;
+        state.selectedPlannedWorkoutId = null;
+        state.currentView = "dashboard";
+        showToast("Preblast shared.", "success");
+        renderApp();
+    }
+
     function exitPreblastView() {
         const returnToWorkout = Boolean(state.selectedPlannedWorkoutId);
 
@@ -589,6 +602,9 @@ export function renderPreblastView() {
                 } else {
                     await navigator.share({ text });
                 }
+
+                returnToDashboardAfterShare();
+
             } catch (error) {
                 if (error.name === "AbortError") return;
 
