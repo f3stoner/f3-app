@@ -25,12 +25,32 @@ export function persistAppData() {
     });
 }
 
+function normalizeId(id) {
+    return String(id || "").trim();
+}
+
 function normalizeSessionForSave(session) {
+    const qIds = [...new Set(session.qIds || (session.qId ? [session.qId] : []))]
+        .map(normalizeId)
+        .filter(Boolean);
+
+    const fngMemberIds = (session.fngs || [])
+        .map(fng => normalizeId(fng.memberId))
+        .filter(Boolean);
+
+    const attendeeIds = [
+        ...new Set([
+            ...(session.attendeeIds || []).map(normalizeId),
+            ...qIds,
+            ...fngMemberIds,
+        ]),
+    ].filter(Boolean);
+
     return {
         ...session,
         id: session.id || crypto.randomUUID(),
-        qIds: session.qIds || (session.qId ? [session.qId] : []),
-        attendeeIds: session.attendeeIds || [],
+        qIds,
+        attendeeIds,
         fngs: session.fngs || [],
         notes: session.notes || "",
         workout: session.workout || null,
@@ -40,13 +60,56 @@ function normalizeSessionForSave(session) {
     };
 }
 
+async function ensureFngMembersForSession(activeRegionId, session) {
+    const fngs = [];
+
+    for (const fng of session.fngs || []) {
+        if (!fng.realName && !fng.paxName) continue;
+
+        if (fng.memberId) {
+            fngs.push(fng);
+            continue;
+        }
+
+        const savedMember = await insertMember(activeRegionId, {
+            id: crypto.randomUUID(),
+            realName: fng.realName || "",
+            paxName: fng.paxName || null,
+            status: "active",
+            fngStatus: fng.paxName ? "named" : "unnamed",
+            firstPostDate: session.date || null,
+            invitedById: fng.invitedById || null,
+        });
+
+        state.members.push(savedMember);
+
+        fngs.push({
+            ...fng,
+            memberId: savedMember.id,
+        });
+    }
+
+    const fngMemberIds = fngs
+        .map(fng => normalizeId(fng.memberId))
+        .filter(Boolean);
+
+    return normalizeSessionForSave({
+        ...session,
+        fngs,
+        attendeeIds: [
+            ...(session.attendeeIds || []),
+            ...fngMemberIds,
+        ],
+    });
+}
+
 export async function addSession(session) {
     const activeRegionId = state.currentRegionId;
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
 
-    const normalizedSession = normalizeSessionForSave(session);
+    const normalizedSession = await ensureFngMembersForSession(activeRegionId, session);
 
     console.log("addSession RLS debug", {
         activeRegionId: state.currentRegionId,

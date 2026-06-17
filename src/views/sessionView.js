@@ -158,16 +158,16 @@ function createSelectedPillStrip(qMembers, selectedMembers) {
 
         if (member.isQ) {
             pill.classList.add("selected-pill-q");
-            pill.textContent = `Q: ${member.paxName}`;
+            pill.textContent = `Q: ${getMemberDisplayName(member)}`;
         } else {
-            pill.textContent = member.paxName;
+            pill.textContent = getMemberDisplayName(member);
         }
 
         pill.addEventListener("click", () => {
             const confirmed = confirm(
                 member.isQ
-                    ? `Remove ${member.paxName} as Q and attendee?`
-                    : `Remove ${member.paxName}?`
+                    ? `Remove ${getMemberDisplayName(member)} as Q and attendee?`
+                    : `Remove ${getMemberDisplayName(member)}?`
             );
 
             if (!confirmed) return;
@@ -432,7 +432,9 @@ function createSelectedSection(qMembers, selectedMembers) {
         row.classList.add("selected-summary-row");
 
         const name = document.createElement("span");
-        name.textContent = member.isQ ? `Q: ${member.paxName}` : member.paxName;
+        name.textContent = member.isQ
+            ? `Q: ${getMemberDisplayName(member)}`
+            : getMemberDisplayName(member);
 
         const removeButton = document.createElement("button");
         removeButton.textContent = "Remove";
@@ -488,7 +490,7 @@ function getSortedSelectableMembers() {
                 return aInactive ? 1 : -1;
             }
 
-            return a.paxName.localeCompare(b.paxName);
+            return getMemberDisplayName(a).localeCompare(getMemberDisplayName(b));
         });
 }
 
@@ -650,9 +652,22 @@ if (isEditing && draftSession.fngs.length > 0) {
 let isSavingSession = false;
 
 function normalizeSessionForSave(session) {
-    const rawQIds = session.qIds || (session.qId ? [session.qId] : []);
-    const qIds = [...new Set(session.qIds || [])].filter(Boolean);
-    const attendeeIds = [...new Set([...(session.attendeeIds || []), ...qIds])].filter(Boolean);
+    const qIds = [...new Set(session.qIds || (session.qId ? [session.qId] : []))]
+        .map(normalizeId)
+        .filter(Boolean);
+
+    const fngMemberIds = (session.fngs || [])
+        .map(fng => normalizeId(fng.memberId))
+        .filter(Boolean);
+
+    const attendeeIds = [
+        ...new Set([
+            ...(session.attendeeIds || []).map(normalizeId),
+            ...qIds,
+            ...fngMemberIds,
+        ]),
+    ].filter(Boolean);
+
     const ao = state.aos.find(ao => ao.name === session.aoName);
 
     return {
@@ -754,15 +769,6 @@ saveButton.addEventListener("click", async () => {
 
     draftSession = normalizeSessionForSave(draftSession);
 
-    const shouldPreserveBackblast =
-    draftSession.backblastStatus === "shared" ||
-    draftSession.backblastStatus === "posted" ||
-    draftSession.backblastStatus === "posted_elsewhere";
-
-    if (!shouldPreserveBackblast) {
-        draftSession.backblastText = generateBackblast(draftSession, state.members);
-    }
-
     const validationMessage = validateSessionForSave(draftSession);
     if (validationMessage) {
         alert(validationMessage);
@@ -795,7 +801,7 @@ try {
     const oldSession = isEditing
         ? state.sessions.find(session => session.id === sessionId) || null
         : null;
-        
+
     if (isEditing) {
         await updateSession(sessionId, draftSession);
         savedSession = state.sessions.find(session => session.id === sessionId);
@@ -807,14 +813,17 @@ try {
         savedSession = await addSession(sessionToCreate);
         }
 
-    const affectedMemberIds = [
-        ...getAffectedMemberIdsFromSession(oldSession),
-        ...getAffectedMemberIdsFromSession(savedSession),
-    ];
-    
-    invalidateMemberStatsCache(affectedMemberIds);
-    invalidateRecentMemberActivityCache(affectedMemberIds);
-
+        const affectedMemberIds = [
+            ...new Set([
+                ...getAffectedMemberIdsFromSession(oldSession),
+                ...getAffectedMemberIdsFromSession(savedSession),
+                ...(savedSession?.fngs || []).map(fng => fng.memberId).filter(Boolean),
+            ]),
+        ];
+        
+        invalidateMemberStatsCache(affectedMemberIds);
+        invalidateRecentMemberActivityCache(affectedMemberIds);
+        
     const flags = createDuplicateFngNameFlags(
         savedSession,
         state.members,
@@ -848,9 +857,14 @@ try {
     } else {
         const sessionForBackblast = savedSession || draftSession;
 
-        state.draftBackblastText = 
-            sessionForBackblast.backblastText ||
-            generateBackblast(sessionForBackblast, state.members);
+        const shouldPreserveBackblast =
+            sessionForBackblast.backblastStatus === "shared" ||
+            sessionForBackblast.backblastStatus === "posted" ||
+            sessionForBackblast.backblastStatus === "posted_elsewhere";
+
+        state.draftBackblastText = shouldPreserveBackblast
+            ? sessionForBackblast.backblastText || ""
+            : generateBackblast(sessionForBackblast, state.members);
 
         state.draftBackblastMediaFiles = [];
         state.hasAddedBackblastWeather = false;
