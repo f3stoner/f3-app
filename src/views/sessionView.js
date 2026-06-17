@@ -379,6 +379,13 @@ function createMemberSection(titleText, members, options = {}) {
     return section;
 }
 
+function getDraftAttendeeCount() {
+    return new Set([
+        ...(draftSession.attendeeIds || []),
+        ...(draftSession.qIds || []),
+    ]).size;
+}
+
 function createSelectedSection(qMembers, selectedMembers) {
     const section = document.createElement("div");
     section.classList.add("section");
@@ -386,8 +393,9 @@ function createSelectedSection(qMembers, selectedMembers) {
     const heading = document.createElement("div");
     heading.classList.add("detail-label");
     heading.textContent = state.sessionSelectedExpanded
-        ? `Selected PAX (${selectedMembers.length}) • Tap to collapse`
-        : `Selected PAX (${selectedMembers.length}) • Tap to review/edit`;
+        ? `Selected PAX (${getDraftAttendeeCount()}) • Tap to collapse`
+        : `Selected PAX (${getDraftAttendeeCount()}) • Tap to review/edit`;
+    
     heading.style.cursor = "pointer";
 
     section.appendChild(heading);
@@ -746,6 +754,15 @@ saveButton.addEventListener("click", async () => {
 
     draftSession = normalizeSessionForSave(draftSession);
 
+    const shouldPreserveBackblast =
+    draftSession.backblastStatus === "shared" ||
+    draftSession.backblastStatus === "posted" ||
+    draftSession.backblastStatus === "posted_elsewhere";
+
+    if (!shouldPreserveBackblast) {
+        draftSession.backblastText = generateBackblast(draftSession, state.members);
+    }
+
     const validationMessage = validateSessionForSave(draftSession);
     if (validationMessage) {
         alert(validationMessage);
@@ -778,7 +795,7 @@ try {
     const oldSession = isEditing
         ? state.sessions.find(session => session.id === sessionId) || null
         : null;
-
+        
     if (isEditing) {
         await updateSession(sessionId, draftSession);
         savedSession = state.sessions.find(session => session.id === sessionId);
