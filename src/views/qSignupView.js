@@ -582,9 +582,18 @@ export function renderQSignupView() {
                 alert("Please select a Q.");
                 return;
             }
-
-            await assignQSlot(slot, qSelect.value);
-            overlay.remove();
+        
+            assignButton.disabled = true;
+            assignButton.textContent = "Assigning...";
+        
+            const didAssign = await assignQSlot(slot, qSelect.value);
+        
+            if (didAssign) {
+                overlay.remove();
+            } else {
+                assignButton.disabled = false;
+                assignButton.textContent = "Assign Q";
+            }
         });
 
         buttonRow.append(cancelButton, assignButton);
@@ -655,31 +664,43 @@ export function renderQSignupView() {
     async function assignQSlot(slot, memberId) {
         try {
             const activeRegionId = state.currentRegionId;
-            if(!activeRegionId) {
+    
+            if (!activeRegionId) {
                 throw new Error("No active region id");
             }
-
+    
             if (userAlreadyHasQOnDate(slot.date, memberId, slot.id)) {
                 showToast("That PAX already has a Q scheduled that day.", "error");
-                return;
+                return false;
             }
-
+    
             const updatedSlot = {
                 ...slot,
                 qUserId: memberId,
             };
-
+    
             await updateQSlotInCloud(activeRegionId, updatedSlot);
-
-            patchQSlotInState(updatedSlot);
-
+            await refreshQSlotsFromCloud();
+    
+            showToast("Q assigned.", "success");
             renderApp();
+    
+            return true;
         } catch (error) {
-            console.error("failed to assign Q slot:", error);
+            console.error("Failed to assign Q slot:", error);
             showToast("Failed to assign Q slot.", "error");
+    
+            logActionFailure("assignQSlot", error, {
+                qSlotId: slot?.id || null,
+                aoId: slot?.aoId || null,
+                date: slot?.date || null,
+                assignedMemberId: memberId || null,
+            });
+    
+            return false;
         }
     }
-
+    
     async function deleteQSlot(slot) {
         const confirmed = confirm("Remove this Q slot? It may be recreated if slots are regenerated.");
         if (!confirmed) return;
