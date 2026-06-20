@@ -701,7 +701,6 @@ function normalizeSessionForSave(session) {
         ...new Set([
             ...(session.attendeeIds || []).map(normalizeId),
             ...qIds,
-            ...fngMemberIds,
         ]),
     ].filter(Boolean);
 

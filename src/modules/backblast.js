@@ -53,6 +53,12 @@ export function generateBackblast (session, members) {
     const fngs = session.fngs || [];
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
+    const fngMemberIdSet = new Set(
+        fngs
+            .map(fng => fng.memberId)
+            .filter(Boolean)
+    );
+
     const formattedDate = formatDate(session.date);
 
     const qNames = effectiveQIds
@@ -81,6 +87,7 @@ export function generateBackblast (session, members) {
     
     const paxNamesArray = attendeeIds
         .filter(id => !qIdSet.has(id))
+        .filter(id => !fngMemberIdSet.has(id))
         .map(id => {
             const member = members.find(m => m.id === id);
             return getMemberBackblastName(member);
@@ -109,7 +116,10 @@ export function generateBackblast (session, members) {
     .sort(safeLocaleCompare)
     .join("\n");
 
-    const totalAttendees = attendeeIds.length + fngs.length;
+    const totalAttendees = new Set([
+        ...attendeeIds.filter(id => !fngMemberIdSet.has(id)),
+        ...effectiveQIds,
+    ]).size + fngs.length;
 
     const qNamePlain = sortedQNames.length > 0
         ? sortedQNames.map(name => name.replace(/^@/, "")).join(", ")
