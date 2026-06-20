@@ -290,21 +290,31 @@ export function renderPreblastView() {
     function buildForecastLine(weather) {
         if (!weather || weather.weatherUnavailable) {
             return "Forecast: weather unavailable.";
-        };
-
-        const rainLabel = 
+        }
+    
+        const tempLabel =
+            typeof weather.temp === "number"
+                ? `${weather.temp}°`
+                : "temp unavailable";
+    
+        const humidityLabel =
+            typeof weather.humidity === "number"
+                ? `${weather.humidity}% humidity`
+                : "humidity unavailable";
+    
+        const rainLabel =
             typeof weather.precipChance === "number"
                 ? `${weather.precipChance}% rain`
                 : "rain chance unavailable";
-
+    
         const windLabel =
             typeof weather.windMph === "number"
                 ? `${weather.windMph} mph wind`
                 : "wind unavailable";
-
-        return `Forecast: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}.`;
+    
+        return `Forecast: ${tempLabel}, ${humidityLabel}, ${rainLabel}, ${windLabel}.`;
     }
-
+    
     function buildEmphasisHashtag() {
         const emphasis = preblastQSlot
             ? getWorkoutEmphasisForSlot(preblastQSlot, preblastAo)

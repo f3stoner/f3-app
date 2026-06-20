@@ -113,10 +113,22 @@ export function renderBackblastView () {
     
         const ao = state.aos.find(a => a.name === session.aoName);
     
-        if (!ao?.id || !ao?.time || !session.date) return;
-    
+        const qSlot = getBackblastQSlot();
+
+        const dayKey = session.date
+            ? String(new Date(`${session.date}T12:00:00`).getDay())
+            : "";
+
+        const displayTime =
+            qSlot?.overrideTime ||
+            ao?.timeSchedule?.[dayKey] ||
+            ao?.time ||
+            "";
+
+        if (!ao?.id || !displayTime || !session.date) return;
+
         try {
-            const targetDateTime = `${session.date}T${ao.time}:00`;
+            const targetDateTime = `${session.date}T${displayTime}:00`;
             const startingText = state.draftBackblastText || "";
 
             const weather = await getAoWeather(ao.id, targetDateTime);
@@ -125,8 +137,15 @@ export function renderBackblastView () {
             
             if ((state.draftBackblastText || "") !== startingText) return;
             
-            const weatherLine = `Weather: ${weather.temp ?? "--"}° • ${weather.condition || "Unknown"}${weather.windMph != null ? ` • Wind ${weather.windMph} mph` : ""}`;
-
+            const weatherParts = [
+                weather.temp != null ? `${weather.temp}°` : "--°",
+                weather.humidity != null ? `${weather.humidity}% humidity` : null,
+                weather.precipChance != null ? `${weather.precipChance}% rain` : null,
+                weather.windMph != null ? `Wind ${weather.windMph} mph` : null,
+            ].filter(Boolean);
+            
+            const weatherLine = `Weather: ${weatherParts.join(" • ")}`;
+            
             const alreadyHasWeather = /^weather:/im.test(startingText);
 
             if (alreadyHasWeather) {
