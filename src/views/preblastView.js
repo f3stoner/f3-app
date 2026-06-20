@@ -133,12 +133,22 @@ export function renderPreblastView() {
 
     function getTargetDateTime(qSlot, workout, ao) {
         const date = qSlot?.date || workout?.date;
-
-        if (!date || !ao?.time) return null;
-
-        return`${date}T${ao.time}:00`;
+    
+        const dayKey = date
+            ? String(new Date(`${date}T12:00:00`).getDay())
+            : "";
+    
+        const displayTime =
+            qSlot?.overrideTime ||
+            ao?.timeSchedule?.[dayKey] ||
+            ao?.time ||
+            "";
+    
+        if (!date || !displayTime) return null;
+    
+        return `${date}T${displayTime}:00`;
     }
-
+    
     const preblastAo = getPreblastAo(preblastQSlot, preblastWorkout);
     const targetDateTime = getTargetDateTime(preblastQSlot, preblastWorkout, preblastAo);
     

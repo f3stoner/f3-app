@@ -82,25 +82,23 @@ function getTargetParts(targetDateTime?: string) {
       targetHourKey: `${fallbackDate}T${String(fallbackHour).padStart(2, "0")}`,
     };
   }
-  let forecastDate = targetDateTime.slice(0, 10);
-  let forecastHour = Number(targetDateTime.slice(11, 13));
 
-  const minute = Number(targetDateTime.slice(14, 16));
+  // Expected format: local AO time, e.g. "2026-06-20T05:30:00"
+  // Do NOT send "2026-06-20T10:30:00.000Z" from the frontend.
+  const forecastDate = targetDateTime.slice(0, 10);
+  const forecastHour = Number(targetDateTime.slice(11, 13));
 
-  if (Number.isNaN(forecastHour)) {
-    forecastHour = fallback.getHours();
+  if (!forecastDate || Number.isNaN(forecastHour)) {
+    const fallbackDate = fallback.toISOString().slice(0, 10);
+    const fallbackHour = fallback.getHours();
+
+    return {
+      forecastDate: fallbackDate,
+      forecastHour: fallbackHour,
+      targetHourKey: `${fallbackDate}T${String(fallbackHour).padStart(2, "0")}`,
+    };
   }
 
-  if (!Number.isNaN(minute) && minute >= 30) {
-    forecastHour += 1;
-  }
-
-  if (forecastHour >= 24) {
-    const rollover = new Date(`${forecastDate}T12:00:00`);
-    rollover.setDate(rollover.getDate() + 1);
-    forecastDate = rollover.toISOString().slice(0, 10);
-    forecastHour = 0;
-  }
   return {
     forecastDate,
     forecastHour,
@@ -140,24 +138,25 @@ function findHourlyIndex(hourlyTimes: string[], targetHourKey: string) {
 function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
   const hourly = raw.hourly ?? {};
   const daily = raw.daily ?? {};
-  const current = raw.current ?? {};
 
   const hourlyIndex = findHourlyIndex(hourly.time ?? [], targetHourKey);
+  const forecastDate = targetHourKey.slice(0, 10);
+  const dailyIndex = Array.isArray(daily.time)
+    ? daily.time.findIndex((date: string) => date === forecastDate)
+    : -1;
 
   if (hourlyIndex < 0) {
     return {
       weatherUnavailable: true,
       reason: "Forecast not available yet",
       targetHourKey,
+      availableSample: hourly.time?.slice?.(0, 5) ?? [],
       source: PROVIDER,
       fetchedAt: new Date().toISOString(),
     };
   }
 
-  const weatherCode =
-    hourly.weather_code?.[hourlyIndex] ??
-    current.weather_code ??
-    null;
+  const weatherCode = hourly.weather_code?.[hourlyIndex] ?? null;
 
   const codeInfo =
     typeof weatherCode === "number"
@@ -172,26 +171,61 @@ function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
           severe: false,
         };
 
+        console.log("HOURLY WEATHER SELECTION", {
+          targetHourKey,
+          hourlyIndex,
+          selectedTime: hourly.time?.[hourlyIndex],
+          weatherCode: hourly.weather_code?.[hourlyIndex],
+          weatherCondition: codeInfo.condition,
+          precipChance: hourly.precipitation_probability?.[hourlyIndex],
+          temp: hourly.temperature_2m?.[hourlyIndex],
+          windMph: hourly.wind_speed_10m?.[hourlyIndex],
+          nearbyHours: hourly.time
+            ?.slice(Math.max(0, hourlyIndex - 2), hourlyIndex + 3)
+            ?.map((time: string, offset: number) => {
+              const index = Math.max(0, hourlyIndex - 2) + offset;
+        
+              return {
+                time,
+                weatherCode: hourly.weather_code?.[index],
+                precipChance: hourly.precipitation_probability?.[index],
+                temp: hourly.temperature_2m?.[index],
+              };
+            }),
+        });
+
   return {
     aoId: ao.id,
     aoName: ao.name,
     locationLabel: ao.weather_location_label ?? ao.name,
+
     targetTime: hourly.time?.[hourlyIndex] ?? null,
     targetHourKey,
-    temp: roundNumber(hourly.temperature_2m?.[hourlyIndex] ?? current.temperature_2m),
-    feelsLike: roundNumber(hourly.apparent_temperature?.[hourlyIndex] ?? current.apparent_temperature),
+
+    temp: roundNumber(hourly.temperature_2m?.[hourlyIndex]),
+    feelsLike: roundNumber(hourly.apparent_temperature?.[hourlyIndex]),
     condition: codeInfo.condition,
     weatherCode,
     icon: codeInfo.icon,
     precipChance: roundNumber(hourly.precipitation_probability?.[hourlyIndex]),
-    windMph: roundNumber(hourly.wind_speed_10m?.[hourlyIndex] ?? current.wind_speed_10m),
-    humidity: roundNumber(hourly.relative_humidity_2m?.[hourlyIndex] ?? current.relative_humidity_2m),
+    windMph: roundNumber(hourly.wind_speed_10m?.[hourlyIndex]),
+    humidity: roundNumber(hourly.relative_humidity_2m?.[hourlyIndex]),
+
     severeAlert: codeInfo.severe,
     alertSummary: codeInfo.severe ? codeInfo.condition : null,
-    sunrise: daily.sunrise?.[0] ?? null,
-    sunset: daily.sunset?.[0] ?? null,
+
+    sunrise: dailyIndex >= 0 ? daily.sunrise?.[dailyIndex] ?? null : null,
+    sunset: dailyIndex >= 0 ? daily.sunset?.[dailyIndex] ?? null : null,
+
     source: PROVIDER,
     fetchedAt: new Date().toISOString(),
+
+    selectionDebug: {
+      hourlyIndex,
+      selectedHourlyTime: hourly.time?.[hourlyIndex] ?? null,
+      selectedWeatherCode: weatherCode,
+      selectedPrecipChance: hourly.precipitation_probability?.[hourlyIndex] ?? null,
+    },
   };
 }
 
@@ -262,6 +296,22 @@ Deno.serve(async (req) => {
       .eq("forecast_hour", forecastHour)
       .maybeSingle();
 
+      if (cached && new Date(cached.expires_at) > new Date()) {
+        console.log("WEATHER CACHE HIT", {
+          aoId,
+          targetDateTime,
+          forecastDate,
+          forecastHour,
+          targetHourKey,
+          cachedWeather: cached.normalized_weather,
+        });
+      
+        return jsonResponse({
+          ...cached.normalized_weather,
+          cached: true,
+        });
+      }
+
     if (cached && new Date(cached.expires_at) > new Date()) {
       return jsonResponse({
         ...cached.normalized_weather,
@@ -307,8 +357,19 @@ Deno.serve(async (req) => {
         fetchedAt: new Date().toISOString(),
       });
     }
+
     const rawWeather = await weatherResponse.json();
     const normalizedWeather = normalizeWeather(rawWeather, ao, targetHourKey);
+
+    console.log("WEATHER DEBUG", {
+      aoName: ao.name,
+      targetDateTime,
+      targetHourKey,
+      forecastDate,
+      forecastHour,
+      normalizedWeather,
+    });
+
     const expiresAt = getCacheExpiration(forecastDate);
 
     const { error: cacheError } = await supabase

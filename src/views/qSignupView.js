@@ -18,7 +18,9 @@ import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
+
 
 let qSlotRealtimeChannel = null;
 let qSlotRealtimeRegionId = null;
@@ -38,7 +40,10 @@ export function cleanupQSlotRealtime() {
     qSlotRealtimeRegionId = null;
 }
 
-registerViewCleanup("qSignup", cleanupQSlotRealtime);
+registerViewCleanup("qSignup", () => {
+    cleanupQSlotRealtime();
+    closeActiveModal();
+});
 
 function setupQSlotRealtime() {
     if (!state.currentRegionId) return;
@@ -265,12 +270,8 @@ export function renderQSignupView() {
     }
 
     function openAddSlotModal() {
-        const overlay = document.createElement("div");
-        overlay.classList.add("modal-overlay");
-
-        const modal = document.createElement("div");
-        modal.classList.add("modal");
-
+        const { modal, closeModal } = createModalShell();
+        
         const heading = document.createElement("h2");
         heading.textContent = "Add One-Off Slot";
 
@@ -351,7 +352,7 @@ export function renderQSignupView() {
         cancelButton.textContent = "Cancel";
 
         cancelButton.addEventListener("click", () => {
-            overlay.remove();
+            closeModal();
         });
 
         const createButton = document.createElement("button");
@@ -398,7 +399,7 @@ export function renderQSignupView() {
                 await insertQSlot(activeRegionId, newSlot);
                 await refreshQSlotsFromCloud();
 
-                overlay.remove();
+                closeModal();
                 renderApp();
             } catch (error) {
                 console.error("Failed to create one-off Q slot:", error);
@@ -424,17 +425,10 @@ export function renderQSignupView() {
             titleInput,
             buttonRow
         );
-
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
     }
 
     function openEditSlotModal(slot) {
-        const overlay = document.createElement("div");
-        overlay.classList.add("modal-overlay");
-    
-        const modal = document.createElement("div");
-        modal.classList.add("modal");
+        const { modal, closeModal } = createModalShell();
     
         const heading = document.createElement("h2");
         heading.textContent = "Edit Slot";
@@ -480,7 +474,7 @@ export function renderQSignupView() {
         cancelButton.textContent = "Cancel";
     
         cancelButton.addEventListener("click", () => {
-            overlay.remove();
+            closeModal();
         });
     
         const saveButton = document.createElement("button");
@@ -504,7 +498,7 @@ export function renderQSignupView() {
     
                 await refreshQSlotsFromCloud();
     
-                overlay.remove();
+                closeModal();
                 showToast("Q slot updated.", "success");
                 renderApp();
             } catch (error) {
@@ -526,18 +520,11 @@ export function renderQSignupView() {
             titleLabel,
             titleInput,
             buttonRow
-        );
-    
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
+        );    
     }
 
     function openAssignQModal(slot) {
-        const overlay = document.createElement("div");
-        overlay.classList.add("modal-overlay");
-
-        const modal = document.createElement("div");
-        modal.classList.add("modal");
+        const { modal, closeModal } = createModalShell();
 
         const heading = document.createElement("h2");
         heading.textContent = "Assign Q";
@@ -571,7 +558,7 @@ export function renderQSignupView() {
         cancelButton.textContent = "Cancel";
 
         cancelButton.addEventListener("click", ()=> {
-            overlay.remove();
+            closeModal();
         });
 
         const assignButton = document.createElement("button");
@@ -589,7 +576,7 @@ export function renderQSignupView() {
             const didAssign = await assignQSlot(slot, qSelect.value);
         
             if (didAssign) {
-                overlay.remove();
+                closeModal();
             } else {
                 assignButton.disabled = false;
                 assignButton.textContent = "Assign Q";
@@ -604,9 +591,6 @@ export function renderQSignupView() {
             qSelect,
             buttonRow
         );
-
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
     }
 
     async function claimQSlot(slot) {

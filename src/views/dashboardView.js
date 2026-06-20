@@ -501,18 +501,27 @@ export function renderDashboard() {
             return;
         }
 
+        const tempLabel =
+            typeof weather.temp === "number"
+                ? `${weather.temp}°`
+                : "Temp unavailable";
+
+        const humidityLabel =
+            typeof weather.humidity === "number"
+                ? `${weather.humidity}% humidity`
+                : "humidity unavailable";
+
         const rainLabel =
             typeof weather.precipChance === "number"
                 ? `${weather.precipChance}% rain`
-                : "Rain chance unavailable";
+                : "rain unavailable";
 
-        const weatherIcon = createWeatherIcon(weather.icon);
+        const windLabel =
+            typeof weather.windMph === "number"
+                ? `${weather.windMph} mph wind`
+                : "wind unavailable";
 
-        const weatherText = document.createElement("span");
-        weatherText.textContent =
-            `${weather.temp}° · ${weather.condition} · ${rainLabel}`;
-
-        weatherLine.append(weatherIcon, weatherText);
+        weatherLine.textContent = `${tempLabel} · ${humidityLabel} · ${rainLabel} · ${windLabel}`;
     }
 
     function patchNextQWeather(cacheKey) {

@@ -22,6 +22,11 @@ function formatDateKey(date) {
     return `${year}-${month}-${day}`;
 }
 
+function getDayOfWeekFromDateKey(dateKey) {
+    const [year, month, day] = dateKey.split("-").map(Number);
+    return new Date(year, month - 1, day).getDay();
+}
+
 function getMondayForDate(dateString = getTodayDate()) {
     const date = new Date(`${dateString}T12:00:00`);
     const day = date.getDay();
@@ -51,16 +56,22 @@ function getAoForSlot(slot) {
     return state.aos.find(ao => ao.id === slot.aoId) || null;
 }
 
-function getWeatherTargetDateTime(date, ao) {
-    if (!date || !ao?.time) {
+function getWeatherTargetDateTime(date, ao, slot = null) {
+    const displayTime =
+        slot?.overrideTime ||
+        ao?.timeSchedule?.[String(getDayOfWeekFromDateKey(date))] ||
+        ao?.time ||
+        "";
+
+    if (!date || !displayTime) {
         return null;
     }
 
-    return `${date}T${ao.time}:00-05:00`;
+    return `${date}T${displayTime}:00`;
 }
 
-function getWeatherCacheKey(date, ao) {
-    const targetDateTime = getWeatherTargetDateTime(date, ao);
+function getWeatherCacheKey(date, ao, slot = null) {
+    const targetDateTime = getWeatherTargetDateTime(date, ao, slot);
 
     if (!ao?.id || !targetDateTime) {
         return null;
@@ -111,9 +122,9 @@ function patchWeeklyWeather(cacheKey) {
     );
 }
 
-async function loadWeeklyWeather(date, ao) {
-    const targetDateTime = getWeatherTargetDateTime(date, ao);
-    const cacheKey = getWeatherCacheKey(date, ao);
+async function loadWeeklyWeather(date, ao, slot = null) {
+    const targetDateTime = getWeatherTargetDateTime(date, ao, slot);
+    const cacheKey = getWeatherCacheKey(date, ao, slot);
 
     if (!ao?.id || !targetDateTime || !cacheKey) {
         return;
@@ -269,7 +280,7 @@ export function renderWeeklyQCalendarView() {
                 const isMine = slot.qUserId === state.currentUserMemberId;
                 const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
 
-                const weatherCacheKey = getWeatherCacheKey(slot.date, ao);
+                const weatherCacheKey = getWeatherCacheKey(slot.date, ao, slot);
 
                 const weather = weatherCacheKey
                     ? state.weatherByAoDate?.[weatherCacheKey]
@@ -313,7 +324,14 @@ export function renderWeeklyQCalendarView() {
 
                 const metaLine = document.createElement("div");
                 metaLine.classList.add("stats-line");
-                metaLine.textContent = ao?.time ? `Start: ${ao.time}` : "No time set";
+
+                const displayTime =
+                    slot.overrideTime ||
+                    ao?.timeSchedule?.[String(getDayOfWeekFromDateKey(slot.date))] ||
+                    ao?.time ||
+                    "";
+                
+                metaLine.textContent = displayTime ? `Start: ${displayTime}` : "No time set";
 
                 slotMain.append(
                     aoRow,
@@ -434,7 +452,7 @@ export function renderWeeklyQCalendarView() {
                     actions.appendChild(workoutButton);
                 }
 
-                loadWeeklyWeather(slot.date, ao);
+                loadWeeklyWeather(slot.date, ao, slot);
 
                 slotRow.append(slotMain, actions);
                 dayCard.appendChild(slotRow);
