@@ -33,6 +33,21 @@ function buildConditionsLine(weather) {
     return `Conditions: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}.`;
 }
 
+function safeString(value, fallback = "Unknown") {
+    const text = String(value || "").trim();
+    return text || fallback;
+}
+
+function safeLocaleCompare(a, b) {
+    return safeString(a, "").localeCompare(safeString(b, ""));
+}
+
+function getMemberBackblastName(member) {
+    if (!member) return "Unknown";
+
+    return safeString(member.paxName || member.realName, "Unknown");
+}
+
 export function generateBackblast (session, members) {
     const attendeeIds = session.attendeeIds || [];
     const fngs = session.fngs || [];
@@ -52,7 +67,7 @@ export function generateBackblast (session, members) {
                 });
                 return null;
             }
-            return `@${matchedMember.paxName}`;
+            return `@${getMemberBackblastName(matchedMember)}`;
         })
         .filter(Boolean)
     
@@ -67,10 +82,10 @@ export function generateBackblast (session, members) {
     const paxNamesArray = attendeeIds
         .filter(id => !qIdSet.has(id))
         .map(id => {
-        const member = members.find(m => m.id === id);
-        return member ? member.paxName : "Unknown";
-    })
-    .sort((a, b) => a.localeCompare(b));
+            const member = members.find(m => m.id === id);
+            return getMemberBackblastName(member);
+        })
+        .sort(safeLocaleCompare);
 
     const paxNames = paxNamesArray.length > 0 
     ? paxNamesArray.map(name => `@${name}`).join("\n") 
@@ -86,12 +101,12 @@ export function generateBackblast (session, members) {
         if (!fng.invitedById) return displayName;
 
         const inviter = members.find(m => m.id === fng.invitedById);
-        const inviterName = inviter ? inviter.paxName : "Unknown";
+        const inviterName = getMemberBackblastName(inviter);
 
         return `${displayName} (Invited by @${inviterName})`;
 
     })
-    .sort((a, b) => a.localeCompare(b))
+    .sort(safeLocaleCompare)
     .join("\n");
 
     const totalAttendees = attendeeIds.length + fngs.length;
