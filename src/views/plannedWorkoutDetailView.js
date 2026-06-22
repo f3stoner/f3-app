@@ -567,6 +567,91 @@ export function renderPlannedWorkoutDetail() {
             return true;
         }
 
+        function getIntervalPhaseDurationSeconds(timer, phase) {
+            return phase === "rest"
+                ? timer.restSeconds ?? 15
+                : timer.workSeconds || 45;
+        }
+        
+        function advanceIntervalPhase(timer) {
+            const currentPhase = state.activeWorkoutTimerPhase || "work";
+            const currentRound = state.activeWorkoutTimerRound || 1;
+            const totalRounds = timer.rounds || 1;
+            const expiredDeadline = state.activeWorkoutTimerDeadlineAt || Date.now();
+        
+            if (currentPhase === "work") {
+                state.activeWorkoutTimerPhase = "rest";
+                state.activeWorkoutTimerRemainingSeconds = timer.restSeconds ?? 15;
+                state.activeWorkoutTimerDeadlineAt =
+                    expiredDeadline + getIntervalPhaseDurationSeconds(timer, "rest") * 1000;
+        
+                return false;
+            }
+        
+            if (currentRound >= totalRounds) {
+                state.activeWorkoutTimerRemainingSeconds = 0;
+                state.activeWorkoutTimerStatus = "done";
+                state.activeWorkoutTimerDeadlineAt = null;
+                state.activeWorkoutTimerPhase = null;
+                return true;
+            }
+        
+            state.activeWorkoutTimerRound = currentRound + 1;
+            state.activeWorkoutTimerPhase = "work";
+            state.activeWorkoutTimerRemainingSeconds = timer.workSeconds || 45;
+            state.activeWorkoutTimerDeadlineAt =
+                expiredDeadline + getIntervalPhaseDurationSeconds(timer, "work") * 1000;
+        
+            return false;
+        }
+        
+        function syncIntervalTimer(now = Date.now()) {
+            state.activeWorkoutTimerPhase ||= "work";
+            state.activeWorkoutTimerRound ||= 1;
+        
+            if (!state.activeWorkoutTimerDeadlineAt) {
+                state.activeWorkoutTimerDeadlineAt =
+                    now + (state.activeWorkoutTimerRemainingSeconds || getIntervalPhaseDurationSeconds(timer, state.activeWorkoutTimerPhase)) * 1000;
+                return false;
+            }
+        
+            let crossedBoundary = false;
+            let completed = false;
+            const totalRounds = timer.rounds || 1;
+            const maxTransitions = Math.max(2, totalRounds * 2 + 1);
+            let transitions = 0;
+        
+            while (
+                state.activeWorkoutTimerStatus === "running" &&
+                state.activeWorkoutTimerDeadlineAt &&
+                now >= state.activeWorkoutTimerDeadlineAt &&
+                transitions < maxTransitions
+            ) {
+                crossedBoundary = true;
+                completed = advanceIntervalPhase(timer);
+                transitions += 1;
+        
+                if (completed) break;
+            }
+        
+            if (completed) {
+                if (crossedBoundary) {
+                    playTimerAlert();
+                }
+        
+                clearActiveTimerInterval();
+                return true;
+            }
+        
+            state.activeWorkoutTimerRemainingSeconds = getDeadlineRemainingSeconds(now);
+        
+            if (crossedBoundary) {
+                playTimerAlert();
+            }
+        
+            return false;
+        }
+
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
                 if (timer.type === "countdown") {
@@ -577,6 +662,12 @@ export function renderPlannedWorkoutDetail() {
 
                 if (timer.type === "emom") {
                     syncEmomTimer();
+                    renderApp();
+                    return;
+                }
+
+                if (timer.type === "interval") {
+                    syncIntervalTimer();
                     renderApp();
                     return;
                 }
@@ -650,6 +741,15 @@ export function renderPlannedWorkoutDetail() {
                         syncCountdownTimer();
                         renderApp();
                         return;
+                    }
+
+                    if (timer.type === "interval") {
+                        const completed = syncIntervalTimer(Date.now());
+                    
+                        if (completed) {
+                            renderApp();
+                            return;
+                        }
                     }
                 
                     state.activeWorkoutTimerStatus = "paused";
