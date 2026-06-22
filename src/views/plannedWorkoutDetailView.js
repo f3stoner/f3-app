@@ -101,13 +101,15 @@ function getTimerAudio() {
 async function unlockTimerAudio() {
     try {
         const audio = getTimerAudio();
+
+        audio.muted = true;
         audio.currentTime = 0;
-        audio.volume = 0;
 
         await audio.play();
 
         audio.pause();
         audio.currentTime = 0;
+        audio.muted = false;
         audio.volume = 1;
     } catch (error) {
         console.warn("Timer audio unlock failed:", error);
