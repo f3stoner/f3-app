@@ -24,6 +24,25 @@ app.textContent = "";
 
 cleanupMainMenu();
 
+let cachedSelectableMembers = null;
+let cachedLastPostMapByAo = new Map();
+
+function getCachedSelectableMembers() {
+    if (!cachedSelectableMembers) {
+        cachedSelectableMembers = getSortedSelectableMembers();
+    }
+
+    return cachedSelectableMembers;
+}
+
+function getCachedLastPostMapForAo(aoName) {
+    if (!cachedLastPostMapByAo.has(aoName)) {
+        cachedLastPostMapByAo.set(aoName, buildLastPostMapForAo(aoName));
+    }
+
+    return cachedLastPostMapByAo.get(aoName);
+}
+
 const sessionId = state.editingSessionId || state.selectedSessionId;
 const isEditing = Boolean(state.editingSessionId);
 let draftSession;
@@ -557,10 +576,11 @@ function buildLastPostMapForAo(aoName) {
 }
 
 function renderMemberList() {
+    console.time("renderMemberList");
     memberList.textContent = "";
 
-    const lastPostMap = buildLastPostMapForAo(draftSession.aoName);
-    const selectableMembers = getSortedSelectableMembers();
+    const lastPostMap = getCachedLastPostMapForAo(draftSession.aoName);
+    const selectableMembers = getCachedSelectableMembers();
 
     const searchTerm = state.sessionSearchTerm || "";
 
@@ -644,6 +664,8 @@ function renderMemberList() {
         }
 
         memberList.appendChild(othersSection);
+
+        console.timeEnd("renderMemberList");
 }
 
 renderMemberList();
