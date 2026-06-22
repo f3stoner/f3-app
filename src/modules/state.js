@@ -86,6 +86,7 @@ export const state = {
     activeWorkoutTimerPhase: null,
     activeWorkoutTimerRound: null,
     activeWorkoutTimerDeadlineAt: null,
+    activeWorkoutTimerLastEmomMinute: 0,
     savedPlannerSections: [],
     plannerSectionModalOpen: false,
     plannerSectionModalType: null,
