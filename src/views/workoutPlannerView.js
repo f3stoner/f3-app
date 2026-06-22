@@ -16,6 +16,8 @@ import { createAppHeader } from "../components/appHeader.js";
 import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 
+let persistDraftTimeout = null;
+
 export function renderWorkoutPlanner() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -43,6 +45,7 @@ export function renderWorkoutPlanner() {
         state.draftPlannedWorkout = null;
         state.plannedWorkoutLaunchMode = returnLaunchMode || null;
         state.currentView = returnView;
+        cancelPendingDraftWrite();
         localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
         renderApp();
     }
@@ -96,7 +99,12 @@ export function renderWorkoutPlanner() {
     draftWorkout.thangSections = normalizeThangSections(draftWorkout);
     draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
 
-    let persistDraftTimeout = null;
+    function cancelPendingDraftWrite() {
+        if (persistDraftTimeout) {
+            clearTimeout(persistDraftTimeout);
+            persistDraftTimeout = null;
+        }
+    }
 
     function persistDraft() {
         draftWorkout.thangSections = normalizeThangSections(draftWorkout);
@@ -104,7 +112,7 @@ export function renderWorkoutPlanner() {
 
         state.draftPlannedWorkout = { ...draftWorkout };
 
-        clearTimeout(persistDraftTimeout);
+        cancelPendingDraftWrite();
 
         persistDraftTimeout = setTimeout(() => {
             localStorage.setItem(
@@ -120,7 +128,7 @@ export function renderWorkoutPlanner() {
     
         state.draftPlannedWorkout = { ...draftWorkout };
     
-        clearTimeout(persistDraftTimeout);
+        cancelPendingDraftWrite();
     
         localStorage.setItem(
             SAVED_PLANNED_WORKOUT_DRAFT_KEY,
@@ -927,6 +935,8 @@ export function renderWorkoutPlanner() {
             }
             
             showToast("Workout finalized and saved.", "success");
+
+            cancelPendingDraftWrite();
             
             state.draftPlannedWorkout = null;
             state.editingPlannedWorkoutId = null;
