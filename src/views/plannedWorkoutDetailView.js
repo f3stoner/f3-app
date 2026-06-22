@@ -56,6 +56,7 @@ function endWorkoutExecution() {
     state.activeWorkoutTimerRemainingSeconds = null;
     state.activeWorkoutTimerPhase = null;
     state.activeWorkoutTimerRound = null;
+    state.activeWorkoutTimerDeadlineAt = null;
 
     state.executionContext = {
         plannedWorkoutId: null,
@@ -77,6 +78,7 @@ function pauseExecutionForEdit() {
     state.activeWorkoutTimerRemainingSeconds = null;
     state.activeWorkoutTimerPhase = null;
     state.activeWorkoutTimerRound = null;
+    state.activeWorkoutTimerDeadlineAt = null;
 }
 
 function getExecutionTextSize() {
@@ -168,6 +170,7 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
     state.activeWorkoutTimerRemainingSeconds = null;
     state.activeWorkoutTimerPhase = null;
     state.activeWorkoutTimerRound = null;
+    state.activeWorkoutTimerDeadlineAt = null;
 
     saveNavState(state);
     renderApp();
@@ -361,6 +364,8 @@ export function renderPlannedWorkoutDetail() {
                 state.activeWorkoutTimerPhase = timer.type === "interval" ? "work" : null;
                 state.activeWorkoutTimerRound = timer.type === "interval" ? 1 : null;
 
+                state.activeWorkoutTimerDeadlineAt = null;
+
                 state.activeWorkoutTimerRemainingSeconds =
                     timer.type === "interval"
                         ? timer.workSeconds || 45
@@ -449,7 +454,9 @@ export function renderPlannedWorkoutDetail() {
                 : timer.durationSeconds || 300;
 
         const remainingSeconds =
-            state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
+            state.activeWorkoutTimerStatus === "running"
+                ? getDeadlineRemainingSeconds()
+                : (state.activeWorkoutTimerRemainingSeconds ?? totalSeconds);
 
         function playTimerAlert() {
             console.log("playTimerAlert fired", {
@@ -478,55 +485,48 @@ export function renderPlannedWorkoutDetail() {
                 });
             });
         }
+
+        function getDeadlineRemainingSeconds(now = Date.now()) {
+            const deadline = state.activeWorkoutTimerDeadlineAt;
+        
+            if (!deadline) {
+                return state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
+            }
+        
+            return Math.max(
+                0,
+                Math.ceil((deadline - now) / 1000)
+            );
+        }
+
+        function syncCountdownTimer(now = Date.now()) {
+            const remaining = getDeadlineRemainingSeconds(now);
+        
+            state.activeWorkoutTimerRemainingSeconds = remaining;
+        
+            if (remaining > 0) {
+                return false;
+            }
+        
+            playTimerAlert();
+        
+            state.activeWorkoutTimerRemainingSeconds = 0;
+            state.activeWorkoutTimerStatus = "done";
+            state.activeWorkoutTimerDeadlineAt = null;
+        
+            clearActiveTimerInterval();
+        
+            return true;
+        }
+
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
-                const currentRemaining = state.activeWorkoutTimerRemainingSeconds ?? totalSeconds;
-
-                if (currentRemaining <= 1) {
-                    if (timer.type === "interval") {
-                        playTimerAlert();
-
-                        const currentRound = state.activeWorkoutTimerRound || 1;
-                        const currentPhase = state.activeWorkoutTimerPhase || "work";
-
-                        if (currentPhase === "work") {
-                            state.activeWorkoutTimerPhase = "rest";
-                            state.activeWorkoutTimerRemainingSeconds = timer.restSeconds ?? 15;
-                        } else {
-                            if (currentRound >= (timer.rounds || 1)) {
-                                state.activeWorkoutTimerRemainingSeconds = 0;
-                                state.activeWorkoutTimerStatus = "done";
-                                state.activeWorkoutTimerPhase = null;
-                                clearActiveTimerInterval();
-                            } else {
-                                state.activeWorkoutTimerRound = currentRound + 1;
-                                state.activeWorkoutTimerPhase = "work";
-                                state.activeWorkoutTimerRemainingSeconds = timer.workSeconds || 45;
-                            }
-                        }
-
-                        renderApp();
-                        return;
-                    }
-
-                   playTimerAlert();
-
-                    state.activeWorkoutTimerRemainingSeconds = 0;
-                    state.activeWorkoutTimerStatus = "done";
-                    clearActiveTimerInterval();
+                if (timer.type === "countdown") {
+                    syncCountdownTimer();
                     renderApp();
                     return;
                 }
-
-                if (
-                    timer.type === "emom" &&
-                    currentRemaining !== totalSeconds &&
-                    currentRemaining % 60 === 0
-                ) {
-                    playTimerAlert();
-                }
-
-                state.activeWorkoutTimerRemainingSeconds = currentRemaining - 1;
+        
                 renderApp();
             }, 1000);
         }
@@ -579,15 +579,35 @@ export function renderPlannedWorkoutDetail() {
                 state.activeWorkoutTimerRemainingSeconds === 0;
                 
                 if (state.activeWorkoutTimerStatus === "running") {
+                    const deadline = state.activeWorkoutTimerDeadlineAt;
+                
+                    if (deadline) {
+                        state.activeWorkoutTimerRemainingSeconds = Math.max(
+                            0,
+                            Math.ceil((deadline - Date.now()) / 1000)
+                        );
+                    }
+                
                     state.activeWorkoutTimerStatus = "paused";
+                    state.activeWorkoutTimerDeadlineAt = null;
+                
                 } else {
                     state.activeWorkoutTimerStatus = "running";
-
+                
                     if (wasDone) {
-                        state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+                        if (timer.type === "interval") {
+                            state.activeWorkoutTimerPhase = "work";
+                            state.activeWorkoutTimerRound = 1;
+                            state.activeWorkoutTimerRemainingSeconds = timer.workSeconds || 45;
+                        } else {
+                            state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+                        }
                     }
+                
+                    state.activeWorkoutTimerDeadlineAt =
+                        Date.now() + (state.activeWorkoutTimerRemainingSeconds * 1000);
                 }
-
+                
                 state.activeWorkoutTimerStartedAt = Date.now();
 
                 renderApp();
@@ -611,6 +631,7 @@ export function renderPlannedWorkoutDetail() {
 
             state.activeWorkoutTimerStatus = "idle";
             state.activeWorkoutTimerStartedAt = null;
+            state.activeWorkoutTimerDeadlineAt = null;
 
             if (timer.type === "interval") {
                 state.activeWorkoutTimerPhase = "work";
@@ -649,6 +670,7 @@ export function renderPlannedWorkoutDetail() {
             state.activeWorkoutTimerRemainingSeconds = null;
             state.activeWorkoutTimerPhase = null;
             state.activeWorkoutTimerRound = null;
+            state.activeWorkoutTimerDeadlineAt = null;
 
             setTimeout(() => {
                 timerActionInProgress = false;
