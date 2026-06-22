@@ -15,6 +15,7 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { normalizeThangSections } from "../utils/thangs.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { releaseWakeLock, requestWakeLock } from "../utils/wakelock.js";
+import { registerViewCleanup } from "../utils/viewCleanup.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -44,10 +45,8 @@ function clearActiveWorkoutExecution() {
 }
 
 function endWorkoutExecution() {
-    clearActiveTimerInterval();
-    removeActiveTimerModal();
+    cleanupWorkoutExecutionResources();
 
-    releaseWakeLock();
     clearActiveWorkoutExecution();
 
     state.activeWorkoutTimerId = null;
@@ -69,9 +68,7 @@ function endWorkoutExecution() {
 }
 
 function pauseExecutionForEdit() {
-    clearActiveTimerInterval();
-    removeActiveTimerModal();
-    releaseWakeLock();
+    cleanupWorkoutExecutionResources();
 
     state.activeWorkoutTimerId = null;
     state.activeWorkoutTimerStatus = "idle";
@@ -129,6 +126,16 @@ function removeActiveTimerModal() {
         modal.remove();
     });
 }
+
+function cleanupWorkoutExecutionResources() {
+    clearActiveTimerInterval();
+    removeActiveTimerModal();
+    releaseWakeLock();
+}
+
+registerViewCleanup("plannedWorkoutDetail", () => {
+    cleanupWorkoutExecutionResources();
+});
 
 export function launchWorkoutPreview(workout) {
     state.executionContext = {
