@@ -743,6 +743,15 @@ export function renderPlannedWorkoutDetail() {
                         return;
                     }
 
+                    if (timer.type === "emom") {
+                        const completed = syncIntervalTimer(Date.now());
+
+                        if (completed) {
+                            renderApp();
+                            return;
+                        }
+                    }
+
                     if (timer.type === "interval") {
                         const completed = syncIntervalTimer(Date.now());
                     
@@ -764,6 +773,10 @@ export function renderPlannedWorkoutDetail() {
                             state.activeWorkoutTimerRemainingSeconds = timer.workSeconds || 45;
                         } else {
                             state.activeWorkoutTimerRemainingSeconds = totalSeconds;
+
+                            if (timer.type === "emom") {
+                                state.activeWorkoutTimerLastEmomMinute = 0;
+                            }
                         }
                     }
                 
