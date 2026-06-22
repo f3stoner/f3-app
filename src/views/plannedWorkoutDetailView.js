@@ -43,6 +43,42 @@ function clearActiveWorkoutExecution() {
     localStorage.removeItem(ACTIVE_WORKOUT_EXECUTION_KEY);
 }
 
+function endWorkoutExecution() {
+    clearActiveTimerInterval();
+    removeActiveTimerModal();
+
+    releaseWakeLock();
+    clearActiveWorkoutExecution();
+
+    state.activeWorkoutTimerId = null;
+    state.activeWorkoutTimerStatus = "idle";
+    state.activeWorkoutTimerStartedAt = null;
+    state.activeWorkoutTimerRemainingSeconds = null;
+    state.activeWorkoutTimerPhase = null;
+    state.activeWorkoutTimerRound = null;
+
+    state.executionContext = {
+        plannedWorkoutId: null,
+        launchSource: null,
+        startedAt: null,
+        executionDate: null,
+        allowSessionLogging: true,
+    };
+}
+
+function pauseExecutionForEdit() {
+    clearActiveTimerInterval();
+    removeActiveTimerModal();
+    releaseWakeLock();
+
+    state.activeWorkoutTimerId = null;
+    state.activeWorkoutTimerStatus = "idle";
+    state.activeWorkoutTimerStartedAt = null;
+    state.activeWorkoutTimerRemainingSeconds = null;
+    state.activeWorkoutTimerPhase = null;
+    state.activeWorkoutTimerRound = null;
+}
+
 function getExecutionTextSize() {
     return localStorage.getItem(EXECUTION_TEXT_SIZE_KEY) || "large";
 }
@@ -229,22 +265,8 @@ export function renderPlannedWorkoutDetail() {
         
             state.plannedWorkoutLaunchMode = null;
             state.previewWorkout = null;
-            state.executionContext = {
-                plannedWorkoutId: null,
-                launchSource: null,
-                startedAt: null,
-                executionDate: null,
-                allowSessionLogging: true,
-            };
 
-            clearActiveTimerInterval();
-
-            state.activeWorkoutTimerId = null;
-            state.activeWorkoutTimerStatus = "idle";
-            state.activeWorkoutTimerStartedAt = null;
-            state.activeWorkoutTimerRemainingSeconds = null;
-            state.activeWorkoutTimerPhase = null;
-            state.activeWorkoutTimerRound = null;
+            endWorkoutExecution();
 
             state.currentView = isPreviewMode
                 ? "workoutPlanner"
@@ -764,6 +786,7 @@ export function renderPlannedWorkoutDetail() {
     editButton.textContent = "Edit Workout";
     editButton.addEventListener("click", () => {
         if (isPreviewMode) {
+            endWorkoutExecution();
             state.plannedWorkoutLaunchMode = null;
             state.previewWorkout = null;
             state.currentView = "workoutPlanner";
@@ -779,6 +802,9 @@ export function renderPlannedWorkoutDetail() {
         state.returnToViewAfterPlanner = "plannedWorkoutDetail";
         state.returnToLaunchModeAfterPlanner = isExecutionMode ? "execution" : null;
         
+        if (isExecutionMode) {
+            pauseExecutionForEdit();
+        }
 
         state.plannedWorkoutLaunchMode = null;
         state.editingPlannedWorkoutId = workout.id;
@@ -789,8 +815,7 @@ export function renderPlannedWorkoutDetail() {
     logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
     logButton.addEventListener("click", () => {
         if (isExecutionMode && !isPreviewMode) {
-            clearActiveWorkoutExecution();
-            releaseWakeLock();
+            endWorkoutExecution();
         }
     
         const sessionDate =
@@ -936,8 +961,7 @@ export function renderPlannedWorkoutDetail() {
             try {
                 await deletePlannedWorkout(workout.id);
 
-                clearActiveWorkoutExecution();
-                releaseWakeLock();
+                endWorkoutExecution();
 
                 state.selectedPlannedWorkoutId = null;
                 state.editingPlannedWorkoutId = null;
