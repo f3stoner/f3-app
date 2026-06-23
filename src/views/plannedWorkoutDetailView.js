@@ -208,7 +208,11 @@ export function renderPlannedWorkoutDetail() {
     removeActiveTimerModal();
 
     if (state.plannedWorkoutLaunchMode === "execution") {
-        window.scrollTo(0, 0);
+        if (state.preserveExecutionScroll) {
+            state.preserveExecutionScroll = false;
+        } else {
+            window.scrollTo(0, 0);
+        }
     }
 
     const app = document.getElementById("app");
@@ -388,6 +392,7 @@ export function renderPlannedWorkoutDetail() {
                     timerActionInProgress = false;
                 }, 350);
 
+                state.preserveExecutionScroll = true;
                 renderApp();
             });
 
@@ -442,7 +447,7 @@ export function renderPlannedWorkoutDetail() {
 
         if (timer.type === "interval") {
             intervalStatus = document.createElement("div");
-            intervalStatus.classList.add("stats-line");
+            intervalStatus.classList.add("stats-line", "timer-interval-status");
             intervalStatus.textContent = `${state.activeWorkoutTimerPhase === "rest" ? "Rest" : "Work"} · ${state.activeWorkoutTimerRound || 1} of ${timer.rounds || 1}`;
         }
 
@@ -588,12 +593,20 @@ export function renderPlannedWorkoutDetail() {
             const totalRounds = timer.rounds || 1;
             const expiredDeadline = state.activeWorkoutTimerDeadlineAt || Date.now();
         
+            if (currentPhase === "work" && currentRound >= totalRounds) {
+                state.activeWorkoutTimerRemainingSeconds = 0;
+                state.activeWorkoutTimerStatus = "done";
+                state.activeWorkoutTimerDeadlineAt = null;
+                state.activeWorkoutTimerPhase = null;
+                return true;
+            }
+            
             if (currentPhase === "work") {
                 state.activeWorkoutTimerPhase = "rest";
                 state.activeWorkoutTimerRemainingSeconds = timer.restSeconds ?? 15;
                 state.activeWorkoutTimerDeadlineAt =
                     expiredDeadline + getIntervalPhaseDurationSeconds(timer, "rest") * 1000;
-        
+            
                 return false;
             }
         
@@ -661,27 +674,98 @@ export function renderPlannedWorkoutDetail() {
             return false;
         }
 
+        function refreshActiveTimerPanel() {
+            const currentTimer = getActiveTimer();
+            if (!currentTimer) return;
+        
+            const currentPanel = document.querySelector(".active-timer-panel");
+            if (!currentPanel) return;
+        
+            const currentClock = currentPanel.querySelector(".active-timer-clock");
+            const currentStartButton = currentPanel.querySelector(".timer-start-button");
+            const currentPhaseBadge = currentPanel.querySelector(".timer-phase-badge");
+            const currentIntervalStatus = currentPanel.querySelector(".timer-interval-status");
+        
+            const currentTotalSeconds =
+                currentTimer.type === "interval"
+                    ? currentTimer.workSeconds || 45
+                    : currentTimer.durationSeconds || 300;
+        
+            const currentRemainingSeconds =
+                state.activeWorkoutTimerStatus === "running"
+                    ? getDeadlineRemainingSeconds()
+                    : (state.activeWorkoutTimerRemainingSeconds ?? currentTotalSeconds);
+        
+            if (currentClock) {
+                currentClock.textContent = formatTimerClock(currentRemainingSeconds);
+        
+                currentClock.classList.remove("running", "paused", "done", "idle");
+                if (state.activeWorkoutTimerStatus) {
+                    currentClock.classList.add(state.activeWorkoutTimerStatus);
+                }
+        
+                currentClock.classList.remove("timer-work", "timer-rest");
+        
+                if (currentTimer.type === "interval" && state.activeWorkoutTimerStatus !== "done") {
+                    currentClock.classList.add(
+                        state.activeWorkoutTimerPhase === "rest"
+                            ? "timer-rest"
+                            : "timer-work"
+                    );
+                }
+            }
+        
+            if (currentStartButton) {
+                currentStartButton.textContent = state.activeWorkoutTimerStatus === "running"
+                    ? "Pause"
+                    : state.activeWorkoutTimerStatus === "done"
+                        ? "Restart"
+                        : "Start";
+            }
+        
+            currentPanel.classList.remove("timer-work", "timer-rest");
+        
+            if (currentTimer.type === "interval" && state.activeWorkoutTimerStatus !== "done") {
+                currentPanel.classList.add(
+                    state.activeWorkoutTimerPhase === "rest"
+                        ? "timer-rest"
+                        : "timer-work"
+                );
+            }
+        
+            if (currentTimer.type === "interval" && currentIntervalStatus) {
+                currentIntervalStatus.textContent =
+                    state.activeWorkoutTimerStatus === "done"
+                        ? `Done · ${currentTimer.rounds || 1} of ${currentTimer.rounds || 1}`
+                        : `${state.activeWorkoutTimerPhase === "rest" ? "Rest" : "Work"} · ${state.activeWorkoutTimerRound || 1} of ${currentTimer.rounds || 1}`;
+            }
+        
+            if (currentTimer.type === "interval" && currentPhaseBadge) {
+                currentPhaseBadge.classList.remove("work", "rest");
+        
+                if (state.activeWorkoutTimerStatus === "done") {
+                    currentPhaseBadge.textContent = "DONE";
+                } else if (state.activeWorkoutTimerPhase === "rest") {
+                    currentPhaseBadge.classList.add("rest");
+                    currentPhaseBadge.textContent = "REST";
+                } else {
+                    currentPhaseBadge.classList.add("work");
+                    currentPhaseBadge.textContent = "WORK";
+                }
+            }
+        }
+
         if (state.activeWorkoutTimerStatus === "running" && !activeTimerIntervalId) {
             activeTimerIntervalId = setInterval(() => {
                 if (timer.type === "countdown") {
                     syncCountdownTimer();
-                    renderApp();
-                    return;
-                }
-
-                if (timer.type === "emom") {
+                } else if (timer.type === "emom") {
                     syncEmomTimer();
-                    renderApp();
-                    return;
-                }
-
-                if (timer.type === "interval") {
+                } else if (timer.type === "interval") {
                     syncIntervalTimer();
-                    renderApp();
-                    return;
                 }
         
-                renderApp();
+                refreshActiveTimerPanel();
             }, 1000);
         }
 
@@ -753,7 +837,7 @@ export function renderPlannedWorkoutDetail() {
                     }
 
                     if (timer.type === "emom") {
-                        const completed = syncIntervalTimer(Date.now());
+                        const completed = syncEmomTimer(Date.now());
 
                         if (completed) {
                             renderApp();
@@ -792,9 +876,9 @@ export function renderPlannedWorkoutDetail() {
                     state.activeWorkoutTimerDeadlineAt =
                         Date.now() + (state.activeWorkoutTimerRemainingSeconds * 1000);
                 }
-                
+            
                 state.activeWorkoutTimerStartedAt = Date.now();
-
+                state.preserveExecutionScroll = true;
                 renderApp();
             } finally {
                 setTimeout(() => {
@@ -833,6 +917,7 @@ export function renderPlannedWorkoutDetail() {
                 timerActionInProgress = false;
             }, 350);
 
+            state.preserveExecutionScroll = true;
             renderApp();
         });
 
@@ -862,6 +947,8 @@ export function renderPlannedWorkoutDetail() {
             setTimeout(() => {
                 timerActionInProgress = false;
             }, 350);
+            
+            state.preserveExecutionScroll = true;
             renderApp();
         });
 
