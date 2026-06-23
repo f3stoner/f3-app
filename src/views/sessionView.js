@@ -24,6 +24,13 @@ app.textContent = "";
 
 cleanupMainMenu();
 
+if (!state.editingSessionId && !state.selectedSessionId) {
+    state.sessionShowAllRecent = false;
+    state.sessionShowAllOthers = false;
+    state.sessionSelectedExpanded = false;
+    state.sessionQExpanded = false;
+}
+
 let cachedDisplayNameByMemberId = null;
 
 function buildDisplayNameByMemberId() {
