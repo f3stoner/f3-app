@@ -24,6 +24,75 @@ app.textContent = "";
 
 cleanupMainMenu();
 
+let cachedDisplayNameByMemberId = null;
+
+function buildDisplayNameByMemberId() {
+    const paxNameGroups = new Map();
+
+    (state.members || []).forEach(member => {
+        const paxName = String(member.paxName || "").trim();
+        if (!paxName) return;
+
+        const group = paxNameGroups.get(paxName) || [];
+        group.push(member);
+        paxNameGroups.set(paxName, group);
+    });
+
+    const displayNameByMemberId = new Map();
+
+    (state.members || []).forEach(member => {
+        const paxName = String(member.paxName || "").trim();
+        const realName = String(member.realName || "").trim();
+        const homeAo = String(member.homeAo || "").trim();
+        const baseName = paxName || realName || "Unknown PAX";
+
+        if (!paxName) {
+            displayNameByMemberId.set(member.id, baseName);
+            return;
+        }
+
+        const samePaxNameMembers = paxNameGroups.get(paxName) || [];
+
+        if (samePaxNameMembers.length <= 1) {
+            displayNameByMemberId.set(member.id, baseName);
+            return;
+        }
+
+        const samePaxAndAoCount = samePaxNameMembers.filter(
+            m => String(m.homeAo || "").trim() === homeAo
+        ).length;
+
+        if (samePaxAndAoCount <= 1 && homeAo) {
+            displayNameByMemberId.set(member.id, `${baseName} - ${homeAo}`);
+            return;
+        }
+
+        if (realName) {
+            displayNameByMemberId.set(member.id, `${baseName} - ${realName}`);
+            return;
+        }
+
+        if (homeAo) {
+            displayNameByMemberId.set(member.id, `${baseName} - ${homeAo}`);
+            return;
+        }
+
+        displayNameByMemberId.set(member.id, baseName);
+    });
+
+    return displayNameByMemberId;
+}
+
+function getCachedMemberDisplayName(member) {
+    if (!member) return "Unknown PAX";
+
+    if (!cachedDisplayNameByMemberId) {
+        cachedDisplayNameByMemberId = buildDisplayNameByMemberId();
+    }
+
+    return cachedDisplayNameByMemberId.get(member.id) || getMemberDisplayName(member);
+}
+
 let cachedSelectableMembers = null;
 let cachedLastPostMapByAo = new Map();
 
@@ -177,16 +246,16 @@ function createSelectedPillStrip(qMembers, selectedMembers) {
 
         if (member.isQ) {
             pill.classList.add("selected-pill-q");
-            pill.textContent = `Q: ${getMemberDisplayName(member)}`;
+            pill.textContent = `Q: ${getCachedMemberDisplayName(member)}`;
         } else {
-            pill.textContent = getMemberDisplayName(member);
+            pill.textContent = getCachedMemberDisplayName(member);
         }
 
         pill.addEventListener("click", () => {
             const confirmed = confirm(
                 member.isQ
-                    ? `Remove ${getMemberDisplayName(member)} as Q and attendee?`
-                    : `Remove ${getMemberDisplayName(member)}?`
+                    ? `Remove ${getCachedMemberDisplayName(member)} as Q and attendee?`
+                    : `Remove ${getCachedMemberDisplayName(member)}?`
             );
 
             if (!confirmed) return;
@@ -342,7 +411,7 @@ async function maybePromptForFngName(member) {
 
     if (projectedPostCount < getFngNamingPostNumber()) return;
 
-    const displayName = getMemberDisplayName(member);
+    const displayName = getCachedMemberDisplayName(member);
     const paxName = prompt(`${displayName} is posting for the ${projectedPostCount} time. Enter F3 name?`);
 
     if (!paxName?.trim()) return;
@@ -353,6 +422,8 @@ async function maybePromptForFngName(member) {
     };
 
     await updateMember(member.id, updatedMember);
+
+    cachedDisplayNameByMemberId = null;
 }
 
 function createMemberCard(member) {
@@ -361,7 +432,7 @@ function createMemberCard(member) {
     card.dataset.memberId = member.id;
     const name = document.createElement("span");
     name.classList.add("member-name");
-    name.textContent = getMemberDisplayName(member);
+    name.textContent = getCachedMemberDisplayName(member);
     const qButton = document.createElement("button");
     qButton.classList.add("q-button");
     qButton.textContent = "Q";
@@ -489,8 +560,8 @@ function createSelectedSection(qMembers, selectedMembers) {
 
         const name = document.createElement("span");
         name.textContent = member.isQ
-            ? `Q: ${getMemberDisplayName(member)}`
-            : getMemberDisplayName(member);
+            ? `Q: ${getCachedMemberDisplayName(member)}`
+            : getCachedMemberDisplayName(member);
 
         const removeButton = document.createElement("button");
         removeButton.textContent = "Remove";
@@ -546,7 +617,8 @@ function getSortedSelectableMembers() {
                 return aInactive ? 1 : -1;
             }
 
-            return getMemberDisplayName(a).localeCompare(getMemberDisplayName(b));
+            return getCachedMemberDisplayName(a)
+                .localeCompare(getCachedMemberDisplayName(b));
         });
 }
 
