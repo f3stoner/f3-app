@@ -16,6 +16,7 @@ import { createAppHeader } from "../components/appHeader.js";
 import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { createLibraryIdeasModal } from "../components/libraryIdeasModal.js";
+import { logLibraryUsageEvent } from "../services/cloudData.js";
 
 let persistDraftTimeout = null;
 
@@ -338,7 +339,7 @@ export function renderWorkoutPlanner() {
             const ideasButton = document.createElement("button");
             ideasButton.type = "button";
             ideasButton.classList.add("secondary-button", "planner-ideas-button");
-            ideasButton.textContent = "Ideas";
+            ideasButton.textContent = "Library";
 
             ideasButton.addEventListener("click", () => {
                 openLibraryIdeasModal({
@@ -1217,9 +1218,22 @@ export function renderWorkoutPlanner() {
                     }
         
                     persistDraft();
+
+                    logLibraryUsageEvent({
+                        region_id: state.currentRegionId,
+                        library_item_id: item.id,
+                        user_id: state.currentUserId,
+                        workout_id: draftWorkout.id || null,
+                        source: "library_modal",
+                        insert_mode: mode,
+                        target_type: modalState.targetType,
+                        target_thang_id: modalState.targetThangId,
+                    }).catch(error => {
+                        console.error("Failed to log library usage", error);
+                    });
         
                     state.libraryIdeasModal = null;
-                    showToast("Idea inserted.", "success");
+                    showToast("Library item inserted.", "success");
                     renderApp();
                 },
             })

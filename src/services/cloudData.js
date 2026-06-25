@@ -2435,3 +2435,13 @@ function mapQSourceToCloud(regionId, qSource) {
         updated_at: new Date().toISOString(),
     };
 }
+
+export async function logLibraryUsageEvent(event) {
+    const { error } = await supabase
+        .from("library_usage_events")
+        .insert(event);
+
+    if (error) {
+        throw error;
+    }
+}
