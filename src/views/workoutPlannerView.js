@@ -719,7 +719,7 @@ export function renderWorkoutPlanner() {
         const ideasButton = document.createElement("button");
         ideasButton.type = "button";
         ideasButton.classList.add("secondary-button", "planner-ideas-button");
-        ideasButton.textContent = "Ideas";
+        ideasButton.textContent = "Library";
         ideasButton.addEventListener("click", onIdeas);
     
         row.append(labelEl, ideasButton);
