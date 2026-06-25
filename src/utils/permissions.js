@@ -11,6 +11,7 @@ export const PERMISSIONS = {
     MANAGE_SESSIONS: "manage_sessions",
     MANAGE_ANNOUNCEMENTS: "manage_announcements",
     MANAGE_Q_SOURCE: "manage_q_source",
+    MANAGE_LIBRARY_WORKBENCH: "manageLibraryWorkbench",
 
     VIEW_TELEMETRY: "view_telemetry",
     VIEW_IMPORTS: "view_imports",
@@ -40,6 +41,7 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.MANAGE_ANNOUNCEMENTS,
         PERMISSIONS.VIEW_Q_READINESS,
         PERMISSIONS.MANAGE_Q_SOURCE,
+        PERMISSIONS.MANAGE_LIBRARY_WORKBENCH
     ],
 
     dataq: [
@@ -50,6 +52,7 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.RUN_IMPORTS,
         PERMISSIONS.ACCESS_ADMIN_SETTINGS,
         PERMISSIONS.MANAGE_MEMBERS,
+        PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
     ],
 
     superadmin: Object.values(PERMISSIONS),

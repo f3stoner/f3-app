@@ -113,6 +113,13 @@ export const state = {
     allAnnouncements: [],
     memberStats: [],
     memberStatsByMemberId: {},
+    libraryWorkbenchItems: [],
+    hasLoadedLibraryWorkbenchItems: false,
+    isLoadingLibraryWorkbenchItems: false,
+    libraryWorkbenchStatusFilter: "imported",
+    libraryWorkbenchTypeFilter: "all",
+    libraryWorkbenchSearch: "",
+    selectedLibraryWorkbenchItemId: null,
 };
 
 state.runHistoricImport = async function () {

@@ -99,6 +99,7 @@ export function createMainMenu() {
                 { label: "AO Insights", view: "aoInsights" },
                 { label: "Backblast Review", view: "backblastReview"},
                 { label: "Thang Review", view: "thangReview" },
+                { label: "Library Workbench", view: "libraryWorkbench"},
             ]
             : []),
 
