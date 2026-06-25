@@ -67,6 +67,7 @@ function mapLibrarySuggestion(item) {
             ...(item.equipment || []),
             ...(item.tags || []),
         ]),
+        description: item.description || "",
         item,
     };
 }

@@ -4142,15 +4142,23 @@ textarea {
 }
 
 .library-ideas-quick-add {
-    width: 36px;
-    min-width: 36px;
-    height: 36px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     padding: 0;
     margin: 0;
-    border-radius: 999px;
-    font-size: 1.25rem;
+
+    border-radius: 50%;
+    font-size: 0.95rem;
     line-height: 1;
-    flex-shrink: 0;
+
+    flex: 0 0 24px;
 }
 
 .library-ideas-expanded {
@@ -4168,4 +4176,87 @@ textarea {
 .library-ideas-actions {
     justify-content: flex-end;
     margin-top: 0.75rem;
+}
+
+.library-ideas-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.library-ideas-card:hover {
+    background: var(--surface-raised);
+}
+
+.library-ideas-card.expanded {
+    background: var(--surface-raised);
+    border-color: var(--border-strong);
+}
+
+.library-ideas-result-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.library-ideas-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.library-ideas-expanded {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.library-ideas-description {
+    white-space: pre-wrap;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.library-ideas-actions {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.library-ideas-actions .primary-button {
+    width: 100%;
+}
+
+.exercise-suggestion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.exercise-suggestion-info {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    padding: 0;
+    margin: 0;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    flex: 0 0 auto;
+}
+
+.exercise-suggestion-preview-description {
+    margin: 1rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    white-space: pre-wrap;
+    line-height: 1.5;
 }

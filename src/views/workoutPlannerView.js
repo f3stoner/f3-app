@@ -725,6 +725,23 @@ export function renderWorkoutPlanner() {
         row.append(labelEl, ideasButton);
         return row;
     }
+
+    function openAutocompletePreview(suggestion, textarea, onValueChange) {
+        state.exerciseSuggestionPreview = {
+            label: suggestion.label,
+            subtitle: suggestion.subtitle,
+            description: suggestion.description || suggestion.preview || "",
+            insertText: suggestion.insertText,
+        };
+    
+        state.exerciseSuggestionPreviewTarget = {
+            textarea,
+            onValueChange,
+            replaceCurrentLine,
+        };
+    
+        renderApp();
+    }
     
     function attachExerciseAutocomplete(textarea, onValueChange) {
         const suggestionsWrap = document.createElement("div");
@@ -752,12 +769,38 @@ export function renderWorkoutPlanner() {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.classList.add("exercise-suggestion-button");
+
+
                 const title = document.createElement("div");
                 title.className = "exercise-suggestion-title";
                 title.textContent = suggestion.label;
 
-                button.appendChild(title);
-
+                const header = document.createElement("div");
+                header.className = "exercise-suggestion-header";
+                
+                header.append(title);
+                
+                if (suggestion.description) {
+                    const info = document.createElement("button");
+                    info.className = "exercise-suggestion-info";
+                    info.textContent = "ⓘ";
+                
+                    info.addEventListener("mousedown", e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                
+                        openAutocompletePreview(
+                            suggestion,
+                            textarea,
+                            onValueChange
+                        );
+                    });
+                
+                    header.append(info);
+                }
+                
+                button.append(header);
+                
                 if (suggestion.subtitle) {
                     const subtitle = document.createElement("div");
                     subtitle.className = "exercise-suggestion-subtitle";
@@ -1183,6 +1226,18 @@ export function renderWorkoutPlanner() {
         );
     }
 
+    if (state.exerciseSuggestionPreview) {
+        app.appendChild(
+            createExerciseSuggestionPreviewModal({
+                onClose: () => {
+                    state.exerciseSuggestionPreview = null;
+                    state.exerciseSuggestionPreviewTarget = null;
+                    renderApp();
+                },
+            })
+        );
+    }
+
     if (state.editingWorkoutTimerId) {
         app.appendChild(createTimerEditorModal({
             draftWorkout,
@@ -1398,6 +1453,75 @@ function createTimerEditorModal({ draftWorkout, persistDraft, onClose }) {
         buttonRow
     );
 
+    overlay.appendChild(modal);
+
+    overlay.addEventListener("click", onClose);
+    modal.addEventListener("click", event => event.stopPropagation());
+
+    return overlay;
+}
+
+function createExerciseSuggestionPreviewModal({ onClose }) {
+    const suggestion = state.exerciseSuggestionPreview;
+    const target = state.exerciseSuggestionPreviewTarget;
+
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay");
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal", "exercise-suggestion-preview-modal");
+
+    const title = document.createElement("h2");
+    title.textContent = suggestion.label;
+
+    const meta = document.createElement("div");
+    meta.classList.add("stats-line");
+    meta.textContent = suggestion.subtitle || "";
+
+    const description = document.createElement("div");
+    description.classList.add("exercise-suggestion-preview-description");
+    description.textContent = suggestion.description || "No description available.";
+
+    const actions = document.createElement("div");
+    actions.classList.add("button-row");
+
+    const insertNameButton = document.createElement("button");
+    insertNameButton.type = "button";
+    insertNameButton.classList.add("secondary-button");
+    insertNameButton.textContent = "Insert Name";
+
+    insertNameButton.addEventListener("click", () => {
+        const nextValue = target.replaceCurrentLine(
+            target.textarea,
+            suggestion.insertText
+        );
+
+        target.onValueChange(nextValue);
+        onClose();
+    });
+
+    const insertDetailsButton = document.createElement("button");
+    insertDetailsButton.type = "button";
+    insertDetailsButton.classList.add("primary-button");
+    insertDetailsButton.textContent = "Insert Details";
+
+    insertDetailsButton.addEventListener("click", () => {
+        const detailText = suggestion.description
+            ? `${suggestion.insertText}\n${suggestion.description}`
+            : suggestion.insertText;
+
+        const nextValue = target.replaceCurrentLine(
+            target.textarea,
+            detailText
+        );
+
+        target.onValueChange(nextValue);
+        onClose();
+    });
+
+    actions.append(insertNameButton, insertDetailsButton);
+
+    modal.append(title, meta, description, actions);
     overlay.appendChild(modal);
 
     overlay.addEventListener("click", onClose);

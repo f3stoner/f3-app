@@ -27,7 +27,7 @@ function createChipButton({ value, selected, onClick }) {
 
 function renderResultCard({ item, modalState, onInsert, renderResults }) {
     const card = document.createElement("div");
-    card.classList.add("member-card", "library-ideas-result");
+    card.classList.add("library-ideas-card");
 
     const isExpanded = modalState.expandedItemId === item.id;
     if (isExpanded) card.classList.add("expanded");
@@ -44,24 +44,27 @@ function renderResultCard({ item, modalState, onInsert, renderResults }) {
     meta.textContent = formatMeta(item);
 
     content.append(name, meta);
+    card.appendChild(content);
 
-    const quickAddButton = document.createElement("button");
-    quickAddButton.type = "button";
-    quickAddButton.classList.add("library-ideas-quick-add");
-    quickAddButton.textContent = "+";
-    quickAddButton.title = "Insert name only";
+    if (!isExpanded) {
+        const quickAddButton = document.createElement("button");
+        quickAddButton.type = "button";
+        quickAddButton.classList.add("library-ideas-quick-add");
+        quickAddButton.textContent = "+";
+        quickAddButton.title = "Insert name only";
 
-    quickAddButton.addEventListener("click", event => {
-        event.stopPropagation();
-        onInsert(item, "name");
-    });
+        quickAddButton.addEventListener("click", event => {
+            event.stopPropagation();
+            onInsert(item, "name");
+        });
+
+        content.appendChild(quickAddButton);
+    }
 
     card.addEventListener("click", () => {
         modalState.expandedItemId = isExpanded ? null : item.id;
         renderResults();
     });
-
-    card.append(content, quickAddButton);
 
     if (isExpanded) {
         const expanded = document.createElement("div");
@@ -77,7 +80,7 @@ function renderResultCard({ item, modalState, onInsert, renderResults }) {
         const insertButton = document.createElement("button");
         insertButton.type = "button";
         insertButton.classList.add("primary-button");
-        insertButton.textContent = item.description ? "Insert" : "Insert Name";
+        insertButton.textContent = item.description ? "Insert Details" : "Insert Name";
 
         insertButton.addEventListener("click", event => {
             event.stopPropagation();
