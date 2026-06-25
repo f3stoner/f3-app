@@ -117,3 +117,37 @@ export async function loadLibraryAutocompleteItems(limit = 1000) {
 
     return (data || []).map(mapLibraryItemFromDb);
 }
+
+export function searchLibraryIdeas({
+    items = [],
+    text = "",
+    type = "all",
+    emphasis = [],
+    equipment = [],
+    tags = [],
+    limit = 50,
+} = {}) {
+    const query = String(text || "").trim().toLowerCase();
+
+    return (items || [])
+        .filter(item => {
+            const haystack = [
+                item.name,
+                item.description,
+                item.itemType,
+                ...(item.emphasis || []),
+                ...(item.equipment || []),
+                ...(item.tags || []),
+            ].join(" ").toLowerCase();
+
+            if (query && !haystack.includes(query)) return false;
+            if (type !== "all" && item.itemType !== type) return false;
+
+            if (emphasis.length && !emphasis.some(value => item.emphasis?.includes(value))) return false;
+            if (equipment.length && !equipment.some(value => item.equipment?.includes(value))) return false;
+            if (tags.length && !tags.some(value => item.tags?.includes(value))) return false;
+
+            return true;
+        })
+        .slice(0, limit);
+}

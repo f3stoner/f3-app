@@ -15,6 +15,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
+import { createLibraryIdeasModal } from "../components/libraryIdeasModal.js";
 
 let persistDraftTimeout = null;
 
@@ -334,7 +335,20 @@ export function renderWorkoutPlanner() {
                 renderApp();
             });
 
-            titleRow.append(titleInput, removeButton);
+            const ideasButton = document.createElement("button");
+            ideasButton.type = "button";
+            ideasButton.classList.add("secondary-button", "planner-ideas-button");
+            ideasButton.textContent = "Ideas";
+
+            ideasButton.addEventListener("click", () => {
+                openLibraryIdeasModal({
+                    targetType: "thang",
+                    targetThangId: section.id,
+                    targetLabel: section.title || `Thang ${index + 1}`,
+                });
+            });
+
+            titleRow.append(titleInput, ideasButton, removeButton);
 
             const contentInput = document.createElement("textarea");
             contentInput.classList.add("notes");
@@ -677,6 +691,40 @@ export function renderWorkoutPlanner() {
     
         return nextValue;
     }
+
+    function openLibraryIdeasModal({ targetType, targetThangId = null, targetLabel }) {
+        state.libraryIdeasModal = {
+            targetType,
+            targetThangId,
+            targetLabel,
+            search: "",
+            type: "all",
+            emphasis: [],
+            equipment: [],
+            tags: [],
+            expandedItemId: null,
+        };
+    
+        renderApp();
+    }
+
+    function createPlannerSectionHeader({ label, onIdeas }) {
+        const row = document.createElement("div");
+        row.classList.add("planner-section-header-row");
+    
+        const labelEl = document.createElement("div");
+        labelEl.textContent = label;
+        labelEl.classList.add("detail-label");
+    
+        const ideasButton = document.createElement("button");
+        ideasButton.type = "button";
+        ideasButton.classList.add("secondary-button", "planner-ideas-button");
+        ideasButton.textContent = "Ideas";
+        ideasButton.addEventListener("click", onIdeas);
+    
+        row.append(labelEl, ideasButton);
+        return row;
+    }
     
     function attachExerciseAutocomplete(textarea, onValueChange) {
         const suggestionsWrap = document.createElement("div");
@@ -752,9 +800,15 @@ export function renderWorkoutPlanner() {
         return suggestionsWrap;
     }
     
-    const warmoramaLabel = document.createElement("div");
-    warmoramaLabel.textContent = getWorkoutFieldLabel(state, "warmorama");
-    warmoramaLabel.classList.add("detail-label");
+    const warmoramaLabel = createPlannerSectionHeader({
+        label: getWorkoutFieldLabel(state, "warmorama"),
+        onIdeas: () => {
+            openLibraryIdeasModal({
+                targetType: "warmorama",
+                targetLabel: getWorkoutFieldLabel(state, "warmorama"),
+            });
+        },
+    });
 
     const warmoramaInput = document.createElement("textarea");
     warmoramaInput.classList.add("notes");
@@ -783,9 +837,15 @@ export function renderWorkoutPlanner() {
 
     const thangSectionsList = renderThangSections();
 
-    const finisherLabel = document.createElement("div");
-    finisherLabel.textContent = getWorkoutFieldLabel(state, "finisher");
-    finisherLabel.classList.add("detail-label");
+    const finisherLabel = createPlannerSectionHeader({
+        label: getWorkoutFieldLabel(state, "finisher"),
+        onIdeas: () => {
+            openLibraryIdeasModal({
+                targetType: "finisher",
+                targetLabel: getWorkoutFieldLabel(state, "finisher"),
+            });
+        },
+    });
 
     const finisherInput = document.createElement("textarea");
     finisherInput.classList.add("notes");
@@ -1064,6 +1124,63 @@ export function renderWorkoutPlanner() {
 
     if (state.workoutBrowseModalOpen) {
         app.appendChild(createWorkoutBrowseModal(closeWorkoutBrowseModal, copyWorkoutToPlanner));
+    }
+
+    if (state.libraryIdeasModal) {
+        app.appendChild(
+            createLibraryIdeasModal({
+                onInsert: (item, mode) => {
+                    const insertText = mode === "details" && item.description
+                        ? `${item.name}\n${item.description}`
+                        : item.name;
+        
+                    const modalState = state.libraryIdeasModal;
+                    if (!modalState) return;
+        
+                    if (modalState.targetType === "warmorama") {
+                        draftWorkout.warmorama = draftWorkout.warmorama
+                            ? `${draftWorkout.warmorama}\n${insertText}`
+                            : insertText;
+                    }
+        
+                    if (modalState.targetType === "finisher") {
+                        draftWorkout.finisher = draftWorkout.finisher
+                            ? `${draftWorkout.finisher}\n${insertText}`
+                            : insertText;
+                    }
+        
+                    if (modalState.targetType === "thang") {
+                        draftWorkout.thangSections = normalizeThangSections(draftWorkout);
+        
+                        const targetIndex = draftWorkout.thangSections.findIndex(
+                            thang => thang.id === modalState.targetThangId
+                        );
+        
+                        if (targetIndex === -1) {
+                            showToast("Could not find target Thang.", "error");
+                            return;
+                        }
+        
+                        const currentContent = draftWorkout.thangSections[targetIndex].content || "";
+        
+                        draftWorkout.thangSections[targetIndex] = {
+                            ...draftWorkout.thangSections[targetIndex],
+                            content: currentContent
+                                ? `${currentContent}\n${insertText}`
+                                : insertText,
+                        };
+        
+                        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+                    }
+        
+                    persistDraft();
+        
+                    state.libraryIdeasModal = null;
+                    showToast("Idea inserted.", "success");
+                    renderApp();
+                },
+            })
+        );
     }
 
     if (state.editingWorkoutTimerId) {

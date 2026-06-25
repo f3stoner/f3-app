@@ -4111,3 +4111,61 @@ textarea {
     color: var(--muted);
     text-align: left;
 }
+
+.planner-section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.planner-section-header-row .detail-label {
+    margin: 0 0 6px;
+}
+
+.planner-ideas-button {
+    width: auto;
+    flex: 0 0 auto;
+    margin: 0 0 6px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+}
+
+.library-ideas-result {
+    align-items: flex-start;
+}
+
+.library-ideas-result-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.library-ideas-quick-add {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: 0;
+    border-radius: 999px;
+    font-size: 1.25rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.library-ideas-expanded {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.library-ideas-description {
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+.library-ideas-actions {
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+}
