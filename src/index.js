@@ -50,6 +50,7 @@ import { renderThangReviewView } from "./views/thangReviewView.js";
 import { renderQReadinessView } from "./views/qReadinessView.js";
 import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
 import { renderLibraryWorkbenchView } from "./views/libraryWorkbenchView.js";
+import { loadLibraryAutocompleteItems } from "./services/libraryData.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -368,6 +369,15 @@ async function loadActiveRegionData(profileRegionId) {
 
     replacePersistedData(cloudData);
     state.currentRegionId = activeRegionId;
+
+    loadLibraryAutocompleteItems()
+    .then(items => {
+        state.libraryItems = items;
+        state.hasLoadedLibraryItems = true;
+    })
+    .catch(error => {
+        console.warn("Failed to load library autocomplete items:", error);
+    });
 
     loadExercises()
         .then(exercises => {

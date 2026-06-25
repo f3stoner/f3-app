@@ -104,3 +104,16 @@ export async function searchLibrary(search, limit = 25) {
 
     return (data || []).map(mapLibraryItemFromDb);
 }
+
+export async function loadLibraryAutocompleteItems(limit = 1000) {
+    const { data, error } = await supabase
+        .from("library_items")
+        .select("*")
+        .in("review_status", ["imported", "reviewed"])
+        .order("name", { ascending: true })
+        .limit(limit);
+
+    if (error) throw error;
+
+    return (data || []).map(mapLibraryItemFromDb);
+}

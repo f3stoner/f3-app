@@ -685,8 +685,12 @@ export function renderWorkoutPlanner() {
     
         function renderSuggestions() {
             const currentLine = getCurrentLineText(textarea).trim();
-            const suggestions = searchExercises(currentLine, { limit: 6 });
-    
+            const suggestions = searchExercises(currentLine, {
+                limit: 6,
+                exercises: state.exercises,
+                libraryItems: state.libraryItems,
+            });
+
             suggestionsWrap.textContent = "";
     
             if (!currentLine || suggestions.length === 0) {
@@ -696,16 +700,31 @@ export function renderWorkoutPlanner() {
     
             suggestionsWrap.style.display = "block";
     
-            suggestions.forEach(exercise => {
+            suggestions.forEach(suggestion => {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.classList.add("exercise-suggestion-button");
-                button.textContent = exercise.name;
+                const title = document.createElement("div");
+                title.className = "exercise-suggestion-title";
+                title.textContent = suggestion.label;
+
+                button.appendChild(title);
+
+                if (suggestion.subtitle) {
+                    const subtitle = document.createElement("div");
+                    subtitle.className = "exercise-suggestion-subtitle";
+                    subtitle.textContent = suggestion.subtitle;
+                    button.appendChild(subtitle);
+                }
     
                 button.addEventListener("mousedown", event => {
                     event.preventDefault();
     
-                    const nextValue = replaceCurrentLine(textarea, exercise.name);
+                    const nextValue = replaceCurrentLine(
+                        textarea,
+                        suggestion.insertText
+                    );
+                    
                     onValueChange(nextValue);
     
                     suggestionsWrap.textContent = "";

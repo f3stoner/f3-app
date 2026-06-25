@@ -120,6 +120,9 @@ export const state = {
     libraryWorkbenchTypeFilter: "all",
     libraryWorkbenchSearch: "",
     selectedLibraryWorkbenchItemId: null,
+    libraryItems: [],
+    hasLoadedLibraryItems: false,
+    isLoadingLibraryItems: false,
 };
 
 state.runHistoricImport = async function () {

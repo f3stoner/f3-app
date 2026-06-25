@@ -4099,3 +4099,15 @@ textarea {
         margin-top: 16px;
     }
 }
+
+.exercise-suggestion-title {
+    font-weight: 600;
+    text-align: left;
+}
+
+.exercise-suggestion-subtitle {
+    margin-top: 2px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: left;
+}
