@@ -58,13 +58,6 @@ export function cleanupMainMenu() {
 }
 
 export function createMainMenu() {
-    const canViewRegionInsights = hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS);
-    const canAccessAdminSettings = hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS);
-    const canManageAnnouncements = hasPermission(PERMISSIONS.MANAGE_ANNOUNCEMENTS);
-    const canManageQSource = hasPermission(PERMISSIONS.MANAGE_Q_SOURCE);
-    const canManageLibraryWorkbench = hasPermission(PERMISSIONS.MANAGE_LIBRARY_WORKBENCH);
-    const canManageRoles = hasPermission(PERMISSIONS.MANAGE_ROLES);
-
     const overlay = document.createElement("div");
     overlay.classList.add("main-menu-overlay");
 
@@ -89,57 +82,45 @@ export function createMainMenu() {
 
     header.append(heading, closeButton);
 
-    const menuItems = [
-        { label: "Dashboard", view: "dashboard" },
-        { label: "Workout Library", view: "plannedWorkoutList" },
-        { label: "My Templates", view: "templateHub" },
-        { label: "Session History", view: "sessionHistory" },
-        { label: "Roster", view: "roster" },
-        ...(canViewRegionInsights
-            ? [
-                { label: "Region Insights", view: "regionInsights" },
-                { label: "AO Insights", view: "aoInsights" },
-                { label: "Backblast Review", view: "backblastReview" },
-                { label: "Thang Review", view: "thangReview" },
-            ]
-            : []),
-        
-        ...(canManageLibraryWorkbench
-            ? [
-                { label: "Library Workbench", view: "libraryWorkbench" },
-            ]
-            : []),
-        
-        ...(canManageRoles
-            ? [
-                { label: "Admin Management", view: "adminManagement" },
-            ]
-            : []),
-
-        ...(canManageAnnouncements
-            ? [
-                { label: "Announcements", view: "announcementManagement" },
-                { label: "Q Readiness", view: "qReadiness"},
-            ]
-            : []),
-            
-        ...(canManageQSource
-            ?[
-                {label: "Q Source", view: "qSourceManagement"},
-            ]
-            : []),
-        
-        ...(canAccessAdminSettings
-            ? [
-                { label: "Admin Settings", view: "adminSettings" },
-            ]
-            : []),
+    const menuGroups = [
+        {
+            label: "Plan",
+            items: [
+                { label: "Dashboard", view: "dashboard" },
+                { label: "My Templates", view: "templateHub" },
+                { label: "Session History", view: "sessionHistory" },
+                { label: "Workout Library", view: "plannedWorkoutList" },
+            ],
+        },
+        {
+            label: "People",
+            items: [
+                { label: "Roster", view: "roster" },
+            ],
+        },
+        {
+            label: "Leadership",
+            items: [
+                { label: "Announcements", view: "announcementManagement", permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS },
+                { label: "AO Insights", view: "aoInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
+                { label: "Backblast Review", view: "backblastReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
+                { label: "Q Readiness", view: "qReadiness", permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS },
+                { label: "Q Source", view: "qSourceManagement", permission: PERMISSIONS.MANAGE_Q_SOURCE },
+                { label: "Region Insights", view: "regionInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
+                { label: "Thang Review", view: "thangReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
+            ],
+        },
+        {
+            label: "Admin",
+            items: [
+                { label: "Admin Management", view: "adminManagement", permission: PERMISSIONS.MANAGE_ROLES },
+                { label: "Admin Settings", view: "adminSettings", permission: PERMISSIONS.ACCESS_ADMIN_SETTINGS },
+                { label: "Library Workbench", view: "libraryWorkbench", permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH },
+            ],
+        },
     ];
 
-    const list = document.createElement("div");
-    list.classList.add("main-menu-list");
-
-    menuItems.forEach(item => {
+    function createMenuButton(item) {
         const button = document.createElement("button");
         button.type = "button";
         button.classList.add("main-menu-item");
@@ -162,7 +143,36 @@ export function createMainMenu() {
             });
         }
 
-        list.appendChild(button);
+        return button;
+    }
+
+    const list = document.createElement("div");
+    list.classList.add("main-menu-list");
+
+    menuGroups.forEach(group => {
+        const visibleItems = group.items
+            .filter(item => !item.permission || hasPermission(item.permission))
+            .sort((a, b) => a.label.localeCompare(b.label));
+
+        if (visibleItems.length === 0) return;
+
+        const details = document.createElement("details");
+        details.classList.add("main-menu-group");
+
+        const isActiveGroup = visibleItems.some(item => item.view === state.currentView);
+        details.open = isActiveGroup;
+
+        const summary = document.createElement("summary");
+        summary.classList.add("main-menu-group-heading");
+        summary.textContent = group.label;
+
+        details.appendChild(summary);
+
+        visibleItems.forEach(item => {
+            details.appendChild(createMenuButton(item));
+        });
+
+        list.appendChild(details);
     });
 
     drawer.append(header, list);
@@ -179,4 +189,3 @@ export function createMainMenu() {
 
     return overlay;
 }
-

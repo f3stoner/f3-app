@@ -4299,3 +4299,41 @@ textarea {
         flex: 1;
     }
 }
+
+.main-menu-group {
+    display: grid;
+    gap: 6px;
+}
+
+.main-menu-group + .main-menu-group {
+    margin-top: 10px;
+}
+
+.main-menu-group-heading {
+    cursor: pointer;
+    padding: 10px 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    list-style: none;
+}
+
+.main-menu-group-heading::-webkit-details-marker {
+    display: none;
+}
+
+.main-menu-group-heading::after {
+    content: "▾";
+    float: right;
+    transition: transform 0.15s ease;
+}
+
+.main-menu-group:not([open]) .main-menu-group-heading::after {
+    transform: rotate(-90deg);
+}
+
+.main-menu-group[open] .main-menu-group-heading {
+    color: var(--text);
+}
