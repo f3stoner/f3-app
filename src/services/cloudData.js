@@ -2445,3 +2445,24 @@ export async function logLibraryUsageEvent(event) {
         throw error;
     }
 }
+
+export async function loadRegionProfiles(regionId) {
+    const { data, error } = await supabase
+        .rpc("load_region_profiles_for_admin", {
+            target_region_id: regionId,
+        });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function updateProfileRole(profileId, role) {
+    const { data, error } = await supabase
+        .rpc("update_profile_role", {
+            target_profile_id: profileId,
+            new_role: role,
+        });
+
+    if (error) throw error;
+    return data;
+}

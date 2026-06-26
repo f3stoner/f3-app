@@ -11,10 +11,13 @@ import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateAnnouncementDisplayOrder } from "../services/cloudData.js";
+import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 
 export function renderAnnouncementManagementView() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    cleanupMainMenu();
 
     if (!state.hasLoadedAllAnnouncements && !state.isLoadingAllAnnouncements) {
         state.isLoadingAllAnnouncements = true;
@@ -202,6 +205,10 @@ export function renderAnnouncementManagementView() {
     });
 
     app.append(header, title, form, list, createGlobalNav());
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }
 
 function label(text) {

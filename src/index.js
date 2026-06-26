@@ -51,6 +51,7 @@ import { renderQReadinessView } from "./views/qReadinessView.js";
 import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
 import { renderLibraryWorkbenchView } from "./views/libraryWorkbenchView.js";
 import { loadLibraryAutocompleteItems } from "./services/libraryData.js";
+import { renderAdminManagementView } from "./views/adminManagementView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -263,6 +264,8 @@ function renderApp() {
         renderQSourceManagementView();
     } else if (state.currentView === "libraryWorkbench") {
         renderLibraryWorkbenchView();
+    } else if (state.currentView === "adminManagement") {
+        renderAdminManagementView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 
