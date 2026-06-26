@@ -62,6 +62,8 @@ export function createMainMenu() {
     const canAccessAdminSettings = hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS);
     const canManageAnnouncements = hasPermission(PERMISSIONS.MANAGE_ANNOUNCEMENTS);
     const canManageQSource = hasPermission(PERMISSIONS.MANAGE_Q_SOURCE);
+    const canManageLibraryWorkbench = hasPermission(PERMISSIONS.MANAGE_LIBRARY_WORKBENCH);
+    const canManageRoles = hasPermission(PERMISSIONS.MANAGE_ROLES);
 
     const overlay = document.createElement("div");
     overlay.classList.add("main-menu-overlay");
@@ -97,9 +99,20 @@ export function createMainMenu() {
             ? [
                 { label: "Region Insights", view: "regionInsights" },
                 { label: "AO Insights", view: "aoInsights" },
-                { label: "Backblast Review", view: "backblastReview"},
+                { label: "Backblast Review", view: "backblastReview" },
                 { label: "Thang Review", view: "thangReview" },
-                { label: "Library Workbench", view: "libraryWorkbench"},
+            ]
+            : []),
+        
+        ...(canManageLibraryWorkbench
+            ? [
+                { label: "Library Workbench", view: "libraryWorkbench" },
+            ]
+            : []),
+        
+        ...(canManageRoles
+            ? [
+                { label: "Admin Management", view: "adminManagement" },
             ]
             : []),
 

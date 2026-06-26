@@ -54,7 +54,7 @@ export async function signUpWithEmail(email, password) {
     return data;
 }
 
-export async function createProfile({ id, email, displayName, regionId, role = "user" }) {
+export async function createProfile({ id, email, displayName, regionId, role = "pax" }) {
     const { data, error } = await supabase
         .from("profiles")
         .insert([
@@ -114,7 +114,7 @@ export async function ensureMyProfile(defaultRegionId = null, existingSession = 
         email,
         displayName,
         regionId: defaultRegionId,
-        role: "user"
+        role: "pax"
     });
     console.timeEnd("ensureMyProfile:createProfile");
 

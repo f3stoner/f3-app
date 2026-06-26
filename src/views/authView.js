@@ -136,7 +136,7 @@ export function renderAuthView() {
                 email,
                 displayName,
                 regionId,
-                role: "user",
+                role: "pax",
             });
 
             await bootApp();

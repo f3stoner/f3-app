@@ -11,7 +11,8 @@ export const PERMISSIONS = {
     MANAGE_SESSIONS: "manage_sessions",
     MANAGE_ANNOUNCEMENTS: "manage_announcements",
     MANAGE_Q_SOURCE: "manage_q_source",
-    MANAGE_LIBRARY_WORKBENCH: "manageLibraryWorkbench",
+    MANAGE_LIBRARY_WORKBENCH: "manage_library_workbench",
+    MANAGE_ROLES: "manage_roles",
 
     VIEW_TELEMETRY: "view_telemetry",
     VIEW_IMPORTS: "view_imports",
