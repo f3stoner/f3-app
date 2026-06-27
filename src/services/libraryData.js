@@ -22,6 +22,7 @@ export function mapLibraryItemFromDb(row) {
         reviewStatus: row.review_status || "imported",
         createdAt: row.created_at || null,
         updatedAt: row.updated_at || null,
+        isActive: row.is_active !== false,
     };
 }
 
@@ -34,6 +35,7 @@ export async function loadLibraryWorkbenchItems({
     let query = supabase
         .from("library_items")
         .select("*")
+        .eq("is_active", true)
         .order("updated_at", { ascending: false, nullsFirst: false })
         .order("name", { ascending: true })
         .limit(limit);
@@ -94,6 +96,7 @@ export async function searchLibrary(search, limit = 25) {
     const { data, error } = await supabase
         .from("library_items")
         .select("*")
+        .eq("is_active", true)
         .or(
             `name.ilike.%${term}%,description.ilike.%${term}%`
         )
@@ -109,6 +112,7 @@ export async function loadLibraryAutocompleteItems(limit = 1000) {
     const { data, error } = await supabase
         .from("library_items")
         .select("*")
+        .eq("is_active", true)
         .in("review_status", ["imported", "reviewed"])
         .order("name", { ascending: true })
         .limit(limit);
@@ -130,6 +134,7 @@ export function searchLibraryIdeas({
     const query = String(text || "").trim().toLowerCase();
 
     return (items || [])
+        .filter(item => item.isActive !== false)
         .filter(item => {
             const haystack = [
                 item.name,
@@ -150,4 +155,19 @@ export function searchLibraryIdeas({
             return true;
         })
         .slice(0, limit);
+}
+
+export async function deactivateLibraryItem(itemId) {
+    const { data, error } = await supabase
+        .from("library_items")
+        .update({
+            is_active: false,
+        })
+        .eq("id", itemId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapLibraryItemFromDb(data);
 }

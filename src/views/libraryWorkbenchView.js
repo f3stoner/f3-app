@@ -8,6 +8,7 @@ import { showToast } from "../utils/toast.js";
 import {
     loadLibraryWorkbenchItems,
     updateLibraryItemInCloud,
+    deactivateLibraryItem,
 } from "../services/libraryData.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
 
@@ -452,9 +453,18 @@ function renderDetail(section) {
     descriptionLabel.textContent = "Description";
     detail.appendChild(descriptionLabel);
 
-    const description = document.createElement("div");
-    description.className = "library-workbench-description";
-    description.textContent = item.description || "No description.";
+    const description = document.createElement("textarea");
+    description.className = "library-workbench-description-input";
+    description.rows = 8;
+    description.placeholder = "Describe the exercise or thang...";
+    description.value = item.description || "";
+
+    description.addEventListener("input", event => {
+        updateLocalItem(item.id, {
+            description: event.target.value,
+        });
+    });
+
     detail.appendChild(description);
 
     const confidence = document.createElement("p");
@@ -494,8 +504,51 @@ function renderDetail(section) {
         saveLibraryItem(item, { moveNext: true });
     });
 
+    const deactivateButton = document.createElement("button");
+    deactivateButton.type = "button";
+    deactivateButton.classList.add("danger-button");
+    deactivateButton.textContent = "Deactivate";
+
+    deactivateButton.addEventListener("click", async () => {
+        const confirmed = window.confirm(
+            `Deactivate "${item.name}"?\n\nThis will remove it from the library but preserve history and analytics.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await deactivateLibraryItem(item.id);
+
+            dirtyItemIds.delete(item.id);
+
+            const currentIndex = state.libraryWorkbenchItems.findIndex(
+                existing => existing.id === item.id
+            );
+
+            state.libraryWorkbenchItems = state.libraryWorkbenchItems.filter(
+                existing => existing.id !== item.id
+            );
+
+            const nextItem =
+                state.libraryWorkbenchItems[currentIndex] ||
+                state.libraryWorkbenchItems[currentIndex - 1] ||
+                state.libraryWorkbenchItems[0] ||
+                null;
+
+            state.selectedLibraryWorkbenchItemId = nextItem?.id || null;
+
+            showToast("Library item deactivated.", "success");
+            renderApp();
+        } catch (error) {
+            console.error(error);
+            showToast("Failed to deactivate library item.", "error");
+        }
+    });
+
     actionRow.appendChild(saveButton);
     actionRow.appendChild(saveNextButton);
+    actionRow.appendChild(deactivateButton);
+
     detail.appendChild(actionRow);
 
     section.appendChild(detail);
