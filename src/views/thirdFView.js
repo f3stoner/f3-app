@@ -36,34 +36,33 @@ function formatWeek(dateString) {
 
 function renderDiscussionCard(discussion, { featured = false } = {}) {
     const card = document.createElement("div");
-    card.classList.add("member-card", "third-f-discussion-card");
+    card.classList.add("third-f-discussion-card");
 
     if (featured) {
         card.classList.add("third-f-featured-card");
     }
 
+    const isExpanded = state.expandedThirdFDiscussionId === discussion.id;
+
     const meta = document.createElement("div");
-    meta.classList.add("detail-label");
+    meta.classList.add("third-f-discussion-meta");
     meta.textContent = `${getTypeLabel(discussion.type)} • Week of ${formatWeek(discussion.weekStartDate)}`;
 
     const title = document.createElement("div");
-    title.classList.add("member-name");
+    title.classList.add("third-f-discussion-title");
     title.textContent = discussion.title || "Third F Discussion";
 
     const summary = document.createElement("div");
-    summary.classList.add("stats-line");
+    summary.classList.add("third-f-discussion-summary");
     summary.textContent = discussion.summary || "No summary provided.";
 
-    const isExpanded = state.expandedThirdFDiscussionId === discussion.id;
-
     const body = document.createElement("div");
-    body.classList.add("stats-line", "third-f-discussion-body");
+    body.classList.add("third-f-discussion-body");
     body.textContent = discussion.discussion || "";
-
     body.style.display = isExpanded ? "" : "none";
 
     const actions = document.createElement("div");
-    actions.classList.add("button-row");
+    actions.classList.add("third-f-discussion-actions");
 
     if (discussion.discussion) {
         const toggleButton = document.createElement("button");
@@ -81,7 +80,7 @@ function renderDiscussionCard(discussion, { featured = false } = {}) {
 
     if (discussion.link) {
         const linkButton = document.createElement("a");
-        linkButton.classList.add("secondary-button");
+        linkButton.classList.add("secondary-button", "third-f-link-button");
         linkButton.href = discussion.link;
         linkButton.target = "_blank";
         linkButton.rel = "noopener noreferrer";
@@ -90,7 +89,14 @@ function renderDiscussionCard(discussion, { featured = false } = {}) {
         actions.appendChild(linkButton);
     }
 
-    card.append(meta, title, summary, body);
+    card.append(meta, title, summary);
+
+    if (isExpanded && discussion.discussion) {
+        const divider = document.createElement("div");
+        divider.classList.add("third-f-discussion-divider");
+
+        card.append(divider, body);
+    }
 
     if (actions.children.length > 0) {
         card.appendChild(actions);
@@ -108,7 +114,7 @@ export function renderThirdFView() {
     if (!state.hasLoadedThirdFDiscussions && !state.isLoadingThirdFDiscussions) {
         state.isLoadingThirdFDiscussions = true;
 
-        loadThirdFDiscussions()
+        loadThirdFDiscussions(state.currentRegionId)
             .then(discussions => {
                 state.thirdFDiscussions = discussions;
                 state.hasLoadedThirdFDiscussions = true;

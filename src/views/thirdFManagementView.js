@@ -62,7 +62,7 @@ export function renderThirdFManagementView() {
     if (!state.hasLoadedThirdFDiscussionsForAdmin && !state.isLoadingThirdFDiscussionsForAdmin) {
         state.isLoadingThirdFDiscussionsForAdmin = true;
 
-        loadThirdFDiscussionsForAdmin()
+        loadThirdFDiscussionsForAdmin(state.currentRegionId)
             .then(discussions => {
                 state.thirdFDiscussionsForAdmin = discussions;
                 state.hasLoadedThirdFDiscussionsForAdmin = true;
@@ -175,7 +175,7 @@ export function renderThirdFManagementView() {
     }
 
     async function refreshDiscussions() {
-        state.thirdFDiscussionsForAdmin = await loadThirdFDiscussionsForAdmin();
+        state.thirdFDiscussionsForAdmin = await loadThirdFDiscussionsForAdmin(state.currentRegionId);
         state.hasLoadedThirdFDiscussionsForAdmin = true;
     }
 
@@ -191,6 +191,7 @@ export function renderThirdFManagementView() {
         try {
             await saveThirdFDiscussion({
                 id: state.editingThirdFDiscussionId || null,
+                regionId: state.currentRegionId,
                 weekStartDate: weekValue,
                 title: titleValue,
                 type: typeInput.value,
@@ -336,7 +337,7 @@ function renderThirdFAdminList(container, controls) {
             if (!confirmed) return;
 
             try {
-                await deleteThirdFDiscussion(discussion.id);
+                await deleteThirdFDiscussion(state.currentRegionId, discussion.id);
 
                 await controls.refreshDiscussions();
                 renderApp();

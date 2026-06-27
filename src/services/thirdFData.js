@@ -20,6 +20,7 @@ function mapThirdFDiscussionFromDb(row) {
 function mapThirdFDiscussionToRpcPayload(discussion) {
     return {
         p_id: discussion.id || null,
+        p_region_id: discussion.regionId,
         p_week_start_date: discussion.weekStartDate,
         p_title: discussion.title,
         p_type: discussion.type || "discussion",
@@ -30,16 +31,20 @@ function mapThirdFDiscussionToRpcPayload(discussion) {
     };
 }
 
-export async function loadThirdFDiscussions() {
-    const { data, error } = await supabase.rpc("load_third_f_discussions");
+export async function loadThirdFDiscussions(regionId) {
+    const { data, error } = await supabase.rpc("load_third_f_discussions", {
+        p_region_id: regionId,
+    });
 
     if (error) throw error;
 
     return (data || []).map(mapThirdFDiscussionFromDb);
 }
 
-export async function loadThirdFDiscussionsForAdmin() {
-    const { data, error } = await supabase.rpc("load_third_f_discussions_for_admin");
+export async function loadThirdFDiscussionsForAdmin(regionId) {
+    const { data, error } = await supabase.rpc("load_third_f_discussions_for_admin", {
+        p_region_id: regionId,
+    });
 
     if (error) throw error;
 
@@ -57,9 +62,10 @@ export async function saveThirdFDiscussion(discussion) {
     return mapThirdFDiscussionFromDb(data);
 }
 
-export async function deleteThirdFDiscussion(discussionId) {
+export async function deleteThirdFDiscussion(regionId, discussionId) {
     const { error } = await supabase.rpc("delete_third_f_discussion", {
         p_id: discussionId,
+        p_region_id: regionId,
     });
 
     if (error) throw error;

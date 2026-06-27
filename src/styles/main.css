@@ -4388,3 +4388,82 @@ textarea {
     width: 100%;
     margin: 0;
 }
+
+.third-f-discussion-card {
+    display: block;
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.third-f-featured-card {
+    border-color: var(--border-strong);
+    background: var(--surface-raised);
+}
+
+.third-f-discussion-meta {
+    margin-bottom: 8px;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.third-f-discussion-title {
+    margin-bottom: 8px;
+    font-size: 1.45rem;
+    line-height: 1;
+    font-weight: 900;
+    font-family: var(--font-display);
+    color: var(--text);
+}
+
+.third-f-discussion-summary {
+    max-width: 42rem;
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--muted);
+    white-space: pre-wrap;
+}
+
+.third-f-discussion-divider {
+    height: 1px;
+    margin: var(--space-4) 0;
+    background: var(--border);
+}
+
+.third-f-discussion-body {
+    max-width: 44rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text);
+}
+
+.third-f-discussion-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+}
+
+.third-f-discussion-actions button,
+.third-f-discussion-actions a {
+    margin: 0;
+    width: auto;
+}
+
+.third-f-link-button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
