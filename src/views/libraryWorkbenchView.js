@@ -379,6 +379,13 @@ function createChipButton({ item, group, value }) {
     return button;
 }
 
+function normalizeCustomValue(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_");
+}
+
 function renderChipGroup(detail, label, item, group, options) {
     const groupLabel = document.createElement("p");
     groupLabel.className = "detail-label";
@@ -388,11 +395,55 @@ function renderChipGroup(detail, label, item, group, options) {
     const chips = document.createElement("div");
     chips.className = "library-workbench-chip-row";
 
-    options.forEach(value => {
+    const selectedValues = item[group] || [];
+    const allValues = [...new Set([...options, ...selectedValues])];
+
+    allValues.forEach(value => {
         chips.appendChild(createChipButton({ item, group, value }));
     });
 
     detail.appendChild(chips);
+
+    const customRow = document.createElement("div");
+    customRow.className = "library-workbench-custom-chip-row";
+
+    const customInput = document.createElement("input");
+    customInput.type = "text";
+    customInput.placeholder = `Add custom ${label.toLowerCase()}...`;
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.classList.add("secondary-button");
+    addButton.textContent = "Add";
+
+    function addCustomValue() {
+        const value = normalizeCustomValue(customInput.value);
+
+        if (!value) return;
+
+        const currentValues = item[group] || [];
+
+        if (currentValues.includes(value)) {
+            customInput.value = "";
+            return;
+        }
+
+        updateLocalItem(item.id, {
+            [group]: [...currentValues, value],
+        });
+    }
+
+    customInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addCustomValue();
+        }
+    });
+
+    addButton.addEventListener("click", addCustomValue);
+
+    customRow.append(customInput, addButton);
+    detail.appendChild(customRow);
 }
 
 function renderDetail(section) {
