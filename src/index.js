@@ -52,6 +52,8 @@ import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
 import { renderLibraryWorkbenchView } from "./views/libraryWorkbenchView.js";
 import { loadLibraryAutocompleteItems } from "./services/libraryData.js";
 import { renderAdminManagementView } from "./views/adminManagementView.js";
+import { renderThirdFManagementView } from "./views/thirdFManagementView.js";
+import { renderThirdFView } from "./views/thirdFView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -266,6 +268,10 @@ function renderApp() {
         renderLibraryWorkbenchView();
     } else if (state.currentView === "adminManagement") {
         renderAdminManagementView();
+    } else if (state.currentView === "thirdFManagement") {
+        renderThirdFManagementView();
+    } else if (state.currentView === "thirdF") {
+        renderThirdFView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

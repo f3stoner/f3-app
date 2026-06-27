@@ -4337,3 +4337,54 @@ textarea {
 .main-menu-group[open] .main-menu-group-heading {
     color: var(--text);
 }
+
+.library-workbench-custom-chip-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.library-workbench-custom-chip-row input {
+    flex: 1;
+}
+
+.third-f-management-form {
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.third-f-management-form textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.third-f-management-form .third-f-discussion-input {
+    min-height: 220px;
+}
+
+.third-f-published-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 16px;
+    font-weight: 800;
+}
+
+.third-f-published-row input {
+    width: auto;
+    margin: 0;
+}
+
+.third-f-management-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.third-f-management-actions button {
+    width: 100%;
+    margin: 0;
+}

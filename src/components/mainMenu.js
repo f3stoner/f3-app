@@ -105,9 +105,10 @@ export function createMainMenu() {
                 { label: "AO Insights", view: "aoInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
                 { label: "Backblast Review", view: "backblastReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
                 { label: "Q Readiness", view: "qReadiness", permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS },
-                { label: "Q Source", view: "qSourceManagement", permission: PERMISSIONS.MANAGE_Q_SOURCE },
+                { label: "Manage Third F", view: "thirdFManagement", permission: PERMISSIONS.MANAGE_Q_SOURCE },
                 { label: "Region Insights", view: "regionInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
                 { label: "Thang Review", view: "thangReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
+                { label: "Third F", view: "thirdF" },
             ],
         },
         {
