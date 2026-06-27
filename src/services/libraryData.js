@@ -78,6 +78,7 @@ export async function updateLibraryItemInCloud(item) {
             body_parts: item.bodyParts || [],
             review_status: item.reviewStatus || "reviewed",
             updated_at: new Date().toISOString(),
+            description: item.description || "",
         })
         .eq("id", item.id)
         .select()

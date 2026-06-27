@@ -460,9 +460,20 @@ function renderDetail(section) {
     description.value = item.description || "";
 
     description.addEventListener("input", event => {
-        updateLocalItem(item.id, {
-            description: event.target.value,
-        });
+        const nextDescription = event.target.value;
+    
+        state.libraryWorkbenchItems = state.libraryWorkbenchItems.map(existing =>
+            existing.id === item.id
+                ? { ...existing, description: nextDescription }
+                : existing
+        );
+    
+        dirtyItemIds.add(item.id);
+    
+        saveButton.textContent = "Save Changes";
+    
+        const selectedRow = document.querySelector(".library-workbench-row.selected");
+        selectedRow?.classList.add("dirty");
     });
 
     detail.appendChild(description);
@@ -494,14 +505,16 @@ function renderDetail(section) {
     const saveButton = document.createElement("button");
     saveButton.textContent = dirtyItemIds.has(item.id) ? "Save Changes" : "Mark Reviewed";
     saveButton.addEventListener("click", () => {
-        saveLibraryItem(item);
+        const latestItem = getSelectedItem();
+        saveLibraryItem(latestItem);
     });
 
     const saveNextButton = document.createElement("button");
     saveNextButton.className = "primary-button";
     saveNextButton.textContent = "Save + Next";
     saveNextButton.addEventListener("click", () => {
-        saveLibraryItem(item, { moveNext: true });
+        const latestItem = getSelectedItem();
+        saveLibraryItem(latestItem, { moveNext: true });
     });
 
     const deactivateButton = document.createElement("button");
