@@ -129,7 +129,16 @@ export async function updateSession(sessionId, updatedSession) {
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
-    const savedSession = await updateSessionInCloud(activeRegionId, updatedSession);
+    const normalizedSession = await ensureFngMembersForSession(
+        activeRegionId,
+        updatedSession
+    );
+    
+    const savedSession = await updateSessionInCloud(
+        activeRegionId,
+        normalizedSession
+    );
+    
     const index = state.sessions.findIndex(session => session.id === sessionId);
     if (index === -1) return false;
 
