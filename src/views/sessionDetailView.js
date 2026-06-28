@@ -19,6 +19,7 @@ import {
     invalidateRecentMemberActivityCache,
 } from "../utils/memberStatsCache.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { getRegularPaxIds, getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -65,10 +66,8 @@ export function renderSessionDetail() {
         .filter(Boolean)
         .map(member => member.paxName);
     const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
-    const qIdSet = new Set(effectiveQIds);
 
-    const paxNamesArray = session.attendeeIds
-        .filter(id => !qIdSet.has(id))
+    const paxNamesArray = getRegularPaxIds(session)
         .map(id => {
             const member = state.members.find(m => m.id === id);
             return member ? member.paxName : "Unknown";
@@ -76,6 +75,12 @@ export function renderSessionDetail() {
     const paxNames = paxNamesArray.length > 0 
         ? paxNamesArray.join(", ") 
         : "-";
+
+    const {
+        totalAttendance,
+        regularPaxCount,
+        fngCount,
+    } = getSessionDisplayCounts(session);
 
     const hasStructuredWorkout = Boolean(session.workout);
     const notesText = session.notes ? session.notes : "-";
@@ -91,7 +96,7 @@ export function renderSessionDetail() {
 
     const summaryMeta = document.createElement("div");
     summaryMeta.classList.add("stats-line");
-    summaryMeta.textContent = `${formattedDate} • ${session.attendeeIds.length} PAX • ${session.fngs.length} FNGs`;
+    summaryMeta.textContent = `${formattedDate} • ${totalAttendance} Attended • ${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
 
     const summaryQ = document.createElement("div");
     summaryQ.classList.add("stats-line", "q-line");
@@ -200,19 +205,28 @@ export function renderSessionDetail() {
                         
                         const updatedFngs = (session.fngs || []).map(existingFng => {
                             const isTargetFng =
-                            existingFng.realName === fng.realName &&
-                            existingFng.paxName === fng.paxName;
-
-                        return isTargetFng
-                            ? { ...existingFng, memberId: savedMember.id }
-                            : existingFng;
+                                existingFng.realName === fng.realName &&
+                                existingFng.paxName === fng.paxName;
+                        
+                            return isTargetFng
+                                ? { ...existingFng, memberId: savedMember.id }
+                                : existingFng;
                         });
-
+                        
+                        const updatedAttendeeIds = [
+                            ...new Set([
+                                ...(session.attendeeIds || []),
+                                savedMember.id,
+                            ]),
+                        ];
+                        
                         await updateSession(session.id, {
                             ...session,
+                            attendeeIds: updatedAttendeeIds,
                             fngs: updatedFngs,
                         });
-
+                        
+                        session.attendeeIds = updatedAttendeeIds;
                         session.fngs = updatedFngs;
 
                         addButton.textContent = "On Roster";
@@ -347,7 +361,7 @@ export function renderSessionDetail() {
         return section;
     }
 
-    const paxSection = createDetailSection(`PAX (${paxNamesArray.length})`, paxNames);
+    const paxSection = createDetailSection(`PAX (${regularPaxCount})`, paxNames);
     const fngSection = createFngSection();
     const workoutSection = createWorkoutSection();
     workoutSection.classList.add("session-detail-workout-section");
@@ -373,7 +387,7 @@ export function renderSessionDetail() {
                     sessionId: session.id,
                     sessionDate: session.date || null,
                     aoName: session.aoName || null,
-                    paxCount: session.attendeeIds?.length || 0,
+                    paxCount: totalAttendance,
                     fngCount: session.fngs?.length || 0,
                     qCount: session.qIds?.length || 0,
                     sourcePlannedWorkoutId: session.sourcePlannedWorkoutId || null,

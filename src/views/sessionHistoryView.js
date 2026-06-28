@@ -6,6 +6,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { loadOlderSessionsPage, loadSessionsByIds, searchHistoricalBackblasts } from "../services/cloudData.js";
+import { getSessionDisplayCounts, getRegularPaxIds, memberAttendedSession } from "../utils/sessionAttendance.js";
 
 state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
 
@@ -163,10 +164,13 @@ export function renderSessionHistory() {
 
         const statsLine = document.createElement("div");
         statsLine.classList.add("stats-line");
-        const attendeeCount = session.attendeeIds?.length || 0;
-        const fngCount = session.fngs?.length || 0;
+        const {
+            totalAttendance,
+            fngCount,
+        } = getSessionDisplayCounts(session);
         
-        statsLine.textContent = `${attendeeCount} PAX • ${fngCount} FNGs`;
+        statsLine.textContent =
+            `${totalAttendance} Attended • ${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
     
         const previewLine = document.createElement("div");
         previewLine.classList.add("stats-line", "session-preview-line");
@@ -209,8 +213,7 @@ function getSessionSearchText(session, mode = "all") {
         workout.notes,
     ].filter(Boolean).join(" ");
 
-    const attendeeOnlyIds = (session.attendeeIds || [])
-    .filter(id => !effectiveQIds.includes(id));
+    const attendeeOnlyIds = getRegularPaxIds(session);
 
     const attendeeText = [
         getMemberNamesByIds(attendeeOnlyIds),
@@ -264,9 +267,8 @@ function renderSessionList() {
         const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
         const isQ = effectiveQIds.includes(state.currentUserMemberId);
-        const attendeeIds = session.attendeeIds || [];
         const isAttended =
-            attendeeIds.includes(state.currentUserMemberId) &&
+            memberAttendedSession(session, state.currentUserMemberId) &&
             !isQ;
 
         if (state.sessionHistoryFilterType === "q" && !isQ) return false;

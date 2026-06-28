@@ -7,6 +7,7 @@ import { goBack } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { memberAttendedSession } from "../utils/sessionAttendance.js";
 
 export function renderStalePaxView() {
     const app = document.getElementById("app");
@@ -59,15 +60,14 @@ export function renderStalePaxView() {
     const stalePaxList = document.createElement("div");
 
     function getLastPostDate(member) {
-        const matchingSessions = state.sessions.filter(session => 
-            session.attendeeIds.includes(member.id) ||
-            session.fngs?.some(fng => fng.memberId === member.id)
+        const matchingSessions = state.sessions.filter(session =>
+            memberAttendedSession(session, member.id)
         );
-
+    
         if (matchingSessions.length === 0) {
             return member.firstPostDate || null;
         }
-
+    
         return matchingSessions
             .map(session => session.date)
             .sort()

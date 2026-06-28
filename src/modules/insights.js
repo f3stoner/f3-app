@@ -1,8 +1,10 @@
+import { getTotalAttendanceCount, getRosteredAttendanceIdSet } from "../utils/sessionAttendance.js";
+
 /*
 Insights Metric Definitions
 
 totalAttendance:
-    attendeeIds + fngs per session
+    unique attendeeIds ∪ fng.memberId, plus unrostered FNGs
 
 uniquePax:
     unique known/rostered humans
@@ -60,12 +62,9 @@ export function buildRegionInsights({
     const totalSessions = filteredSessions.length;
 
     function getSessionAttendanceCount(session) {
-        return (
-            (session.attendeeIds?.length || 0) +
-            (session.fngs?.length || 0)
-        );
+        return getTotalAttendanceCount(session);
     }
-
+    
     const totalAttendance = filteredSessions.reduce((total, session) => {
         return total + getSessionAttendanceCount(session);
     }, 0);
@@ -298,14 +297,14 @@ export function buildRegionInsights({
     const postCountByMemberId = new Map();
 
     filteredSessions.forEach(session => {
-        (session.attendeeIds || []).forEach(memberId => {
+        getRosteredAttendanceIdSet(session).forEach(memberId => {
             postCountByMemberId.set(
                 memberId,
                 (postCountByMemberId.get(memberId) || 0) + 1
             );
         });
     });
-
+    
     const postingFrequency = [
         { label: "1 Post", count: 0 },
         { label: "2-4 Posts", count: 0 },

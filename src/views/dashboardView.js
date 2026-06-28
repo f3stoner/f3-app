@@ -25,6 +25,7 @@ import { logAppEvent } from "../services/appEvents.js";
 import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { releaseWakeLock } from "../utils/wakelock.js";
+import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -1665,7 +1666,13 @@ export function renderDashboard() {
 
             const summaryLine = document.createElement("div");
             summaryLine.classList.add("stats-line");
-            summaryLine.textContent = `${session.attendeeIds.length} PAX · ${session.fngs.length} FNGs`;
+            const {
+                totalAttendance,
+                fngCount,
+            } = getSessionDisplayCounts(session);
+            
+            summaryLine.textContent =
+                `${totalAttendance} Attended · ${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
 
             sessionDetail.append(topLine, typeLine);
             
