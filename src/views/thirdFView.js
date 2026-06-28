@@ -172,9 +172,27 @@ export function renderThirdFView() {
         return;
     }
 
-    const discussions = state.thirdFDiscussions || [];
-    const currentDiscussion = discussions[0];
-    const previousDiscussions = discussions.slice(1);
+    const discussions = [...(state.thirdFDiscussions || [])].sort((a, b) => {
+        const dateA = a.weekStartDate ? new Date(`${a.weekStartDate}T00:00:00`) : new Date(0);
+        const dateB = b.weekStartDate ? new Date(`${b.weekStartDate}T00:00:00`) : new Date(0);
+    
+        return dateA - dateB;
+    });
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const currentDiscussion =
+        discussions.find(discussion => {
+            if (!discussion.weekStartDate) return false;
+    
+            const weekDate = new Date(`${discussion.weekStartDate}T00:00:00`);
+            return weekDate >= today;
+        }) || discussions[discussions.length - 1];
+    
+    const previousDiscussions = discussions.filter(
+        discussion => discussion.id !== currentDiscussion?.id
+    );
 
     if (!currentDiscussion) {
         const empty = document.createElement("div");
@@ -199,7 +217,7 @@ export function renderThirdFView() {
         archive.classList.add("section");
 
         const archiveTitle = document.createElement("h2");
-        archiveTitle.textContent = "Previous Discussions";
+        archiveTitle.textContent = "All Discussions";
 
         archive.appendChild(archiveTitle);
 
