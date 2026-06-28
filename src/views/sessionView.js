@@ -14,9 +14,10 @@ import { logSaveFailure } from "../services/appEvents.js";
 import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { getAffectedMemberIdsFromSession, loadMemberDashboardStats } from "../services/cloudData.js";
+import { getAffectedMemberIdsFromSession, loadMemberDashboardStats, rebuildMemberStatsForMembers } from "../services/cloudData.js";
 import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
 import { doesSearchMatch } from "../utils/search.js";
+import { getTotalAttendanceCount, memberAttendedSession } from "../utils/sessionAttendance.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -406,7 +407,7 @@ function isUnnamedFng(member) {
 
 function getPriorPostCount(memberId) {
     return state.sessions.filter(session =>
-        session.attendeeIds?.includes(memberId)
+        memberAttendedSession(session, memberId)
     ).length;
 }
 
@@ -802,6 +803,7 @@ function normalizeSessionForSave(session) {
         ...new Set([
             ...(session.attendeeIds || []).map(normalizeId),
             ...qIds,
+            ...fngMemberIds,
         ]),
     ].filter(Boolean);
 
@@ -827,7 +829,7 @@ function validateSessionForSave(session) {
     const attendeeCount = session.attendeeIds?.length || 0;
     const fngCount = session.fngs?.length || 0;
 
-    if (attendeeCount + fngCount === 0) {
+    if (getTotalAttendanceCount(session) === 0) {
         return "Please select at least one attendee or FNG.";
     }
 
@@ -875,6 +877,46 @@ async function attachWeatherSnapshot(session) {
         console.error("Failed to capture session weather:", error);
         return session;
     }
+}
+
+function refreshAffectedMemberStatsInBackground(memberIds = []) {
+    const uniqueMemberIds = [...new Set(memberIds)].filter(Boolean);
+
+    if (uniqueMemberIds.length === 0 || !state.currentRegionId) return;
+
+    rebuildMemberStatsForMembers(state.currentRegionId, uniqueMemberIds)
+        .then(() => Promise.all(
+            uniqueMemberIds.map(async memberId => {
+                const stats = await loadMemberDashboardStats(
+                    state.currentRegionId,
+                    memberId
+                );
+
+                if (!stats) return;
+
+                state.memberStatsByMemberId = {
+                    ...(state.memberStatsByMemberId || {}),
+                    [memberId]: stats,
+                };
+
+                state.memberStats = [
+                    ...(state.memberStats || []).filter(existing => existing.memberId !== memberId),
+                    {
+                        memberId,
+                        regionId: state.currentRegionId,
+                        ...stats,
+                    },
+                ];
+            })
+        ))
+        .then(() => {
+            if (state.currentView === "roster") {
+                renderApp();
+            }
+        })
+        .catch(error => {
+            console.error("Failed to refresh affected member stats:", error);
+        });
 }
 
 const saveButton = document.createElement("button");
@@ -961,27 +1003,7 @@ try {
         invalidateMemberStatsCache(affectedMemberIds);
         invalidateRecentMemberActivityCache(affectedMemberIds);
 
-        await Promise.all(
-            affectedMemberIds.map(async memberId => {
-                const stats = await loadMemberDashboardStats(state.currentRegionId, memberId);
-        
-                if (!stats) return;
-        
-                state.memberStatsByMemberId = {
-                    ...(state.memberStatsByMemberId || {}),
-                    [memberId]: stats,
-                };
-        
-                state.memberStats = [
-                    ...(state.memberStats || []).filter(existing => existing.memberId !== memberId),
-                    {
-                        memberId,
-                        regionId: state.currentRegionId,
-                        ...stats,
-                    },
-                ];
-            })
-        );
+        refreshAffectedMemberStatsInBackground(affectedMemberIds);
 
     const flags = createDuplicateFngNameFlags(
         savedSession,
