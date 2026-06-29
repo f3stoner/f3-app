@@ -68,6 +68,18 @@ function getSelectedItem() {
     ) || state.libraryWorkbenchItems[0] || null;
 }
 
+function getDynamicOptions(group, defaults = []) {
+    const values = [
+        ...(state.libraryWorkbenchItems || []),
+        ...(state.libraryItems || []),
+    ]
+        .flatMap(item => Array.isArray(item[group]) ? item[group] : [])
+        .filter(Boolean);
+
+    return [...new Set([...defaults, ...values])]
+        .sort((a, b) => a.localeCompare(b));
+}
+
 function formatType(itemType) {
     if (!itemType) return "Unknown";
     if (itemType === "exercise") return "Exercise";
@@ -134,6 +146,14 @@ async function saveLibraryItem(item, { moveNext = false } = {}) {
             ...item,
             reviewStatus: "reviewed",
         });
+
+        state.libraryItems = (state.libraryItems || []).map(existing =>
+            existing.id === saved.id ? saved : existing
+        );
+        
+        if (!(state.libraryItems || []).some(existing => existing.id === saved.id)) {
+            state.libraryItems = [...(state.libraryItems || []), saved];
+        }
 
         dirtyItemIds.delete(item.id);
 
@@ -418,27 +438,28 @@ function renderChipGroup(detail, label, item, group, options) {
 
     function addCustomValue() {
         const value = normalizeCustomValue(customInput.value);
-
+    
         if (!value) return;
-
-        const currentValues = item[group] || [];
-
+    
+        const latestItem = state.libraryWorkbenchItems.find(
+            existing => existing.id === item.id
+        );
+    
+        if (!latestItem) return;
+    
+        const currentValues = latestItem[group] || [];
+    
         if (currentValues.includes(value)) {
             customInput.value = "";
             return;
         }
-
-        updateLocalItem(item.id, {
+    
+        customInput.value = "";
+    
+        updateLocalItem(latestItem.id, {
             [group]: [...currentValues, value],
         });
     }
-
-    customInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            addCustomValue();
-        }
-    });
 
     addButton.addEventListener("click", addCustomValue);
 
@@ -495,9 +516,9 @@ function renderDetail(section) {
 
     detail.appendChild(typeRow);
 
-    renderChipGroup(detail, "Tags", item, "tags", TAG_OPTIONS);
-    renderChipGroup(detail, "Equipment", item, "equipment", EQUIPMENT_OPTIONS);
-    renderChipGroup(detail, "Emphasis", item, "emphasis", EMPHASIS_OPTIONS);
+    renderChipGroup(detail, "Tags", item, "tags", getDynamicOptions("tags", TAG_OPTIONS));
+    renderChipGroup(detail, "Equipment", item, "equipment", getDynamicOptions("equipment", EQUIPMENT_OPTIONS));
+    renderChipGroup(detail, "Emphasis", item, "emphasis", getDynamicOptions("emphasis", EMPHASIS_OPTIONS));
 
     const descriptionLabel = document.createElement("p");
     descriptionLabel.className = "detail-label";
@@ -585,6 +606,10 @@ function renderDetail(section) {
 
             dirtyItemIds.delete(item.id);
 
+            state.libraryItems = (state.libraryItems || []).filter(
+                existing => existing.id !== item.id
+            );
+
             const currentIndex = state.libraryWorkbenchItems.findIndex(
                 existing => existing.id === item.id
             );
@@ -643,7 +668,6 @@ export function renderLibraryWorkbenchView() {
     });
 
     app.appendChild(header);
-    createMainMenu();
 
     const shell = document.createElement("section");
     shell.className = "library-workbench-shell";
@@ -661,12 +685,18 @@ export function renderLibraryWorkbenchView() {
         loading.textContent = "Loading library items...";
         shell.appendChild(loading);
         app.appendChild(shell);
+        if (state.isMainMenuOpen) {
+            document.body.appendChild(createMainMenu());
+        }
         return;
     }
 
     if (!state.hasLoadedLibraryWorkbenchItems) {
         app.appendChild(shell);
         refreshLibraryWorkbenchItems();
+        if (state.isMainMenuOpen) {
+            document.body.appendChild(createMainMenu());
+        }
         return;
     }
 
@@ -676,6 +706,9 @@ export function renderLibraryWorkbenchView() {
         empty.textContent = "No matching library items.";
         shell.appendChild(empty);
         app.appendChild(shell);
+        if (state.isMainMenuOpen) {
+            document.body.appendChild(createMainMenu());
+        }
         return;
     }
 
@@ -687,4 +720,7 @@ export function renderLibraryWorkbenchView() {
 
     shell.appendChild(workbenchLayout);
     app.appendChild(shell);
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
 }

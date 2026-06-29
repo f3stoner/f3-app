@@ -14,6 +14,15 @@ function formatMeta(item) {
         .join(" · ");
 }
 
+function getFilterOptions(items, key, defaults = []) {
+    const values = (items || [])
+        .flatMap(item => Array.isArray(item[key]) ? item[key] : [])
+        .filter(Boolean);
+
+    return [...new Set([...defaults, ...values])]
+        .sort((a, b) => a.localeCompare(b));
+}
+
 function createChipButton({ value, selected, onClick }) {
     const button = document.createElement("button");
     button.type = "button";
@@ -178,26 +187,38 @@ export function createLibraryIdeasModal({ onInsert }) {
 
     function renderFilters() {
         filtersWrap.textContent = "";
-
+    
         filtersWrap.append(
             renderChipGroup({
                 label: "Emphasis",
                 group: "emphasis",
-                options: ["upper", "lower", "core", "cardio", "heavy", "run", "ruck", "mobility"],
+                options: getFilterOptions(
+                    state.libraryItems,
+                    "emphasis",
+                    ["upper", "lower", "core", "cardio", "heavy", "run", "ruck", "mobility"]
+                ),
             }),
             renderChipGroup({
                 label: "Equipment",
                 group: "equipment",
-                options: ["coupon", "ruck", "sandbag", "pull_up_bar", "stairs"],
+                options: getFilterOptions(
+                    state.libraryItems,
+                    "equipment",
+                    ["coupon", "ruck", "sandbag", "pull_up_bar", "stairs"]
+                ),
             }),
             renderChipGroup({
                 label: "Tags",
                 group: "tags",
-                options: ["partner", "routine", "game", "competitive", "mary", "warmup", "finisher"],
+                options: getFilterOptions(
+                    state.libraryItems,
+                    "tags",
+                    ["partner", "routine", "game", "competitive", "mary", "warmup", "finisher"]
+                ),
             })
         );
     }
-
+    
     function renderResults() {
         resultsWrap.textContent = "";
 
