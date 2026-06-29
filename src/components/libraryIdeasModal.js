@@ -14,13 +14,13 @@ function formatMeta(item) {
         .join(" · ");
 }
 
-function getFilterOptions(items, key, defaults = []) {
-    const values = (items || [])
-        .flatMap(item => Array.isArray(item[key]) ? item[key] : [])
-        .filter(Boolean);
-
-    return [...new Set([...defaults, ...values])]
+function mergeOptions(defaults = [], dynamic = []) {
+    const custom = (dynamic || [])
+        .filter(Boolean)
+        .filter(value => !defaults.includes(value))
         .sort((a, b) => a.localeCompare(b));
+
+    return [...defaults, ...custom];
 }
 
 function createChipButton({ value, selected, onClick }) {
@@ -192,28 +192,25 @@ export function createLibraryIdeasModal({ onInsert }) {
             renderChipGroup({
                 label: "Emphasis",
                 group: "emphasis",
-                options: getFilterOptions(
-                    state.libraryItems,
-                    "emphasis",
-                    ["upper", "lower", "core", "cardio", "heavy", "run", "ruck", "mobility"]
+                options: mergeOptions(
+                    ["upper", "lower", "core", "cardio", "heavy", "run", "ruck", "mobility"],
+                    state.libraryFilterOptions?.emphasis
                 ),
             }),
             renderChipGroup({
                 label: "Equipment",
                 group: "equipment",
-                options: getFilterOptions(
-                    state.libraryItems,
-                    "equipment",
-                    ["coupon", "ruck", "sandbag", "pull_up_bar", "stairs"]
+                options: mergeOptions(
+                    ["coupon", "ruck", "sandbag", "pull_up_bar", "stairs"],
+                    state.libraryFilterOptions?.equipment
                 ),
             }),
             renderChipGroup({
                 label: "Tags",
                 group: "tags",
-                options: getFilterOptions(
-                    state.libraryItems,
-                    "tags",
-                    ["partner", "routine", "game", "competitive", "mary", "warmup", "finisher"]
+                options: mergeOptions(
+                    ["partner", "routine", "game", "competitive", "mary", "warmup", "finisher"],
+                    state.libraryFilterOptions?.tags
                 ),
             })
         );

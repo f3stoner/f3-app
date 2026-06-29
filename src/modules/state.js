@@ -123,6 +123,11 @@ export const state = {
     libraryItems: [],
     hasLoadedLibraryItems: false,
     isLoadingLibraryItems: false,
+    libraryFilterOptions: savedState?.libraryFilterOptions || {
+        tags: [],
+        equipment: [],
+        emphasis: [],
+    },
 };
 
 state.runHistoricImport = async function () {

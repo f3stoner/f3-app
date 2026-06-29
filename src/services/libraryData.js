@@ -172,3 +172,26 @@ export async function deactivateLibraryItem(itemId) {
 
     return mapLibraryItemFromDb(data);
 }
+
+export async function loadLibraryFilterOptions() {
+    const { data, error } = await supabase
+        .from("library_items")
+        .select("tags,equipment,emphasis")
+        .eq("is_active", true);
+
+    if (error) throw error;
+
+    const collect = key => [
+        ...new Set(
+            (data || [])
+                .flatMap(row => Array.isArray(row[key]) ? row[key] : [])
+                .filter(Boolean)
+        ),
+    ].sort((a, b) => a.localeCompare(b));
+
+    return {
+        tags: collect("tags"),
+        equipment: collect("equipment"),
+        emphasis: collect("emphasis"),
+    };
+}

@@ -68,16 +68,12 @@ function getSelectedItem() {
     ) || state.libraryWorkbenchItems[0] || null;
 }
 
-function getDynamicOptions(group, defaults = []) {
-    const values = [
-        ...(state.libraryWorkbenchItems || []),
-        ...(state.libraryItems || []),
-    ]
-        .flatMap(item => Array.isArray(item[group]) ? item[group] : [])
-        .filter(Boolean);
+function confirmDiscardUnsavedChanges() {
+    if (dirtyItemIds.size === 0) return true;
 
-    return [...new Set([...defaults, ...values])]
-        .sort((a, b) => a.localeCompare(b));
+    return window.confirm(
+        "You have unsaved library changes. Continuing will discard them. Continue?"
+    );
 }
 
 function formatType(itemType) {
@@ -89,6 +85,25 @@ function formatType(itemType) {
 
 function formatList(values = []) {
     return values?.length ? values.join(", ") : "—";
+}
+
+function mergeOptions(defaults = [], dynamic = []) {
+    return [...new Set([...defaults, ...dynamic])]
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+}
+
+function syncLibraryFilterOption(group, value) {
+    state.libraryFilterOptions ||= {
+        tags: [],
+        equipment: [],
+        emphasis: [],
+    };
+
+    state.libraryFilterOptions[group] = mergeOptions(
+        state.libraryFilterOptions[group] || [],
+        [value]
+    );
 }
 
 function toggleValue(values = [], value) {
@@ -154,6 +169,10 @@ async function saveLibraryItem(item, { moveNext = false } = {}) {
         if (!(state.libraryItems || []).some(existing => existing.id === saved.id)) {
             state.libraryItems = [...(state.libraryItems || []), saved];
         }
+
+        (saved.tags || []).forEach(value => syncLibraryFilterOption("tags", value));
+        (saved.equipment || []).forEach(value => syncLibraryFilterOption("equipment", value));
+        (saved.emphasis || []).forEach(value => syncLibraryFilterOption("emphasis", value));
 
         dirtyItemIds.delete(item.id);
 
@@ -264,6 +283,9 @@ function renderFilters(section) {
 
     search.addEventListener("keydown", event => {
         if (event.key === "Enter") {
+            if (!confirmDiscardUnsavedChanges()) return;
+    
+            dirtyItemIds.clear();
             state.libraryWorkbenchSearch = search.value;
             refreshLibraryWorkbenchItems();
         }
@@ -276,6 +298,9 @@ function renderFilters(section) {
             state.libraryWorkbenchStatusFilter || "imported",
             STATUS_OPTIONS,
             value => {
+                if (!confirmDiscardUnsavedChanges()) return;
+            
+                dirtyItemIds.clear();
                 state.libraryWorkbenchStatusFilter = value;
                 refreshLibraryWorkbenchItems();
             }
@@ -287,6 +312,9 @@ function renderFilters(section) {
             state.libraryWorkbenchTypeFilter || "all",
             TYPE_OPTIONS,
             value => {
+                if (!confirmDiscardUnsavedChanges()) return;
+            
+                dirtyItemIds.clear();
                 state.libraryWorkbenchTypeFilter = value;
                 refreshLibraryWorkbenchItems();
             }
@@ -295,7 +323,14 @@ function renderFilters(section) {
 
     const refreshButton = document.createElement("button");
     refreshButton.textContent = "Refresh";
-    refreshButton.addEventListener("click", refreshLibraryWorkbenchItems);
+
+    refreshButton.addEventListener("click", () => {
+        if (!confirmDiscardUnsavedChanges()) return;
+    
+        dirtyItemIds.clear();
+        refreshLibraryWorkbenchItems();
+    });
+    
     controls.appendChild(refreshButton);
 
     section.appendChild(controls);
@@ -455,11 +490,18 @@ function renderChipGroup(detail, label, item, group, options) {
         }
     
         customInput.value = "";
-    
+        
         updateLocalItem(latestItem.id, {
             [group]: [...currentValues, value],
         });
     }
+
+    customInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addCustomValue();
+        }
+    });
 
     addButton.addEventListener("click", addCustomValue);
 
@@ -516,9 +558,30 @@ function renderDetail(section) {
 
     detail.appendChild(typeRow);
 
-    renderChipGroup(detail, "Tags", item, "tags", getDynamicOptions("tags", TAG_OPTIONS));
-    renderChipGroup(detail, "Equipment", item, "equipment", getDynamicOptions("equipment", EQUIPMENT_OPTIONS));
-    renderChipGroup(detail, "Emphasis", item, "emphasis", getDynamicOptions("emphasis", EMPHASIS_OPTIONS));
+    renderChipGroup(
+        detail,
+        "Tags",
+        item,
+        "tags",
+        mergeOptions(TAG_OPTIONS, state.libraryFilterOptions?.tags)
+    );
+    
+    renderChipGroup(
+        detail,
+        "Equipment",
+        item,
+        "equipment",
+        mergeOptions(EQUIPMENT_OPTIONS, state.libraryFilterOptions?.equipment)
+    );
+    
+    renderChipGroup(
+        detail,
+        "Emphasis",
+        item,
+        "emphasis",
+        mergeOptions(EMPHASIS_OPTIONS, state.libraryFilterOptions?.emphasis)
+    );
+
 
     const descriptionLabel = document.createElement("p");
     descriptionLabel.className = "detail-label";

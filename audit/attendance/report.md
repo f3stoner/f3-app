@@ -1,6 +1,6 @@
 # Attendance Comparison Audit
 
-Generated: 2026-06-29T01:25:45.383Z
+Generated: 2026-06-29T02:04:46.264Z
 
 ## Inputs
 
@@ -31,6 +31,7 @@ Generated: 2026-06-29T01:25:45.383Z
 - Session rows compared: 3964
 - Session mismatches: 211
 - True session mismatches: 64
+- Actionable session mismatches: 21
 - Sessions outside bundled CSV coverage: 145
 - Sessions before bundled CSV coverage: 2
 - Aggieland unmatched names vs Pax_Master: 1
@@ -41,6 +42,18 @@ Generated: 2026-06-29T01:25:45.383Z
 - Supabase duplicate normalized pax_name risks: 2
 - Source duplicate attendance rows: 18
 - Member rows not found in members export: 39
+
+## Mismatch Counts By Classification
+
+| Classification | Count |
+|---|---:|
+| outside_aggieland_csv_coverage | 145 |
+| blackops_split_ao_mapping | 22 |
+| non_bundled_ao_session_source | 21 |
+| needs_review | 13 |
+| unresolved_pax_related | 7 |
+| before_aggieland_csv_coverage | 2 |
+| fng_code_interpretation | 1 |
 
 ## Member Name Resolution Rate
 
@@ -105,35 +118,79 @@ Generated: 2026-06-29T01:25:45.383Z
 | The Keep | 1 | 2022-08-11 | 2022-08-11 | 12 |
 | The Rock | 1 | 2022-04-23 | 2022-04-23 | 1 |
 
-## Top 25 Session Mismatches
+## Actionable Session Mismatches
 
-| Date | AO | Aggieland | Supabase | Delta | FNG Delta | Q Delta | Status |
-|---|---|---:|---:|---:|---:|---:|---|
-| 2026-05-04 | BlackOps | 16 | 0 | -16 | 0 | -3 | missing_in_supabase |
-| 2026-05-04 | The Moat PM | 0 | 16 | 16 | 0 | 3 | extra_in_supabase |
-| 2026-01-12 | BlackOps | 12 | 0 | -12 | 0 | -2 | missing_in_supabase |
-| 2026-02-02 | BlackOps | 11 | 0 | -11 | 0 | -2 | missing_in_supabase |
-| 2026-01-19 | BlackOps | 10 | 0 | -10 | 0 | -2 | missing_in_supabase |
-| 2023-11-11 | CSAUP | 0 | 9 | 9 | 0 | 1 | extra_in_supabase |
-| 2023-08-12 | CSAUP | 0 | 8 | 8 | 0 | 1 | extra_in_supabase |
-| 2023-08-20 | CSAUP | 0 | 8 | 8 | 0 | 1 | extra_in_supabase |
-| 2026-01-12 | The Moat AM | 0 | 8 | 8 | 0 | 1 | extra_in_supabase |
-| 2026-02-02 | The Moat AM | 0 | 7 | 7 | 0 | 1 | extra_in_supabase |
-| 2026-05-11 | BlackOps | 7 | 0 | -7 | 0 | -2 | missing_in_supabase |
-| 2026-01-19 | The Moat AM | 0 | 6 | 6 | 0 | 1 | extra_in_supabase |
-| 2026-02-16 | BlackOps | 6 | 0 | -6 | 0 | -1 | missing_in_supabase |
-| 2026-02-16 | Run Club | 0 | 6 | 6 | 0 | 1 | extra_in_supabase |
-| 2026-01-25 | Dads (The Mine) | 0 | 5 | 5 | 0 | 1 | extra_in_supabase |
-| 2026-02-16 | The Moat AM | 0 | 5 | 5 | 0 | 1 | extra_in_supabase |
-| 2026-05-04 | The Moat AM | 0 | 5 | 5 | 0 | 1 | extra_in_supabase |
-| 2026-05-11 | The Moat AM | 0 | 5 | 5 | 0 | 1 | extra_in_supabase |
-| 2026-01-10 | F3 Franklin | 0 | 4 | 4 | 0 | 1 | extra_in_supabase |
-| 2026-01-19 | Austin's Colony | 0 | 4 | 4 | 0 | 1 | extra_in_supabase |
-| 2026-05-25 | The Moat PM | 0 | 4 | 4 | 0 | 1 | extra_in_supabase |
-| 2023-07-16 | CSAUP | 0 | 3 | 3 | 0 | 1 | extra_in_supabase |
-| 2023-09-23 | CSAUP | 0 | 3 | 3 | 0 | 1 | extra_in_supabase |
-| 2025-11-01 | CSAUP | 0 | 3 | 3 | 0 | 1 | extra_in_supabase |
-| 2026-01-26 | Austin's Colony | 0 | 3 | 3 | 0 | 1 | extra_in_supabase |
+| Date | AO | Aggieland | Supabase | Delta | FNG Delta | Q Delta | Status | Classification |
+|---|---|---:|---:|---:|---:|---:|---|---|
+| 2026-01-25 | Dads (The Mine) | 0 | 5 | 5 | 0 | 1 | extra_in_supabase | needs_review |
+| 2026-05-13 | The Iron | 25 | 23 | -2 | 0 | 0 | matched | needs_review |
+| 2025-09-06 | Dads (The Mine) | 23 | 22 | -1 | 0 | 0 | matched | needs_review |
+| 2025-12-08 | The Iron | 13 | 14 | 1 | 0 | 0 | matched | unresolved_pax_related |
+| 2025-12-15 | The Iron | 10 | 11 | 1 | 0 | 0 | matched | unresolved_pax_related |
+| 2025-12-29 | The Iron | 11 | 12 | 1 | 0 | 0 | matched | unresolved_pax_related |
+| 2026-01-05 | The Iron | 14 | 15 | 1 | 0 | 0 | matched | unresolved_pax_related |
+| 2026-01-10 | The Mine | 18 | 19 | 1 | 0 | 0 | matched | needs_review |
+| 2026-01-21 | The Iron | 10 | 11 | 1 | 0 | 0 | matched | unresolved_pax_related |
+| 2026-02-07 | Dads (The Mine) | 14 | 15 | 1 | 0 | 0 | matched | needs_review |
+| 2026-04-03 | The Keep | 13 | 14 | 1 | 0 | 0 | matched | needs_review |
+| 2026-04-06 | The Iron | 17 | 18 | 1 | 0 | 0 | matched | unresolved_pax_related |
+| 2026-04-21 | The Keep | 10 | 11 | 1 | 1 | 0 | matched | unresolved_pax_related |
+| 2026-05-02 | Convergence (Cave) | 17 | 16 | -1 | 0 | 0 | matched | needs_review |
+| 2026-05-05 | The Forest | 16 | 15 | -1 | 0 | 0 | matched | needs_review |
+| 2026-05-06 | The Keep | 18 | 17 | -1 | 0 | 0 | matched | needs_review |
+| 2026-05-07 | The Rock | 20 | 19 | -1 | 0 | 0 | matched | needs_review |
+| 2026-05-11 | The Forest | 13 | 12 | -1 | 0 | 0 | matched | needs_review |
+| 2026-05-12 | The Mine | 15 | 14 | -1 | 0 | 0 | matched | needs_review |
+| 2026-05-14 | The Keep | 24 | 23 | -1 | 0 | 0 | matched | needs_review |
+| 2026-04-27 | The Iron | 11 | 11 | 0 | 1 | 0 | matched | fng_code_interpretation |
+
+## Known Non-Actionable Mismatches
+
+| Date | AO | Aggieland | Supabase | Delta | Status | Classification |
+|---|---|---:|---:|---:|---|---|
+| 2026-05-04 | BlackOps | 16 | 0 | -16 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-05-04 | The Moat PM | 0 | 16 | 16 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-01-12 | BlackOps | 12 | 0 | -12 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-02-02 | BlackOps | 11 | 0 | -11 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-01-19 | BlackOps | 10 | 0 | -10 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-01-12 | The Moat AM | 0 | 8 | 8 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-02-02 | The Moat AM | 0 | 7 | 7 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-05-11 | BlackOps | 7 | 0 | -7 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-01-19 | The Moat AM | 0 | 6 | 6 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-02-16 | BlackOps | 6 | 0 | -6 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-02-16 | Run Club | 0 | 6 | 6 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-02-16 | The Moat AM | 0 | 5 | 5 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-05-04 | The Moat AM | 0 | 5 | 5 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-05-11 | The Moat AM | 0 | 5 | 5 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-01-19 | Austin's Colony | 0 | 4 | 4 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-01-26 | Austin's Colony | 0 | 3 | 3 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-02-02 | Austin's Colony | 0 | 3 | 3 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-02-23 | Run Club | 0 | 3 | 3 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-05-11 | The Moat PM | 0 | 3 | 3 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-01-05 | Austin's Colony | 0 | 2 | 2 | extra_in_supabase | blackops_split_ao_mapping |
+| 2026-02-26 | BlackOps | 2 | 0 | -2 | missing_in_supabase | blackops_split_ao_mapping |
+| 2026-02-26 | LBJ | 0 | 2 | 2 | extra_in_supabase | blackops_split_ao_mapping |
+| 2023-11-11 | CSAUP | 0 | 9 | 9 | extra_in_supabase | non_bundled_ao_session_source |
+| 2023-08-12 | CSAUP | 0 | 8 | 8 | extra_in_supabase | non_bundled_ao_session_source |
+| 2023-08-20 | CSAUP | 0 | 8 | 8 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-01-10 | F3 Franklin | 0 | 4 | 4 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-05-25 | The Moat PM | 0 | 4 | 4 | extra_in_supabase | non_bundled_ao_session_source |
+| 2023-07-16 | CSAUP | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2023-09-23 | CSAUP | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2025-11-01 | CSAUP | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-03-13 | Austin's Colony | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-04-04 | F3 Franklin | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-04-18 | F3 Franklin | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-05-09 | F3 Franklin | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-05-18 | The Moat AM | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-05-25 | F3 Franklin | 0 | 3 | 3 | extra_in_supabase | non_bundled_ao_session_source |
+| 2025-08-10 | CSAUP | 0 | 2 | 2 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-03-21 | F3 Franklin | 0 | 2 | 2 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-03-28 | F3 Franklin | 0 | 2 | 2 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-05-24 | F3 Franklin | 0 | 2 | 2 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-04-11 | F3 Franklin | 0 | 1 | 1 | extra_in_supabase | non_bundled_ao_session_source |
+| 2026-05-02 | F3 Franklin | 0 | 1 | 1 | extra_in_supabase | non_bundled_ao_session_source |
+| 2023-06-02 | Run Club | 0 | 0 | 0 | extra_in_supabase | non_bundled_ao_session_source |
 
 ## Unmatched Names / Unresolved PAX
 
@@ -271,6 +328,23 @@ Generated: 2026-06-29T01:25:45.383Z
 | Narc | 201 | 221 | 20 | resolved_by_members_export |
 | Skipper | 62 | 82 | 20 | resolved_by_members_export |
 | Werner | 242 | 262 | 20 | resolved_by_members_export |
+
+## Top Identity Split Pairs
+
+| Base Name | Names | Total Abs Delta | Net Delta | Details |
+|---|---|---:|---:|---|
+| jumper | Jumper / Jumper (2.0) | 353 | 1 | Jumper: 177; Jumper (2.0): -176 |
+| dial-up | Dial-Up / Dial-Up (Inactive) | 99 | 23 | Dial-Up (Inactive): 61; Dial-Up: -38 |
+| prime | Prime / Prime (2.0) | 96 | 6 | Prime: 51; Prime (2.0): -45 |
+| yoshi | Yoshi / Yoshi (2.0) | 82 | 0 | Yoshi: 41; Yoshi (2.0): -41 |
+| walker | Walker (2.0) / Walker  (DR) | 49 | 1 | Walker  (DR): 25; Walker (2.0): -24 |
+| brick | Brick / Brick (2.0) | 32 | 0 | Brick: 16; Brick (2.0): -16 |
+| grizzly | Grizzly / Grizzly (2.0) | 30 | 0 | Grizzly: 15; Grizzly (2.0): -15 |
+| rio | Rio / Rio (DR) | 30 | 6 | Rio (DR): 18; Rio: -12 |
+| wrangler | Wrangler / Wrangler (2.0) | 6 | 0 | Wrangler: 3; Wrangler (2.0): -3 |
+| ronaldo | Ronaldo / Ronaldo (2.0) / Ronaldo (Liver King 2.0) | 4 | 2 | Ronaldo (2.0): 2; Ronaldo: -1; Ronaldo (Liver King 2.0): 1 |
+| gamma | Gamma / Gamma (DR) | 2 | 0 | Gamma: -1; Gamma (DR): 1 |
+| hancock | Hancock / Hancock (DR) | 2 | 0 | Hancock: -1; Hancock (DR): 1 |
 
 ## Generated Files
 

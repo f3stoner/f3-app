@@ -50,7 +50,7 @@ import { renderThangReviewView } from "./views/thangReviewView.js";
 import { renderQReadinessView } from "./views/qReadinessView.js";
 import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
 import { renderLibraryWorkbenchView } from "./views/libraryWorkbenchView.js";
-import { loadLibraryAutocompleteItems } from "./services/libraryData.js";
+import { loadLibraryAutocompleteItems, loadLibraryFilterOptions } from "./services/libraryData.js";
 import { renderAdminManagementView } from "./views/adminManagementView.js";
 import { renderThirdFManagementView } from "./views/thirdFManagementView.js";
 import { renderThirdFView } from "./views/thirdFView.js";
@@ -379,14 +379,18 @@ async function loadActiveRegionData(profileRegionId) {
     replacePersistedData(cloudData);
     state.currentRegionId = activeRegionId;
 
-    loadLibraryAutocompleteItems()
-    .then(items => {
-        state.libraryItems = items;
-        state.hasLoadedLibraryItems = true;
-    })
-    .catch(error => {
-        console.warn("Failed to load library autocomplete items:", error);
-    });
+    Promise.all([
+        loadLibraryAutocompleteItems(),
+        loadLibraryFilterOptions(),
+    ])
+        .then(([items, filterOptions]) => {
+            state.libraryItems = items;
+            state.libraryFilterOptions = filterOptions;
+            state.hasLoadedLibraryItems = true;
+        })
+        .catch(error => {
+            console.warn("Failed to load library data:", error);
+        });
 
     loadExercises()
         .then(exercises => {

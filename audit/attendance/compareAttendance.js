@@ -29,6 +29,22 @@ const CURRENT_AO_LOGS = [
 ];
 
 const HISTORIC_LOG = ["Historic", "public/Historic_Log.csv"];
+const BLACKOPS_SPLIT_AOS = new Set([
+    "moat am",
+    "moat pm",
+    "run club",
+    "austin's colony",
+    "lbj",
+]);
+const NON_BUNDLED_SUPABASE_AOS = new Set([
+    "f3 franklin",
+    "moat am",
+    "moat pm",
+    "run club",
+    "austin's colony",
+    "lbj",
+    "csaup",
+]);
 
 const HISTORIC_AO_CODE_MAP = {
     C: "Cave",
@@ -485,6 +501,7 @@ function loadSupabaseSessions(supabaseMembers) {
     const unrosteredFngs = [];
     const duplicateRisks = [];
     const unresolvedUuids = new Map();
+    const unresolvedSessionKeys = new Set();
     const uuidReferenceCounts = {
         attendee: 0,
         q: 0,
@@ -572,6 +589,7 @@ function loadSupabaseSessions(supabaseMembers) {
         aoTotals.set(aoName, (aoTotals.get(aoName) || 0) + rosteredAttendanceIds.size + unrosteredFngCount);
 
         if (unresolved.length) {
+            unresolvedSessionKeys.add(key);
             unresolvedPax.push(...unresolved.map(item => ({
                 date,
                 aoName,
@@ -616,12 +634,23 @@ function loadSupabaseSessions(supabaseMembers) {
         unrosteredFngs,
         duplicateRisks,
         unresolvedUuids,
+        unresolvedSessionKeys,
         uuidReferenceCounts,
     };
 }
 
 function compareSessions(aggieland, supabase) {
     const keys = [...new Set([...aggieland.sessions.keys(), ...supabase.sessions.keys()])].sort();
+    const sourceBlackOpsDates = new Set(
+        [...aggieland.sessions.values()]
+            .filter(session => normalizeAoName(session.aoName) === "blackops")
+            .map(session => session.date)
+    );
+    const supabaseBlackOpsSplitDates = new Set(
+        [...supabase.sessions.values()]
+            .filter(session => BLACKOPS_SPLIT_AOS.has(normalizeAoName(session.aoName)))
+            .map(session => session.date)
+    );
 
     return keys.map(key => {
         const source = aggieland.sessions.get(key);
@@ -647,6 +676,31 @@ function compareSessions(aggieland, supabase) {
             status = "before_aggieland_csv_coverage";
         }
 
+        let classification = "needs_review";
+        if (status === "outside_aggieland_csv_coverage" || status === "before_aggieland_csv_coverage") {
+            classification = status;
+        } else if (
+            normalizedAo === "blackops" &&
+            source &&
+            !db &&
+            supabaseBlackOpsSplitDates.has(date)
+        ) {
+            classification = "blackops_split_ao_mapping";
+        } else if (
+            db &&
+            !source &&
+            BLACKOPS_SPLIT_AOS.has(normalizedAo) &&
+            sourceBlackOpsDates.has(date)
+        ) {
+            classification = "blackops_split_ao_mapping";
+        } else if (db && !source && NON_BUNDLED_SUPABASE_AOS.has(normalizedAo)) {
+            classification = "non_bundled_ao_session_source";
+        } else if (db && source && dbAttendance === agAttendance && dbFng !== agFng) {
+            classification = "fng_code_interpretation";
+        } else if (db && source && dbAttendance !== agAttendance && supabase.unresolvedSessionKeys.has(key)) {
+            classification = "unresolved_pax_related";
+        }
+
         return {
             key,
             date,
@@ -663,6 +717,7 @@ function compareSessions(aggieland, supabase) {
             source_files: source ? [...source.sourceFiles].join("; ") : "",
             supabase_session_id: db?.id || "",
             status,
+            classification,
         };
     });
 }
@@ -748,6 +803,74 @@ function summarizeCoverageRows(rows) {
         .sort((a, b) => b.count - a.count || a.aoName.localeCompare(b.aoName));
 }
 
+function countBy(values, getKey) {
+    const counts = new Map();
+
+    for (const value of values) {
+        const key = getKey(value);
+        counts.set(key, (counts.get(key) || 0) + 1);
+    }
+
+    return [...counts.entries()]
+        .map(([key, count]) => ({ key, count }))
+        .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+}
+
+function isNonActionableClassification(classification) {
+    return classification === "outside_aggieland_csv_coverage" ||
+        classification === "before_aggieland_csv_coverage" ||
+        classification === "blackops_split_ao_mapping" ||
+        classification === "non_bundled_ao_session_source";
+}
+
+function normalizeIdentityPairName(name) {
+    return normalizePaxKey(name)
+        .replace(/\s*\([^)]*\)/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function findIdentitySplitPairs(memberRows) {
+    const byBaseName = new Map();
+
+    for (const row of memberRows) {
+        const delta = Number(row.delta || 0);
+        if (!delta) continue;
+
+        const baseName = normalizeIdentityPairName(row.pax_name);
+        if (!baseName) continue;
+
+        if (!byBaseName.has(baseName)) byBaseName.set(baseName, []);
+        byBaseName.get(baseName).push({
+            ...row,
+            delta,
+            hasIdentitySuffix: baseName !== normalizePaxKey(row.pax_name),
+        });
+    }
+
+    return [...byBaseName.entries()]
+        .map(([baseName, rows]) => {
+            if (rows.length <= 1 || !rows.some(row => row.hasIdentitySuffix)) return null;
+
+            const positiveRows = rows.filter(row => row.delta > 0);
+            const negativeRows = rows.filter(row => row.delta < 0);
+            if (!positiveRows.length || !negativeRows.length) return null;
+
+            return {
+                baseName,
+                names: rows.map(row => row.pax_name).join(" / "),
+                netDelta: rows.reduce((total, row) => total + row.delta, 0),
+                totalAbsDelta: rows.reduce((total, row) => total + Math.abs(row.delta), 0),
+                details: rows
+                    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+                    .map(row => `${row.pax_name}: ${row.delta}`)
+                    .join("; "),
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.totalAbsDelta - a.totalAbsDelta || a.baseName.localeCompare(b.baseName));
+}
+
 function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, roster, supabaseMembers }) {
     const mismatchedSessions = sessionRows
         .filter(row => row.attendance_delta || row.fng_delta || row.q_delta || row.status !== "matched")
@@ -755,6 +878,16 @@ function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, ros
 
     const coverageSessionRows = mismatchedSessions.filter(row => isCoverageStatus(row.status));
     const trueMismatchedSessions = mismatchedSessions.filter(row => !isCoverageStatus(row.status));
+    const classificationCounts = countBy(mismatchedSessions, row => row.classification || "needs_review");
+    const actionableMismatchedSessions = trueMismatchedSessions
+        .filter(row => !isNonActionableClassification(row.classification))
+        .sort((a, b) => Math.abs(b.attendance_delta) - Math.abs(a.attendance_delta));
+    const knownNonActionableRows = trueMismatchedSessions
+        .filter(row => isNonActionableClassification(row.classification))
+        .sort((a, b) =>
+            (a.classification || "").localeCompare(b.classification || "") ||
+            Math.abs(b.attendance_delta) - Math.abs(a.attendance_delta)
+        );
     const outsideCoverageSummary = summarizeCoverageRows(
         coverageSessionRows.filter(row => row.status === "outside_aggieland_csv_coverage")
     );
@@ -782,6 +915,7 @@ function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, ros
         .filter(row => row.delta === "" || Number(row.delta) !== 0)
         .sort((a, b) => Math.abs(Number(b.delta || 0)) - Math.abs(Number(a.delta || 0)))
         .slice(0, 25);
+    const identitySplitPairs = findIdentitySplitPairs(memberRows);
 
     const lines = [];
     lines.push("# Attendance Comparison Audit");
@@ -806,6 +940,7 @@ function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, ros
     lines.push(`- Session rows compared: ${sessionRows.length}`);
     lines.push(`- Session mismatches: ${mismatchedSessions.length}`);
     lines.push(`- True session mismatches: ${trueMismatchedSessions.length}`);
+    lines.push(`- Actionable session mismatches: ${actionableMismatchedSessions.length}`);
     lines.push(`- Sessions outside bundled CSV coverage: ${outsideCoverageSummary.reduce((total, row) => total + row.count, 0)}`);
     lines.push(`- Sessions before bundled CSV coverage: ${beforeCoverageSummary.reduce((total, row) => total + row.count, 0)}`);
     lines.push(`- Aggieland unmatched names vs Pax_Master: ${unmatchedNames.length}`);
@@ -816,6 +951,14 @@ function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, ros
     lines.push(`- Supabase duplicate normalized pax_name risks: ${supabaseMembers.duplicatePaxNames.length}`);
     lines.push(`- Source duplicate attendance rows: ${sourceDuplicateRows.length}`);
     lines.push(`- Member rows not found in members export: ${memberUnresolvedCount}`);
+    lines.push("");
+    lines.push("## Mismatch Counts By Classification");
+    lines.push("");
+    lines.push("| Classification | Count |");
+    lines.push("|---|---:|");
+    classificationCounts.forEach(row => {
+        lines.push(`| ${row.key} | ${row.count} |`);
+    });
     lines.push("");
     lines.push("## Member Name Resolution Rate");
     lines.push("");
@@ -860,13 +1003,23 @@ function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, ros
         });
     }
     lines.push("");
-    lines.push("## Top 25 Session Mismatches");
+    lines.push("## Actionable Session Mismatches");
     lines.push("");
-    lines.push("| Date | AO | Aggieland | Supabase | Delta | FNG Delta | Q Delta | Status |");
-    lines.push("|---|---|---:|---:|---:|---:|---:|---|");
-    top25.forEach(row => {
-        lines.push(`| ${row.date} | ${row.ao_name} | ${row.ag_attendance_count} | ${row.supabase_attendance_count} | ${row.attendance_delta} | ${row.fng_delta} | ${row.q_delta} | ${row.status} |`);
+    lines.push("| Date | AO | Aggieland | Supabase | Delta | FNG Delta | Q Delta | Status | Classification |");
+    lines.push("|---|---|---:|---:|---:|---:|---:|---|---|");
+    actionableMismatchedSessions.slice(0, 50).forEach(row => {
+        lines.push(`| ${row.date} | ${row.ao_name} | ${row.ag_attendance_count} | ${row.supabase_attendance_count} | ${row.attendance_delta} | ${row.fng_delta} | ${row.q_delta} | ${row.status} | ${row.classification} |`);
     });
+    if (!actionableMismatchedSessions.length) lines.push("| None | | | | | | | | |");
+    lines.push("");
+    lines.push("## Known Non-Actionable Mismatches");
+    lines.push("");
+    lines.push("| Date | AO | Aggieland | Supabase | Delta | Status | Classification |");
+    lines.push("|---|---|---:|---:|---:|---|---|");
+    knownNonActionableRows.slice(0, 75).forEach(row => {
+        lines.push(`| ${row.date} | ${row.ao_name} | ${row.ag_attendance_count} | ${row.supabase_attendance_count} | ${row.attendance_delta} | ${row.status} | ${row.classification} |`);
+    });
+    if (!knownNonActionableRows.length) lines.push("| None | | | | | | |");
     lines.push("");
     lines.push("## Unmatched Names / Unresolved PAX");
     lines.push("");
@@ -962,6 +1115,18 @@ function buildReport({ sessionRows, memberRows, aoRows, aggieland, supabase, ros
         lines.push(`| ${row.pax_name} | ${row.ag_post_count} | ${row.supabase_post_count} | ${row.delta} | ${row.resolution_status} |`);
     });
     lines.push("");
+    lines.push("## Top Identity Split Pairs");
+    lines.push("");
+    if (!identitySplitPairs.length) {
+        lines.push("- None");
+    } else {
+        lines.push("| Base Name | Names | Total Abs Delta | Net Delta | Details |");
+        lines.push("|---|---|---:|---:|---|");
+        identitySplitPairs.slice(0, 25).forEach(row => {
+            lines.push(`| ${row.baseName} | ${row.names} | ${row.totalAbsDelta} | ${row.netDelta} | ${row.details} |`);
+        });
+    }
+    lines.push("");
     lines.push("## Generated Files");
     lines.push("");
     lines.push("- `audit/attendance/session-mismatches.csv`");
@@ -1014,6 +1179,7 @@ function main() {
             "supabase_q_count",
             "q_delta",
             "status",
+            "classification",
             "source_files",
             "supabase_session_id",
             "key",
