@@ -1580,22 +1580,48 @@ export async function loadRecentMemberActivity(regionId, memberId, limit = 2) {
     return (data || []).map(mapSessionFromDb);
 }
 
+export async function deactivateExpiredAnnouncements(regionId) {
+    const today = getTodayDate();
+
+    const { error } = await supabase
+        .from("announcements")
+        .update({
+            is_active: false,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("region_id", regionId)
+        .eq("is_active", true)
+        .not("ends_on", "is", null)
+        .lt("ends_on", today);
+
+    if (error) throw error;
+}
+
 export async function loadAnnouncements(regionId) {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayDate();
+
+    try {
+        await deactivateExpiredAnnouncements(regionId);
+    } catch (error) {
+        console.warn("Failed to deactivate expired announcements:", error);
+    }
 
     const { data, error } = await supabase
         .from("announcements")
         .select("*")
         .eq("region_id", regionId)
         .eq("is_active", true)
-        .or(`starts_on.is.null,starts_on.lte.${today}`)
-        .or(`ends_on.is.null,ends_on.gte.${today}`)
         .order("display_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    return (data || []).map(mapAnnouncementFromDb);
+    return (data || [])
+        .filter(announcement =>
+            (!announcement.starts_on || announcement.starts_on <= today) &&
+            (!announcement.ends_on || announcement.ends_on >= today)
+        )
+        .map(mapAnnouncementFromDb);
 }
 
 export async function loadAllAnnouncements(regionId) {
