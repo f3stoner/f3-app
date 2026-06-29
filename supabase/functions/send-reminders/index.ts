@@ -78,6 +78,24 @@ function buildNotificationKey({ type, slot }: { type: string; slot?: any }) {
   return `${type}_${slot?.id || "weekly"}_${slot?.date || ""}`;
 }
 
+function getNotificationType(reminder: any) {
+  return reminder.type === "day-before"
+    ? "day_before_q_reminder"
+    : "weekly_q_summary";
+}
+
+function getNotificationIdempotencyKey(userId: string, reminder: any) {
+  if (reminder.type === "day-before") {
+    return `day_before_q_reminder:${userId}:${reminder.slot.id}`;
+  }
+
+  return `weekly_q_summary:${userId}:${reminder.key}`;
+}
+
+function getNotificationUrl(reminder: any) {
+  return "/f3-app/?view=qSignup";
+}
+
 function getUpcomingRemindersForUser({
   qSlots,
   aos,
@@ -137,55 +155,100 @@ function getUpcomingRemindersForUser({
   return reminders;
 }
 
-async function alreadySent(userId: string, reminder: any) {
-  if (reminder.type === "day-before" && reminder.slot?.id) {
-    const { data, error } = await supabase
-      .from("notification_log")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("q_slot_id", reminder.slot.id)
-      .eq("notification_type", "day_before_q_reminder")
-      .maybeSingle();
+async function claimNotification(
+  userId: string,
+  reminder: any,
+  payload: Record<string, unknown>
+) {
+  const notificationType = getNotificationType(reminder);
+  const idempotencyKey = getNotificationIdempotencyKey(userId, reminder);
 
-    if (error) throw error;
-    return Boolean(data);
+  const { data, error } = await supabase
+    .from("notification_log")
+    .insert({
+      user_id: userId,
+      q_slot_id: reminder.slot?.id || null,
+      notification_type: notificationType,
+      idempotency_key: idempotencyKey,
+      status: "pending",
+      payload,
+      attempt_count: 1,
+      metadata:
+        reminder.type === "weekly-summary"
+          ? { key: reminder.key, date_key: reminder.key }
+          : { key: reminder.key },
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      return { claimed: false, id: null };
+    }
+
+    throw error;
   }
 
-  if (reminder.type === "weekly-summary") {
-    const todayKey = formatDateKey(new Date());
-
-    const { data, error } = await supabase
-      .from("notification_log")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("notification_type", "weekly_q_summary")
-      .contains("metadata", { date_key: todayKey })
-      .maybeSingle();
-    if (error) throw error;
-    return Boolean(data);
-  }
-  return false;
+  return { claimed: true, id: data.id };
 }
 
-async function logSent(userId: string, reminder: any) {
-  const payload = {
-    user_id: userId,
-    q_slot_id: reminder.slot?.id || null,
-    notification_type:
-      reminder.type === "day-before"
-        ? "day_before_q_reminder"
-        : "weekly_q_summary",
+async function markNotificationSent(
+  notificationLogId: string,
+  statusCode: number | null
+) {
+  const { error } = await supabase
+    .from("notification_log")
+    .update({
+      status: "sent",
+      webpush_status_code: statusCode,
+      sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", notificationLogId);
 
-    metadata:
-      reminder.type === "weekly-summary"
-        ? { key: reminder.key, date_key: formatDateKey(new Date()) }
-        : { key: reminder.key },
-  };
-  const { error } = await supabase.from("notification_log").insert(payload);
   if (error) throw error;
 }
 
-async function clearDeadSubscription(userId: string) {
+async function markNotificationFailed(
+  notificationLogId: string,
+  error: unknown
+) {
+  const statusCode = getErrorStatusCode(error);
+  const message = getErrorMessage(error);
+
+  const { error: updateError } = await supabase
+    .from("notification_log")
+    .update({
+      status: "failed",
+      webpush_status_code: statusCode,
+      error_message: message,
+      failed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", notificationLogId);
+
+  if (updateError) {
+    console.warn("Failed to mark notification failure:", updateError);
+  }
+}
+
+async function clearDeadSubscription(userId: string, failedEndpoint: string | null) {
+  if (!failedEndpoint) return false;
+
+  const { data, error: readError } = await supabase
+    .from("notification_settings")
+    .select("push_subscription")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (readError) throw readError;
+
+  const currentEndpoint = data?.push_subscription?.endpoint || null;
+
+  if (currentEndpoint !== failedEndpoint) {
+    return false;
+  }
+
   const { error } = await supabase
     .from("notification_settings")
     .update({
@@ -193,7 +256,10 @@ async function clearDeadSubscription(userId: string) {
       push_subscription: null,
     })
     .eq("user_id", userId);
+
   if (error) throw error;
+
+  return true;
 }
 
 async function logFunctionRun({
@@ -252,10 +318,6 @@ serve(async () => {
     skippedDuplicates: 0,
     failed: 0,
     disabledDeadSubscriptions: 0,
-    targetSlotSeen: false,
-    targetProfileSeen: false,
-    targetSettingSeen: false,
-    targetMatchSeen: false,
   };
 
   try {
@@ -284,35 +346,6 @@ serve(async () => {
     if (qSlotsError) throw qSlotsError;
     if (aosError) throw aosError;
     if (profilesError) throw profilesError;
-
-    const TARGET_USER_ID = "4b8cbc35-d1ba-45f9-a311-eb3022f9367e";
-    const TARGET_MEMBER_ID = "a6a71044-fc8b-496a-a10e-0fc2bea766fc";
-    const TARGET_SLOT_ID = "21987b1e-e7d3-4d99-9503-2d1fc3ba9862";
-
-    summary.targetSlotSeen = (qSlots || []).some(
-      (slot) => slot.id === TARGET_SLOT_ID
-    );
-
-    summary.targetProfileSeen = (profiles || []).some(
-      (profile) =>
-        profile.id === TARGET_USER_ID &&
-        profile.member_id === TARGET_MEMBER_ID
-    );
-
-    summary.targetSettingSeen = (settingsRows || []).some(
-      (settings) => settings.user_id === TARGET_USER_ID
-    );
-
-    summary.targetMatchSeen = (settingsRows || []).some((settings) => {
-      const profile = profiles?.find((p) => p.id === settings.user_id);
-
-      return (qSlots || []).some(
-        (slot) =>
-          slot.id === TARGET_SLOT_ID &&
-          slot.q_user_id === profile?.member_id &&
-          slot.date === tomorrowKey
-      );
-    });
 
     summary.qSlotsTomorrow = (qSlots || []).filter(
       (slot) => slot.date === tomorrowKey && slot.q_user_id
@@ -346,22 +379,34 @@ serve(async () => {
       summary.generatedReminders += reminders.length;
 
       for (const reminder of reminders) {
-        const sent = await alreadySent(settings.user_id, reminder);
+        const payloadObject = {
+          title: reminder.title,
+          body: reminder.body,
+          data: {
+            app: "the-q",
+            type: reminder.type,
+            notificationType: getNotificationType(reminder),
+            idempotencyKey: getNotificationIdempotencyKey(settings.user_id, reminder),
+            key: reminder.key,
+            qSlotId: reminder.slot?.id || null,
+            date: reminder.slot?.date || formatDateKey(),
+            aoId: reminder.slot?.ao_id || null,
+            url: getNotificationUrl(reminder),
+          },
+        };
 
-        if (sent) {
+        const claim = await claimNotification(
+          settings.user_id,
+          reminder,
+          payloadObject
+        );
+
+        if (!claim.claimed || !claim.id) {
           summary.skippedDuplicates++;
           continue;
         }
 
-        const payload = JSON.stringify({
-          title: reminder.title,
-          body: reminder.body,
-          data: {
-            type: reminder.type,
-            key: reminder.key,
-            qSlotId: reminder.slot?.id || null,
-          },
-        });
+        const payload = JSON.stringify(payloadObject);
 
         try {
           const result = await webpush.sendNotification(
@@ -376,25 +421,39 @@ serve(async () => {
 
           summary.sent++;
 
-          await logSent(settings.user_id, reminder);
-
+          await markNotificationSent(
+            claim.id,
+            result.statusCode ?? null
+          );
         } catch (error) {
+          await markNotificationFailed(claim.id, error);
+
           const statusCode = getErrorStatusCode(error);
 
           console.error(
             `Failed ${reminder.type} for ${settings.user_id}:`,
             statusCode || error
           );
+
           summary.failed++;
 
           if (statusCode === 404 || statusCode === 410) {
-            await clearDeadSubscription(settings.user_id);
-            summary.disabledDeadSubscriptions++;
+            const failedEndpoint =
+              settings.push_subscription?.endpoint || null;
+
+            const cleared = await clearDeadSubscription(
+              settings.user_id,
+              failedEndpoint
+            );
+
+            if (cleared) {
+              summary.disabledDeadSubscriptions++;
+            }
           }
         }
       }
     }
-
+    
     await logFunctionRun({
       success: true,
       summary,

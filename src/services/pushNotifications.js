@@ -1,9 +1,21 @@
 export async function subscribeToPush() {
-    if (!("serviceWorker" in navigator)) return null;
+    if (!("serviceWorker" in navigator)) {
+        throw new Error("Service workers are not supported in this browser.");
+    }
 
-    
+    if (!("Notification" in window)) {
+        throw new Error("Notifications are not supported in this browser.");
+    }
+
+    if (!("PushManager" in window)) {
+        throw new Error("Push notifications are not supported in this browser.");
+    }
 
     const registration = await navigator.serviceWorker.ready;
+
+    if (!registration.pushManager) {
+        throw new Error("Push manager is not available.");
+    }
 
     const permission = await Notification.requestPermission();
 
@@ -16,15 +28,15 @@ export async function subscribeToPush() {
     if (!vapidKey) {
         throw new Error("Missing VAPID public key.");
     }
-    
+
     let subscription = await registration.pushManager.getSubscription();
 
     if (!subscription) {
         subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey), 
-    });
-}
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        });
+    }
 
     return subscription;
 }
