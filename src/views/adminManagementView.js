@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
-import { loadRegionProfiles, updateProfileRole } from "../services/cloudData.js";
+import { loadRegionProfiles, updateProfileRole, loadProfileAoPermissions, setProfileAoPermissions } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 
@@ -12,7 +12,7 @@ const ROLE_LABELS = {
     superadmin: "Super Admin",
     dataq: "Data Q",
     slt: "SLT",
-    aoq: "AOQ",
+    aoq: "AO SLT",
     pax: "PAX",
 };
 
@@ -23,6 +23,22 @@ const ROLE_DESCRIPTIONS = {
     aoq: "AO-level insights and Q slot management.",
     pax: "Standard user access.",
 };
+
+const AO_LEADERSHIP_POSITIONS = [
+    { value: "aoq", label: "AOQ" },
+    { value: "ao_coq", label: "AO Co-Q" },
+    { value: "first_f", label: "1F Q" },
+    { value: "second_f", label: "2F Q" },
+    { value: "third_f", label: "3F Q" },
+];
+
+function getAoName(aoId) {
+    return state.aos.find(ao => ao.id === aoId)?.name || "Unknown AO";
+}
+
+function getAoPositionLabel(position) {
+    return AO_LEADERSHIP_POSITIONS.find(item => item.value === position)?.label || "AOQ";
+}
 
 const collapsedRoles = new Set(["pax"]);
 
@@ -61,12 +77,23 @@ export async function renderAdminManagementView() {
     app.append(header, title, subtitle, loading);
 
     let profiles = [];
+    let aoPermissions = [];
 
     try {
-        profiles = await loadRegionProfiles(state.currentRegionId);
+        const results = await Promise.all([
+            loadRegionProfiles(state.currentRegionId),
+            loadProfileAoPermissions(state.currentRegionId),
+        ]);
+
+        profiles = results[0];
+        aoPermissions = results[1];
+
+        state.adminProfiles = profiles;
+        state.profileAoPermissions = aoPermissions;
+
     } catch (error) {
-        console.error("Failed to load profiles:", error);
-        loading.textContent = "Failed to load profiles.";
+        console.error("Failed to load admin management data:", error);
+        loading.textContent = "Failed to load admin management data.";
         return;
     }
 
@@ -84,6 +111,204 @@ export async function renderAdminManagementView() {
 
     function getProfileName(profile) {
         return profile.display_name || profile.email || "Unnamed User";
+    }
+
+    function getProfileAoPermissions(profileId) {
+        return state.profileAoPermissions.filter(permission =>
+            permission.profileId === profileId
+        );
+    }
+    
+    function createAoLeadershipSummary(profileId) {
+        const permissions = getProfileAoPermissions(profileId);
+    
+        if (permissions.length === 0) return null;
+    
+        const summary = document.createElement("div");
+        summary.classList.add("stats-line");
+        summary.textContent = permissions
+            .map(permission =>
+                `${getAoName(permission.aoId)} (${getAoPositionLabel(permission.position)})`
+            )
+            .join(" · ");
+    
+        return summary;
+    }
+
+    function createAoLeadershipEditor(profile) {
+        const editor = document.createElement("div");
+        editor.classList.add("section", "ao-leadership-editor");
+    
+        const heading = document.createElement("div");
+        heading.classList.add("detail-label");
+        heading.textContent = `AO Leadership · ${getProfileName(profile)}`;
+    
+        let draftAssignments = getProfileAoPermissions(profile.id).map(permission => ({
+            aoId: permission.aoId,
+            position: permission.position || "aoq",
+        }));
+    
+        if (draftAssignments.length === 0) {
+            draftAssignments = [{ aoId: "", position: "aoq" }];
+        }
+    
+        const assignmentList = document.createElement("div");
+    
+        function renderAssignmentList() {
+            assignmentList.textContent = "";
+    
+            draftAssignments.forEach((assignment, index) => {
+                const row = document.createElement("div");
+                row.classList.add("admin-profile-row", "ao-leadership-row");
+    
+                const aoSelect = document.createElement("select");
+    
+                const emptyAo = document.createElement("option");
+                emptyAo.value = "";
+                emptyAo.textContent = "Select AO";
+                aoSelect.appendChild(emptyAo);
+    
+                [...state.aos]
+                    .filter(ao => ao.isActive !== false)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(ao => {
+                        const option = document.createElement("option");
+                        option.value = ao.id;
+                        option.textContent = ao.name;
+                        option.selected = ao.id === assignment.aoId;
+                    
+                        const isDuplicateSelection = draftAssignments.some(
+                            (otherAssignment, otherIndex) =>
+                                otherIndex !== index &&
+                                otherAssignment.aoId === ao.id &&
+                                otherAssignment.position === assignment.position
+                        );
+                    
+                        option.disabled = isDuplicateSelection;
+                    
+                        aoSelect.appendChild(option);
+                    });
+    
+                aoSelect.addEventListener("change", event => {
+                    draftAssignments[index].aoId = event.target.value;
+                });
+    
+                const positionSelect = document.createElement("select");
+    
+                AO_LEADERSHIP_POSITIONS.forEach(position => {
+                    const option = document.createElement("option");
+                    option.value = position.value;
+                    option.textContent = position.label;
+                    option.selected = position.value === assignment.position;
+                    positionSelect.appendChild(option);
+                });
+    
+                positionSelect.addEventListener("change", event => {
+                    draftAssignments[index].position = event.target.value;
+                });
+    
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.classList.add("secondary-button");
+                removeButton.textContent = "Remove";
+    
+                removeButton.addEventListener("click", () => {
+                    draftAssignments = draftAssignments.filter((_, assignmentIndex) =>
+                        assignmentIndex !== index
+                    );
+    
+                    if (draftAssignments.length === 0) {
+                        draftAssignments = [{ aoId: "", position: "aoq" }];
+                    }
+    
+                    renderAssignmentList();
+                });
+    
+                row.append(aoSelect, positionSelect, removeButton);
+                assignmentList.appendChild(row);
+            });
+        }
+    
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.classList.add("secondary-button");
+        addButton.textContent = "+ Add AO Assignment";
+    
+        addButton.addEventListener("click", () => {
+            draftAssignments.push({ aoId: "", position: "aoq" });
+            renderAssignmentList();
+        });
+    
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.classList.add("primary-button");
+        saveButton.textContent = "Save AO Leadership";
+    
+        saveButton.addEventListener("click", async () => {
+            const cleanAssignments = draftAssignments
+                .filter(assignment => assignment.aoId)
+                .map(assignment => ({
+                    aoId: assignment.aoId,
+                    position: assignment.position || "aoq",
+                }));
+
+            const assignmentKeys = cleanAssignments.map(assignment =>
+                `${assignment.aoId}__${assignment.position}`
+            );
+            
+            if (new Set(assignmentKeys).size !== assignmentKeys.length) {
+                showToast("Duplicate AO leadership assignments are not allowed.", "error");
+                return;
+            }
+    
+            saveButton.disabled = true;
+            saveButton.textContent = "Saving...";
+    
+            try {
+                const updatedPermissions = await setProfileAoPermissions(
+                    profile.id,
+                    state.currentRegionId,
+                    cleanAssignments
+                );
+    
+                state.profileAoPermissions = [
+                    ...state.profileAoPermissions.filter(permission =>
+                        permission.profileId !== profile.id
+                    ),
+                    ...updatedPermissions,
+                ];
+    
+                aoPermissions = state.profileAoPermissions;
+    
+                showToast("AO leadership updated.", "success");
+                state.editingAoLeadershipProfileId = null;
+                renderGroups();
+            } catch (error) {
+                console.error("Failed to save AO leadership:", error);
+                showToast("Failed to save AO leadership.", "error");
+                saveButton.disabled = false;
+                saveButton.textContent = "Save AO Leadership";
+            }
+        });
+    
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.classList.add("secondary-button");
+        cancelButton.textContent = "Cancel";
+    
+        cancelButton.addEventListener("click", () => {
+            state.editingAoLeadershipProfileId = null;
+            renderGroups();
+        });
+    
+        const actions = document.createElement("div");
+        actions.classList.add("button-row");
+        actions.append(addButton, saveButton, cancelButton);
+    
+        renderAssignmentList();
+    
+        editor.append(heading, assignmentList, actions);
+        return editor;
     }
 
     function renderGroups() {
@@ -165,6 +390,12 @@ export async function renderAdminManagementView() {
 
                 info.append(name);
 
+                const aoSummary = createAoLeadershipSummary(profile.id);
+
+                if (aoSummary) {
+                    info.appendChild(aoSummary);
+                }
+
                 const select = document.createElement("select");
                 ROLE_OPTIONS.forEach(optionRole => {
                     const option = document.createElement("option");
@@ -199,6 +430,10 @@ export async function renderAdminManagementView() {
                                 : item
                         );
 
+                        if (nextRole !== "aoq" && state.editingAoLeadershipProfileId === profile.id) {
+                            state.editingAoLeadershipProfileId = null;
+                        }
+
                         showToast("Role updated.", "success");
                         renderGroups();
                     } catch (error) {
@@ -213,8 +448,30 @@ export async function renderAdminManagementView() {
                 actions.classList.add("button-row", "admin-profile-actions");
                 actions.append(select, saveButton);
 
+                if ((profile.role || "pax") === "aoq") {
+                    const manageAoButton = document.createElement("button");
+                    manageAoButton.type = "button";
+                    manageAoButton.classList.add("secondary-button");
+                    manageAoButton.textContent = "Manage AO Leadership";
+                
+                    manageAoButton.addEventListener("click", () => {
+                        state.editingAoLeadershipProfileId =
+                            state.editingAoLeadershipProfileId === profile.id
+                                ? null
+                                : profile.id;
+                
+                        renderGroups();
+                    });
+                
+                    actions.appendChild(manageAoButton);
+                }
+
                 row.append(info, actions);
                 section.appendChild(row);
+
+                if (state.editingAoLeadershipProfileId === profile.id) {
+                    section.appendChild(createAoLeadershipEditor(profile));
+                }
             });
 
             groupsWrap.appendChild(section);

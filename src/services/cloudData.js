@@ -337,6 +337,7 @@ export async function loadRegionData(regionId) {
         announcementResult,
         qSourceResult,
         memberStatsResult,
+        aoLeadershipContactResult,
     ] = await Promise.all([
         timed(
             "loadRegionData:region",
@@ -391,6 +392,8 @@ export async function loadRegionData(regionId) {
         timed("loadRegionData:qSources", loadQSources(regionId)),
 
         timed("loadRegionData:memberStats", loadRegionMemberStats(regionId)),
+
+        timed("loadRegionData:aoLeadershipContacts", loadAoLeadershipContacts(regionId)),
     ]);
 
     const backblastLinksBySessionId = new Map();
@@ -430,6 +433,7 @@ export async function loadRegionData(regionId) {
         memberStatsByMemberId: Object.fromEntries(
             memberStatsResult.map(stats => [stats.memberId, stats])
         ),
+        aoLeadershipContacts: aoLeadershipContactResult,
     };
 }
 
@@ -2522,4 +2526,68 @@ export async function updateProfileRole(profileId, role) {
 
     if (error) throw error;
     return data;
+}
+
+function mapProfileAoPermissionFromDb(row) {
+    return {
+        id: row.id,
+        profileId: row.profile_id,
+        regionId: row.region_id,
+        aoId: row.ao_id,
+        position: row.ao_position,
+        createdAt: row.created_at,
+        createdByUserId: row.created_by_user_id,
+    };
+}
+
+export async function loadProfileAoPermissions(regionId) {
+    const { data, error } = await supabase.rpc(
+        "load_profile_ao_permissions",
+        {
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(mapProfileAoPermissionFromDb);
+}
+
+export async function setProfileAoPermissions(
+    profileId,
+    regionId,
+    assignments
+) {
+    const { data, error } = await supabase.rpc(
+        "set_profile_ao_permissions",
+        {
+            p_profile_id: profileId,
+            p_region_id: regionId,
+            p_assignments: assignments,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(mapProfileAoPermissionFromDb);
+}
+function mapAoLeadershipContactFromDb(row) {
+    return {
+        aoId: row.ao_id,
+        aoName: row.ao_name ||"",
+        position: row.ao_position,
+        profileId: row.profile_id,
+        displayName: row.display_name || "",
+        email: row.email || "",
+    };
+}
+
+export async function loadAoLeadershipContacts(regionId) {
+    const { data, error } = await supabase.rpc("load_ao_leadership_contacts", {
+        p_region_id: regionId,
+    });
+
+    if (error) throw error;
+
+    return (data || []).map(mapAoLeadershipContactFromDb);
 }

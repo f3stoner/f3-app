@@ -13,7 +13,7 @@ export async function unclaimQSlot(slot, { bypassDropGuard = false } = []) {
         slot.qUserId === state.currentUserMemberId &&
         isQSlotWithinDropGuard(slot)
     ) {
-        alert(getDropGuardMessage(ao?.name));
+        alert(getDropGuardMessage(slot));
         return { success: false, reason: "drop_guard" };
     }
 

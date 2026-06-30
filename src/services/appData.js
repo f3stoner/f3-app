@@ -247,6 +247,7 @@ export function replacePersistedData({
     memberStats,
     memberStatsByMemberId,
     fngNamingPostNumber,
+    aoLeadershipContacts,
 }) {
     state.regionName = regionName;
     state.fngNamingPostNumber = fngNamingPostNumber || 1;
@@ -263,7 +264,8 @@ export function replacePersistedData({
 
     state.memberStats = memberStats = memberStats || [];
     state.memberStatsByMemberId = memberStatsByMemberId || {};
-
+    state.aoLeadershipContacts = aoLeadershipContacts || [];
+    
     state.allAnnouncements = null;
     state.hasLoadedAllAnnouncements = false;
     state.isLoadingAllAnnouncements = false;

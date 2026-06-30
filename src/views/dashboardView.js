@@ -136,7 +136,7 @@ export function renderDashboard() {
         role === "superadmin" ? "Superadmin" :
         role === "dataq" ? "Data Q" :
         role === "slt" ? "SLT" :
-        role === "aoq" ? "AOQ" :
+        role === "aoq" ? "AO SLT" :
         "PAX";
 
     const linkedMember = state.members.find(
