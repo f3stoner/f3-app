@@ -2320,35 +2320,73 @@ export async function loadQReadiness(regionId, startDate, endDate) {
 
     const slotDates = [...new Set((slots || []).map(slot => slot.date))];
 
+    if (slotDates.length === 0) return [];
+
     const { data: workouts, error: workoutsError } = await supabase
-    .from("planned_workouts")
-    .select(`
-        id,
-        region_id,
-        date,
-        ao_name,
-        is_finalized,
-        preblast_text
-    `)
-    .eq("region_id", regionId)
-    .in("date", slotDates);
+        .from("planned_workouts")
+        .select(`
+            id,
+            region_id,
+            date,
+            ao_name,
+            is_finalized,
+            preblast_text,
+            created_by_user_id,
+            created_at,
+            last_modified_at
+        `)
+        .eq("region_id", regionId)
+        .in("date", slotDates)
+        .order("last_modified_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false, nullsFirst: false });
 
     if (workoutsError) throw workoutsError;
+
+    const creatorUserIds = [
+        ...new Set((workouts || [])
+            .map(workout => workout.created_by_user_id)
+            .filter(Boolean)
+        ),
+    ];
+
+    let profileByUserId = new Map();
+
+    if (creatorUserIds.length > 0) {
+        const { data: profiles, error: profilesError } =
+            await supabase.rpc("load_region_profiles_for_admin", {
+                target_region_id: regionId,
+            });
+    
+        if (profilesError) throw profilesError;
+    
+        profileByUserId = new Map(
+            (profiles || [])
+                .filter(profile => creatorUserIds.includes(profile.id))
+                .map(profile => [profile.id, profile])
+        );
+    }
 
     const workoutMap = new Map();
 
     (workouts || []).forEach((workout) => {
+        const profile = profileByUserId.get(workout.created_by_user_id);
+        const ownerMemberId = profile?.member_id || profile?.memberId || null;
+
+        if (!ownerMemberId) return;
+
         const normalizedAoName = normalizeReadinessAoName(workout.ao_name);
-        const key = `${workout.date}|${normalizedAoName}`;
-    
-        workoutMap.set(key, workout);
+        const key = `${workout.date}|${normalizedAoName}|${ownerMemberId}`;
+
+        // Workouts are ordered newest first, so keep the first one for deterministic behavior.
+        if (!workoutMap.has(key)) {
+            workoutMap.set(key, workout);
+        }
     });
 
     return (slots || []).map((slot) => {
         const aoName = slot.aos?.name || "Unknown AO";
         const normalizedAoName = normalizeReadinessAoName(aoName);
-        const workoutKey =
-        `${slot.date}|${normalizedAoName}`;
+        const workoutKey = `${slot.date}|${normalizedAoName}|${slot.q_user_id}`;
         const workout = workoutMap.get(workoutKey);
         const member = slot.members;
 
@@ -2372,6 +2410,7 @@ export async function loadQReadiness(regionId, startDate, endDate) {
         };
     });
 }
+
 
 function normalizeReadinessAoName(value) {
     return String(value || "")
