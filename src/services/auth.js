@@ -122,6 +122,17 @@ export async function ensureMyProfile(defaultRegionId = null, existingSession = 
     return createdProfile;
 }
 
+export async function claimMemberProfile(memberId, displayName) {
+    const { data, error } = await supabase.rpc("claim_member_profile", {
+        p_member_id: memberId,
+        p_display_name: displayName || null,
+    });
+
+    if (error) throw error;
+
+    return data;
+}
+
 export async function updateMyProfile(updates) {
     const currentSession = await getCurrentSession();
 

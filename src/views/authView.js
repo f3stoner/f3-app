@@ -31,11 +31,6 @@ export function renderAuthView() {
     confirmPasswordInput.placeholder = "Confirm Password";
     confirmPasswordInput.style.display = "none";
 
-    const displayNameInput = document.createElement("input");
-    displayNameInput.type = "text";
-    displayNameInput.placeholder = "Display Name";
-    displayNameInput.style.display = "none";
-
     const regionSelect = document.createElement("select");
     regionSelect.style.display = "none";
 
@@ -109,12 +104,11 @@ export function renderAuthView() {
                 return;
             }
 
-            const displayName = displayNameInput.value.trim();
             const regionId = regionSelect.value;
             const confirmPassword = confirmPasswordInput.value;
 
-            if (!displayName || !regionId) {
-                showToast("Display name and region are required.", "error");
+            if (!regionId) {
+                showToast("Region is required.", "error");
                 return;
             }
 
@@ -134,7 +128,7 @@ export function renderAuthView() {
             await createProfile({
                 id: user.id,
                 email,
-                displayName,
+                displayName: null,
                 regionId,
                 role: "pax",
             });
@@ -202,7 +196,6 @@ export function renderAuthView() {
         signInButton.textContent = isSignUpMode ? "Create Account" : "Sign In";
         toggleModeButton.textContent = isSignUpMode ? "Back to Sign In" : "Create Account Instead";
     
-        displayNameInput.style.display = isSignUpMode ? "block" : "none";
         regionSelect.style.display = isSignUpMode ? "block" : "none";
         confirmPasswordInput.style.display = isSignUpMode ? "block" : "none";
         forgotPasswordButton.style.display = isSignUpMode ? "none" : "block";
@@ -216,7 +209,6 @@ export function renderAuthView() {
         passwordInput,
         confirmPasswordInput,
         passwordToggle,
-        displayNameInput,
         regionSelect,
         signInButton,
         toggleModeButton,

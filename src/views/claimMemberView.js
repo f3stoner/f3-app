@@ -1,13 +1,35 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { updateMyProfile } from "../services/auth.js";
+import { claimMemberProfile } from "../services/auth.js";
 import { updateMemberInCloud } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
 import { navigateTo } from "../utils/navigation.js";
+import { loadClaimedMemberIds } from "../services/cloudData.js";
 
 export function renderClaimMemberView() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    if (!state.hasLoadedClaimedMemberIds && !state.isLoadingClaimedMemberIds) {
+        state.isLoadingClaimedMemberIds = true;
+    
+        loadClaimedMemberIds(state.currentRegionId)
+            .then(claimedIds => {
+                state.claimedMemberIds = claimedIds;
+                state.hasLoadedClaimedMemberIds = true;
+            })
+            .catch(error => {
+                console.error("Failed to load claimed members:", error);
+                showToast("Failed to load claimed PAX.", "error");
+            })
+            .finally(() => {
+                state.isLoadingClaimedMemberIds = false;
+    
+                if (state.currentView === "claimMember") {
+                    renderApp();
+                }
+            });
+    }
 
     const title = document.createElement("h1");
     title.textContent = "Claim Your PAX Profile";
@@ -33,6 +55,7 @@ export function renderClaimMemberView() {
     
         const filteredMembers = state.members
             .filter(member => member.status === "active")
+            .filter(member => !state.claimedMemberIds?.has(member.id))
             .filter(member => {
                 const paxName = (member.paxName || "").toLowerCase();
                 const realName = (member.realName || "").toLowerCase();
@@ -148,10 +171,7 @@ export function renderClaimMemberView() {
                         homeAo: homeAoSelect.value || null,
                     };
 
-                    await updateMyProfile({
-                        member_id: selectedMember.id,
-                        display_name: selectedMember.paxName,
-                    });
+                    await claimMemberProfile(selectedMember.id, selectedMember.paxName);
 
                     const savedMember = await updateMemberInCloud(
                         state.currentRegionId,
@@ -165,6 +185,7 @@ export function renderClaimMemberView() {
 
                     state.currentUserMemberId = selectedMember.id;
                     state.currentUserDisplayName = selectedMember.paxName;
+                    state.claimedMemberIds?.add(selectedMember.id);
                     state.claimingMemberId = null;
                     navigateTo("dashboard");
                 } catch (error) {

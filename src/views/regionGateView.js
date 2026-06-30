@@ -1,9 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { grantRegionAccess } from "../services/cloudData.js";
-import { getRegionById } from "../services/cloudData.js";
 import { replacePersistedData } from "../services/appData.js";
-import { loadRegionData } from "../services/cloudData.js";
+import { loadRegionData, verifyRegionPassword, grantRegionAccess } from "../services/cloudData.js";
 
 export function renderRegionGateView() {
     const app = document.getElementById("app");
@@ -27,16 +25,12 @@ export function renderRegionGateView() {
         const entered = input.value.trim();
 
         try {
-            const region = await getRegionById(state.currentRegionId);
-
-            console.log("regionGate currentRegionId:", state.currentRegionId);
-            console.log("regionGate region returned:", region);
-            console.log("entered:", entered);
-            console.log("saved:", region?.region_password);
-
-            const savedPassword = String(region?.region_password || "").trim();
-
-            if (entered !== region.regionPassword) {
+            const isValidPassword = await verifyRegionPassword(
+                state.currentRegionId,
+                entered
+            );
+            
+            if (!isValidPassword) {
                 alert("Incorrect Password");
                 return;
             }

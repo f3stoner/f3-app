@@ -342,7 +342,12 @@ export async function loadRegionData(regionId) {
             "loadRegionData:region",
             supabase
                 .from("regions")
-                .select("*")
+                .select(`
+                    id,
+                    name,
+                    workout_field_labels,
+                    fng_naming_post_number
+                `)
                 .eq("id", regionId)
                 .single()
         ),
@@ -1097,19 +1102,46 @@ export async function deleteQSlotsByIds(regionId, qSlotIds) {
 }
 
 export async function loadAllRegions() {
-    const { data, error } = await supabase
-        .from("regions")
-        .select("*")
-        .order("name", { ascending: true });
+    const { data, error } = await supabase.rpc("load_public_regions");
 
     if (error) throw error;
+
     return (data || []).map(mapRegionFromDb);
+}
+
+export async function verifyRegionPassword(regionId, password) {
+    const { data, error } = await supabase.rpc("verify_region_password", {
+        p_region_id: regionId,
+        p_password: password,
+    });
+
+    if (error) throw error;
+
+    return data === true;
+}
+
+export async function loadClaimedMemberIds(regionId) {
+    const { data, error } = await supabase.rpc("load_claimed_member_ids", {
+        p_region_id: regionId,
+    });
+
+    if (error) throw error;
+
+    return new Set((data || [])
+        .map(row => row.member_id)
+        .filter(Boolean)
+    );
 }
 
 export async function getRegionById(regionId) {
     const { data, error } = await supabase
         .from("regions")
-        .select("*")
+        .select(`
+            id,
+            name,
+            workout_field_labels,
+            fng_naming_post_number
+        `)
         .eq("id", regionId)
         .single()
 
@@ -1322,7 +1354,6 @@ function mapRegionFromDb(row) {
         id: row.id,
         name: row.name,
         workoutFieldLabels: row.workout_field_labels || null,
-        regionPassword: row.region_password || null,
         fngNamingPostNumber: row.fng_naming_post_number ?? 1,
     };
 }
