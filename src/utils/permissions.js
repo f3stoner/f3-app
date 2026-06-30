@@ -66,3 +66,84 @@ export function hasPermission(permission) {
 
     return permissions.includes(permission);
 }
+
+export function isSuperAdmin() {
+    return state.currentUserRole === "superadmin";
+}
+
+export function isDataQ() {
+    return state.currentUserRole === "dataq";
+}
+
+export function isRegionalSLT() {
+    return state.currentUserRole === "slt";
+}
+
+export function isRegionalAdmin() {
+    return isSuperAdmin() || isDataQ() || isRegionalSLT();
+}
+
+function normalizeAoPermissionRow(row) {
+    return {
+        profileId: row.profileId || row.profile_id,
+        regionId: row.regionId || row.region_id,
+        aoId: row.aoId || row.ao_id,
+        position: row.position,
+    };
+}
+
+export function getAoLeadershipAssignments() {
+    return (state.profileAoPermissions || []).map(normalizeAoPermissionRow);
+}
+
+export function getCurrentProfileId() {
+    return state.currentUserProfileId || state.currentUserId || null;
+}
+
+export function getScopedAoPermissionRows(positions = []) {
+    const currentProfileId = getCurrentProfileId();
+    const currentRegionId = state.currentRegionId;
+
+    if (!currentProfileId || !currentRegionId) return [];
+
+    return getAoLeadershipAssignments().filter(row => {
+        const matchesProfile = row.profileId === currentProfileId;
+        const matchesRegion = row.regionId === currentRegionId;
+        const matchesPosition = positions.length === 0 || positions.includes(row.position);
+
+        return matchesProfile && matchesRegion && matchesPosition;
+    });
+}
+
+export function getManagedAoIds(positions = ["aoq", "ao_coq"]) {
+    return [
+        ...new Set(
+            getScopedAoPermissionRows(positions)
+                .map(row => row.aoId)
+                .filter(Boolean)
+        ),
+    ];
+}
+
+export function managesAo(aoId, positions = ["aoq", "ao_coq"]) {
+    if (isRegionalAdmin()) return true;
+    if (!aoId) return false;
+
+    return getManagedAoIds(positions).includes(aoId);
+}
+
+export function managesQSlot(slotOrAoId) {
+    const aoId = typeof slotOrAoId === "object"
+        ? slotOrAoId?.aoId || slotOrAoId?.ao_id
+        : slotOrAoId;
+
+    return managesAo(aoId);
+}
+
+export function canViewAoInsights(aoId) {
+    return managesAo(aoId, ["aoq", "ao_coq", "first_f_q"]);
+}
+
+export function canViewQReadiness(aoId) {
+    return managesAo(aoId, ["aoq", "ao_coq", "first_f_q"]);
+}

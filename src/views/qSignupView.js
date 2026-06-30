@@ -17,7 +17,7 @@ import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
-import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, managesAo } from "../utils/permissions.js";
 import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 
@@ -786,10 +786,12 @@ export function renderQSignupView() {
         listContainer.appendChild(empty);
     } else {
         sortedSlots.forEach(slot => {
+            const managesThisAo = managesAo(slot.aoId);
+
             const card = document.createElement("div");
             card.classList.add("member-card", "q-slot-card");
 
-            if (canManageQSlots) {
+            if (managesThisAo) {
                 card.classList.add("clickable-card");
 
                 card.addEventListener("click", () => {
@@ -807,14 +809,14 @@ export function renderQSignupView() {
                 "";
             const displayTitle = slot.overrideTitle || "";
             const isMine = slot.qUserId === state.currentUserMemberId;
-            const canEditSlot = canManageQSlots || isMine;
+            const canEditSlot = managesThisAo || isMine;
             const qMember = state.members.find(m => m.id === slot.qUserId);
             const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
             const hasPlannedWorkout = Boolean(matchingWorkout);
 
             const topLine = document.createElement("div");
             topLine.classList.add("member-name");
-            if (canManageQSlots) {
+            if (managesThisAo) {
                 topLine.title = "Tap card to edit slot";
             }
             topLine.textContent = displayTitle
@@ -960,7 +962,7 @@ export function renderQSignupView() {
                 actionWrap.appendChild(editButton);
             }
 
-            if (canManageQSlots) {
+            if (managesThisAo) {
                 adminActions = document.createElement("div");
                 adminActions.classList.add("q-slot-admin-actions");
 
@@ -1034,7 +1036,7 @@ export function renderQSignupView() {
             mainRow.append(cardContent, actionWrap);
             card.appendChild(mainRow);  
 
-            if (canManageQSlots && adminActions) {
+            if (managesThisAo && adminActions) {
                 card.append(adminActions);
             }
 

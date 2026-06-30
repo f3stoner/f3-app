@@ -11,7 +11,13 @@ import { renderWorkoutPlanner } from "./views/workoutPlannerView.js";
 import { renderPlannedWorkoutsList } from "./views/plannedWorkoutsListView.js";
 import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js";
 import { replacePersistedData } from "./services/appData.js";
-import { loadAllRegions, loadRegionData, getNotificationSettings, loadExercises } from "./services/cloudData.js";
+import {
+    loadAllRegions,
+    loadRegionData,
+    getNotificationSettings,
+    loadExercises,
+    loadProfileAoPermissions,
+} from "./services/cloudData.js";
 import { importPaxMasterCsv, repairAggielandDeltaSessions, auditPotentialMergedMembers, auditMergedMemberDetail, splitMergedMemberByRawName, runAggielandSync } from "./services/importAggieland.js";
 import { importAoLogCsv, runAggielandDeltaAoImports } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
@@ -43,7 +49,7 @@ import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit
 import { renderImportRunsView } from "./views/importRunsView.js";
 import { importOld300AttendanceCsv } from "./services/importOld300.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
-import { hasPermission, PERMISSIONS } from "./utils/permissions.js";
+import { hasPermission, PERMISSIONS, isRegionalAdmin, getManagedAoIds, managesAo } from "./utils/permissions.js";
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
 import { renderBackblastReview } from "./views/backblastReviewView.js";
 import { renderThangReviewView } from "./views/thangReviewView.js";
@@ -68,6 +74,11 @@ window.logAppEvent = logAppEvent;
 window.triagePotentialMemberMisassignments = triagePotentialMemberMisassignments;
 window.runAggielandSync = runAggielandSync;
 window.importOld300AttendanceCsv = importOld300AttendanceCsv;
+window.permissions = {
+    isRegionalAdmin,
+    getManagedAoIds,
+    managesAo,
+};
 }
 
 if ("serviceWorker" in navigator) {
@@ -452,6 +463,7 @@ async function bootApp() {
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "pax";
         state.currentUserDisplayName = profile.display_name || "User";
+        state.currentUserProfileId = profile.id;
         state.profileRegionId = profile.region_id;
         state.regionOverrideId = null;
         state.currentUserMemberId = profile.member_id || null;
@@ -464,14 +476,17 @@ async function bootApp() {
                 
         state.availableRegions = regions || [];
         
-        console.time("loadActiveRegionData");
-        const regionLoaded = await loadActiveRegionData(profile.region_id);
-        console.timeEnd("loadActiveRegionData");
-
+        const [regionLoaded, profileAoPermissions] = await Promise.all([
+            loadActiveRegionData(profile.region_id),
+            loadProfileAoPermissions(profile.region_id)
+        ]);
+        
         if (!regionLoaded) {
             hideBootSplash();
             return;
         }
+        
+        state.profileAoPermissions = profileAoPermissions || [];
         
         logAppEvent({
             type: APP_EVENTS.APP_OPENED,

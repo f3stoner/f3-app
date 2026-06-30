@@ -31,6 +31,7 @@ export const state = {
     currentUserRole: null,
     currentUserDisplayName: null,
     currentRegionId: null,
+    profileAoPermissions: [],
     _historicImport: null,
     runHistoricImport: null,
     plannedWorkoutLaunchMode: null,

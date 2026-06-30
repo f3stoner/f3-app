@@ -96,14 +96,5 @@ export function getWorkoutEmphasisForSlot(slot, ao) {
 
     const key = resolveEmphasisRule(rule, slot.date);
 
-    console.log("EMPHASIS DEBUG", {
-        aoName: ao?.name,
-        slotDate: slot?.date,
-        overrideEmphasis: slot?.overrideEmphasis,
-        dayOfWeek,
-        rule,
-        resolvedKey: key,
-    });
-
     return getWorkoutEmphasisMeta(key);
 }
