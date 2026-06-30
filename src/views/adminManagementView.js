@@ -416,24 +416,41 @@ export async function renderAdminManagementView() {
                 });
 
                 saveButton.addEventListener("click", async () => {
+                    const previousRole = profile.role || "pax";
                     const nextRole = select.value;
-
+                
                     saveButton.disabled = true;
                     saveButton.textContent = "Saving...";
-
+                
                     try {
                         const updatedProfile = await updateProfileRole(profile.id, nextRole);
-
+                
                         profiles = profiles.map(item =>
                             item.id === profile.id
                                 ? updatedProfile
                                 : item
                         );
-
-                        if (nextRole !== "aoq" && state.editingAoLeadershipProfileId === profile.id) {
-                            state.editingAoLeadershipProfileId = null;
+                
+                        if (nextRole !== "aoq") {
+                            await setProfileAoPermissions(
+                                profile.id,
+                                state.currentRegionId,
+                                []
+                            );
+                
+                            state.profileAoPermissions = state.profileAoPermissions.filter(permission =>
+                                permission.profileId !== profile.id
+                            );
+                
+                            if (state.editingAoLeadershipProfileId === profile.id) {
+                                state.editingAoLeadershipProfileId = null;
+                            }
                         }
-
+                
+                        if (previousRole !== "aoq" && nextRole === "aoq") {
+                            state.editingAoLeadershipProfileId = profile.id;
+                        }
+                
                         showToast("Role updated.", "success");
                         renderGroups();
                     } catch (error) {
@@ -443,7 +460,7 @@ export async function renderAdminManagementView() {
                         saveButton.textContent = "Save";
                     }
                 });
-
+                
                 const actions = document.createElement("div");
                 actions.classList.add("button-row", "admin-profile-actions");
                 actions.append(select, saveButton);
