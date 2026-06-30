@@ -9,6 +9,7 @@ import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 const DISCUSSION_TYPES = [
     { value: "q_source", label: "Q Source" },
@@ -58,6 +59,11 @@ export function renderThirdFManagementView() {
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.MANAGE_Q_SOURCE)) {
+        app.textContent = "You do not have permission to manage Third F content.";
+        return;
+    }
 
     if (!state.hasLoadedThirdFDiscussionsForAdmin && !state.isLoadingThirdFDiscussionsForAdmin) {
         state.isLoadingThirdFDiscussionsForAdmin = true;

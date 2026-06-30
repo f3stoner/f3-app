@@ -11,10 +11,16 @@ import {
 import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderQSourceManagementView() {
     const app = document.getElementById("app");
     app.textContent = "";
+
+    if (!hasPermission(PERMISSIONS.MANAGE_Q_SOURCE)) {
+        app.textContent = "You do not have permission to manage Q Source.";
+        return;
+    }
 
     if (!state.hasLoadedAllQSources && !state.isLoadingAllQSources) {
         state.isLoadingAllQSources = true;

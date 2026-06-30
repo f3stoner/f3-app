@@ -4,12 +4,18 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { loadImportRuns, runAggielandImportDryRun, applyAggielandImport } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export async function renderImportRunsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.VIEW_IMPORTS)) {
+        app.textContent = "You do not have permission to view imports.";
+        return;
+    }
 
     const header = createAppHeader({
         title: "",

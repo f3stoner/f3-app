@@ -29,6 +29,7 @@ export const ROLE_PERMISSIONS = {
 
     aoq: [
         PERMISSIONS.VIEW_AO_INSIGHTS,
+        PERMISSIONS.VIEW_Q_READINESS,
         PERMISSIONS.MANAGE_Q_SLOTS,
     ],
 
@@ -141,9 +142,9 @@ export function managesQSlot(slotOrAoId) {
 }
 
 export function canViewAoInsights(aoId) {
-    return managesAo(aoId, ["aoq", "ao_coq", "first_f_q"]);
+    return managesAo(aoId, ["aoq", "ao_coq", "first_f"]);
 }
 
 export function canViewQReadiness(aoId) {
-    return managesAo(aoId, ["aoq", "ao_coq", "first_f_q"]);
+    return managesAo(aoId, ["aoq", "ao_coq", "first_f"]);
 }

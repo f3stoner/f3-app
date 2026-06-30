@@ -3,7 +3,6 @@ import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot, loadMappedQSlots, subscribeToQSlotChanges, unsubscribeFromChannel } from "../services/cloudData.js";
-import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";

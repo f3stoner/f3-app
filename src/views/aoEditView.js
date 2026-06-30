@@ -8,6 +8,7 @@ import { getTodayDate } from "../utils/date.js";
 import { showToast } from "../utils/toast.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 const DAY_OPTIONS = [
     { value: 0, label: "Sun" },
@@ -55,6 +56,11 @@ export function renderAoEditView() {
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.MANAGE_AOS)) {
+        app.textContent = "You do not have permission to edit AOs.";
+        return;
+    }
 
     const header = createAppHeader({
         title: "",

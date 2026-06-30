@@ -6,6 +6,8 @@ import { createAppHeader } from "../components/appHeader.js";
 import { loadAoInsightMonths, loadAoInsightSessions } from "../services/cloudData.js";
 import { goBack } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { canViewAoInsights } from "../utils/permissions.js";
+import { showToast } from "../utils/toast.js";
 
 function normalizeAoName(name = "") {
     return name
@@ -226,6 +228,7 @@ function formatMonthLabel(dateString) {
 function getAoNames() {
     return state.aos
         .filter(ao => ao.isActive !== false)
+        .filter(ao => canViewAoInsights(ao.id))
         .map(ao => ao.name)
         .filter(Boolean)
         .sort((a, b) => a.localeCompare(b));
@@ -403,6 +406,9 @@ function createInsightsNav(insights) {
     const nav = document.createElement("div");
     nav.classList.add("insights-nav");
 
+    const availableAos = getAoNames();
+    const showAoNavigation = availableAos.length > 1;
+
     const aoRow = document.createElement("div");
     aoRow.classList.add("insights-nav-row");
 
@@ -487,7 +493,11 @@ function createInsightsNav(insights) {
 
     monthRow.append(previousMonthButton, monthTitle, nextMonthButton);
 
-    nav.append(aoRow, monthRow);
+    if (showAoNavigation) {
+        nav.appendChild(aoRow);
+    }
+    
+    nav.appendChild(monthRow);
 
     return nav;
 }
@@ -732,7 +742,19 @@ export async function renderAoInsightsView() {
         });
 
         const nav = createGlobalNav();
-        app.append(title, empty, backButton, nav);
+
+        app.textContent = "";
+        app.append(header, title, empty, backButton, nav);
+        return;
+    }
+
+    const selectedAo = state.aos.find(
+        ao => normalizeAoName(ao.name) === normalizeAoName(selected.aoName)
+    );
+
+    if (selectedAo && !canViewAoInsights(selectedAo.id)) {
+        showToast("You do not have permission to view this AO.", "error");
+        navigateTo("dashboard");
         return;
     }
 

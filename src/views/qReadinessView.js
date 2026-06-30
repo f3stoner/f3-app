@@ -4,12 +4,18 @@ import { createMainMenu, cleanupMainMenu } from "../components/mainMenu.js";
 import { loadQReadiness } from "../services/cloudData.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { showToast } from "../utils/toast.js";
+import { hasPermission, PERMISSIONS, canViewQReadiness } from "../utils/permissions.js";
 
 export async function renderQReadinessView() {
     cleanupMainMenu();
 
     const app = document.getElementById("app");
     app.textContent = "";
+
+    if (!hasPermission(PERMISSIONS.VIEW_Q_READINESS)) {
+        app.textContent = "You do not have permission to view Q readiness.";
+        return;
+    }
 
     const startDate = getNextNonSundayDate(addDays(getTodayDate(), 1));
     const endDate = addNonSundayDays(startDate, 5);
@@ -41,7 +47,10 @@ export async function renderQReadinessView() {
 
     try {
         const rows = await loadQReadiness(state.currentRegionId, startDate, endDate);
-        const visibleRows = rows.filter(row => !isSunday(row.date));
+        const visibleRows = rows.filter(row =>
+            !isSunday(row.date) &&
+            canViewQReadiness(row.aoId)
+        );
 
         list.textContent = "";
 

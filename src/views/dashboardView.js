@@ -26,6 +26,7 @@ import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { releaseWakeLock } from "../utils/wakelock.js";
 import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
+import { getDashboardLeadershipBadge } from "../utils/leadership.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -132,12 +133,7 @@ export function renderDashboard() {
     const role = state.currentUserRole || "pax";
 
     roleBadge.dataset.role = role;
-    roleBadge.textContent =
-        role === "superadmin" ? "Superadmin" :
-        role === "dataq" ? "Data Q" :
-        role === "slt" ? "SLT" :
-        role === "aoq" ? "AO SLT" :
-        "PAX";
+    roleBadge.textContent = getDashboardLeadershipBadge();
 
     const linkedMember = state.members.find(
         member => member.id === state.currentUserMemberId

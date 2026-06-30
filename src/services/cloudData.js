@@ -338,6 +338,7 @@ export async function loadRegionData(regionId) {
         qSourceResult,
         memberStatsResult,
         aoLeadershipContactResult,
+        profileRegionPositionResult,
     ] = await Promise.all([
         timed(
             "loadRegionData:region",
@@ -394,6 +395,11 @@ export async function loadRegionData(regionId) {
         timed("loadRegionData:memberStats", loadRegionMemberStats(regionId)),
 
         timed("loadRegionData:aoLeadershipContacts", loadAoLeadershipContacts(regionId)),
+
+        timed(
+            "loadRegionData:profileRegionPositions",
+            loadProfileRegionPositions(regionId),
+        ),
     ]);
 
     const backblastLinksBySessionId = new Map();
@@ -434,6 +440,7 @@ export async function loadRegionData(regionId) {
             memberStatsResult.map(stats => [stats.memberId, stats])
         ),
         aoLeadershipContacts: aoLeadershipContactResult,
+        profileRegionPositions: profileRegionPositionResult,
     };
 }
 
@@ -2629,4 +2636,43 @@ export async function loadAoLeadershipContacts(regionId) {
     if (error) throw error;
 
     return (data || []).map(mapAoLeadershipContactFromDb);
+}
+
+function mapProfileRegionPositionFromDb(row) {
+    return {
+        id: row.id,
+        profileId: row.profile_id,
+        regionId: row.region_id,
+        position: row.region_position,
+        createdAt: row.created_at,
+        createdByUserId: row.created_by_user_id,
+    };
+}
+
+export async function loadProfileRegionPositions(regionId) {
+    const { data, error } = await supabase.rpc(
+        "load_profile_region_positions",
+        {
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(mapProfileRegionPositionFromDb);
+}
+
+export async function setProfileRegionPositions(profileId, regionId, positions = []) {
+    const { data, error } = await supabase.rpc(
+        "set_profile_region_positions",
+        {
+            p_profile_id: profileId,
+            p_region_id: regionId,
+            p_positions: positions,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(mapProfileRegionPositionFromDb);
 }

@@ -17,6 +17,7 @@ import {
     getNotificationSettings,
     loadExercises,
     loadProfileAoPermissions,
+    loadProfileRegionPositions,
 } from "./services/cloudData.js";
 import { importPaxMasterCsv, repairAggielandDeltaSessions, auditPotentialMergedMembers, auditMergedMemberDetail, splitMergedMemberByRawName, runAggielandSync } from "./services/importAggieland.js";
 import { importAoLogCsv, runAggielandDeltaAoImports } from "./services/importAggieland.js";
@@ -476,17 +477,23 @@ async function bootApp() {
                 
         state.availableRegions = regions || [];
         
-        const [regionLoaded, profileAoPermissions] = await Promise.all([
+        const [
+            regionLoaded,
+            profileAoPermissions,
+            profileRegionPositions,
+        ] = await Promise.all([
             loadActiveRegionData(profile.region_id),
-            loadProfileAoPermissions(profile.region_id)
+            loadProfileAoPermissions(profile.region_id),
+            loadProfileRegionPositions(profile.region_id),
         ]);
         
         if (!regionLoaded) {
             hideBootSplash();
             return;
         }
-        
+
         state.profileAoPermissions = profileAoPermissions || [];
+        state.profileRegionPositions = profileRegionPositions || [];
         
         logAppEvent({
             type: APP_EVENTS.APP_OPENED,

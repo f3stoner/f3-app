@@ -4,12 +4,18 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderAoManagementView() {
 const app = document.getElementById("app");
 app.textContent = "";
 
 cleanupMainMenu();
+
+if (!hasPermission(PERMISSIONS.MANAGE_AOS)) {
+    app.textContent = "You do not have permission to manage AOs.";
+    return;
+}
 
 const header = createAppHeader({
     title: "",

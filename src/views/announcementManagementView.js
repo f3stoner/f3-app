@@ -12,12 +12,18 @@ import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { updateAnnouncementDisplayOrder } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderAnnouncementManagementView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.MANAGE_ANNOUNCEMENTS)) {
+        app.textContent = "You do not have permission to manage announcements.";
+        return;
+    }
 
     if (!state.hasLoadedAllAnnouncements && !state.isLoadingAllAnnouncements) {
         state.isLoadingAllAnnouncements = true;
