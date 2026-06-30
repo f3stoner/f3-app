@@ -171,45 +171,23 @@ export function renderQSignupView() {
 
     openOnlyWrap.append(openOnlyInput, document.createTextNode(" Open only"));
 
-    let generateButton = null;
     let manageAosButton = null;
     let addSlotButton = null;
 
-    if (canManageQSlots) {
-        generateButton = document.createElement("button");
-        generateButton.textContent = isGeneratingQSlots
-            ? "Generating..."
-            : "Generate Next 365 Days";
-        generateButton.disabled = isGeneratingQSlots;
+    const canAddOneOffSlots =
+        canManageQSlots &&
+        state.aos.some(ao => ao.isActive !== false && managesAo(ao.id));
 
-        if (canManageAos) {
-            manageAosButton = document.createElement("button");
-            manageAosButton.textContent = "Manage AOs";
+    if (canManageAos) {
+        manageAosButton = document.createElement("button");
+        manageAosButton.textContent = "Manage AOs";
 
-            manageAosButton.addEventListener("click", () => {
-                navigateTo("aoManagement");
-            });
-        }
-
-        generateButton.addEventListener("click", async () => {
-            if (state.isGeneratingQSlots) return;
-
-            state.isGeneratingQSlots = true;
-            renderApp();
-
-            try {
-                const result = await generateQSlotsForCurrentRegion();
-                await refreshQSlotsFromCloud();
-                showToast(`Created ${result.createdCount} Q Slots.`, "success");
-            } catch (error) {
-                console.error("Failed to generate Q slots:", error);
-                showToast("Failed to generate Q slots.", "error");
-            } finally {
-                state.isGeneratingQSlots = false;
-                renderApp();
-            }
+        manageAosButton.addEventListener("click", () => {
+            navigateTo("aoManagement");
         });
+    }
 
+    if (canAddOneOffSlots) {
         addSlotButton = document.createElement("button");
         addSlotButton.textContent = "Add One-Off Slot";
 
@@ -221,7 +199,6 @@ export function renderQSignupView() {
     const adminRow = document.createElement("div");
     adminRow.classList.add("button-row");
 
-    if (generateButton) adminRow.appendChild(generateButton);
     if (manageAosButton) adminRow.appendChild(manageAosButton);
     if (addSlotButton) adminRow.appendChild(addSlotButton);
 
@@ -282,8 +259,15 @@ export function renderQSignupView() {
         const aoSelect = document.createElement("select");
 
         const activeAos = [...state.aos]
-            .filter(ao => ao.isActive)
+            .filter(ao => ao.isActive !== false)
+            .filter(ao => managesAo(ao.id))
             .sort((a, b) => a.name.localeCompare(b.name));
+
+        if (!activeAos.length) {
+            showToast("You are not assigned to manage any AOs.", "error");
+            closeModal();
+            return;
+        }
 
         activeAos.forEach(ao => {
             const option = document.createElement("option");
@@ -291,6 +275,10 @@ export function renderQSignupView() {
             option.textContent = ao.name;
             aoSelect.appendChild(option);
         });
+
+        if (activeAos.length === 1) {
+            aoSelect.value = activeAos[0].id;
+        }
 
         const dateLabel = document.createElement("div");
         dateLabel.classList.add("detail-label");
@@ -368,6 +356,11 @@ export function renderQSignupView() {
 
             if (!aoSelect.value) {
                 alert("Please select an AO.");
+                return;
+            }
+
+            if (!managesAo(aoSelect.value)) {
+                showToast("You do not have permission to create slots for this AO.", "error");
                 return;
             }
 
