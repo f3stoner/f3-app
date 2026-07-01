@@ -80,9 +80,9 @@ export function renderPreblastView() {
             })
             .finally(() => {
                 state.isLoadingPreblastThirdFDiscussions = false;
-    
+            
                 if (state.currentView === "preblast") {
-                    renderApp();
+                    upsertThirdFText();
                 }
             });
     }
@@ -190,6 +190,12 @@ export function renderPreblastView() {
 
         getAoWeather(preblastAo.id, targetDateTime)
             .then(weather => {
+                console.log("preblast weather result", {
+                    aoId: preblastAo.id,
+                    targetDateTime,
+                    weather,
+                });
+            
                 const forecastLine = buildForecastLine(weather);
                 upsertForecastLine(forecastLine);
             })
@@ -484,6 +490,10 @@ export function renderPreblastView() {
         }
 
         state.draftPreblastText = nextText;
+        console.log({
+            currentTextarea: textInput,
+            isConnected: textInput.isConnected,
+        });
         textInput.value = nextText;
     }
 
