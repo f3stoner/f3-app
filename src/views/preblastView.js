@@ -8,7 +8,7 @@ import { getAoWeather } from "../services/weather.js";
 import { updateCustomTemplates, updatePlannedWorkoutInCloud, updateQSlotInCloud } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
+import { getWorkoutEmphasisForSlot, getWorkoutEmphasisTagsForSlot } from "../utils/workoutEmphasis.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
 import { buildThirdFContentBlock, hasThirdFContentBlock, replaceThirdFContentBlock } from "../utils/thirdFContent.js";
 
@@ -344,16 +344,24 @@ export function renderPreblastView() {
     }
     
     function buildEmphasisHashtag() {
-        const emphasis = preblastQSlot
-            ? getWorkoutEmphasisForSlot(preblastQSlot, preblastAo)
-            : null;
+        if (!preblastQSlot) return "";
     
-        const label = preblastQSlot?.customEmphasisLabel || emphasis?.label;
+        const emphasisTags = getWorkoutEmphasisTagsForSlot(
+            preblastQSlot,
+            preblastAo
+        );
     
-        if (!label) return "";
+        if (!emphasisTags.length && !preblastQSlot?.customEmphasisLabel) {
+            return "";
+        }
     
+        if (preblastQSlot?.customEmphasisLabel) {
+            return `#${preblastQSlot.customEmphasisLabel.toLowerCase()}`;
+        }
     
-        return `#${label.toLowerCase()}`;
+        return emphasisTags
+            .map(tag => `#${tag.label.toLowerCase()}`)
+            .join(" ");
     }
 
     function buildQSourceText() {

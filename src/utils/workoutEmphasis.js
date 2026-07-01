@@ -98,3 +98,28 @@ export function getWorkoutEmphasisForSlot(slot, ao) {
 
     return getWorkoutEmphasisMeta(key);
 }
+
+export function getWorkoutEmphasisTagsForSlot(slot, ao) {
+    const primary = getWorkoutEmphasisForSlot(slot, ao);
+
+    const tags = primary ? [primary] : [];
+
+    if (!slot?.date || !ao?.name) return tags;
+
+    const slotDate = getDateOnly(slot.date);
+    const dayOfWeek = slotDate.getDay();
+
+    const isForestWednesday =
+        ao.name === "The Forest" &&
+        dayOfWeek === 3;
+
+    if (isForestWednesday) {
+        const thirtyThirty = getWorkoutEmphasisMeta("30/30");
+
+        if (thirtyThirty && !tags.some(tag => tag.key === thirtyThirty.key)) {
+            tags.push(thirtyThirty);
+        }
+    }
+
+    return tags;
+}
