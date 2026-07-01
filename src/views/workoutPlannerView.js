@@ -523,11 +523,16 @@ export function renderWorkoutPlanner() {
     
     });
 
+    const introAo = state.aos.find(ao => ao.name === draftWorkout.aoName);
     const introTemplateFn = REGION_INTRO_TEMPLATES[state.currentRegionId];
     const regionIntroTemplate =
-        typeof introTemplateFn === "function"
-            ? introTemplateFn?.(currentMember?.paxName)
-            : "";
+    typeof introTemplateFn === "function"
+        ? introTemplateFn?.(
+            currentMember?.paxName,
+            draftWorkout.aoName,
+            introAo?.address
+        )
+        : "";
 
     if (!draftWorkout.introduction) {
         draftWorkout.introduction = regionIntroTemplate;
