@@ -2676,3 +2676,19 @@ export async function setProfileRegionPositions(profileId, regionId, positions =
 
     return (data || []).map(mapProfileRegionPositionFromDb);
 }
+
+export async function loadPlannerAnnouncements(regionId) {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .eq("region_id", regionId)
+        .eq("is_active", true)
+        .or(`ends_on.is.null,ends_on.gte.${today}`)
+        .order("display_order", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map(mapAnnouncementFromDb);
+}

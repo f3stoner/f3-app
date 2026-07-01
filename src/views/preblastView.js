@@ -9,6 +9,8 @@ import { updateCustomTemplates, updatePlannedWorkoutInCloud, updateQSlotInCloud 
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
+import { loadThirdFDiscussions } from "../services/thirdFData.js";
+import { buildThirdFContentBlock, hasThirdFContentBlock } from "../utils/thirdFContent.js";
 
 export function renderPreblastView() {
 
@@ -58,6 +60,32 @@ export function renderPreblastView() {
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (state.preblastThirdFDiscussionsRegionId !== state.currentRegionId) {
+        state.preblastThirdFDiscussions = [];
+        state.hasLoadedPreblastThirdFDiscussions = false;
+    }
+    
+    if (!state.hasLoadedPreblastThirdFDiscussions && !state.isLoadingPreblastThirdFDiscussions) {
+        state.isLoadingPreblastThirdFDiscussions = true;
+    
+        loadThirdFDiscussions(state.currentRegionId)
+            .then(discussions => {
+                state.preblastThirdFDiscussions = discussions;
+                state.preblastThirdFDiscussionsRegionId = state.currentRegionId;
+                state.hasLoadedPreblastThirdFDiscussions = true;
+            })
+            .catch(error => {
+                console.error("Failed to load preblast Third F discussions:", error);
+            })
+            .finally(() => {
+                state.isLoadingPreblastThirdFDiscussions = false;
+    
+                if (state.currentView === "preblast") {
+                    renderApp();
+                }
+            });
+    }
 
     function returnToDashboardAfterShare() {
         state.draftPreblastMediaFiles = [];
@@ -153,7 +181,7 @@ export function renderPreblastView() {
     const targetDateTime = getTargetDateTime(preblastQSlot, preblastWorkout, preblastAo);
     
     upsertEmphasisHashtag();
-    upsertQSourceText();
+    upsertThirdFText();
 
     if (preblastAo?.id && targetDateTime && !state.hasAddedPreblastForecast) {
         state.hasAddedPreblastForecast = true;
@@ -348,6 +376,30 @@ export function renderPreblastView() {
         const nextText = currentText.trim()
             ? `${currentText.trim()}\n\n${qSourceBlock}`
             : qSourceBlock;
+    
+        state.draftPreblastText = nextText;
+        textInput.value = nextText;
+    }
+
+    function upsertThirdFText() {
+        const targetDate = preblastQSlot?.date || preblastWorkout?.date;
+    
+        if (!targetDate) return;
+    
+        const thirdFBlock = buildThirdFContentBlock(
+            state.preblastThirdFDiscussions || [],
+            targetDate
+        );
+    
+        if (!thirdFBlock) return;
+    
+        const currentText = state.draftPreblastText || "";
+    
+        if (hasThirdFContentBlock(currentText)) return;
+    
+        const nextText = currentText.trim()
+            ? `${currentText.trim()}\n\n${thirdFBlock}`
+            : thirdFBlock;
     
         state.draftPreblastText = nextText;
         textInput.value = nextText;

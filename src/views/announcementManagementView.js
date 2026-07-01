@@ -13,6 +13,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { updateAnnouncementDisplayOrder } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 
 export function renderAnnouncementManagementView() {
     const app = document.getElementById("app");
@@ -225,7 +226,7 @@ function label(text) {
 }
 
 function buildAnnouncementsCopyText(announcements = []) {
-    return announcements
+    return filterDateAwareContent(announcements)
         .filter(announcement => announcement.isActive)
         .map(announcement => {
             const parts = [
@@ -234,9 +235,7 @@ function buildAnnouncementsCopyText(announcements = []) {
             ];
 
             if (announcement.linkUrl) {
-                parts.push(
-                    `${announcement.linkLabel || "Link"}: ${announcement.linkUrl}`
-                );
+                parts.push(`${announcement.linkLabel || "Link"}: ${announcement.linkUrl}`);
             }
 
             return parts.filter(Boolean).join("\n");

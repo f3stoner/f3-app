@@ -16,7 +16,10 @@ import { createAppHeader } from "../components/appHeader.js";
 import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { createLibraryIdeasModal } from "../components/libraryIdeasModal.js";
-import { logLibraryUsageEvent } from "../services/cloudData.js";
+import { logLibraryUsageEvent, loadPlannerAnnouncements } from "../services/cloudData.js";
+import { filterDateAwareContent } from "../utils/dateAwareContent.js";
+import { loadThirdFDiscussions } from "../services/thirdFData.js";
+import { buildThirdFContentBlock, replaceThirdFContentBlock } from "../utils/thirdFContent.js";
 
 let persistDraftTimeout = null;
 
@@ -25,6 +28,58 @@ export function renderWorkoutPlanner() {
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (state.plannerThirdFDiscussionsRegionId !== state.currentRegionId) {
+        state.plannerThirdFDiscussions = [];
+        state.hasLoadedPlannerThirdFDiscussions = false;
+    }
+    
+    if (!state.hasLoadedPlannerThirdFDiscussions && !state.isLoadingPlannerThirdFDiscussions) {
+        state.isLoadingPlannerThirdFDiscussions = true;
+    
+        loadThirdFDiscussions(state.currentRegionId)
+            .then(discussions => {
+                state.plannerThirdFDiscussions = discussions;
+                state.plannerThirdFDiscussionsRegionId = state.currentRegionId;
+                state.hasLoadedPlannerThirdFDiscussions = true;
+            })
+            .catch(error => {
+                console.error("Failed to load planner Third F discussions:", error);
+            })
+            .finally(() => {
+                state.isLoadingPlannerThirdFDiscussions = false;
+    
+                if (state.currentView === "workoutPlanner") {
+                    renderApp();
+                }
+            });
+    }
+
+    if (state.plannerAnnouncementsRegionId !== state.currentRegionId) {
+        state.plannerAnnouncements = [];
+        state.hasLoadedPlannerAnnouncements = false;
+    }
+    
+    if (!state.hasLoadedPlannerAnnouncements && !state.isLoadingPlannerAnnouncements) {
+        state.isLoadingPlannerAnnouncements = true;
+    
+        loadPlannerAnnouncements(state.currentRegionId)
+            .then(announcements => {
+                state.plannerAnnouncements = announcements;
+                state.plannerAnnouncementsRegionId = state.currentRegionId;
+                state.hasLoadedPlannerAnnouncements = true;
+            })
+            .catch(error => {
+                console.error("Failed to load planner announcements:", error);
+            })
+            .finally(() => {
+                state.isLoadingPlannerAnnouncements = false;
+    
+                if (state.currentView === "workoutPlanner") {
+                    renderApp();
+                }
+            });
+    }
 
     let isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
@@ -50,12 +105,6 @@ export function renderWorkoutPlanner() {
         cancelPendingDraftWrite();
         localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
         renderApp();
-    }
-
-    function buildQSourceText() {
-        return (state.qSources || [])
-            .map(qSource => `${qSource.title}\n${qSource.body}`)
-            .join("\n\n");
     }
 
     if (state.draftPlannedWorkout) {
@@ -565,6 +614,7 @@ export function renderWorkoutPlanner() {
 
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;
+        draftWorkout.announcementText = buildAnnouncementText();
         dateDisplay.textContent = formatDate(draftWorkout.date);
     
         persistDraftNow();
@@ -916,19 +966,21 @@ export function renderWorkoutPlanner() {
     notesLabel.textContent = getWorkoutFieldLabel(state, "notes");
     notesLabel.classList.add("detail-label");
 
-    const qSourceText = buildQSourceText();
-
-    console.log("planner q source debug", {
-        qSources: state.qSources,
-        qSourceText,
-        draftNotes: draftWorkout.notes,
-    });
-
-    if (!draftWorkout.notes && qSourceText) {
-        draftWorkout.notes = qSourceText;
+    const thirdFText = buildThirdFContentBlock(
+        state.plannerThirdFDiscussions || [],
+        draftWorkout.date || getTodayDate()
+    );
+    
+    const nextNotes = replaceThirdFContentBlock(
+        draftWorkout.notes || "",
+        thirdFText
+    );
+    
+    if (nextNotes !== (draftWorkout.notes || "")) {
+        draftWorkout.notes = nextNotes;
         persistDraftNow();
     }
-    
+
     const notesInput = document.createElement("textarea");
     notesInput.classList.add("notes");
     notesInput.value = draftWorkout.notes || "";
@@ -1105,7 +1157,11 @@ export function renderWorkoutPlanner() {
     primaryActionsRow.append(previewButton, saveButton, finalizeButton);
 
     function buildAnnouncementText() {
-        return (state.announcements || [])
+        return filterDateAwareContent(
+            state.plannerAnnouncements || [],
+            draftWorkout.date || getTodayDate()
+        )
+            .filter(announcement => announcement.isActive !== false)
             .map(announcement => `${announcement.title}\n${announcement.body}`)
             .join("\n\n");
     }

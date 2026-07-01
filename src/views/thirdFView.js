@@ -5,6 +5,7 @@ import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 
 function getTypeLabel(type) {
     const labels = {
@@ -111,12 +112,19 @@ export function renderThirdFView() {
 
     cleanupMainMenu();
 
+    if (state.thirdFDiscussionsRegionId !== state.currentRegionId) {
+        state.thirdFDiscussions = [];
+        state.hasLoadedThirdFDiscussions = false;
+        state.expandedThirdFDiscussionId = null;
+    }
+
     if (!state.hasLoadedThirdFDiscussions && !state.isLoadingThirdFDiscussions) {
         state.isLoadingThirdFDiscussions = true;
 
         loadThirdFDiscussions(state.currentRegionId)
             .then(discussions => {
                 state.thirdFDiscussions = discussions;
+                state.thirdFDiscussionsRegionId = state.currentRegionId;
                 state.hasLoadedThirdFDiscussions = true;
             })
             .catch(error => {
@@ -172,10 +180,11 @@ export function renderThirdFView() {
         return;
     }
 
-    const discussions = [...(state.thirdFDiscussions || [])].sort((a, b) => {
+    const discussions = filterDateAwareContent(state.thirdFDiscussions || [])
+    .sort((a, b) => {
         const dateA = a.weekStartDate ? new Date(`${a.weekStartDate}T00:00:00`) : new Date(0);
         const dateB = b.weekStartDate ? new Date(`${b.weekStartDate}T00:00:00`) : new Date(0);
-    
+
         return dateA - dateB;
     });
     

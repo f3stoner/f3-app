@@ -10,6 +10,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getAoWeather } from "../services/weather.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
+import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -80,7 +81,10 @@ export function renderBackblastView () {
             return `${text.trim()}\n\nANNOUNCEMENTS\n\n${savedAnnouncementText}`;
         }
     
-        const announcements = state.announcements || [];
+        const announcements = filterDateAwareContent(
+            state.announcements || [],
+            session?.date || new Date()
+        );
     
         if (announcements.length === 0) {
             return text;

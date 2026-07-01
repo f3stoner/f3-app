@@ -1,10 +1,21 @@
 import { supabase } from "./supabaseClient.js";
 
+function getWeekEndDate(weekStartDate) {
+    if (!weekStartDate) return null;
+
+    const date = new Date(`${weekStartDate}T00:00:00`);
+    date.setDate(date.getDate() + 6);
+
+    return date.toISOString().slice(0, 10);
+}
+
 function mapThirdFDiscussionFromDb(row) {
     return {
         id: row.id,
         regionId: row.region_id,
         weekStartDate: row.week_start_date,
+        startsOn: row.starts_on || row.week_start_date || null,
+        expiresOn: row.expires_on || getWeekEndDate(row.week_start_date),
         title: row.title || "",
         type: row.type || "discussion",
         summary: row.summary || "",
@@ -22,6 +33,8 @@ function mapThirdFDiscussionToRpcPayload(discussion) {
         p_id: discussion.id || null,
         p_region_id: discussion.regionId,
         p_week_start_date: discussion.weekStartDate,
+        p_starts_on: discussion.startsOn || discussion.weekStartDate || null,
+        p_expires_on: discussion.expiresOn || getWeekEndDate(discussion.weekStartDate),
         p_title: discussion.title,
         p_type: discussion.type || "discussion",
         p_summary: discussion.summary || null,

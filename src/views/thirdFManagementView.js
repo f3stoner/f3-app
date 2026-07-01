@@ -37,6 +37,15 @@ function getDefaultWeekStartDate() {
     return date.toISOString().slice(0, 10);
 }
 
+function getWeekEndDate(weekStartDate) {
+    if (!weekStartDate) return null;
+
+    const date = new Date(`${weekStartDate}T00:00:00`);
+    date.setDate(date.getDate() + 6);
+
+    return date.toISOString().slice(0, 10);
+}
+
 function createTypeSelect() {
     const select = document.createElement("select");
 
@@ -60,6 +69,11 @@ export function renderThirdFManagementView() {
 
     cleanupMainMenu();
 
+    if (state.thirdFDiscussionsForAdminRegionId !== state.currentRegionId) {
+        state.thirdFDiscussionsForAdmin = [];
+        state.hasLoadedThirdFDiscussionsForAdmin = false;
+    }
+
     if (!hasPermission(PERMISSIONS.MANAGE_Q_SOURCE)) {
         app.textContent = "You do not have permission to manage Third F content.";
         return;
@@ -71,6 +85,7 @@ export function renderThirdFManagementView() {
         loadThirdFDiscussionsForAdmin(state.currentRegionId)
             .then(discussions => {
                 state.thirdFDiscussionsForAdmin = discussions;
+                state.thirdFDiscussionsForAdminRegionId = state.currentRegionId;
                 state.hasLoadedThirdFDiscussionsForAdmin = true;
             })
             .catch(error => {
@@ -181,7 +196,10 @@ export function renderThirdFManagementView() {
     }
 
     async function refreshDiscussions() {
-        state.thirdFDiscussionsForAdmin = await loadThirdFDiscussionsForAdmin(state.currentRegionId);
+        state.thirdFDiscussionsForAdmin =
+            await loadThirdFDiscussionsForAdmin(state.currentRegionId);
+    
+        state.thirdFDiscussionsForAdminRegionId = state.currentRegionId;
         state.hasLoadedThirdFDiscussionsForAdmin = true;
     }
 
@@ -199,6 +217,8 @@ export function renderThirdFManagementView() {
                 id: state.editingThirdFDiscussionId || null,
                 regionId: state.currentRegionId,
                 weekStartDate: weekValue,
+                startsOn: weekValue,
+                expiresOn: getWeekEndDate(weekValue),
                 title: titleValue,
                 type: typeInput.value,
                 summary: summaryInput.value.trim(),
@@ -323,6 +343,8 @@ function renderThirdFAdminList(container, controls) {
             try {
                 await saveThirdFDiscussion({
                     ...discussion,
+                    startsOn: discussion.weekStartDate,
+                    expiresOn: getWeekEndDate(discussion.weekStartDate),
                     published: !discussion.published,
                 });
 
