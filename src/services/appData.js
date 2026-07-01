@@ -3,6 +3,7 @@ import { saveState } from "../utils/storage.js";
 import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud, deleteSavedPlannerSectionFromCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
+import { replaceSessionVisitors } from "./sessionVisitorData.js";
 
 export function persistAppData() {
     saveState({
@@ -52,6 +53,7 @@ function normalizeSessionForSave(session) {
         qIds,
         attendeeIds,
         fngs: session.fngs || [],
+        visitors: session.visitors || [],
         notes: session.notes || "",
         workout: session.workout || null,
         backblastText: session.backblastText || "",
@@ -119,6 +121,13 @@ export async function addSession(session) {
     });
 
     const savedSession = await insertSession(activeRegionId, normalizedSession);
+    await replaceSessionVisitors(
+        savedSession.id,
+        normalizedSession.visitors || [],
+        state.currentUserId
+    );
+    
+    savedSession.visitors = normalizedSession.visitors || [];
     state.sessions.push(savedSession);
     persistAppData();
     return savedSession;
@@ -138,6 +147,14 @@ export async function updateSession(sessionId, updatedSession) {
         activeRegionId,
         normalizedSession
     );
+
+    await replaceSessionVisitors(
+        savedSession.id,
+        normalizedSession.visitors || [],
+        state.currentUserId
+    );
+    
+    savedSession.visitors = normalizedSession.visitors || [];
     
     const index = state.sessions.findIndex(session => session.id === sessionId);
     if (index === -1) return false;
@@ -265,7 +282,7 @@ export function replacePersistedData({
     state.memberStats = memberStats = memberStats || [];
     state.memberStatsByMemberId = memberStatsByMemberId || {};
     state.aoLeadershipContacts = aoLeadershipContacts || [];
-    
+
     state.allAnnouncements = null;
     state.hasLoadedAllAnnouncements = false;
     state.isLoadingAllAnnouncements = false;

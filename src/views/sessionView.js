@@ -18,6 +18,7 @@ import { getAffectedMemberIdsFromSession, loadMemberDashboardStats, rebuildMembe
 import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
 import { doesSearchMatch } from "../utils/search.js";
 import { getTotalAttendanceCount, memberAttendedSession } from "../utils/sessionAttendance.js";
+import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -135,7 +136,8 @@ if (isEditing) {
             ...existingSession,
             attendeeIds: [...existingSession.attendeeIds],
             qIds: [...(existingSession.qIds || (existingSession.qId ? [existingSession.qId] : []))],
-            fngs: [...existingSession.fngs]
+            fngs: [...(existingSession.fngs || [])],
+            visitors: [...(existingSession.visitors || [])],
         };
     }
     
@@ -144,13 +146,17 @@ if (isEditing) {
             ...state.draftSession,
             attendeeIds: [...state.draftSession.attendeeIds],
             qIds: [...(state.draftSession.qIds || (state.draftSession.qId ? [state.draftSession.qId] : []))],
-            fngs: [...state.draftSession.fngs]
+            fngs: [...(state.draftSession.fngs || [])],
+            visitors: [...(state.draftSession.visitors || [])],
         };
     } else {
     draftSession = createSession(getTodayDate(), "");
 }
 
 draftSession.qIds = [...(draftSession.qIds || (draftSession.qId ? [draftSession.qId] : []))];
+
+draftSession.fngs = draftSession.fngs || [];
+draftSession.visitors = draftSession.visitors || [];
 
 draftSession.qIds.forEach(qId => {
     if (!draftSession.attendeeIds.includes(qId)) {
@@ -750,17 +756,71 @@ function renderMemberList() {
 
 renderMemberList();
 
+const visitorHeading = document.createElement("div");
+visitorHeading.classList.add("fng-heading");
+visitorHeading.textContent = "Visiting PAX";
+
+const addVisitorButton = document.createElement("button");
+addVisitorButton.textContent = "Add DR Visitor";
+
+const visitorContainer = document.createElement("div");
+
+function updateFngButtonText() {
+    const count = fngContainer.querySelectorAll(".fng-row").length;
+    addFngButton.textContent = count > 0 ? "Add Another FNG" : "Add FNG";
+}
+
+function addVisitorRow(visitor = null) {
+    const visitorRow = document.createElement("div");
+    visitorRow.classList.add("visitor-row");
+    visitorRow.dataset.id = visitor?.id || "";
+
+    const f3Name = document.createElement("input");
+    f3Name.type = "text";
+    f3Name.classList.add("visitor-f3name-input");
+    f3Name.placeholder = "DR F3 Name";
+    f3Name.value = visitor?.f3Name || "";
+
+    const homeRegion = document.createElement("input");
+    homeRegion.type = "text";
+    homeRegion.classList.add("visitor-home-region-input");
+    homeRegion.placeholder = "Home Region";
+    homeRegion.value = visitor?.homeRegion || "";
+
+    const realName = document.createElement("input");
+    realName.type = "text";
+    realName.classList.add("visitor-realname-input");
+    realName.placeholder = "Real Name optional";
+    realName.value = visitor?.realName || "";
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", () => {
+        visitorRow.remove();
+    });
+
+    visitorRow.append(f3Name, homeRegion, realName, removeButton);
+    visitorContainer.appendChild(visitorRow);
+}
+
+addVisitorButton.addEventListener("click", () => {
+    addVisitorRow();
+});
+
 const fngHeading = document.createElement("div");
 fngHeading.classList.add("fng-heading");
 fngHeading.textContent = "FNGs";
+
 const addFngButton = document.createElement("button");
 addFngButton.textContent = "Add FNG";
+
 const fngContainer = document.createElement("div");
 
 function addFngRow(fng = null) {
     const fngRow = document.createElement("div");
     fngRow.classList.add("fng-row");
-    fngRow.dataset.memberId = fng?.memberId ||"";
+    fngRow.dataset.memberId = fng?.memberId || "";
 
     const realName = document.createElement("input");
     realName.type = "text";
@@ -776,16 +836,44 @@ function addFngRow(fng = null) {
 
     const invitedByField = createInvitedByField(fng?.invitedById || "");
 
-    fngRow.append(realName, paxName, invitedByField.wrapper);
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", () => {
+        fngRow.remove();
+        updateFngButtonText();
+    });
+
+    fngRow.append(realName, paxName, invitedByField.wrapper, removeButton);
     fngContainer.appendChild(fngRow);
+    updateFngButtonText();
 }
 
 addFngButton.addEventListener("click", () => {
-    addFngRow();  
+    addFngRow();
 });
 
-if (isEditing && draftSession.fngs.length > 0) {
+if (draftSession.visitors.length > 0) {
+    draftSession.visitors.forEach(visitor => addVisitorRow(visitor));
+}
+
+if (draftSession.fngs.length > 0) {
     draftSession.fngs.forEach(fng => addFngRow(fng));
+}
+
+updateFngButtonText();
+
+if (isEditing && sessionId && draftSession.visitors.length === 0) {
+    loadSessionVisitors(sessionId)
+        .then(visitors => {
+            draftSession.visitors = visitors || [];
+            visitorContainer.textContent = "";
+            draftSession.visitors.forEach(visitor => addVisitorRow(visitor));
+        })
+        .catch(error => {
+            console.error("Failed to load DR visitors:", error);
+            showToast("Failed to load DR visitors.", "error");
+        });
 }
 
 let isSavingSession = false;
@@ -816,6 +904,7 @@ function normalizeSessionForSave(session) {
         attendeeIds,
         qIds,
         fngs: session.fngs || [],
+        visitors: session.visitors || [],
         notes: session.notes || "",
         startTime: session.startTime || ao?.time || null,
     };
@@ -826,11 +915,8 @@ function validateSessionForSave(session) {
     if (!session.aoName) return "Please select an AO.";
     if ((session.qIds || []).length === 0) return "Please select at least one Q.";
 
-    const attendeeCount = session.attendeeIds?.length || 0;
-    const fngCount = session.fngs?.length || 0;
-
     if (getTotalAttendanceCount(session) === 0) {
-        return "Please select at least one attendee or FNG.";
+        return "Please select at least one attendee, FNG, or DR visitor.";
     }
 
     return null;
@@ -919,15 +1005,15 @@ function refreshAffectedMemberStatsInBackground(memberIds = []) {
         });
 }
 
-const saveButton = document.createElement("button");
-saveButton.textContent = "Save";
-saveButton.addEventListener("click", async () => {
+function collectFngsFromUi() {
     const allFngRows = document.querySelectorAll(".fng-row");
     const fngs = [];
+
     allFngRows.forEach(row => {
         const realNameInput = row.querySelector(".fng-realname-input");
         const paxNameInput = row.querySelector(".fng-paxname-input");
         const invitedBySelect = row.querySelector(".fng-invited-by-select");
+
         const realName = realNameInput.value.trim();
         const paxName = paxNameInput.value.trim() || null;
         const invitedById = invitedBySelect.value || null;
@@ -943,7 +1029,43 @@ saveButton.addEventListener("click", async () => {
         });
     });
 
-    draftSession.fngs = fngs;
+    return fngs;
+}
+
+function collectVisitorsFromUi() {
+    const allVisitorRows = document.querySelectorAll(".visitor-row");
+    const visitors = [];
+
+    allVisitorRows.forEach(row => {
+        const id = row.dataset.id || null;
+
+        const f3NameInput = row.querySelector(".visitor-f3name-input");
+        const homeRegionInput = row.querySelector(".visitor-home-region-input");
+        const realNameInput = row.querySelector(".visitor-realname-input");
+
+        const f3Name = f3NameInput.value.trim();
+        const homeRegion = homeRegionInput.value.trim();
+        const realName = realNameInput.value.trim();
+
+        if (!f3Name) return;
+
+        visitors.push({
+            id,
+            f3Name,
+            homeRegion,
+            realName,
+            createdByUserId: state.currentUserId,
+        });
+    });
+
+    return visitors;
+}
+
+const saveButton = document.createElement("button");
+saveButton.textContent = "Save";
+saveButton.addEventListener("click", async () => {
+    draftSession.fngs = collectFngsFromUi();
+    draftSession.visitors = collectVisitorsFromUi();
     draftSession.notes = notes.value.trim();
 
     draftSession = normalizeSessionForSave(draftSession);
@@ -1103,10 +1225,13 @@ app.append(
     title, 
     topSection, 
     stickyHeader,
-    memberList, 
-    fngHeading, 
-    addFngButton, 
-    fngContainer, 
+    memberList,
+    visitorHeading,
+    addVisitorButton,
+    visitorContainer,
+    fngHeading,
+    addFngButton,
+    fngContainer,
     notes, 
     actionBar,
 );

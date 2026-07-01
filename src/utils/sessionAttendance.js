@@ -25,8 +25,16 @@ export function getUnrosteredFngCount(session = {}) {
     return (session.fngs || []).filter(fng => !fng.memberId).length;
 }
 
+export function getVisitorCount(session = {}) {
+    return session.visitors?.length || 0;
+}
+
 export function getTotalAttendanceCount(session = {}) {
-    return getRosteredAttendanceIdSet(session).size + getUnrosteredFngCount(session);
+    return (
+        getRosteredAttendanceIdSet(session).size +
+        getUnrosteredFngCount(session) +
+        getVisitorCount(session)
+    );
 }
 
 export function getRegularPaxIds(session = {}, { excludeQ = true } = {}) {
@@ -48,9 +56,12 @@ export function memberAttendedSession(session = {}, memberId) {
 }
 
 export function getSessionDisplayCounts(session = {}) {
+    const visitorCount = getVisitorCount(session);
+
     return {
         totalAttendance: getTotalAttendanceCount(session),
         regularPaxCount: getRegularPaxIds(session).length,
         fngCount: session.fngs?.length || 0,
+        visitorCount,
     };
 }

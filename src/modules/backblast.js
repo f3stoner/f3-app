@@ -52,6 +52,7 @@ export function generateBackblast (session, members) {
     const attendeeIds = session.attendeeIds || [];
     const fngs = session.fngs || [];
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+    const visitors = session.visitors || [];
 
     const fngMemberIdSet = new Set(
         fngs
@@ -116,10 +117,22 @@ export function generateBackblast (session, members) {
     .sort(safeLocaleCompare)
     .join("\n");
 
-    const totalAttendees = new Set([
-        ...attendeeIds.filter(id => !fngMemberIdSet.has(id)),
-        ...effectiveQIds,
-    ]).size + fngs.length;
+    const visitorText = visitors.length === 0
+    ? "None"
+    : visitors
+        .map(visitor => {
+            const name = safeString(visitor.f3Name, "Unknown");
+            return visitor.homeRegion
+                ? `${name} (${visitor.homeRegion})`
+                : name;
+        })
+        .sort(safeLocaleCompare)
+        .join("\n");
+
+        const totalAttendees = new Set([
+            ...attendeeIds.filter(id => !fngMemberIdSet.has(id)),
+            ...effectiveQIds,
+        ]).size + fngs.length + visitors.length;
 
     const qNamePlain = sortedQNames.length > 0
         ? sortedQNames.map(name => name.replace(/^@/, "")).join(", ")
@@ -201,6 +214,9 @@ export function generateBackblast (session, members) {
         "",
         `PAX (${paxNamesArray.length}):`, 
         `${paxNames}`,
+        "",
+        `Visiting PAX (${visitors.length}):`,
+        `${visitorText}`,
         "",
         `FNGs (${fngs.length}): ${fngText}`,
         "",

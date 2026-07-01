@@ -20,6 +20,7 @@ import {
 } from "../utils/memberStatsCache.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { getRegularPaxIds, getSessionDisplayCounts } from "../utils/sessionAttendance.js";
+import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -35,6 +36,18 @@ export function renderSessionDetail() {
     });
 
     const session = state.sessions.find(s => s.id === state.selectedSessionId);
+
+    if (session && !Array.isArray(session.visitors)) {
+        session.visitors = [];
+        loadSessionVisitors(session.id)
+            .then(visitors => {
+                session.visitors = visitors || [];
+                renderApp();
+            })
+            .catch(error => {
+                console.error("Failed to load session visitors:", error);
+            });
+    }
 
     const canManageSessions = hasPermission(PERMISSIONS.MANAGE_SESSIONS);
 
@@ -80,6 +93,7 @@ export function renderSessionDetail() {
         totalAttendance,
         regularPaxCount,
         fngCount,
+        visitorCount,
     } = getSessionDisplayCounts(session);
 
     const hasStructuredWorkout = Boolean(session.workout);
@@ -96,7 +110,13 @@ export function renderSessionDetail() {
 
     const summaryMeta = document.createElement("div");
     summaryMeta.classList.add("stats-line");
-    summaryMeta.textContent = `${formattedDate} • ${totalAttendance} Attended • ${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
+    summaryMeta.textContent =
+        `${formattedDate} • ${totalAttendance} Attended`;
+
+    const summaryGuestMeta = document.createElement("div");
+    summaryGuestMeta.classList.add("stats-line");
+    summaryGuestMeta.textContent =
+        `${fngCount} FNG${fngCount === 1 ? "" : "s"} • ${visitorCount} Visiting PAX`;
 
     const summaryQ = document.createElement("div");
     summaryQ.classList.add("stats-line", "q-line");
@@ -125,6 +145,7 @@ export function renderSessionDetail() {
     summaryCard.append(
         summaryTitle,
         summaryMeta,
+        summaryGuestMeta,
         summaryQ,
         ...(session.weatherSnapshot ? [summaryWeather] : [])
     );
@@ -246,6 +267,39 @@ export function renderSessionDetail() {
         section.append(label, value);
         return section;
     }
+
+    function createVisitorSection() {
+        const visitors = session.visitors || [];
+    
+        const section = document.createElement("div");
+        section.classList.add("section");
+    
+        const label = document.createElement("div");
+        label.textContent = "Visiting PAX";
+        label.classList.add("detail-label", "session-detail-label");
+    
+        const value = document.createElement("div");
+        value.classList.add("detail-value", "session-detail-value");
+    
+        if (visitors.length === 0) {
+            value.textContent = "No visiting PAX";
+        } else {
+            visitors.forEach(visitor => {
+                const row = document.createElement("div");
+                row.classList.add("fng-detail-row");
+            
+                row.textContent = visitor.homeRegion
+                    ? `${visitor.f3Name} (${visitor.homeRegion})`
+                    : visitor.f3Name;
+            
+                value.appendChild(row);
+            });
+        }
+    
+        section.append(label, value);
+        return section;
+    }
+
     function formatMatchMethod(method) {
         switch (method) {
             case "date_ao_q":
@@ -363,6 +417,7 @@ export function renderSessionDetail() {
 
     const paxSection = createDetailSection(`PAX (${regularPaxCount})`, paxNames);
     const fngSection = createFngSection();
+    const visitorSection = createVisitorSection();
     const workoutSection = createWorkoutSection();
     workoutSection.classList.add("session-detail-workout-section");
     const notesSection = createDetailSection("Notes", notesText);
@@ -497,7 +552,8 @@ export function renderSessionDetail() {
         header,
         title,
         summaryCard,
-        paxSection, 
+        paxSection,
+        visitorSection,
         fngSection, 
         workoutSection,
         historicalBackblastMount,

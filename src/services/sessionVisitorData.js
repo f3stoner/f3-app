@@ -10,44 +10,46 @@ export async function loadSessionVisitors(sessionId) {
         .order("created_at", { ascending: true });
 
     if (error) throw error;
-    return data || [];
+
+    return (data || []).map(row => ({
+        id: row.id,
+        sessionId: row.session_id,
+        f3Name: row.f3_name,
+        homeRegion: row.home_region || "",
+        realName: row.real_name || "",
+        createdByUserId: row.created_by_user_id || null,
+        createdAt: row.created_at,
+    }));
 }
 
-export async function addSessionVisitor({
-    sessionId,
-    f3Name,
-    homeRegion = "",
-    realName = "",
-    createdByUserId = null,
-}) {
-    const cleanF3Name = f3Name?.trim();
+export async function replaceSessionVisitors(sessionId, visitors = [], createdByUserId = null) {
+    if (!sessionId) return [];
 
-    if (!sessionId) throw new Error("Missing session ID.");
-    if (!cleanF3Name) throw new Error("F3 name is required.");
+    const { error: deleteError } = await supabase
+        .from("session_visitors")
+        .delete()
+        .eq("session_id", sessionId);
+
+    if (deleteError) throw deleteError;
+
+    const cleanVisitors = visitors
+        .map(visitor => ({
+            session_id: sessionId,
+            f3_name: visitor.f3Name?.trim(),
+            home_region: visitor.homeRegion?.trim() || null,
+            real_name: visitor.realName?.trim() || null,
+            created_by_user_id: visitor.createdByUserId || createdByUserId || null,
+        }))
+        .filter(visitor => visitor.f3_name);
+
+    if (cleanVisitors.length === 0) return [];
 
     const { data, error } = await supabase
         .from("session_visitors")
-        .insert({
-            session_id: sessionId,
-            f3_name: cleanF3Name,
-            home_region: homeRegion.trim() || null,
-            real_name: realName.trim() || null,
-            created_by_user_id: createdByUserId,
-        })
-        .select()
-        .single();
+        .insert(cleanVisitors)
+        .select();
 
     if (error) throw error;
-    return data;
-}
 
-export async function deleteSessionVisitor(visitorId) {
-    if (!visitorId) return;
-
-    const { error } = await supabase
-        .from("session_visitors")
-        .delete()
-        .eq("id", visitorId);
-
-    if (error) throw error;
+    return data || [];
 }
