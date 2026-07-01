@@ -10,7 +10,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
-import { buildThirdFContentBlock, hasThirdFContentBlock } from "../utils/thirdFContent.js";
+import { buildThirdFContentBlock, hasThirdFContentBlock, replaceThirdFContentBlock } from "../utils/thirdFContent.js";
 
 export function renderPreblastView() {
 
@@ -382,6 +382,10 @@ export function renderPreblastView() {
     }
 
     function upsertThirdFText() {
+        if (!state.hasLoadedPreblastThirdFDiscussions) {
+            return;
+        }
+
         const targetDate = preblastQSlot?.date || preblastWorkout?.date;
     
         if (!targetDate) return;
@@ -393,16 +397,15 @@ export function renderPreblastView() {
     
         if (!thirdFBlock) return;
     
-        const currentText = state.draftPreblastText || "";
-    
-        if (hasThirdFContentBlock(currentText)) return;
-    
-        const nextText = currentText.trim()
-            ? `${currentText.trim()}\n\n${thirdFBlock}`
-            : thirdFBlock;
-    
-        state.draftPreblastText = nextText;
-        textInput.value = nextText;
+        const nextText = replaceThirdFContentBlock(
+            state.draftPreblastText || "",
+            thirdFBlock
+        );
+        
+        if (nextText !== (state.draftPreblastText || "")) {
+            state.draftPreblastText = nextText;
+            textInput.value = nextText;
+        }
     }
 
     function upsertEmphasisHashtag() {
