@@ -9,6 +9,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { canViewAoInsights } from "../utils/permissions.js";
 import { showToast } from "../utils/toast.js";
 import { buildAttendanceInsight } from "../utils/aoInsights/attendanceInsights.js";
+import { buildNewPaxPipelineInsight } from "../utils/aoInsights/newPaxPipelineInsights.js";
 
 function normalizeAoName(name = "") {
     return name
@@ -563,6 +564,11 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
         anchorDate: endDate,
     });
 
+    const newPaxPipelineInsight = buildNewPaxPipelineInsight(allAoSessions, {
+        anchorDate: endDate,
+        memberStats: state.memberStats,
+    });
+
     //TODO: Replace with attendanceInsight.metrics once the old snapshot cards are retired
 
     const totalAttendance = sessions.reduce((sum, session) => {
@@ -679,6 +685,7 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
         recentSessions,
         strongEmergingQs,
         attendanceInsight,
+        newPaxPipelineInsight,
     };
 }
 
@@ -821,6 +828,19 @@ export async function renderAoInsightsView() {
         tone: insights.attendanceInsight.status,
         onClick: () => {
             state.selectedAoInsightDetail = "attendance";
+            state.selectedAoInsight = insights.attendanceInsight;
+            navigateTo("aoInsightDetail");
+        },
+    });
+
+    const newPaxPipelineBriefing = createInsightCard({
+        title: insights.newPaxPipelineInsight.title,
+        headline: insights.newPaxPipelineInsight.headline,
+        story: insights.newPaxPipelineInsight.story,
+        tone: insights.newPaxPipelineInsight.status,
+        onClick: () => {
+            state.selectedAoInsightDetail = "newPaxPipeline";
+            state.selectedAoInsight = insights.newPaxPipelineInsight;
             navigateTo("aoInsightDetail");
         },
     });
@@ -982,6 +1002,7 @@ export async function renderAoInsightsView() {
         stickyInsightsNav,
         healthSummary,
         attendanceBriefing,
+        newPaxPipelineBriefing,
         overviewSection,
         leadershipSection,
         qRotationSection,

@@ -4550,3 +4550,57 @@ textarea {
     pointer-events: none;
     user-select: none;
 }
+
+.pax-pipeline-row {
+    display: block;
+    padding: 1rem;
+}
+
+.pax-pipeline-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.pax-pipeline-badge {
+    flex: 0 0 auto;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.pax-pipeline-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.pax-pipeline-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.pax-pipeline-meta-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.75;
+}
+
+.pax-pipeline-meta-value {
+    font-size: 0.9rem;
+    line-height: 1.15;
+    font-weight: 700;
+    color: var(--text);
+}
