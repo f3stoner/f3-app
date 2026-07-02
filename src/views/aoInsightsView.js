@@ -11,6 +11,8 @@ import { showToast } from "../utils/toast.js";
 import { buildAttendanceInsight } from "../utils/aoInsights/attendanceInsights.js";
 import { buildNewPaxPipelineInsight } from "../utils/aoInsights/newPaxPipelineInsights.js";
 
+const AO_INSIGHT_LOOKBACK_DAYS = 180;
+
 function normalizeAoName(name = "") {
     return name
     .trim()
@@ -534,8 +536,15 @@ function createInsightsNav(insights) {
     return nav;
 }
 
-function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions = null }) {
+function buildAoInsights({
+    aoName,
+    startDate,
+    endDate,
+    sessions: loadedSessions = null,
+    insightHistorySessions = null,
+}) {
     const sessions = loadedSessions || [];
+    const historySessions = insightHistorySessions || sessions;
 
     const allAoSessions = state.sessions.filter(session => {
         return normalizeAoName(session.aoName) === normalizeAoName(aoName);
@@ -560,11 +569,11 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
 
     const totalSessions = sessions.length;
 
-    const attendanceInsight = buildAttendanceInsight(allAoSessions, {
+    const attendanceInsight = buildAttendanceInsight(historySessions, {
         anchorDate: endDate,
     });
-
-    const newPaxPipelineInsight = buildNewPaxPipelineInsight(allAoSessions, {
+    
+    const newPaxPipelineInsight = buildNewPaxPipelineInsight(historySessions, {
         anchorDate: endDate,
         memberStats: state.memberStats,
     });
@@ -809,12 +818,25 @@ export async function renderAoInsightsView() {
         startDate: selected.startDate,
         endDate: selected.endDate,
     });
+
+    const historyEndDate = new Date(`${selected.endDate}T00:00:00`);
+    const historyStartDate = new Date(historyEndDate);
+
+    historyStartDate.setDate(historyStartDate.getDate() - AO_INSIGHT_LOOKBACK_DAYS);
+
+    const insightHistorySessions = await loadAoInsightSessions({
+        regionId: state.currentRegionId,
+        aoName: selected.aoName,
+        startDate: historyStartDate.toISOString().slice(0, 10),
+        endDate: selected.endDate,
+    });
     
     const insights = buildAoInsights({
         ...selected,
         sessions: selectedSessions,
+        insightHistorySessions,
     });
-
+    
     const stickyInsightsNav = document.createElement("div");
     stickyInsightsNav.classList.add("sticky-insights-nav");
     stickyInsightsNav.appendChild(createInsightsNav(insights));

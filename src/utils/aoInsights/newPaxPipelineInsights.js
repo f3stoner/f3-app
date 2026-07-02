@@ -62,8 +62,13 @@ function getStatPostCount(stat) {
     return (
         stat?.totalPosts ??
         stat?.total_posts ??
+        stat?.posts ??
         stat?.postCount ??
         stat?.post_count ??
+        stat?.attendanceCount ??
+        stat?.attendance_count ??
+        stat?.totalAttendance ??
+        stat?.total_attendance ??
         null
     );
 }
