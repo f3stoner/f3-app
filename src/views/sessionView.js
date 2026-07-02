@@ -473,7 +473,14 @@ function createMemberCard(member) {
         renderMemberList();
     });
 
-card.append(qButton, name);
+    const addIndicator = document.createElement("span");
+    addIndicator.classList.add("member-card-add-indicator");
+    addIndicator.textContent = "+";
+    addIndicator.setAttribute("aria-hidden", "true");
+
+    card.append(qButton, name, addIndicator);
+
+
 card.addEventListener("click", async () => {
     const isPresent = draftSession.attendeeIds.includes(member.id);
     const isSelectedQ = (draftSession.qIds || []).includes(member.id);
@@ -604,10 +611,10 @@ const sessionHelperText = document.createElement("div");
 sessionHelperText.classList.add("session-helper-text");
 
 const helperLineOne = document.createElement("div");
-helperLineOne.textContent = "Tap name → attendance";
+helperLineOne.textContent = "Tap card to add PAX";
 
 const helperLineTwo = document.createElement("div");
-helperLineTwo.textContent = "Tap Q → assign Q";
+helperLineTwo.textContent = "Tap Q to assign Q";
 
 sessionHelperText.append(helperLineOne, helperLineTwo);
 
