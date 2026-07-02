@@ -8,6 +8,7 @@ import { goBack } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { canViewAoInsights } from "../utils/permissions.js";
 import { showToast } from "../utils/toast.js";
+import { buildAttendanceInsight } from "../utils/aoInsights/attendanceInsights.js";
 
 function normalizeAoName(name = "") {
     return name
@@ -29,6 +30,38 @@ function createMetricCard(label, value) {
     labelEl.textContent = label;
 
     card.append(valueEl, labelEl);
+
+    return card;
+}
+
+function createInsightCard({ title, headline, summary, value, tone }) {
+    const card = document.createElement("div");
+    card.classList.add("section", "insight-briefing-card");
+
+    if (tone) {
+        card.classList.add(`insight-briefing-${tone}`);
+    }
+
+    const eyebrow = document.createElement("div");
+    eyebrow.classList.add("stat-label");
+    eyebrow.textContent = title;
+
+    const headlineEl = document.createElement("div");
+    headlineEl.classList.add("stat-value");
+    headlineEl.textContent = headline;
+
+    const summaryEl = document.createElement("div");
+    summaryEl.classList.add("detail-value");
+    summaryEl.textContent = summary;
+
+    card.append(eyebrow, headlineEl, summaryEl);
+
+    if (value) {
+        const valueEl = document.createElement("div");
+        valueEl.classList.add("stats-line");
+        valueEl.textContent = value;
+        card.appendChild(valueEl);
+    }
 
     return card;
 }
@@ -528,6 +561,8 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
 
     const totalSessions = sessions.length;
 
+    const attendanceInsight = buildAttendanceInsight(sessions);
+
     const totalAttendance = sessions.reduce((sum, session) => {
         return sum + (session.attendeeIds?.length || 0);
     }, 0);
@@ -641,6 +676,7 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
         healthSubtitle,
         recentSessions,
         strongEmergingQs,
+        attendanceInsight,
     };
 }
 
@@ -775,6 +811,16 @@ export async function renderAoInsightsView() {
     stickyInsightsNav.appendChild(createInsightsNav(insights));
 
     const healthSummary = createHealthSummary(insights);
+
+    const attendanceBriefing = createInsightCard({
+        title: "Attendance Momentum",
+        headline: insights.attendanceInsight.headline,
+        summary: insights.attendanceInsight.summary,
+        value: insights.attendanceInsight.percentChange !== null
+            ? `${insights.attendanceInsight.percentChange > 0 ? "▲" : "▼"} ${Math.abs(Math.round(insights.attendanceInsight.percentChange))}%`
+            : null,
+        tone: insights.attendanceInsight.status,
+    });
 
     const overviewGrid = document.createElement("div");
     overviewGrid.classList.add("stats-grid");
@@ -932,6 +978,7 @@ export async function renderAoInsightsView() {
         header,
         stickyInsightsNav,
         healthSummary,
+        attendanceBriefing,
         overviewSection,
         leadershipSection,
         qRotationSection,
