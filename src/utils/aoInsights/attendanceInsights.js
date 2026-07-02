@@ -1,105 +1,278 @@
-export function buildAttendanceInsight(sessions = [], options = {}) {
+function getSessionDate(session) {
+    if (!session?.date) return null;
+    return new Date(`${session.date}T00:00:00`);
+}
+
+function getWeekday(session) {
+    const date = getSessionDate(session);
+
+    if (!date) return "Unknown";
+
+    return date.toLocaleDateString(undefined, {
+        weekday: "long",
+    });
+}
+
+function countAttendance(session) {
+    const attendeeIds = Array.isArray(session?.attendeeIds)
+        ? session.attendeeIds
+        : [];
+
+    const fngs = Array.isArray(session?.fngs) ? session.fngs : [];
+
+    const rosteredFngIds = fngs
+        .map((fng) => fng?.memberId)
+        .filter(Boolean);
+
+    const unrosteredFngCount = fngs.filter((fng) => !fng?.memberId).length;
+
+    const uniqueKnownIds = new Set([...attendeeIds, ...rosteredFngIds]);
+
+    return uniqueKnownIds.size + unrosteredFngCount;
+}
+
+function average(items, valueGetter) {
+    if (!items.length) return null;
+
+    const total = items.reduce((sum, item) => {
+        return sum + valueGetter(item);
+    }, 0);
+
+    return total / items.length;
+}
+
+function roundOne(value) {
+    if (value === null || value === undefined) return null;
+    return Math.round(value * 10) / 10;
+}
+
+function getPercentChange(currentValue, previousValue) {
+    if (
+        currentValue === null ||
+        previousValue === null ||
+        previousValue <= 0
+    ) {
+        return null;
+    }
+
+    return ((currentValue - previousValue) / previousValue) * 100;
+}
+
+function summarizeSessions(sessions) {
+    return sessions.map((session) => ({
+        date: session.date,
+        weekday: getWeekday(session),
+        attendance: countAttendance(session),
+        session,
+    }));
+}
+
+function calculateWeekdayBreakdown(currentSessionCounts, previousSessionCounts) {
+    const weekdays = new Set([
+        ...currentSessionCounts.map((session) => session.weekday),
+        ...previousSessionCounts.map((session) => session.weekday),
+    ]);
+
+    return [...weekdays]
+        .filter((weekday) => weekday !== "Unknown")
+        .map((weekday) => {
+            const current = currentSessionCounts.filter(
+                (session) => session.weekday === weekday
+            );
+
+            const previous = previousSessionCounts.filter(
+                (session) => session.weekday === weekday
+            );
+
+            const currentAverage = average(current, (session) => session.attendance);
+            const previousAverage = average(previous, (session) => session.attendance);
+            const percentChange = getPercentChange(currentAverage, previousAverage);
+
+            return {
+                weekday,
+                currentAverage: roundOne(currentAverage),
+                previousAverage: roundOne(previousAverage),
+                percentChange,
+                currentSessionCount: current.length,
+                previousSessionCount: previous.length,
+            };
+        });
+}
+
+function getTrend(percentChange, { upThreshold = 10, downThreshold = -10 } = {}) {
+    if (percentChange === null) return "insufficient_data";
+    if (percentChange >= upThreshold) return "up";
+    if (percentChange <= downThreshold) return "down";
+    return "stable";
+}
+
+function calculateAttendanceMetrics(sessions = [], options = {}) {
     const {
-        currentPeriodLabel = "the last 4 weeks",
-        previousPeriodLabel = "the previous 4 weeks",
-        upThreshold = 10,
-        downThreshold = -10,
+        comparisonSessionCount = 4,
+        maxCompletedSessions = 8,
     } = options;
 
     const sortedSessions = [...sessions]
         .filter((session) => session?.date)
         .sort((a, b) => new Date(a.date) - new Date(b.date));
 
+    const today = new Date();
+
     const completedSessions = sortedSessions.filter((session) => {
-        const sessionDate = new Date(`${session.date}T00:00:00`);
-        return sessionDate <= new Date();
+        const sessionDate = getSessionDate(session);
+        return sessionDate && sessionDate <= today;
     });
 
-    const currentSessions = completedSessions.slice(-8).slice(-4);
-    const previousSessions = completedSessions.slice(-8, -4);
+    const comparisonSessions = completedSessions.slice(-maxCompletedSessions);
+    const previousSessions = comparisonSessions.slice(0, comparisonSessionCount);
+    const currentSessions = comparisonSessions.slice(comparisonSessionCount);
 
-    const countAttendance = (session) => {
-        const attendeeIds = Array.isArray(session.attendeeIds)
-            ? session.attendeeIds
-            : [];
+    const currentSessionCounts = summarizeSessions(currentSessions);
+    const previousSessionCounts = summarizeSessions(previousSessions);
+    const allSessionCounts = summarizeSessions(completedSessions);
 
-        const fngs = Array.isArray(session.fngs) ? session.fngs : [];
+    const currentAverage = average(currentSessionCounts, (session) => session.attendance);
+    const previousAverage = average(previousSessionCounts, (session) => session.attendance);
+    const percentChange = getPercentChange(currentAverage, previousAverage);
+    const trend = getTrend(percentChange, options);
 
-        const rosteredFngIds = fngs
-            .map((fng) => fng?.memberId)
-            .filter(Boolean);
+    const weekdayBreakdown = calculateWeekdayBreakdown(
+        currentSessionCounts,
+        previousSessionCounts
+    );
 
-        const unrosteredFngCount = fngs.filter((fng) => !fng?.memberId).length;
+    const highestSession = allSessionCounts.length
+        ? [...allSessionCounts].sort((a, b) => b.attendance - a.attendance)[0]
+        : null;
 
-        const uniqueKnownIds = new Set([...attendeeIds, ...rosteredFngIds]);
+    const lowestSession = allSessionCounts.length
+        ? [...allSessionCounts].sort((a, b) => a.attendance - b.attendance)[0]
+        : null;
 
-        return uniqueKnownIds.size + unrosteredFngCount;
+    return {
+        currentAverage: roundOne(currentAverage),
+        previousAverage: roundOne(previousAverage),
+        percentChange,
+        trend,
+        completedSessionCount: completedSessions.length,
+        currentSessions: currentSessionCounts,
+        previousSessions: previousSessionCounts,
+        allSessions: allSessionCounts,
+        weekdayBreakdown,
+        highestSession,
+        lowestSession,
     };
+}
 
-    const average = (items) => {
-        if (!items.length) return null;
+function findAttendancePatterns(metrics, options = {}) {
+    const {
+        meaningfulWeekdayThreshold = 10,
+    } = options;
 
-        const total = items.reduce(
-            (sum, session) => sum + countAttendance(session),
-            0
-        );
+    const hasLowSampleSize =
+        metrics.currentSessions.length < 2 ||
+        metrics.previousSessions.length < 2;
 
-        return total / items.length;
+    const meaningfulWeekdayChanges = metrics.weekdayBreakdown
+        .filter((weekday) => {
+            return (
+                weekday.percentChange !== null &&
+                Math.abs(weekday.percentChange) >= meaningfulWeekdayThreshold &&
+                weekday.currentSessionCount > 0 &&
+                weekday.previousSessionCount > 0
+            );
+        })
+        .sort((a, b) => {
+            return Math.abs(b.percentChange) - Math.abs(a.percentChange);
+        });
+
+    const primaryWeekdayDriver = meaningfulWeekdayChanges[0] || null;
+
+    return {
+        hasLowSampleSize,
+        hasMeaningfulChange:
+            metrics.trend === "up" || metrics.trend === "down",
+        primaryWeekdayDriver,
     };
+}
 
-    const currentAverage = average(currentSessions);
-    const previousAverage = average(previousSessions);
+function formatPercent(value) {
+    if (value === null || value === undefined) return null;
 
-    const percentChange =
-        currentAverage !== null &&
-        previousAverage !== null &&
-        previousAverage > 0
-            ? ((currentAverage - previousAverage) / previousAverage) * 100
-            : null;
+    return `${Math.abs(Math.round(value))}%`;
+}
 
-    let status = "insufficient_data";
-    let headline = "Not enough attendance history yet.";
-    let summary = "Log a few more sessions to see attendance momentum.";
-    let action = null;
+function buildAttendanceNarrative(metrics, patterns, options = {}) {
+    const {
+        currentPeriodLabel = "the last 4 weeks",
+        previousPeriodLabel = "the previous 4 weeks",
+    } = options;
 
-    if (currentAverage !== null && previousAverage !== null && percentChange !== null) {
-        if (percentChange >= upThreshold) {
-            status = "up";
-            headline = "Attendance is building momentum.";
-            summary = `Average attendance is up over ${currentPeriodLabel} compared with ${previousPeriodLabel}.`;
-            action = "Celebrate the recent growth.";
-        } else if (percentChange <= downThreshold) {
-            status = "down";
-            headline = "Attendance is slipping.";
-            summary = `Average attendance is down over ${currentPeriodLabel} compared with ${previousPeriodLabel}.`;
-            action = "Check recent Kotters, schedule friction, or missed regulars.";
-        } else {
-            status = "stable";
-            headline = "Attendance is holding steady.";
-            summary = `Average attendance has stayed mostly consistent over ${currentPeriodLabel}.`;
-            action = null;
-        }
+    if (metrics.trend === "insufficient_data") {
+        return {
+            title: "Attendance Momentum",
+            status: "insufficient-data",
+            headline: "Not enough attendance history yet.",
+            story: "Log a few more sessions to see attendance momentum.",
+            action: null,
+        };
+    }
+
+    if (patterns.hasLowSampleSize) {
+        return {
+            title: "Attendance Momentum",
+            status: "insufficient-data",
+            headline: "Attendance history is still thin.",
+            story: "A few more logged sessions will make this trend more useful.",
+            action: null,
+        };
+    }
+
+    if (metrics.trend === "up") {
+        const driver = patterns.primaryWeekdayDriver;
+
+        return {
+            title: "Attendance Momentum",
+            status: "up",
+            headline: "Attendance is gaining momentum.",
+            story: driver
+                ? `Up ${formatPercent(metrics.percentChange)} over the previous four weeks, driven by higher ${driver.weekday} participation.`
+                : `Up ${formatPercent(metrics.percentChange)} over the previous four weeks.`,
+            action: "Celebrate the recent growth.",
+        };
+    }
+
+    if (metrics.trend === "down") {
+        const driver = patterns.primaryWeekdayDriver;
+
+        return {
+            title: "Attendance Momentum",
+            status: "down",
+            headline: "Attendance is slipping.",
+            story: driver
+                ? `Down ${formatPercent(metrics.percentChange)} over the previous four weeks, with lower ${driver.weekday} participation driving most of the decline.`
+                : `Down ${formatPercent(metrics.percentChange)} over the previous four weeks.`,
+            action: "Check recent Kotters, schedule friction, or missed regulars.",
+        };
     }
 
     return {
-        status,
-        headline,
-        summary,
-        action,
-        currentAverage,
-        previousAverage,
-        percentChange,
-        sessions: {
-            current: currentSessions.map((session) => ({
-                date: session.date,
-                attendance: countAttendance(session),
-                session,
-            })),
-            previous: previousSessions.map((session) => ({
-                date: session.date,
-                attendance: countAttendance(session),
-                session,
-            })),
-        },
+        title: "Attendance Momentum",
+        status: "stable",
+        headline: "Attendance is holding steady.",
+        story: `Average attendance has stayed mostly consistent over ${currentPeriodLabel}.`,
+        action: null,
+    };
+}
+
+export function buildAttendanceInsight(sessions = [], options = {}) {
+    const metrics = calculateAttendanceMetrics(sessions, options);
+    const patterns = findAttendancePatterns(metrics, options);
+    const narrative = buildAttendanceNarrative(metrics, patterns, options);
+
+    return {
+        ...narrative,
+        metrics,
+        patterns,
     };
 }
