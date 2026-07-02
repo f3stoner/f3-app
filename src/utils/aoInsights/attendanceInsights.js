@@ -108,8 +108,7 @@ function getTrend(percentChange, { upThreshold = 10, downThreshold = -10 } = {})
 
 function calculateAttendanceMetrics(sessions = [], options = {}) {
     const {
-        comparisonSessionCount = 4,
-        maxCompletedSessions = 8,
+        comparisonDays = 28,
     } = options;
 
     const sortedSessions = [...sessions]
@@ -123,9 +122,29 @@ function calculateAttendanceMetrics(sessions = [], options = {}) {
         return sessionDate && sessionDate <= today;
     });
 
-    const comparisonSessions = completedSessions.slice(-maxCompletedSessions);
-    const previousSessions = comparisonSessions.slice(0, comparisonSessionCount);
-    const currentSessions = comparisonSessions.slice(comparisonSessionCount);
+    const now = options.anchorDate
+        ? new Date(`${options.anchorDate}T23:59:59`)
+        : new Date();
+
+    const currentStartDate = new Date(now);
+    currentStartDate.setDate(currentStartDate.getDate() - comparisonDays);
+
+    const previousStartDate = new Date(currentStartDate);
+    previousStartDate.setDate(previousStartDate.getDate() - comparisonDays);
+
+    const currentSessions = completedSessions.filter((session) => {
+        const sessionDate = getSessionDate(session);
+        return sessionDate && sessionDate > currentStartDate && sessionDate <= now;
+    });
+
+    const previousSessions = completedSessions.filter((session) => {
+        const sessionDate = getSessionDate(session);
+        return (
+            sessionDate &&
+            sessionDate > previousStartDate &&
+            sessionDate <= currentStartDate
+        );
+    });
 
     const currentSessionCounts = summarizeSessions(currentSessions);
     const previousSessionCounts = summarizeSessions(previousSessions);
@@ -204,15 +223,15 @@ function formatPercent(value) {
 
 function buildAttendanceNarrative(metrics, patterns, options = {}) {
     const {
-        currentPeriodLabel = "the last 4 weeks",
-        previousPeriodLabel = "the previous 4 weeks",
+        currentPeriodLabel = "the last month",
+        previousPeriodLabel = "the previous month",
     } = options;
 
     if (metrics.trend === "insufficient_data") {
         return {
             title: "Attendance Momentum",
             status: "insufficient-data",
-            headline: "Not enough attendance history yet.",
+            headline: "Insufficient Data",
             story: "Log a few more sessions to see attendance momentum.",
             action: null,
         };
@@ -234,10 +253,10 @@ function buildAttendanceNarrative(metrics, patterns, options = {}) {
         return {
             title: "Attendance Momentum",
             status: "up",
-            headline: "Attendance is gaining momentum.",
+            headline: "Growing ↑",
             story: driver
-                ? `Up ${formatPercent(metrics.percentChange)} over the previous four weeks, driven by higher ${driver.weekday} participation.`
-                : `Up ${formatPercent(metrics.percentChange)} over the previous four weeks.`,
+                ? `Up ${formatPercent(metrics.percentChange)} compared with the previous month, driven by higher ${driver.weekday} participation.`
+                : `Up ${formatPercent(metrics.percentChange)} compared with the previous month.`,
             action: "Celebrate the recent growth.",
         };
     }
@@ -248,10 +267,10 @@ function buildAttendanceNarrative(metrics, patterns, options = {}) {
         return {
             title: "Attendance Momentum",
             status: "down",
-            headline: "Attendance is slipping.",
+            headline: "Slipping ↓",
             story: driver
-                ? `Down ${formatPercent(metrics.percentChange)} over the previous four weeks, with lower ${driver.weekday} participation driving most of the decline.`
-                : `Down ${formatPercent(metrics.percentChange)} over the previous four weeks.`,
+                ? `Down ${formatPercent(metrics.percentChange)} compared with the previous month, with lower ${driver.weekday} participation driving most of the decline.`
+                : `Down ${formatPercent(metrics.percentChange)} compared with the previous month.`,
             action: "Check recent Kotters, schedule friction, or missed regulars.",
         };
     }
@@ -259,7 +278,7 @@ function buildAttendanceNarrative(metrics, patterns, options = {}) {
     return {
         title: "Attendance Momentum",
         status: "stable",
-        headline: "Attendance is holding steady.",
+        headline: "Stable",
         story: `Average attendance has stayed mostly consistent over ${currentPeriodLabel}.`,
         action: null,
     };

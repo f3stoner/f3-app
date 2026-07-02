@@ -61,6 +61,7 @@ import { loadLibraryAutocompleteItems, loadLibraryFilterOptions } from "./servic
 import { renderAdminManagementView } from "./views/adminManagementView.js";
 import { renderThirdFManagementView } from "./views/thirdFManagementView.js";
 import { renderThirdFView } from "./views/thirdFView.js";
+import { renderAoInsightDetailView } from "./views/aoInsightsDetailView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -284,6 +285,8 @@ function renderApp() {
         renderThirdFManagementView();
     } else if (state.currentView === "thirdF") {
         renderThirdFView();
+    } else if (state.currentView === "aoInsightDetail") {
+        renderAoInsightDetailView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

@@ -34,12 +34,17 @@ function createMetricCard(label, value) {
     return card;
 }
 
-function createInsightCard({ title, headline, story, tone }) {
+function createInsightCard({ title, headline, story, tone, onClick }) {
     const card = document.createElement("div");
     card.classList.add("section", "insight-briefing-card");
 
     if (tone) {
         card.classList.add(`insight-briefing-${tone}`);
+    }
+
+    if (onClick) {
+        card.classList.add("clickable-stat-tile");
+        card.addEventListener("click", onClick);
     }
 
     const eyebrow = document.createElement("div");
@@ -554,7 +559,9 @@ function buildAoInsights({ aoName, startDate, endDate, sessions: loadedSessions 
 
     const totalSessions = sessions.length;
 
-    const attendanceInsight = buildAttendanceInsight(sessions);
+    const attendanceInsight = buildAttendanceInsight(allAoSessions, {
+        anchorDate: endDate,
+    });
 
     //TODO: Replace with attendanceInsight.metrics once the old snapshot cards are retired
 
@@ -812,6 +819,10 @@ export async function renderAoInsightsView() {
         headline: insights.attendanceInsight.headline,
         story: insights.attendanceInsight.story,
         tone: insights.attendanceInsight.status,
+        onClick: () => {
+            state.selectedAoInsightDetail = "attendance";
+            navigateTo("aoInsightDetail");
+        },
     });
 
     const overviewGrid = document.createElement("div");
