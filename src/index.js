@@ -529,7 +529,7 @@ async function bootApp() {
         renderApp();
         console.timeEnd("first-render");
 
-        hydrateHistoricalBackblastLinks(state.currentRegionId);
+        //hydrateHistoricalBackblastLinks(state.currentRegionId);
 
         getNotificationSettings(state.currentUserId)
             .then(dbNotificationSettings => {
