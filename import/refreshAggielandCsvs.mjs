@@ -3,7 +3,7 @@ import path from "node:path";
 
 const SPREADSHEET_ID = "1wlsKrOF_7sfGi_F2emLQKHfRa5L3AaUIme1nRFcytTA";
 
-const OUTPUT_DIR = path.resolve("public");
+const OUTPUT_DIR = path.resolve("import");
 
 const SHEETS = [
     { name: "Pax Master", gid: "1285473699", fileName: "Pax_Master.csv" },

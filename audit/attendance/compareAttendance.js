@@ -10,25 +10,25 @@ const OUT_DIR = __dirname;
 
 const SUPABASE_SESSIONS_PATH = path.join(REPO_ROOT, "audit/sessions_rows.csv");
 const SUPABASE_MEMBERS_PATH = path.join(REPO_ROOT, "audit/attendance/members_rows.csv");
-const PAX_MASTER_PATH = path.join(REPO_ROOT, "public/Pax_Master.csv");
+const PAX_MASTER_PATH = path.join(REPO_ROOT, "import/Pax_Master.csv");
 const AGGIELAND_REGION_ID = "96c9eef9-3b6e-4365-86cd-51dbeccf231a";
 
 const CURRENT_AO_LOGS = [
-    ["Forest", "public/Forest_Log.csv"],
-    ["Cave", "public/Cave_Log.csv"],
-    ["Iron", "public/Iron_Log.csv"],
-    ["Keep", "public/Keep_Log.csv"],
-    ["Rock", "public/Rock_Log.csv"],
-    ["Mine", "public/Mine_Log.csv"],
-    ["Southie", "public/Southie_Log.csv"],
-    ["Watch", "public/Watch_Log.csv"],
-    ["Dads", "public/Dads_Log.csv"],
-    ["BlackOps", "public/BlackOps_Log.csv"],
-    ["CSAUP", "public/CSAUP_Log.csv"],
-    ["Other", "public/Other_Log.csv"],
+    ["Forest", "import/Forest_Log.csv"],
+    ["Cave", "import/Cave_Log.csv"],
+    ["Iron", "import/Iron_Log.csv"],
+    ["Keep", "import/Keep_Log.csv"],
+    ["Rock", "import/Rock_Log.csv"],
+    ["Mine", "import/Mine_Log.csv"],
+    ["Southie", "import/Southie_Log.csv"],
+    ["Watch", "import/Watch_Log.csv"],
+    ["Dads", "import/Dads_Log.csv"],
+    ["BlackOps", "import/BlackOps_Log.csv"],
+    ["CSAUP", "import/CSAUP_Log.csv"],
+    ["Other", "import/Other_Log.csv"],
 ];
 
-const HISTORIC_LOG = ["Historic", "public/Historic_Log.csv"];
+const HISTORIC_LOG = ["Historic", "import/Historic_Log.csv"];
 const BLACKOPS_SPLIT_AOS = new Set([
     "moat am",
     "moat pm",

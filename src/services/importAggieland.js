@@ -403,18 +403,18 @@ export async function repairAggielandDeltaSessions({ dryRun = true, regionId = s
     const targetRegionId = regionId;
 
     const aoFiles = [
-        ["Forest", "/Forest_Log.csv"],
-        ["Cave", "/Cave_Log.csv"],
-        ["Iron", "/Iron_Log.csv"],
-        ["Keep", "/Keep_Log.csv"],
-        ["Rock", "/Rock_Log.csv"],
-        ["Mine", "/Mine_Log.csv"],
-        ["Southie", "/Southie_Log.csv"],
-        ["Watch", "/Watch_Log.csv"],
-        ["Dads", "/Dads_Log.csv"],
-        ["BlackOps", "/BlackOps_Log.csv"],
-        ["CSAUP", "/CSAUP_Log.csv"],
-        ["Other", "/Other_Log.csv"],
+        ["Forest", "/import/Forest_Log.csv"],
+        ["Cave", "/import/Cave_Log.csv"],
+        ["Iron", "/import/Iron_Log.csv"],
+        ["Keep", "/import/Keep_Log.csv"],
+        ["Rock", "/import/Rock_Log.csv"],
+        ["Mine", "/import/Mine_Log.csv"],
+        ["Southie", "/import/Southie_Log.csv"],
+        ["Watch", "/import/Watch_Log.csv"],
+        ["Dads", "/import/Dads_Log.csv"],
+        ["BlackOps", "/import/BlackOps_Log.csv"],
+        ["CSAUP", "/import/CSAUP_Log.csv"],
+        ["Other", "/import/Other_Log.csv"],
     ];
 
     console.log(`Aggieland session repair starting. dryRun = ${dryRun}`);
@@ -737,18 +737,18 @@ export async function runAggielandDeltaAoImports({ dryRun = true, regionId = sta
     const targetRegionId = regionId;
 
     const aoFiles = [
-        ["Forest", "/Forest_Log.csv"],
-        ["Cave", "/Cave_Log.csv"],
-        ["Iron", "/Iron_Log.csv"],
-        ["Keep", "/Keep_Log.csv"],
-        ["Rock", "/Rock_Log.csv"],
-        ["Mine", "/Mine_Log.csv"],
-        ["Southie", "/Southie_Log.csv"],
-        ["Watch", "/Watch_Log.csv"],
-        ["Dads", "/Dads_Log.csv"],
-        ["BlackOps", "/BlackOps_Log.csv"],
-        ["CSAUP", "/CSAUP_Log.csv"],
-        ["Other", "/Other_Log.csv"],
+        ["Forest", "/import/Forest_Log.csv"],
+        ["Cave", "/import/Cave_Log.csv"],
+        ["Iron", "/import/Iron_Log.csv"],
+        ["Keep", "/import/Keep_Log.csv"],
+        ["Rock", "/import/Rock_Log.csv"],
+        ["Mine", "/import/Mine_Log.csv"],
+        ["Southie", "/import/Southie_Log.csv"],
+        ["Watch", "/import/Watch_Log.csv"],
+        ["Dads", "/import/Dads_Log.csv"],
+        ["BlackOps", "/import/BlackOps_Log.csv"],
+        ["CSAUP", "/import/CSAUP_Log.csv"],
+        ["Other", "/import/Other_Log.csv"],
     ];
 
     console.log(`Aggieland delta import starting. dryRun = ${dryRun}`);
@@ -941,7 +941,7 @@ function normalizeLooseMergeRiskKey(value) {
 
 export async function auditPotentialMergedMembers({ regionId = state.currentRegionId } = {}) {
 
-    const paxMasterResponse = await fetch("/Pax_Master.csv");
+    const paxMasterResponse = await fetch("/import/Pax_Master.csv");
 
     if (!paxMasterResponse.ok) {
         throw new Error("Could not fetch Pax_Master.csv");
@@ -1037,21 +1037,21 @@ export async function auditPotentialMergedMembers({ regionId = state.currentRegi
 
 export async function auditMergedMemberDetail(looseKeyToInspect) {
     const aoFiles = [
-        ["Forest", "/Forest_Log.csv"],
-        ["Cave", "/Cave_Log.csv"],
-        ["Iron", "/Iron_Log.csv"],
-        ["Keep", "/Keep_Log.csv"],
-        ["Rock", "/Rock_Log.csv"],
-        ["Mine", "/Mine_Log.csv"],
-        ["Southie", "/Southie_Log.csv"],
-        ["Watch", "/Watch_Log.csv"],
-        ["Dads", "/Dads_Log.csv"],
-        ["BlackOps", "/BlackOps_Log.csv"],
-        ["CSAUP", "/CSAUP_Log.csv"],
-        ["Other", "/Other_Log.csv"],
+        ["Forest", "/import/Forest_Log.csv"],
+        ["Cave", "/import/Cave_Log.csv"],
+        ["Iron", "/import/Iron_Log.csv"],
+        ["Keep", "/import/Keep_Log.csv"],
+        ["Rock", "/import/Rock_Log.csv"],
+        ["Mine", "/import/Mine_Log.csv"],
+        ["Southie", "/import/Southie_Log.csv"],
+        ["Watch", "/import/Watch_Log.csv"],
+        ["Dads", "/import/Dads_Log.csv"],
+        ["BlackOps", "/import/BlackOps_Log.csv"],
+        ["CSAUP", "/import/CSAUP_Log.csv"],
+        ["Other", "/import/Other_Log.csv"],
     ];
 
-    const paxMasterResponse = await fetch("/Pax_Master.csv");
+    const paxMasterResponse = await fetch("/import/Pax_Master.csv");
 
     if (!paxMasterResponse.ok) {
         throw new Error("Could not fetch Pax_Master.csv");
@@ -1106,7 +1106,7 @@ export async function auditMergedMemberDetail(looseKeyToInspect) {
     }
 
     const historicRows = [];
-    const historicResponse = await fetch("/Historic_Log.csv");
+    const historicResponse = await fetch("/import/Historic_Log.csv");
 
     if (historicResponse.ok) {
         const historicCsvText = await historicResponse.text();
@@ -1340,7 +1340,7 @@ export async function runAggielandSync({ apply = false } = {}) {
     console.log("Aggieland sync starting...");
     console.log(`Mode: ${apply ? "APPLY" : "DRY RUN"}`);
 
-    const paxMasterResponse = await fetch("/Pax_Master.csv");
+    const paxMasterResponse = await fetch("/import/Pax_Master.csv");
 
     if (!paxMasterResponse.ok) {
         throw new Error("Could not fetch Pax_Master.csv");
