@@ -1284,12 +1284,13 @@ function openCreateSessionFromBackblastModal({
         .sort((a, b) => a.name.localeCompare(b.name))
         .forEach(ao => {
             const option = document.createElement("option");
-            option.value = ao.name;
+            option.value = ao.id;
             option.textContent = ao.name;
             aoSelect.appendChild(option);
         });
 
-    aoSelect.value = backblast.aoName || "";
+    const defaultAo = state.aos.find(ao => ao.name === backblast.aoName);
+    aoSelect.value = defaultAo?.id || "";
 
     if (![...aoSelect.options].some(option => option.value === aoSelect.value)) {
         aoSelect.value = "";
@@ -1421,7 +1422,7 @@ function openCreateSessionFromBackblastModal({
 
         try {
             const session = await createSessionFromBackblast(match, {
-                aoName: aoSelect.value,
+                aoId: aoSelect.value,
                 qIds: [...selectedQIds],
                 attendeeIds: [...selectedAttendeeIds],
             });
@@ -1462,7 +1463,7 @@ function openCreateSessionFromBackblastModal({
 
 async function createSessionFromBackblast(
     match,
-    { aoName = null, qIds = [], attendeeIds = [] } = {}
+    { aoId = null, qIds = [], attendeeIds = [] } = {}
 ) {
     const backblast = match.backblast || {};
     const activeRegionId = state.activeRegionId || state.currentRegionId;
@@ -1479,16 +1480,19 @@ async function createSessionFromBackblast(
         throw new Error("Missing backblast date.");
     }
 
-    const selectedAoName = aoName || backblast.aoName;
+    const selectedAo =
+        state.aos.find(ao => ao.id === aoId)
+        || state.aos.find(ao => ao.name === backblast.aoName);
 
-    if (!selectedAoName) {
+    if (!selectedAo) {
         throw new Error("Missing selected AO.");
     }
 
     const session = {
         id: crypto.randomUUID(),
         date: backblast.date,
-        aoName: selectedAoName,
+        aoId: selectedAo.id,
+        aoName: selectedAo.name,
         qIds,
         attendeeIds: [...new Set([...attendeeIds, ...qIds])],
         fngs: [],
@@ -1496,7 +1500,7 @@ async function createSessionFromBackblast(
         attendanceReviewStatus: "reviewed",
         attendanceReviewNotes: "Session created manually from backblast review.",
         backblastText: backblast.cleanedContent || backblast.rawContent || "",
-        startTime: findDefaultStartTimeForAo(selectedAoName),
+        startTime: selectedAo.time || null,
         createdByUserId: state.currentUserId || null,
         createdAt: Date.now(),
     };

@@ -204,10 +204,16 @@ export function renderDashboard() {
     function findMatchingPlannedWorkoutForSlot(slot) {
         const ao = state.aos.find(a => a.id === slot.aoId);
 
-        return state.plannedWorkouts.find(workout => 
+        return state.plannedWorkouts.find(workout =>
             workout.date === slot.date &&
             workout.createdByUserId === state.currentUserId &&
-            workout.aoName === ao?.name
+            (
+                workout.aoId === slot.aoId ||
+                (
+                    !workout.aoId &&
+                    workout.aoName === ao?.name
+                )
+            )
         );
     }
 
@@ -365,7 +371,13 @@ export function renderDashboard() {
 
             return (
                 session.date === slot.date &&
-                session.aoName === ao?.name &&
+                (
+                    session.aoId === slot.aoId ||
+                    (
+                        !session.aoId &&
+                        session.aoName === ao?.name
+                    )
+                ) &&
                 effectiveQIds.includes(state.currentUserMemberId)
             );
         });
@@ -539,6 +551,7 @@ export function renderDashboard() {
             plannedWorkoutId: workout.id,
             launchSource,
             workoutDate: workout.date || null,
+            aoId: workout.aoId || null,
             aoName: workout.aoName || null,
             title: workout.title || null,
             startedAt: new Date().toISOString(),
@@ -704,6 +717,7 @@ export function renderDashboard() {
                 state.draftSession = {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
+                    aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
                     qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
                     attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
@@ -740,6 +754,7 @@ export function renderDashboard() {
                 state.draftPlannedWorkout = {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
+                    aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
                     title: "",
                     introduction: "",
@@ -828,6 +843,7 @@ export function renderDashboard() {
 
                 const fallbackWorkout = {
                     date: nextQSlot.date,
+                    aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
                 };
 
@@ -866,6 +882,7 @@ export function renderDashboard() {
                 state.draftPlannedWorkout = {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
+                    aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
                     title: "",
                     introduction: "",
@@ -900,6 +917,7 @@ export function renderDashboard() {
                     state.draftSession = {
                         id: crypto.randomUUID(),
                         date: nextQSlot.date,
+                        aoId: ao?.id || nextQSlot.aoId || null,
                         aoName: ao?.name || "",
                         qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
                         attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
@@ -1201,6 +1219,7 @@ export function renderDashboard() {
                     state.draftPlannedWorkout = {
                         id: crypto.randomUUID(),
                         date: slot.date,
+                        aoId: ao?.id || slot.aoId || null,
                         aoName: ao?.name || "",
                         title: "",
                         introduction: "",

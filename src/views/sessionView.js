@@ -33,6 +33,7 @@ if (!state.editingSessionId && !state.selectedSessionId) {
     state.sessionQExpanded = false;
 }
 
+let cachedLastPostMapByAoKey = new Map();
 let cachedDisplayNameByMemberId = null;
 
 function buildDisplayNameByMemberId() {
@@ -103,7 +104,6 @@ function getCachedMemberDisplayName(member) {
 }
 
 let cachedSelectableMembers = null;
-let cachedLastPostMapByAo = new Map();
 
 function getCachedSelectableMembers() {
     if (!cachedSelectableMembers) {
@@ -113,12 +113,17 @@ function getCachedSelectableMembers() {
     return cachedSelectableMembers;
 }
 
-function getCachedLastPostMapForAo(aoName) {
-    if (!cachedLastPostMapByAo.has(aoName)) {
-        cachedLastPostMapByAo.set(aoName, buildLastPostMapForAo(aoName));
+function getCachedLastPostMapForAo(aoId, aoName) {
+    const cacheKey = aoId || aoName || "unknown";
+
+    if (!cachedLastPostMapByAoKey.has(cacheKey)) {
+        cachedLastPostMapByAoKey.set(
+            cacheKey,
+            buildLastPostMapForAo(aoId, aoName)
+        );
     }
 
-    return cachedLastPostMapByAo.get(aoName);
+    return cachedLastPostMapByAoKey.get(cacheKey);
 }
 
 const sessionId = state.editingSessionId || state.selectedSessionId;
@@ -130,7 +135,10 @@ if (isEditing) {
 
     if (!existingSession) {
         console.log("No existing session found for id:", sessionId);
-        draftSession = createSession(getTodayDate(), "");
+        draftSession = createSession(getTodayDate(), {
+            aoId: null,
+            aoName: "",
+        });
     } else {
         draftSession = {
             ...existingSession,
@@ -150,7 +158,10 @@ if (isEditing) {
             visitors: [...(state.draftSession.visitors || [])],
         };
     } else {
-    draftSession = createSession(getTodayDate(), "");
+        draftSession = createSession(getTodayDate(), {
+            aoId: null,
+            aoName: "",
+        });
 }
 
 draftSession.qIds = [...(draftSession.qIds || (draftSession.qId ? [draftSession.qId] : []))];
@@ -292,9 +303,8 @@ function createSelectedPillStrip(qMembers, selectedMembers) {
 
 const aoOptions = (state.aos || [])
     .filter(ao => ao.isActive)
-    .map(ao => ao.name)
-    .filter(ao => ao && ao !== "DR")
-    .sort((a, b) => a.localeCompare(b));
+    .filter(ao => ao.name && ao.name !== "DR")
+    .sort((a, b) => a.name.localeCompare(b.name));
 
 const aoLabel = document.createElement("div");
 aoLabel.textContent = "AO";
@@ -304,19 +314,36 @@ const aoSelect = document.createElement("select");
 
 aoOptions.forEach(ao => {
     const option = document.createElement("option");
-    option.value = ao;
-    option.textContent = ao;
+    option.value = ao.id;
+    option.textContent = ao.name;
     aoSelect.appendChild(option);
 });
 
-if (!draftSession.aoName && aoOptions.length > 0) {
-    draftSession.aoName = aoOptions[0];
+if (!draftSession.aoId && !draftSession.aoName && aoOptions.length > 0) {
+    draftSession.aoId = aoOptions[0].id;
+    draftSession.aoName = aoOptions[0].name;
 }
 
-aoSelect.value = draftSession.aoName || "";
+if (!draftSession.aoId && draftSession.aoName) {
+    const matchingAo = state.aos.find(
+        ao => ao.name === draftSession.aoName
+    );
+
+    if (matchingAo) {
+        draftSession.aoId = matchingAo.id;
+    }
+}
+
+aoSelect.value = draftSession.aoId || "";
 
 aoSelect.addEventListener("change", (event) => {
-    draftSession.aoName = event.target.value;
+    const selectedAo = state.aos.find(ao => ao.id === event.target.value);
+
+    draftSession.aoId = selectedAo?.id || null;
+    draftSession.aoName = selectedAo?.name || "";
+
+    cachedLastPostMapByAoKey.clear();
+
     renderMemberList();
 });
 
@@ -351,19 +378,27 @@ function isRecentDate(dateString, days = 45) {
     return postDate >= cutoff;
 }
 
-function getLastPostAtAo(memberId, aoName) {
-    const matchingSessions = state.sessions.filter(s => 
-        s.aoName === aoName &&
-        (
-            s.attendeeIds.includes(memberId) ||
-            s.fngs?.some(fng => fng.memberId === memberId)
-        )
-    );
+function getLastPostAtAo(memberId, aoId, aoName) {
+    const matchingSessions = state.sessions.filter(session => {
+        const matchesAo = session.aoId
+            ? session.aoId === aoId
+            : session.aoName === aoName;
+
+        return (
+            matchesAo &&
+            (
+                session.attendeeIds.includes(memberId) ||
+                session.fngs?.some(fng => fng.memberId === memberId)
+            )
+        );
+    });
 
     if (matchingSessions.length === 0) return null;
 
-    const dates = matchingSessions.map(s => s.date).sort();
-    return dates[dates.length - 1];
+    return matchingSessions
+        .map(session => session.date)
+        .sort()
+        .at(-1);
 }
 
 function normalizeId(id) {
@@ -643,11 +678,15 @@ function getSortedSelectableMembers() {
         });
 }
 
-function buildLastPostMapForAo(aoName) {
+function buildLastPostMapForAo(aoId, aoName) {
     const lastPostMap = new Map();
 
     state.sessions.forEach(session => {
-        if (session.aoName !== aoName) return;
+        const matchesAo = session.aoId
+            ? session.aoId === aoId
+            : session.aoName === aoName;
+
+        if (!matchesAo) return;
 
         session.attendeeIds.forEach(memberId => {
             const existingDate = lastPostMap.get(memberId);
@@ -658,6 +697,7 @@ function buildLastPostMapForAo(aoName) {
 
         session.fngs?.forEach(fng => {
             if (!fng.memberId) return;
+
             const existingDate = lastPostMap.get(fng.memberId);
             if (!existingDate || session.date > existingDate) {
                 lastPostMap.set(fng.memberId, session.date);
@@ -672,7 +712,10 @@ function renderMemberList() {
     console.time("renderMemberList");
     memberList.textContent = "";
 
-    const lastPostMap = getCachedLastPostMapForAo(draftSession.aoName);
+    const lastPostMap = getCachedLastPostMapForAo(
+        draftSession.aoId,
+        draftSession.aoName
+    );
     const selectableMembers = getCachedSelectableMembers();
 
     const searchTerm = state.sessionSearchTerm || "";
@@ -902,12 +945,15 @@ function normalizeSessionForSave(session) {
         ]),
     ].filter(Boolean);
 
-    const ao = state.aos.find(ao => ao.name === session.aoName);
+    const ao =
+        state.aos.find(a => a.id === session.aoId)
+        || state.aos.find(a => a.name === session.aoName);
 
     return {
         ...session,
         date: session.date || getTodayDate(),
-        aoName: session.aoName || "",
+        aoId: ao?.id || session.aoId || null,
+        aoName: ao?.name || session.aoName || "",
         attendeeIds,
         qIds,
         fngs: session.fngs || [],
@@ -919,7 +965,7 @@ function normalizeSessionForSave(session) {
 
 function validateSessionForSave(session) {
     if (!session.date) return "Please select a date.";
-    if (!session.aoName) return "Please select an AO.";
+    if (!session.aoId && !session.aoName) return "Please select an AO.";
     if ((session.qIds || []).length === 0) return "Please select at least one Q.";
 
     if (getTotalAttendanceCount(session) === 0) {
@@ -935,13 +981,21 @@ function findPotentialDuplicateSession(session) {
     return state.sessions.find(existingSession =>
         existingSession.id !== session.id &&
         existingSession.date === session.date &&
-        existingSession.aoName === session.aoName &&
+        (
+            existingSession.aoId === session.aoId ||
+            (
+                !existingSession.aoId &&
+                existingSession.aoName === session.aoName
+            )
+        ) &&
         (existingSession.startTime || "") === (session.startTime || "")
     ) || null;
 }
 
 async function attachWeatherSnapshot(session) {
-    const ao = state.aos.find(a => a.name === session.aoName);
+    const ao =
+        state.aos.find(a => a.id === session.aoId)
+        || state.aos.find(a => a.name === session.aoName);
 
     if (!ao?.id || !ao?.time || !session.date) {
         return session;

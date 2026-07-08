@@ -1,9 +1,10 @@
 import { state } from "./state.js";
 
-export function createSession(date, aoName) {
+export function createSession(date, { aoId = null, aoName = "" } = {}) {
     return {
         id: crypto.randomUUID(),
         date,
+        aoId,
         aoName,
         attendeeIds: [],
         qIds: [],

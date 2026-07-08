@@ -121,12 +121,17 @@ export function renderWorkoutPlanner() {
     } else {
         const plannerDate = state.pendingPlannerDate || getTodayDate();
         const plannerAoName = state.pendingPlannerAoName || "";
+        const plannerAoId = state.pendingPlannerAoId || null;
 
-        draftWorkout = createPlannedWorkout(plannerDate, plannerAoName);
+        draftWorkout = createPlannedWorkout(plannerDate, {
+            aoId: plannerAoId || null,
+            aoName: plannerAoName || "",
+        });
         draftWorkout.createdByUserId = state.currentUserId;
 
         state.pendingPlannerDate = null;
         state.pendingPlannerAoName = null;
+        state.pendingPlannerAoId = null;
 
         state.draftPlannedWorkout = { ...draftWorkout };
 
@@ -467,6 +472,7 @@ export function renderWorkoutPlanner() {
             lastModifiedAt: Date.now(),
             date: draftWorkout.date || getTodayDate(),
             aoName: draftWorkout.aoName || "",
+            aoId: draftWorkout.aoId || null,
         };
 
         const sourceThangs = normalizeThangSections(sourceWorkout);
@@ -523,7 +529,10 @@ export function renderWorkoutPlanner() {
     
     });
 
-    const introAo = state.aos.find(ao => ao.name === draftWorkout.aoName);
+    const introAo =
+        state.aos.find(ao => ao.id === draftWorkout.aoId)
+        || state.aos.find(ao => ao.name === draftWorkout.aoName);
+
     const introTemplateFn = REGION_INTRO_TEMPLATES[state.currentRegionId];
     const regionIntroTemplate =
     typeof introTemplateFn === "function"
@@ -551,17 +560,21 @@ export function renderWorkoutPlanner() {
     title.textContent = isEditing ? "Edit Workout" : "Plan Workout";
 
     function findMatchingQSlotForDraftWorkout() {
-        const ao = state.aos.find(a => a.name === draftWorkout.aoName);
-    
-        if (!ao) return null;
-    
         return state.qSlots.find(slot =>
             slot.date === draftWorkout.date &&
-            slot.aoId === ao.id
+            (
+                slot.aoId === draftWorkout.aoId ||
+                (
+                    !draftWorkout.aoId &&
+                    state.aos.find(a => a.id === slot.aoId)?.name === draftWorkout.aoName
+                )
+            )
         );
     }
     
-    const plannerAo = state.aos.find(a => a.name === draftWorkout.aoName);
+    const plannerAo = state.aos.find(a => a.id === draftWorkout.aoId)
+        || state.aos.find(a => a.name === draftWorkout.aoName);
+
     const plannerQSlot = findMatchingQSlotForDraftWorkout();
     const plannerEmphasisBadge = plannerQSlot
         ? createWorkoutEmphasisBadge(plannerQSlot, plannerAo)
@@ -664,22 +677,31 @@ export function renderWorkoutPlanner() {
     
     aoOptions.forEach(ao => {
         const option = document.createElement("option");
-        option.value = ao;
+
+        const aoRecord = state.aos.find(a => a.name === ao);
+
+        option.value = aoRecord?.id || "";
         option.textContent = ao;
+
         aoSelect.appendChild(option);
     });
     
     if (draftWorkout.aoName && !aoOptions.includes(draftWorkout.aoName)) {
         const option = document.createElement("option");
-        option.value = draftWorkout.aoName;
+        option.value = draftWorkout.aoId || "";
         option.textContent = draftWorkout.aoName;
         aoSelect.appendChild(option);
     }
     
-    aoSelect.value = draftWorkout.aoName || "";
+    aoSelect.value = draftWorkout.aoId || "";
     
     aoSelect.addEventListener("change", (event) => {
-        draftWorkout.aoName = event.target.value;
+        const selectedAo = state.aos.find(
+            ao => ao.id === event.target.value
+        );
+        
+        draftWorkout.aoId = selectedAo?.id || null;
+        draftWorkout.aoName = selectedAo?.name || "";
     
         persistDraftNow();
         renderApp();
@@ -1063,7 +1085,12 @@ export function renderWorkoutPlanner() {
         draftWorkout.createdByUserId ||= state.currentUserId;
         draftWorkout.regionId ||= state.currentRegionId;
         draftWorkout.date ||= getTodayDate();
-        draftWorkout.aoName ||= "";
+
+        const selectedAo = state.aos.find(ao => ao.id === draftWorkout.aoId);
+
+        draftWorkout.aoId = selectedAo?.id || null;
+        draftWorkout.aoName = selectedAo?.name || "";
+
         draftWorkout.isShared = Boolean(draftWorkout.isShared);
         draftWorkout.isFinalized = Boolean(finalized);
 
@@ -1083,6 +1110,11 @@ export function renderWorkoutPlanner() {
         console.log("draftWorkout before save:", draftWorkout);
     
         try {
+            if (!draftWorkout.aoId) {
+                alert("Please select an AO.");
+                return;
+            }
+
             prepareWorkoutForSave({ finalized });
     
             if (isEditing) {

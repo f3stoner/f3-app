@@ -699,10 +699,16 @@ export function renderQSignupView() {
     }
 
     function findMatchingPlannedWorkout(slot, ao) {
-        return state.plannedWorkouts.find(workout => 
+        return state.plannedWorkouts.find(workout =>
             workout.date === slot.date &&
             workout.createdByUserId === state.currentUserId &&
-            workout.aoName === ao?.name
+            (
+                workout.aoId === slot.aoId ||
+                (
+                    !workout.aoId &&
+                    workout.aoName === ao?.name
+                )
+            )
         );
     }
 
@@ -880,6 +886,7 @@ export function renderQSignupView() {
                         state.draftPlannedWorkout = {
                             id: crypto.randomUUID(),
                             date: slot.date,
+                            aoId: ao?.id || slot.aoId || null,
                             aoName: ao?.name || "",
                             title: "",
                             introduction: "",

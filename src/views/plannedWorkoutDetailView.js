@@ -1119,7 +1119,10 @@ export function renderPlannedWorkoutDetail() {
             state.executionContext?.executionDate ||
             getTodayDate();
 
-        const session = createSession(sessionDate, workout.aoName);
+        const session = createSession(sessionDate, {
+            aoId: workout.aoId || null,
+            aoName: workout.aoName || "",
+        });
 
         const currentMemberId = state.currentUserMemberId || null;
 
@@ -1170,7 +1173,13 @@ export function renderPlannedWorkoutDetail() {
 
             return (
                 slot.date === workout.date &&
-                ao?.name === workout.aoName &&
+                (
+                    slot.aoId === workout.aoId ||
+                    (
+                        !workout.aoId &&
+                        ao?.name === workout.aoName
+                    )
+                ) &&
                 slot.qUserId === state.currentUserMemberId
             );
         });
@@ -1202,6 +1211,7 @@ export function renderPlannedWorkoutDetail() {
             ...workout,
             id: crypto.randomUUID(),
             date: nextQSlot?.date || getTodayDate(),
+            aoId: nextAo?.id || workout.aoId || null,
             aoName: nextAo?.name || workout.aoName || "",
             createdAt: Date.now(),
             lastModifiedAt: null,

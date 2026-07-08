@@ -17,6 +17,7 @@ export async function loadAllSessionsPaginated(regionId) {
                 id,
                 region_id,
                 date,
+                ao_id,
                 ao_name,
                 attendee_ids,
                 q_ids,
@@ -56,6 +57,7 @@ export async function loadRecentSessions(regionId, days = 180) {
             id,
             region_id,
             date,
+            ao_id,
             ao_name,
             attendee_ids,
             q_ids,
@@ -92,6 +94,7 @@ export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
             id,
             region_id,
             date,
+            ao_id,
             ao_name,
             attendee_ids,
             q_ids,
@@ -475,6 +478,7 @@ export function mapSessionFromDb(row) {
     return {
         id: row.id,
         date: row.date,
+        aoId: row.ao_id,
         aoName: row.ao_name,
         attendeeIds: row.attendee_ids || [],
         qIds: row.q_ids || (row.q_id ? [row.q_id] : []),
@@ -499,6 +503,7 @@ function mapPlannedWorkoutFromDb(row) {
     return {
         id: row.id,
         date: row.date,
+        aoId: row.ao_id,
         aoName: row.ao_name,
         title: row.title || "",
         introduction: row.introduction || "",
@@ -661,6 +666,7 @@ export async function insertSession(regionId, session) {
                 id: session.id,
                 region_id: regionId,
                 date: session.date,
+                ao_id: session.aoId || null,
                 ao_name: session.aoName,
                 q_ids: session.qIds || [],
                 q_id: session.qIds?.[0] || null,
@@ -717,6 +723,7 @@ export async function updateSessionInCloud(regionId, session) {
         .update({
             region_id: regionId,
             date: session.date,
+            ao_id: session.aoId || null,
             ao_name: session.aoName,
             q_ids: session.qIds || [],
             q_id: session.qIds?.[0] || null,
@@ -761,6 +768,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 id: workout.id,
                 region_id: regionId,
                 date: workout.date,
+                ao_id: workout.aoId || null,
                 ao_name: workout.aoName,
                 title: workout.title || "",
                 introduction: workout.introduction || "",
@@ -811,6 +819,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
         .update({
             region_id: regionId,
             date: workout.date,
+            ao_id: workout.aoId || null,
             ao_name: workout.aoName,
             title: workout.title || "",
             introduction: workout.introduction || "",
@@ -865,6 +874,7 @@ export async function insertSessionsBatch(regionId, sessions) {
             id: session.id,
             region_id: regionId,
             date: session.date,
+            ao_id: session.aoId || null,
             ao_name: session.aoName,
             q_ids: cleanQIds,
             q_id: cleanQIds[0] || null,
@@ -1601,6 +1611,7 @@ export async function loadRecentMemberActivity(regionId, memberId, limit = 2) {
             id,
             region_id,
             date,
+            ao_id,
             ao_name,
             attendee_ids,
             q_ids,
@@ -1931,7 +1942,7 @@ export async function searchOpenSessionsForBackblastReview({
 }) {
     let query = supabase
         .from("sessions")
-        .select("id, date, ao_name, start_time, q_ids, attendee_ids, fngs, notes, backblast_text, attendance_review_status, attendance_review_notes")
+        .select("id, date, ao_id, ao_name, start_time, q_ids, attendee_ids, fngs, notes, backblast_text, attendance_review_status, attendance_review_notes")
         .eq("region_id", regionId)
         .order("date", { ascending: true })
         .order("start_time", { ascending: true })
@@ -1959,6 +1970,7 @@ export async function insertSessionFromBackblastReview(regionId, session) {
             region_id: regionId,
             id: session.id,
             date: session.date,
+            ao_id: session.aoId || null,
             ao_name: session.aoName,
             q_ids: session.qIds || [],
             attendee_ids: session.attendeeIds || [],
@@ -1988,6 +2000,7 @@ export async function loadAttendanceReviewSessions(regionId) {
             id,
             region_id,
             date,
+            ao_id,
             ao_name,
             attendee_ids,
             q_ids,
@@ -2235,6 +2248,7 @@ export async function loadSessionsWithBackblastsForThangExtraction(regionId) {
                 id,
                 region_id,
                 date,
+                ao_id,
                 ao_name,
                 q_ids,
                 q_id,
@@ -2273,6 +2287,7 @@ export async function loadHistoricalBackblastsForThangExtraction(regionId) {
                     id,
                     region_id,
                     date,
+                    ao_id,
                     ao_name,
                     q_ids,
                     q_id,

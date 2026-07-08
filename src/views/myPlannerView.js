@@ -52,11 +52,7 @@ export function renderMyPlanner() {
         .sort((a, b) => a.date.localeCompare(b.date));
 
     const upcomingQKeys = new Set(
-        myUpcomingQSlots.map(slot => {
-            const ao = (state.aos || []).find(ao => ao.id === slot.aoId);
-            const aoName = ao?.name || "AO";
-            return `${slot.date}__${aoName}`;
-        })
+        myUpcomingQSlots.map(slot => `${slot.date}__${slot.aoId || ""}`)
     );
 
     if (myUpcomingQSlots.length === 0) {
@@ -72,7 +68,13 @@ export function renderMyPlanner() {
             const matchingWorkout = (state.plannedWorkouts || []).find(workout =>
                 workout.createdByUserId === state.currentUserId &&
                 workout.date === slot.date &&
-                workout.aoName === aoName
+                (
+                    workout.aoId === slot.aoId ||
+                    (
+                        !workout.aoId &&
+                        workout.aoName === aoName
+                    )
+                )
             );
 
             const card = document.createElement("div");
@@ -110,6 +112,7 @@ export function renderMyPlanner() {
                 state.editingPlannedWorkoutId = null;
                 state.draftPlannedWorkout = null;
                 state.pendingPlannerDate = slot.date;
+                state.pendingPlannerAoId = slot.aoId || null;
                 state.pendingPlannerAoName = aoName;
                 navigateTo("workoutPlanner");
             });
@@ -128,8 +131,21 @@ export function renderMyPlanner() {
     const myWorkouts = state.plannedWorkouts.filter(workout => {
         if (workout.createdByUserId !== state.currentUserId) return false;
 
-        const workoutKey = `${workout.date}__${workout.aoName}`;
-        return !upcomingQKeys.has(workoutKey);
+        const workoutKey = `${workout.date}__${workout.aoId || ""}`;
+
+        if (workout.aoId) {
+            return !upcomingQKeys.has(workoutKey);
+        }
+
+        const legacyKey = `${workout.date}__${workout.aoName}`;
+        const legacyUpcomingKeys = new Set(
+            myUpcomingQSlots.map(slot => {
+                const ao = (state.aos || []).find(ao => ao.id === slot.aoId);
+                return `${slot.date}__${ao?.name || "AO"}`;
+            })
+        );
+
+        return !legacyUpcomingKeys.has(legacyKey);
     });
 
     const sortedWorkouts = [...myWorkouts].sort((a, b) => {

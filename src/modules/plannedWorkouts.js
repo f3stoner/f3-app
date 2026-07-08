@@ -1,8 +1,8 @@
-
-export function createPlannedWorkout(date, aoName) {
+export function createPlannedWorkout(date, { aoId = null, aoName = "" } = {}) {
     return {
         id: crypto.randomUUID(),
         date,
+        aoId,
         aoName,
         introduction: "",
         title: "",
@@ -10,9 +10,9 @@ export function createPlannedWorkout(date, aoName) {
         thangs: "",
         thangSections: [
             {
-            id: crypto.randomUUID(),
-            title: "Thang 1",
-            content: "",
+                id: crypto.randomUUID(),
+                title: "Thang 1",
+                content: "",
             },
         ],
         finisher: "",

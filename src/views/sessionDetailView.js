@@ -459,7 +459,10 @@ export function renderSessionDetail() {
     copyToPlanButton.textContent = "Copy to Plan";
 
     copyToPlanButton.addEventListener("click", () => {
-        const newWorkout = createPlannedWorkout(session.date, session.aoName);
+        const newWorkout = createPlannedWorkout(session.date, {
+            aoId: session.aoId || null,
+            aoName: session.aoName || "",
+        });
 
         if (session.workout) {
             newWorkout.title = session.workout.title || "";
