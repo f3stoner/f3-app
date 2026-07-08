@@ -27,6 +27,7 @@ import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.j
 import { releaseWakeLock } from "../utils/wakelock.js";
 import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { getDashboardLeadershipBadge } from "../utils/leadership.js";
+import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -202,18 +203,11 @@ export function renderDashboard() {
     }
 
     function findMatchingPlannedWorkoutForSlot(slot) {
-        const ao = state.aos.find(a => a.id === slot.aoId);
-
-        return state.plannedWorkouts.find(workout =>
-            workout.date === slot.date &&
-            workout.createdByUserId === state.currentUserId &&
-            (
-                workout.aoId === slot.aoId ||
-                (
-                    !workout.aoId &&
-                    workout.aoName === ao?.name
-                )
-            )
+        return findWorkoutForQSlot(
+            slot,
+            state.plannedWorkouts,
+            state.currentUserId,
+            state.aos
         );
     }
 
@@ -725,6 +719,9 @@ export function renderDashboard() {
                     notes: "",
                     workout: matchingWorkout || null,
                     sourcePlannedWorkoutId: matchingWorkout?.id || null,
+                    sourceQSlotId:
+                        matchingWorkout?.sourceQSlotId ||
+                        nextQSlot.id,
                     createdByUserId: state.currentUserId,
                     createdAt: Date.now(),
                     backblastText: "",
@@ -771,6 +768,7 @@ export function renderDashboard() {
                     notes: "",
                     sourceWorkoutId: null,
                     sourceSessionId: null,
+                    sourceQSlotId: nextQSlot.id,
                     createdAt: Date.now(),
                     lastModifiedAt: null,
                     createdByUserId: state.currentUserId,
@@ -899,6 +897,7 @@ export function renderDashboard() {
                     notes: "",
                     sourceWorkoutId: null,
                     sourceSessionId: null,
+                    sourceQSlotId: nextQSlot.id,
                     createdAt: Date.now(),
                     lastModifiedAt: null,
                     createdByUserId: state.currentUserId,
@@ -925,6 +924,9 @@ export function renderDashboard() {
                         notes: "",
                         workout: matchingWorkout || null,
                         sourcePlannedWorkoutId: matchingWorkout?.id || null,
+                        sourceQSlotId:
+                            matchingWorkout?.sourceQSlotId ||
+                            nextQSlot.id,
                         createdByUserId: state.currentUserId,
                         createdAt: Date.now(),
                         backblastText: "",
@@ -1236,6 +1238,7 @@ export function renderDashboard() {
                         notes: "",
                         sourceWorkoutId: null,
                         sourceSessionId: null,
+                        sourceQSlotId: slot.id,
                         createdAt: Date.now(),
                         lastModifiedAt: null,
                         createdByUserId: state.currentUserId,

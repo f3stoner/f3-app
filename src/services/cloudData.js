@@ -24,6 +24,7 @@ export async function loadAllSessionsPaginated(regionId) {
                 q_id,
                 fngs,
                 source_planned_workout_id,
+                source_q_slot_id,
                 created_at,
                 created_by_user_id,
                 unresolved_pax
@@ -66,6 +67,7 @@ export async function loadRecentSessions(regionId, days = 180) {
             notes,
             workout,
             source_planned_workout_id,
+            source_q_slot_id,
             created_at,
             created_by_user_id,
             backblast_text,
@@ -103,6 +105,7 @@ export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
             notes,
             workout,
             source_planned_workout_id,
+            source_q_slot_id,
             created_at,
             created_by_user_id,
             backblast_text,
@@ -486,6 +489,7 @@ export function mapSessionFromDb(row) {
         notes: row.notes || "",
         workout: row.workout || null,
         sourcePlannedWorkoutId: row.source_planned_workout_id,
+        sourceQSlotId: row.source_q_slot_id || null,
         createdAt: row.created_at,
         createdByUserId: row.created_by_user_id || null,
         backblastText: row.backblast_text || "",
@@ -513,6 +517,7 @@ function mapPlannedWorkoutFromDb(row) {
         notes: row.notes || "",
         sourceWorkoutId: null,
         sourceSessionId: row.source_session_id,
+        sourceQSlotId: row.source_q_slot_id || null,
         createdAt: row.created_at,
         lastModifiedAt: row.last_modified_at,
         createdByUserId: row.created_by_user_id || null,
@@ -675,6 +680,7 @@ export async function insertSession(regionId, session) {
                 notes: session.notes || "",
                 workout: session.workout || null,
                 source_planned_workout_id: session.sourcePlannedWorkoutId || null,
+                source_q_slot_id: session.sourceQSlotId || null,
                 created_at: session.createdAt,
                 created_by_user_id: session.createdByUserId,
                 backblast_text: session.backblastText || "",
@@ -701,6 +707,7 @@ export async function insertSession(regionId, session) {
             fngCount: savedSession.fngs?.length || 0,
             qCount: savedSession.qIds?.length || 0,
             sourcePlannedWorkoutId: savedSession.sourcePlannedWorkoutId || null,
+            sourceQSlotId: savedSession.sourceQSlotId || null,
             hasWorkout: Boolean(savedSession.workout),
         },
     });
@@ -732,6 +739,7 @@ export async function updateSessionInCloud(regionId, session) {
             notes: session.notes || "",
             workout: session.workout || null,
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
+            source_q_slot_id: session.sourceQSlotId || null,
             created_at: session.createdAt,
             backblast_text: session.backblastText || "",
             backblast_status: session.backblastStatus || null,
@@ -777,6 +785,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 finisher: workout.finisher || "",
                 notes: workout.notes || "",
                 source_session_id: workout.sourceSessionId || null,
+                source_q_slot_id: workout.sourceQSlotId || null,
                 created_at: workout.createdAt,
                 last_modified_at: workout.lastModifiedAt || null,
                 created_by_user_id: workout.createdByUserId || null,
@@ -828,6 +837,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             finisher: workout.finisher || "",
             notes: workout.notes || "",
             source_session_id: workout.sourceSessionId || null,
+            source_q_slot_id: workout.sourceQSlotId || null,
             created_at: workout.createdAt,
             last_modified_at: workout.lastModifiedAt || null,
             created_by_user_id: workout.createdByUserId || null,
@@ -883,6 +893,7 @@ export async function insertSessionsBatch(regionId, sessions) {
             notes: session.notes || "",
             workout: session.workout || null,
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
+            source_q_slot_id: session.sourceQSlotId || null,
             created_at: session.createdAt,
             unresolved_pax: session.unresolvedPax || [],
         };
@@ -1617,6 +1628,8 @@ export async function loadRecentMemberActivity(regionId, memberId, limit = 2) {
             q_ids,
             q_id,
             fngs,
+            source_planned_workout_id,
+            source_q_slot_id,
             created_at
         `)
         .eq("region_id", regionId)
@@ -2253,6 +2266,8 @@ export async function loadSessionsWithBackblastsForThangExtraction(regionId) {
                 q_ids,
                 q_id,
                 workout,
+                source_planned_workout_id,
+                source_q_slot_id,
                 backblast_text
             `)
             .eq("region_id", regionId)
@@ -2350,7 +2365,9 @@ export async function loadQReadiness(regionId, startDate, endDate) {
             id,
             region_id,
             date,
+            ao_id,
             ao_name,
+            source_q_slot_id,
             is_finalized,
             preblast_text,
             created_by_user_id,

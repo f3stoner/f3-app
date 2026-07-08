@@ -19,6 +19,7 @@ import { registerViewCleanup } from "../utils/viewCleanup.js";
 import { hasPermission, PERMISSIONS, managesAo } from "../utils/permissions.js";
 import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
+import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 
 
 let qSlotRealtimeChannel = null;
@@ -698,20 +699,6 @@ export function renderQSignupView() {
         }
     }
 
-    function findMatchingPlannedWorkout(slot, ao) {
-        return state.plannedWorkouts.find(workout =>
-            workout.date === slot.date &&
-            workout.createdByUserId === state.currentUserId &&
-            (
-                workout.aoId === slot.aoId ||
-                (
-                    !workout.aoId &&
-                    workout.aoName === ao?.name
-                )
-            )
-        );
-    }
-
     const today = getTodayDate();
 
     function getMonthKeyFromDateString(dateString) {
@@ -809,7 +796,12 @@ export function renderQSignupView() {
             const isMine = slot.qUserId === state.currentUserMemberId;
             const canEditSlot = managesThisAo || isMine;
             const qMember = state.members.find(m => m.id === slot.qUserId);
-            const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
+            const matchingWorkout = findWorkoutForQSlot(
+                slot,
+                state.plannedWorkouts,
+                state.currentUserId,
+                state.aos
+            );
             const hasPlannedWorkout = Boolean(matchingWorkout);
 
             const topLine = document.createElement("div");
@@ -903,6 +895,7 @@ export function renderQSignupView() {
                             notes: "",
                             sourceWorkoutId: null,
                             sourceSessionId: null,
+                            sourceQSlotId: slot.id,
                             createdAt: Date.now(),
                             lastModifiedAt: null,
                             createdByUserId: state.currentUserId,
