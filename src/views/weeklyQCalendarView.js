@@ -14,6 +14,7 @@ import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -158,20 +159,6 @@ async function loadWeeklyWeather(date, ao, slot = null) {
     }
 }
 
-function findMatchingPlannedWorkout(slot, ao) {
-    return state.plannedWorkouts.find(workout =>
-        workout.date === slot.date &&
-        workout.createdByUserId === state.currentUserId &&
-        (
-            workout.aoId === slot.aoId ||
-            (
-                !workout.aoId &&
-                workout.aoName === ao?.name
-            )
-        )
-    );
-}
-
 export function renderWeeklyQCalendarView() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -284,7 +271,12 @@ export function renderWeeklyQCalendarView() {
                 const ao = getAoForSlot(slot);
                 const emphasis = getWorkoutEmphasisForSlot(slot, ao);
                 const isMine = slot.qUserId === state.currentUserMemberId;
-                const matchingWorkout = findMatchingPlannedWorkout(slot, ao);
+                const matchingWorkout = findWorkoutForQSlot(
+                    slot,
+                    state.plannedWorkouts,
+                    state.currentUserId,
+                    state.aos
+                );
 
                 const weatherCacheKey = getWeatherCacheKey(slot.date, ao, slot);
 
@@ -445,6 +437,7 @@ export function renderWeeklyQCalendarView() {
                             notes: "",
                             sourceWorkoutId: null,
                             sourceSessionId: null,
+                            sourceQSlotId: slot.id,
                             createdAt: Date.now(),
                             lastModifiedAt: null,
                             createdByUserId: state.currentUserId,

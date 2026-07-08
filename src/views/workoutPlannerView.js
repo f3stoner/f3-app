@@ -128,10 +128,12 @@ export function renderWorkoutPlanner() {
             aoName: plannerAoName || "",
         });
         draftWorkout.createdByUserId = state.currentUserId;
+        draftWorkout.sourceQSlotId = state.pendingPlannerQSlotId || null;
 
         state.pendingPlannerDate = null;
         state.pendingPlannerAoName = null;
         state.pendingPlannerAoId = null;
+        state.pendingPlannerQSlotId = null;
 
         state.draftPlannedWorkout = { ...draftWorkout };
 
@@ -473,6 +475,7 @@ export function renderWorkoutPlanner() {
             date: draftWorkout.date || getTodayDate(),
             aoName: draftWorkout.aoName || "",
             aoId: draftWorkout.aoId || null,
+            sourceQSlotId: null,
         };
 
         const sourceThangs = normalizeThangSections(sourceWorkout);
@@ -509,6 +512,7 @@ export function renderWorkoutPlanner() {
         state.selectedWorkoutPreviewId = null;
         state.workoutBrowseMode = "list";
         state.editingPlannedWorkoutId = null;
+        
 
         showToast("Copied to Planner", "success");
     }
@@ -560,6 +564,14 @@ export function renderWorkoutPlanner() {
     title.textContent = isEditing ? "Edit Workout" : "Plan Workout";
 
     function findMatchingQSlotForDraftWorkout() {
+        if (draftWorkout.sourceQSlotId) {
+            const slot = state.qSlots.find(
+                slot => slot.id === draftWorkout.sourceQSlotId
+            );
+    
+            if (slot) return slot;
+        }
+    
         return state.qSlots.find(slot =>
             slot.date === draftWorkout.date &&
             (

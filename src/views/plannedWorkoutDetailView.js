@@ -1140,6 +1140,7 @@ export function renderPlannedWorkoutDetail() {
             announcementText: workout.announcementText || "",
         };
         session.sourcePlannedWorkoutId = workout.id;
+        session.sourceQSlotId = workout.sourceQSlotId || null;
 
         state.draftSession = session;
         state.selectedSessionId = null;
@@ -1168,9 +1169,17 @@ export function renderPlannedWorkoutDetail() {
     }       
 
     function findMatchingQSlotForWorkout(workout) {
+        if (workout.sourceQSlotId) {
+            const slot = state.qSlots.find(
+                slot => slot.id === workout.sourceQSlotId
+            );
+    
+            if (slot) return slot;
+        }
+    
         return state.qSlots.find(slot => {
             const ao = state.aos.find(a => a.id === slot.aoId);
-
+    
             return (
                 slot.date === workout.date &&
                 (
@@ -1216,6 +1225,7 @@ export function renderPlannedWorkoutDetail() {
             createdAt: Date.now(),
             lastModifiedAt: null,
             sourceWorkoutId: workout.id,
+            sourceQSlotId: nextQSlot?.id || null,
             createdByUserId: state.currentUserId,
             isShared: false,
             thangSections: copiedThangSections,

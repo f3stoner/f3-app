@@ -4,6 +4,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 
 export function renderMyPlanner() {
     const app = document.getElementById("app");
@@ -65,16 +66,11 @@ export function renderMyPlanner() {
             const ao = (state.aos || []).find(ao => ao.id === slot.aoId);
             const aoName = ao?.name || "AO";
 
-            const matchingWorkout = (state.plannedWorkouts || []).find(workout =>
-                workout.createdByUserId === state.currentUserId &&
-                workout.date === slot.date &&
-                (
-                    workout.aoId === slot.aoId ||
-                    (
-                        !workout.aoId &&
-                        workout.aoName === aoName
-                    )
-                )
+            const matchingWorkout = findWorkoutForQSlot(
+                slot,
+                state.plannedWorkouts || [],
+                state.currentUserId,
+                state.aos || []
             );
 
             const card = document.createElement("div");
@@ -114,6 +110,7 @@ export function renderMyPlanner() {
                 state.pendingPlannerDate = slot.date;
                 state.pendingPlannerAoId = slot.aoId || null;
                 state.pendingPlannerAoName = aoName;
+                state.pendingPlannerQSlotId = slot.id;
                 navigateTo("workoutPlanner");
             });
 

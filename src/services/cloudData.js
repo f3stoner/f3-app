@@ -2405,9 +2405,14 @@ export async function loadQReadiness(regionId, startDate, endDate) {
         );
     }
 
-    const workoutMap = new Map();
+    const workoutBySlotId = new Map();
+    const legacyWorkoutMap = new Map();
 
     (workouts || []).forEach((workout) => {
+        if (workout.source_q_slot_id && !workoutBySlotId.has(workout.source_q_slot_id)) {
+            workoutBySlotId.set(workout.source_q_slot_id, workout);
+        }
+
         const profile = profileByUserId.get(workout.created_by_user_id);
         const ownerMemberId = profile?.member_id || profile?.memberId || null;
 
@@ -2416,9 +2421,8 @@ export async function loadQReadiness(regionId, startDate, endDate) {
         const normalizedAoName = normalizeReadinessAoName(workout.ao_name);
         const key = `${workout.date}|${normalizedAoName}|${ownerMemberId}`;
 
-        // Workouts are ordered newest first, so keep the first one for deterministic behavior.
-        if (!workoutMap.has(key)) {
-            workoutMap.set(key, workout);
+        if (!legacyWorkoutMap.has(key)) {
+            legacyWorkoutMap.set(key, workout);
         }
     });
 
@@ -2426,8 +2430,9 @@ export async function loadQReadiness(regionId, startDate, endDate) {
         const aoName = slot.aos?.name || "Unknown AO";
         const normalizedAoName = normalizeReadinessAoName(aoName);
         const workoutKey = `${slot.date}|${normalizedAoName}|${slot.q_user_id}`;
-        const workout = workoutMap.get(workoutKey);
-        const member = slot.members;
+        const workout =
+            workoutBySlotId.get(slot.id) ||
+            legacyWorkoutMap.get(workoutKey);        const member = slot.members;
 
         return {
             slotId: slot.id,
