@@ -6,6 +6,7 @@ const LEADERSHIP_LABELS = {
     first_f: "1FQ",
     second_f: "2FQ",
     third_f: "3FQ",
+    ao_data_q: "AO Data Q",
 
     nantan: "Nantan",
     weasel_shaker: "Weasel Shaker",

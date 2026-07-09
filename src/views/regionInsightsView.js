@@ -6,6 +6,7 @@ import { createIcon } from "../utils/icons.js";
 import { ArrowUpRight } from "lucide";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 function getCurrentMonthRange() {
     const now = new Date();
@@ -269,6 +270,11 @@ export function renderRegionInsightsView() {
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS)) {
+        app.textContent = "You do not have permission to view region insights.";
+        return;
+    }
 
     const header = createAppHeader({
         title: "",

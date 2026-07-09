@@ -14,6 +14,8 @@ export const PERMISSIONS = {
     MANAGE_LIBRARY_WORKBENCH: "manage_library_workbench",
     MANAGE_ROLES: "manage_roles",
 
+    EDIT_AO_SESSIONS: "edit_ao_sessions",
+
     VIEW_TELEMETRY: "view_telemetry",
     VIEW_IMPORTS: "view_imports",
     RUN_IMPORTS: "run_imports",
@@ -29,7 +31,6 @@ export const ROLE_PERMISSIONS = {
 
     aoq: [
         PERMISSIONS.VIEW_AO_INSIGHTS,
-        PERMISSIONS.VIEW_Q_READINESS,
         PERMISSIONS.MANAGE_Q_SLOTS,
     ],
 
@@ -50,8 +51,8 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.VIEW_AO_INSIGHTS,
         PERMISSIONS.VIEW_REGION_INSIGHTS,
         PERMISSIONS.VIEW_TELEMETRY,
-        PERMISSIONS.VIEW_IMPORTS,
-        PERMISSIONS.RUN_IMPORTS,
+        //PERMISSIONS.VIEW_IMPORTS,
+        //PERMISSIONS.RUN_IMPORTS,
         PERMISSIONS.ACCESS_ADMIN_SETTINGS,
         PERMISSIONS.MANAGE_MEMBERS,
         PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
@@ -59,6 +60,12 @@ export const ROLE_PERMISSIONS = {
 
     superadmin: Object.values(PERMISSIONS),
 };
+
+const AO_LEADERSHIP_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
+const AO_INSIGHTS_POSITIONS = ["aoq", "ao_coq", "first_f", "ao_data_q"];
+const AO_Q_READINESS_POSITIONS = ["aoq", "ao_coq", "first_f"];
+const AO_SESSION_EDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
+const AO_MEMBER_MANAGEMENT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 
 export function hasPermission(permission) {
     const role = state.currentUserRole || "pax";
@@ -116,7 +123,7 @@ export function getScopedAoPermissionRows(positions = []) {
     });
 }
 
-export function getManagedAoIds(positions = ["aoq", "ao_coq"]) {
+export function getManagedAoIds(positions = AO_LEADERSHIP_POSITIONS) {
     return [
         ...new Set(
             getScopedAoPermissionRows(positions)
@@ -126,7 +133,7 @@ export function getManagedAoIds(positions = ["aoq", "ao_coq"]) {
     ];
 }
 
-export function managesAo(aoId, positions = ["aoq", "ao_coq"]) {
+export function managesAo(aoId, positions = AO_LEADERSHIP_POSITIONS) {
     if (isRegionalAdmin()) return true;
     if (!aoId) return false;
 
@@ -142,9 +149,36 @@ export function managesQSlot(slotOrAoId) {
 }
 
 export function canViewAoInsights(aoId) {
-    return managesAo(aoId, ["aoq", "ao_coq", "first_f"]);
+    return managesAo(aoId, AO_INSIGHTS_POSITIONS);
 }
 
 export function canViewQReadiness(aoId) {
-    return managesAo(aoId, ["aoq", "ao_coq", "first_f"]);
+    return managesAo(aoId, AO_Q_READINESS_POSITIONS);
+}
+
+export function canEditAoSession(aoId) {
+    return managesAo(aoId, AO_SESSION_EDIT_POSITIONS);
+}
+
+export function canViewAnyAoInsights() {
+    return hasPermission(PERMISSIONS.VIEW_AO_INSIGHTS)
+        || getManagedAoIds(AO_INSIGHTS_POSITIONS).length > 0;
+}
+
+export function canViewAnyQReadiness() {
+    return hasPermission(PERMISSIONS.VIEW_Q_READINESS)
+        || getManagedAoIds(AO_Q_READINESS_POSITIONS).length > 0;
+}
+
+export function canEditAnySessions() {
+    return hasPermission(PERMISSIONS.MANAGE_SESSIONS)
+        || getManagedAoIds(AO_SESSION_EDIT_POSITIONS).length > 0;
+}
+
+export function canUseFloatingLogButton() {
+    return getManagedAoIds(["ao_data_q"]).length > 0;
+}
+
+export function canManageAoMembers(aoId) {
+    return managesAo(aoId, AO_MEMBER_MANAGEMENT_POSITIONS);
 }

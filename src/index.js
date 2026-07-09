@@ -309,7 +309,7 @@ function hideBootSplash() {
 }
 
 function autoHealQSlotsForAdmin() {
-    if (!hasPermission(PERMISSIONS.MANAGE_Q_SLOTS)) return;
+    if (!isRegionalAdmin()) return;
     if (state.isGeneratingQSlots) return;
     if (state.autoHealedQSlotsRegionId === state.currentRegionId) return;
     if (!state.currentRegionId) return;

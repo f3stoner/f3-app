@@ -4,7 +4,7 @@ import { createMainMenu, cleanupMainMenu } from "../components/mainMenu.js";
 import { loadQReadiness } from "../services/cloudData.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { showToast } from "../utils/toast.js";
-import { hasPermission, PERMISSIONS, canViewQReadiness } from "../utils/permissions.js";
+import { canViewQReadiness, canViewAnyQReadiness } from "../utils/permissions.js";
 
 export async function renderQReadinessView() {
     cleanupMainMenu();
@@ -12,7 +12,7 @@ export async function renderQReadinessView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    if (!hasPermission(PERMISSIONS.VIEW_Q_READINESS)) {
+    if (!canViewAnyQReadiness()) {
         app.textContent = "You do not have permission to view Q readiness.";
         return;
     }

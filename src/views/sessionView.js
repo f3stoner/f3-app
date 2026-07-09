@@ -19,6 +19,7 @@ import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from 
 import { doesSearchMatch } from "../utils/search.js";
 import { getTotalAttendanceCount, memberAttendedSession } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
+import { hasPermission, PERMISSIONS, canEditAoSession } from "../utils/permissions.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -175,6 +176,27 @@ draftSession.qIds.forEach(qId => {
     }
 })
 
+const originalSession = isEditing
+    ? state.sessions.find(session => session.id === sessionId)
+    : null;
+
+const canEditExistingSession =
+    !isEditing ||
+    hasPermission(PERMISSIONS.MANAGE_SESSIONS) ||
+    canEditAoSession(originalSession?.aoId) ||
+    originalSession?.createdByUserId === state.currentUserId;
+
+if (!canEditExistingSession) {
+    app.textContent = "You do not have permission to edit this session.";
+    return;
+}
+
+const isScopedSessionEditor =
+    isEditing &&
+    !hasPermission(PERMISSIONS.MANAGE_SESSIONS) &&
+    canEditAoSession(originalSession?.aoId) &&
+    originalSession?.createdByUserId !== state.currentUserId;
+
 console.log("sessionView draftSession on open:", draftSession);
 
 const title = document.createElement("h1");
@@ -311,6 +333,10 @@ aoLabel.textContent = "AO";
 aoLabel.classList.add("detail-label");
 
 const aoSelect = document.createElement("select");
+
+if (isScopedSessionEditor) {
+    aoSelect.disabled = true;
+}
 
 aoOptions.forEach(ao => {
     const option = document.createElement("option");
@@ -1163,6 +1189,17 @@ try {
     const oldSession = isEditing
         ? state.sessions.find(session => session.id === sessionId) || null
         : null;
+
+    if (isEditing) {
+        const canSaveEdit =
+            hasPermission(PERMISSIONS.MANAGE_SESSIONS) ||
+            canEditAoSession(oldSession?.aoId) ||
+            oldSession?.createdByUserId === state.currentUserId;
+    
+            if (!canSaveEdit) {
+                throw new Error("Unauthorized session edit.");
+            }
+    }
 
     if (isEditing) {
         await updateSession(sessionId, draftSession);

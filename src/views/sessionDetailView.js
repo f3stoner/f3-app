@@ -18,7 +18,7 @@ import {
     invalidateMemberStatsCache,
     invalidateRecentMemberActivityCache,
 } from "../utils/memberStatsCache.js";
-import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, canEditAoSession, canManageAoMembers } from "../utils/permissions.js";
 import { getRegularPaxIds, getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 
@@ -55,6 +55,7 @@ export function renderSessionDetail() {
         session &&
         (
             canManageSessions ||
+            canEditAoSession(session.aoId) ||
             session.createdByUserId === state.currentUserId
         );
 
@@ -495,7 +496,7 @@ export function renderSessionDetail() {
     editButton.textContent = "Edit Session";
     editButton.addEventListener("click", () => {
         if (!canEditSession) {
-            alert("You can only edit sessions you created.");
+            alert("You do not have permission to edit this session.");
             return;
         }
 

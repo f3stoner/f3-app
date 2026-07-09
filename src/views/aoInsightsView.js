@@ -6,10 +6,11 @@ import { createAppHeader } from "../components/appHeader.js";
 import { loadAoInsightMonths, loadAoInsightSessions } from "../services/cloudData.js";
 import { goBack } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
-import { canViewAoInsights } from "../utils/permissions.js";
+import { canViewAoInsights, canViewAnyAoInsights } from "../utils/permissions.js";
 import { showToast } from "../utils/toast.js";
 import { buildAttendanceInsight } from "../utils/aoInsights/attendanceInsights.js";
 import { buildNewPaxPipelineInsight } from "../utils/aoInsights/newPaxPipelineInsights.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 const AO_INSIGHT_LOOKBACK_DAYS = 180;
 
@@ -772,11 +773,18 @@ export async function renderAoInsightsView() {
 
     cleanupMainMenu();
 
+    if (!canViewAnyAoInsights()) {
+        app.textContent = "You do not have permission to view AO insights.";
+        return;
+    }
+
     const header = createAppHeader({
         title: "AO Insights",
         showBack: true,
         showMenu: true,
-        fallbackView: "regionInsights",
+        fallbackView: hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS)
+            ? "regionInsights"
+            : "dashboard",
     })
 
     const selected = state.selectedAoInsights;
@@ -790,10 +798,14 @@ export async function renderAoInsightsView() {
         empty.textContent = "No AO selected.";
 
         const backButton = document.createElement("button");
-        backButton.textContent = "Back to Region Insights";
-        backButton.addEventListener("click", () => {
-            navigateTo("regionInsights");
-        });
+
+        if (hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS)) {
+            backButton.textContent = "Back to Region Insights";
+            backButton.addEventListener("click", () => navigateTo("regionInsights"));
+        } else {
+            backButton.textContent = "Back to Dashboard";
+            backButton.addEventListener("click", () => navigateTo("dashboard"));
+        }
 
         const nav = createGlobalNav();
 

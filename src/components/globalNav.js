@@ -1,6 +1,7 @@
 import { state } from "../modules/state.js";
 import { navigateTo } from "../utils/navigation.js";
 import { closeMainMenu } from "./mainMenu.js";
+import { canUseFloatingLogButton } from "../utils/permissions.js";
 
 const EDIT_ACTION_VIEWS = new Set([
     "workoutPlanner",
@@ -43,41 +44,43 @@ export function createGlobalNav () {
         nav.appendChild(button);
     });
 
-   /* const fabButton = document.createElement("button");
-    fabButton.classList.add("global-fab");
-    fabButton.textContent = "+ Log";
+    if (canUseFloatingLogButton()) {
+        const fabButton = document.createElement("button");
+        fabButton.classList.add("global-fab");
+        fabButton.textContent = "+ Log";
 
-    if (state.currentView === "session") {
-        fabButton.classList.add("active-fab");
-    }
+        if (state.currentView === "session") {
+            fabButton.classList.add("active-fab");
+        }
 
-    fabButton.addEventListener("click", () => {
-        closeMainMenu();
-        
-        state.editingSessionId = null;
-        state.selectedSessionId = null;
-        navigateTo("session");
-    });
-
-    nav.appendChild(fabButton);*/
-
-    function createEditActionBar() {
-        const nav = document.createElement("nav");
-        nav.classList.add("global-nav", "edit-action-bar");
-
-        const saveButton = document.createElement("button");
-        saveButton.type = "button";
-        saveButton.classList.add("primary-button");
-        saveButton.textContent = "Save";
-
-        saveButton.addEventListener("click", () => {
-            window.dispatchEvent(new CustomEvent("theq:save-current-edit"));
+        fabButton.addEventListener("click", () => {
+            closeMainMenu();
+            
+            state.editingSessionId = null;
+            state.selectedSessionId = null;
+            navigateTo("session");
         });
 
-        nav.append(saveButton);
-
-        return nav;
+        nav.appendChild(fabButton);
     }
+    
+    return nav;
+}
+
+function createEditActionBar() {
+    const nav = document.createElement("nav");
+    nav.classList.add("global-nav", "edit-action-bar");
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "button";
+    saveButton.classList.add("primary-button");
+    saveButton.textContent = "Save";
+
+    saveButton.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("theq:save-current-edit"));
+    });
+
+    nav.append(saveButton);
 
     return nav;
 }

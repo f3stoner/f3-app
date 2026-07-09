@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { navigateTo } from "../utils/navigation.js";
-import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
+import { PERMISSIONS, hasPermission, canViewAnyAoInsights, canViewAnyQReadiness, canViewAoInsights } from "../utils/permissions.js";
 
 function getMonthStart(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
@@ -23,14 +23,21 @@ function getDefaultAoInsightsSelection() {
 
     const favoriteAo = memberStats?.favoriteAo;
 
+    const favoriteAoRecord = state.aos.find(ao => ao.name === favoriteAo);
+    const safeFavoriteAo =
+        favoriteAoRecord && canViewAoInsights(favoriteAoRecord.id)
+            ? favoriteAo
+            : null;
+
     const fallbackAo = state.aos
         .filter(ao => ao.isActive !== false)
+        .filter(ao => canViewAoInsights(ao.id))
         .map(ao => ao.name)
         .filter(Boolean)
         .sort((a, b) => a.localeCompare(b))[0];
 
     return {
-        aoName: favoriteAo || fallbackAo,
+        aoName: safeFavoriteAo || fallbackAo,
         startDate: getMonthStart(today),
         endDate: getMonthEnd(today),
     };
@@ -102,9 +109,9 @@ export function createMainMenu() {
             label: "Leadership",
             items: [
                 { label: "Announcements", view: "announcementManagement", permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS },
-                { label: "AO Insights", view: "aoInsights", permission: PERMISSIONS.VIEW_AO_INSIGHTS },
+                { label: "AO Insights", view: "aoInsights", isVisible: canViewAnyAoInsights },
+                { label: "Q Readiness", view: "qReadiness", isVisible: canViewAnyQReadiness },
                 { label: "Backblast Review", view: "backblastReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
-                { label: "Q Readiness", view: "qReadiness", permission: PERMISSIONS.VIEW_Q_READINESS },
                 { label: "Manage Third F", view: "thirdFManagement", permission: PERMISSIONS.MANAGE_Q_SOURCE },
                 { label: "Region Insights", view: "regionInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
                 { label: "Thang Review", view: "thangReview", permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH },
@@ -154,7 +161,11 @@ export function createMainMenu() {
 
     menuGroups.forEach(group => {
         const visibleItems = group.items
-            .filter(item => !item.permission || hasPermission(item.permission))
+            .filter(item => {
+                if (item.isVisible) return item.isVisible();
+                if (item.permission) return hasPermission(item.permission);
+                return true;
+            })
             .sort((a, b) => a.label.localeCompare(b.label));
 
         if (visibleItems.length === 0) return;

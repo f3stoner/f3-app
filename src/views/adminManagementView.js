@@ -20,7 +20,7 @@ const ROLE_DESCRIPTIONS = {
     superadmin: "Full access, including role management.",
     dataq: "Data, imports, telemetry, member management, and library workbench.",
     slt: "Regional operations, AO/Q management, announcements, Q Source, and library workbench.",
-    aoq: "AO-level insights and Q slot management.",
+    aoq: "AO-level leadership, insights, Q slot management, and assigned AO responsibilities.",
     pax: "Standard user access.",
 };
 
@@ -30,6 +30,7 @@ const AO_LEADERSHIP_POSITIONS = [
     { value: "first_f", label: "1F Q" },
     { value: "second_f", label: "2F Q" },
     { value: "third_f", label: "3F Q" },
+    { value: "ao_data_q", label: "AO Data Q" },
 ];
 
 const REGION_LEADERSHIP_POSITIONS = [
@@ -49,7 +50,7 @@ function getAoName(aoId) {
 }
 
 function getAoPositionLabel(position) {
-    return AO_LEADERSHIP_POSITIONS.find(item => item.value === position)?.label || "AOQ";
+    return AO_LEADERSHIP_POSITIONS.find(item => item.value === position)?.label || position || "Unknown";
 }
 
 function getProfileRegionPositions(profileId) {
