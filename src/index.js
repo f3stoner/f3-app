@@ -63,6 +63,7 @@ import { renderThirdFManagementView } from "./views/thirdFManagementView.js";
 import { renderThirdFView } from "./views/thirdFView.js";
 import { renderAoInsightDetailView } from "./views/aoInsightsDetailView.js";
 import { renderPaxProfileView } from "./views/paxProfileView.js";
+import { renderSessionAuditView } from "./views/sessionAuditView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -290,6 +291,8 @@ function renderApp() {
         renderAoInsightDetailView();
     } else if (state.currentView === "paxProfile") {
         renderPaxProfileView();
+    } else if (state.currentView === "sessionAudit") {
+        renderSessionAuditView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

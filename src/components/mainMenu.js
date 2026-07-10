@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { navigateTo } from "../utils/navigation.js";
-import { PERMISSIONS, hasPermission, canViewAnyAoInsights, canViewAnyQReadiness, canViewAoInsights } from "../utils/permissions.js";
+import { PERMISSIONS, hasPermission, canViewAnyAoInsights, canViewAnyQReadiness, canViewAoInsights, canViewAnySessionAudit } from "../utils/permissions.js";
 
 function getMonthStart(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
@@ -111,6 +111,7 @@ export function createMainMenu() {
                 { label: "Announcements", view: "announcementManagement", permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS },
                 { label: "AO Insights", view: "aoInsights", isVisible: canViewAnyAoInsights },
                 { label: "Q Readiness", view: "qReadiness", isVisible: canViewAnyQReadiness },
+                { label: "Session Audit", view: "sessionAudit", isVisible: canViewAnySessionAudit },
                 { label: "Backblast Review", view: "backblastReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
                 { label: "Manage Third F", view: "thirdFManagement", permission: PERMISSIONS.MANAGE_Q_SOURCE },
                 { label: "Region Insights", view: "regionInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },

@@ -2455,6 +2455,135 @@ export async function loadQReadiness(regionId, startDate, endDate) {
     });
 }
 
+export async function loadSessionAudit(regionId, startDate, endDate) {
+    if (!regionId || !startDate || !endDate) return [];
+
+    const { data: slots, error: slotsError } = await supabase
+        .from("q_slots")
+        .select(`
+            id,
+            region_id,
+            ao_id,
+            date,
+            q_user_id,
+            override_time,
+            override_title,
+            aos (
+                id,
+                name
+            ),
+            members!q_slots_q_user_id_fkey (
+                id,
+                pax_name
+            )
+        `)
+        .eq("region_id", regionId)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date", { ascending: false });
+
+    if (slotsError) throw slotsError;
+
+    if (!slots?.length) return [];
+
+    const { data: sessions, error: sessionsError } = await supabase
+        .from("sessions")
+        .select(`
+            id,
+            date,
+            ao_id,
+            ao_name,
+            q_ids,
+            q_id,
+            source_q_slot_id,
+            created_at
+        `)
+        .eq("region_id", regionId)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false });
+
+    if (sessionsError) throw sessionsError;
+
+    const sessionBySlotId = new Map();
+    const legacySessionByAoDate = new Map();
+
+    (sessions || []).forEach(session => {
+        if (
+            session.source_q_slot_id &&
+            !sessionBySlotId.has(session.source_q_slot_id)
+        ) {
+            sessionBySlotId.set(session.source_q_slot_id, session);
+        }
+
+        if (session.source_q_slot_id) return;
+
+        const legacyKey = createSessionAuditLegacyKey({
+            date: session.date,
+            aoId: session.ao_id,
+            aoName: session.ao_name,
+        });
+
+        if (!legacySessionByAoDate.has(legacyKey)) {
+            legacySessionByAoDate.set(legacyKey, session);
+        }
+    });
+
+    return slots.map(slot => {
+        const aoName = slot.aos?.name || "Unknown AO";
+
+        const legacyKey = createSessionAuditLegacyKey({
+            date: slot.date,
+            aoId: slot.ao_id,
+            aoName,
+        });
+
+        const session =
+            sessionBySlotId.get(slot.id) ||
+            legacySessionByAoDate.get(legacyKey) ||
+            null;
+
+        let status = "unclaimed";
+
+        if (session) {
+            status = "logged";
+        } else if (slot.q_user_id) {
+            status = "missing";
+        }
+
+        return {
+            slotId: slot.id,
+            date: slot.date,
+            time: slot.override_time || "",
+            title: slot.override_title || "",
+            aoId: slot.ao_id,
+            aoName,
+            qId: slot.q_user_id || null,
+            qName: slot.members?.pax_name || "",
+            sessionId: session?.id || null,
+            sessionQIds:
+                session?.q_ids ||
+                (session?.q_id ? [session.q_id] : []),
+            matchedBy: session
+                ? session.source_q_slot_id
+                    ? "q_slot_id"
+                    : "ao_date"
+                : null,
+            status,
+        };
+    });
+}
+
+function createSessionAuditLegacyKey({ date, aoId, aoName }) {
+    const normalizedAoName = String(aoName || "")
+        .trim()
+        .toLowerCase();
+
+    const aoKey = aoId || normalizedAoName;
+
+    return `${date}|${aoKey}`;
+}
 
 function normalizeReadinessAoName(value) {
     return String(value || "")

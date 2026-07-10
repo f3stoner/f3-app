@@ -3,6 +3,7 @@ import { state } from "../modules/state.js";
 export const PERMISSIONS = {
     VIEW_AO_INSIGHTS: "view_ao_insights",
     VIEW_REGION_INSIGHTS: "view_region_insights",
+    VIEW_SESSION_AUDIT: "view_session_audit",
 
     MANAGE_AOS: "manage_aos",
     MANAGE_Q_SLOTS: "manage_q_slots",
@@ -56,6 +57,7 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.ACCESS_ADMIN_SETTINGS,
         PERMISSIONS.MANAGE_MEMBERS,
         PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
+        PERMISSIONS.VIEW_SESSION_AUDIT,
     ],
 
     superadmin: Object.values(PERMISSIONS),
@@ -66,6 +68,7 @@ const AO_INSIGHTS_POSITIONS = ["aoq", "ao_coq", "first_f", "ao_data_q"];
 const AO_Q_READINESS_POSITIONS = ["aoq", "ao_coq", "first_f"];
 const AO_SESSION_EDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 const AO_MEMBER_MANAGEMENT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
+const AO_SESSION_AUDIT_POSITIONS = ["ao_data_q"];
 
 export function hasPermission(permission) {
     const role = state.currentUserRole || "pax";
@@ -181,4 +184,14 @@ export function canUseFloatingLogButton() {
 
 export function canManageAoMembers(aoId) {
     return managesAo(aoId, AO_MEMBER_MANAGEMENT_POSITIONS);
+}
+
+export function canViewSessionAudit(aoId) {
+    return hasPermission(PERMISSIONS.VIEW_SESSION_AUDIT)
+        || managesAo(aoId, AO_SESSION_AUDIT_POSITIONS);
+}
+
+export function canViewAnySessionAudit() {
+    return hasPermission(PERMISSIONS.VIEW_SESSION_AUDIT)
+        || getManagedAoIds(AO_SESSION_AUDIT_POSITIONS).length > 0;
 }

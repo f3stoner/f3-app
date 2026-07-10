@@ -1,6 +1,6 @@
 # Created Proposed Aggieland Members
 
-Generated: 2026-07-09T21:40:38.624Z
+Generated: 2026-07-09T22:45:36.863Z
 Mode: commit
 
 ## Summary
@@ -14,10 +14,10 @@ Mode: commit
 
 | Status | Member ID | Pax Name | Real Name | Home AO | Invited By ID | First Post Date | Member Status | Skipped Optional Metadata | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| created | 331c319f-4501-44d3-af66-8d56b4249acb | Batman (2.0) | Benjamin Meyers | Dads | 5d179eb9-9763-42f2-8edc-a2d13a39ad02 | 2026-06-27 | active | - | - |
-| created | 513b6365-ac2c-42c8-aa0b-26417885b0fc | Eastwood (DR) | Matt Truax | - | - | - | active | - | first_ao "DR" is not a home AO; home_ao left null.; No proud_papa supplied; invited_by_id skipped. |
-| created | 31fb220b-f9b1-4b0d-87ad-74dea2b47662 | Seabiscuit (Inactive) | Jarret Baker-Wilkinson | Mine | ebb3c782-b97b-4a15-94ab-79d6536071f1 | 2024-09-03 | inactive | - | - |
-| created | b3d5c189-6fca-40e5-9d7f-760e03ae540e | Top Hat (inactive) | Matthew Murphy | Watch | 5fa6e2ce-c9fe-4fad-8aad-e08442ae820e | 2025-09-11 | inactive | - | - |
+| created | 52b1bff2-21fa-4671-9af9-94ad64a12bd4 | Bucky (DR) | Thomas Shaw | Mine | 9b2c2ba0-b800-4530-91c6-ab53e17ab7e1 | 2026-07-04 | active | - | - |
+| created | 61be09ef-5db9-418d-9e70-0fad84df238d | Creeper | Mike Padgett | Mine | 6634dba6-867e-44a5-b2c8-210b40b25ded | 2026-07-04 | active | - | - |
+| created | 0dda7796-b27a-4a36-a30e-c7ef0cc95c9d | Santana | Carlos Solis | Keep | 6bdf6012-3006-4e5a-948e-5d4e1dfc24e6 | 2026-07-03 | active | - | - |
+| created | 9ac75ff7-b811-4859-82e9-afff634ee31f | Sierra Mist (DR) | - | - | - | - | active | - | No first_ao supplied; home_ao skipped.; No proud_papa supplied; invited_by_id skipped. |
 
 ## Safety
 
