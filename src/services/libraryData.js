@@ -1,5 +1,14 @@
 import { supabase } from "./supabaseClient.js";
 
+function normalizeLibraryName(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+}
+
 export function mapLibraryItemFromDb(row) {
     return {
         id: row.id,
@@ -65,11 +74,41 @@ export async function loadLibraryWorkbenchItems({
     return (data || []).map(mapLibraryItemFromDb);
 }
 
+export async function createLibraryItemInCloud(item) {
+    const { data, error } = await supabase
+        .from("library_items")
+        .insert({
+            item_type: item.itemType || null,
+            name: item.name?.trim() || "",
+            normalized_name: normalizeLibraryName(item.name),
+            description: item.description || "",
+            aliases: item.aliases || [],
+            tags: item.tags || [],
+            equipment: item.equipment || [],
+            emphasis: item.emphasis || [],
+            movement_patterns: item.movementPatterns || [],
+            body_parts: item.bodyParts || [],
+            source_type: item.sourceType || "user_created",
+            source_meta: item.sourceMeta || {},
+            review_status: item.reviewStatus || "reviewed",
+            is_active: true,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapLibraryItemFromDb(data);
+}
+
 export async function updateLibraryItemInCloud(item) {
     const { data, error } = await supabase
         .from("library_items")
         .update({
             item_type: item.itemType || null,
+            name: item.name?.trim() || "",
+            normalized_name: normalizeLibraryName(item.name),
+            description: item.description || "",
             aliases: item.aliases || [],
             tags: item.tags || [],
             equipment: item.equipment || [],
@@ -78,7 +117,6 @@ export async function updateLibraryItemInCloud(item) {
             body_parts: item.bodyParts || [],
             review_status: item.reviewStatus || "reviewed",
             updated_at: new Date().toISOString(),
-            description: item.description || "",
         })
         .eq("id", item.id)
         .select()

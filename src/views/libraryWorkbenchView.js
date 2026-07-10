@@ -6,6 +6,7 @@ import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import {
+    createLibraryItemInCloud,
     loadLibraryWorkbenchItems,
     updateLibraryItemInCloud,
     deactivateLibraryItem,
@@ -13,6 +14,8 @@ import {
 import { registerViewCleanup } from "../utils/viewCleanup.js";
 
 const dirtyItemIds = new Set();
+
+let shouldFocusNewLibraryItem = false;
 
 const STATUS_OPTIONS = [
     ["imported", "Imported"],
@@ -156,23 +159,59 @@ async function refreshLibraryWorkbenchItems() {
 async function saveLibraryItem(item, { moveNext = false } = {}) {
     if (!item) return;
 
+    const name = item.name?.trim();
+
+    if (!name) {
+        showToast("Library item name is required.", "error");
+        return;
+    }
+
+    if (!item.itemType) {
+        showToast("Choose Exercise or Thang.", "error");
+        return;
+    }
+
     try {
-        const saved = await updateLibraryItemInCloud({
-            ...item,
-            reviewStatus: "reviewed",
-        });
+        const wasNew = item.isNew === true;
+
+        const saved = wasNew
+            ? await createLibraryItemInCloud({
+                name,
+                description: item.description?.trim() || "",
+                itemType: item.itemType,
+                tags: item.tags || [],
+                equipment: item.equipment || [],
+                emphasis: item.emphasis || [],
+                reviewStatus: "reviewed",
+                sourceType: "user_created",
+                sourceMeta: {},
+            })
+            : await updateLibraryItemInCloud({
+                ...item,
+                name,
+                description: item.description?.trim() || "",
+                reviewStatus: "reviewed",
+            });
 
         state.libraryItems = (state.libraryItems || []).map(existing =>
             existing.id === saved.id ? saved : existing
         );
-        
+
         if (!(state.libraryItems || []).some(existing => existing.id === saved.id)) {
             state.libraryItems = [...(state.libraryItems || []), saved];
         }
 
-        (saved.tags || []).forEach(value => syncLibraryFilterOption("tags", value));
-        (saved.equipment || []).forEach(value => syncLibraryFilterOption("equipment", value));
-        (saved.emphasis || []).forEach(value => syncLibraryFilterOption("emphasis", value));
+        (saved.tags || []).forEach(value =>
+            syncLibraryFilterOption("tags", value)
+        );
+
+        (saved.equipment || []).forEach(value =>
+            syncLibraryFilterOption("equipment", value)
+        );
+
+        (saved.emphasis || []).forEach(value =>
+            syncLibraryFilterOption("emphasis", value)
+        );
 
         dirtyItemIds.delete(item.id);
 
@@ -181,19 +220,24 @@ async function saveLibraryItem(item, { moveNext = false } = {}) {
         );
 
         const shouldRemoveFromImportedQueue =
+            !wasNew &&
             state.libraryWorkbenchStatusFilter === "imported";
 
         if (shouldRemoveFromImportedQueue) {
-            state.libraryWorkbenchItems = state.libraryWorkbenchItems.filter(
-                existing => existing.id !== item.id
-            );
+            state.libraryWorkbenchItems =
+                state.libraryWorkbenchItems.filter(
+                    existing => existing.id !== item.id
+                );
         } else {
-            state.libraryWorkbenchItems = state.libraryWorkbenchItems.map(existing =>
-                existing.id === item.id ? saved : existing
-            );
+            state.libraryWorkbenchItems =
+                state.libraryWorkbenchItems.map(existing =>
+                    existing.id === item.id ? saved : existing
+                );
         }
 
-        if (moveNext || shouldRemoveFromImportedQueue) {
+        if (wasNew) {
+            state.selectedLibraryWorkbenchItemId = saved.id;
+        } else if (moveNext || shouldRemoveFromImportedQueue) {
             const nextItem =
                 state.libraryWorkbenchItems[currentIndex] ||
                 state.libraryWorkbenchItems[currentIndex - 1] ||
@@ -203,12 +247,60 @@ async function saveLibraryItem(item, { moveNext = false } = {}) {
             state.selectedLibraryWorkbenchItemId = nextItem?.id || null;
         }
 
-        showToast("Library item saved.", "success");
+        showToast(
+            wasNew
+                ? "Library item created."
+                : "Library item saved.",
+            "success"
+        );
+
         renderApp();
+
+        return saved;
     } catch (error) {
         console.error(error);
-        showToast("Failed to save library item.", "error");
+
+        showToast(
+            item.isNew
+                ? "Failed to create library item."
+                : "Failed to save library item.",
+            "error"
+        );
+
+        return null;
     }
+}
+
+function createNewLibraryItem() {
+    if (!confirmDiscardUnsavedChanges()) return;
+
+    dirtyItemIds.clear();
+
+    const newItem = {
+        id: `new-${crypto.randomUUID()}`,
+        name: "",
+        description: "",
+        itemType: null,
+        tags: [],
+        equipment: [],
+        emphasis: [],
+        reviewStatus: "reviewed",
+        sourceType: "user_created",
+        sourceMeta: {},
+        isNew: true,
+    };
+
+    state.libraryWorkbenchItems = [
+        newItem,
+        ...(state.libraryWorkbenchItems || []),
+    ];
+
+    state.selectedLibraryWorkbenchItemId = newItem.id;
+    dirtyItemIds.add(newItem.id);
+
+    shouldFocusNewLibraryItem = true;
+
+    renderApp();
 }
 
 function createFilterSelect(value, options, onChange) {
@@ -320,6 +412,14 @@ function renderFilters(section) {
             }
         )
     );
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "primary-button";
+    addButton.textContent = "+ New Exercise / Thang";
+    addButton.addEventListener("click", createNewLibraryItem);
+
+    controls.appendChild(addButton);
 
     const refreshButton = document.createElement("button");
     refreshButton.textContent = "Refresh";
@@ -512,6 +612,8 @@ function renderChipGroup(detail, label, item, group, options) {
 function renderDetail(section) {
     const item = getSelectedItem();
 
+    let saveButton;
+
     const detail = document.createElement("aside");
     detail.className = "library-workbench-detail";
 
@@ -521,9 +623,50 @@ function renderDetail(section) {
         return;
     }
 
-    const title = document.createElement("h2");
-    title.textContent = item.name;
-    detail.appendChild(title);
+    const nameLabel = document.createElement("p");
+    nameLabel.className = "detail-label";
+    nameLabel.textContent = "Name";
+    detail.appendChild(nameLabel);
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "library-workbench-name-input";
+    nameInput.placeholder = "e.g. Burpee, Coredio, Dora 1-2-3";
+    nameInput.value = item.name || "";
+
+    nameInput.addEventListener("input", event => {
+        const nextName = event.target.value;
+
+        state.libraryWorkbenchItems =
+            state.libraryWorkbenchItems.map(existing =>
+                existing.id === item.id
+                    ? { ...existing, name: nextName }
+                    : existing
+            );
+
+        dirtyItemIds.add(item.id);
+
+        saveButton.textContent = item.isNew
+            ? "Create Library Item"
+            : "Save Changes";
+
+        const selectedRow = document.querySelector(
+            ".library-workbench-row.selected"
+        );
+
+        selectedRow?.classList.add("dirty");
+
+        const selectedNameCell = selectedRow?.querySelector(
+            ".library-workbench-name-cell"
+        );
+
+        if (selectedNameCell) {
+            selectedNameCell.textContent =
+                nextName || "New Library Item";
+        }
+    });
+
+    detail.appendChild(nameInput);
 
     const meta = document.createElement("p");
     meta.className = "stats-line";
@@ -591,7 +734,7 @@ function renderDetail(section) {
     const description = document.createElement("textarea");
     description.className = "library-workbench-description-input";
     description.rows = 8;
-    description.placeholder = "Describe the exercise or thang...";
+    description.placeholder = "Instructions, cues, or notes...";
     description.value = item.description || "";
 
     description.addEventListener("input", event => {
@@ -605,7 +748,9 @@ function renderDetail(section) {
     
         dirtyItemIds.add(item.id);
     
-        saveButton.textContent = "Save Changes";
+        saveButton.textContent = item.isNew
+            ? "Create Library Item"
+            : "Save Changes";
     
         const selectedRow = document.querySelector(".library-workbench-row.selected");
         selectedRow?.classList.add("dirty");
@@ -613,32 +758,38 @@ function renderDetail(section) {
 
     detail.appendChild(description);
 
-    const confidence = document.createElement("p");
-    confidence.className = "stats-line";
-    confidence.textContent = `Confidence: ${item.classificationConfidence ?? "—"}`;
-    detail.appendChild(confidence);
+    if (item.sourceType !== "user_created" && !item.isNew) {
+        const confidence = document.createElement("p");
+        confidence.className = "stats-line";
+        confidence.textContent = `Confidence: ${item.classificationConfidence ?? "—"}`;
+        detail.appendChild(confidence);
 
-    const reasons = item.sourceMeta?.classification_reasons || [];
-    if (reasons.length) {
-        const reasonsLabel = document.createElement("p");
-        reasonsLabel.className = "detail-label";
-        reasonsLabel.textContent = "Classification reasons";
-        detail.appendChild(reasonsLabel);
+        const reasons = item.sourceMeta?.classification_reasons || [];
+        if (reasons.length) {
+            const reasonsLabel = document.createElement("p");
+            reasonsLabel.className = "detail-label";
+            reasonsLabel.textContent = "Classification reasons";
+            detail.appendChild(reasonsLabel);
 
-        const reasonList = document.createElement("ul");
-        reasons.forEach(reason => {
-            const li = document.createElement("li");
-            li.textContent = reason;
-            reasonList.appendChild(li);
-        });
-        detail.appendChild(reasonList);
+            const reasonList = document.createElement("ul");
+            reasons.forEach(reason => {
+                const li = document.createElement("li");
+                li.textContent = reason;
+                reasonList.appendChild(li);
+            });
+            detail.appendChild(reasonList);
+        }
     }
 
     const actionRow = document.createElement("div");
     actionRow.className = "library-workbench-actions";
 
-    const saveButton = document.createElement("button");
-    saveButton.textContent = dirtyItemIds.has(item.id) ? "Save Changes" : "Mark Reviewed";
+    saveButton = document.createElement("button");
+    saveButton.textContent = item.isNew
+        ? "Create Library Item"
+        : dirtyItemIds.has(item.id)
+            ? "Save Changes"
+            : "Mark Reviewed";
     saveButton.addEventListener("click", () => {
         const latestItem = getSelectedItem();
         saveLibraryItem(latestItem);
@@ -646,9 +797,23 @@ function renderDetail(section) {
 
     const saveNextButton = document.createElement("button");
     saveNextButton.className = "primary-button";
-    saveNextButton.textContent = "Save + Next";
-    saveNextButton.addEventListener("click", () => {
+    saveNextButton.textContent = item.isNew
+        ? "Create + Add Another"
+        : "Save + Next";
+
+    saveNextButton.addEventListener("click", async () => {
         const latestItem = getSelectedItem();
+    
+        if (latestItem?.isNew) {
+            const saved = await saveLibraryItem(latestItem);
+    
+            if (saved) {
+                createNewLibraryItem();
+            }
+    
+            return;
+        }
+    
         saveLibraryItem(latestItem, { moveNext: true });
     });
 
@@ -699,11 +864,28 @@ function renderDetail(section) {
 
     actionRow.appendChild(saveButton);
     actionRow.appendChild(saveNextButton);
-    actionRow.appendChild(deactivateButton);
+    if (!item.isNew) {
+        actionRow.appendChild(deactivateButton);
+    }
 
     detail.appendChild(actionRow);
 
     section.appendChild(detail);
+
+    if (item.isNew && shouldFocusNewLibraryItem) {
+        shouldFocusNewLibraryItem = false;
+
+        requestAnimationFrame(() => {
+            detail.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+
+            nameInput.focus({
+                preventScroll: true,
+            });
+        });
+    }
 }
 
 export function renderLibraryWorkbenchView() {
