@@ -314,28 +314,6 @@ function hideBootSplash() {
     setTimeout(() => splash.remove(), 220);
 }
 
-function autoHealQSlotsForAdmin() {
-    if (!isRegionalAdmin()) return;
-    if (state.isGeneratingQSlots) return;
-    if (state.autoHealedQSlotsRegionId === state.currentRegionId) return;
-    if (!state.currentRegionId) return;
-
-    state.autoHealedQSlotsRegionId = state.currentRegionId;
-    state.isGeneratingQSlots = true;
-
-    generateQSlotsForCurrentRegion()
-        .catch(error => {
-            console.error("Failed to auto-heal Q slots:", error);
-        })
-        .finally(() => {
-            state.isGeneratingQSlots = false;
-
-            if (state.currentView !== "auth" && state.currentView !== "regionGate") {
-                renderApp();
-            }
-        });
-}
-
 function hydrateHistoricalBackblastLinks(regionId) {
     if (!regionId) return;
 
@@ -423,8 +401,6 @@ async function loadActiveRegionData(profileRegionId) {
         .catch(error => {
             console.error("Failed to load exercises:", error);
         });
-
-    autoHealQSlotsForAdmin();
 
     return true;
 }

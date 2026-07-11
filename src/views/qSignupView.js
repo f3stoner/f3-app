@@ -679,7 +679,7 @@ export function renderQSignupView() {
     }
     
     async function deleteQSlot(slot) {
-        const confirmed = confirm("Remove this Q slot? It may be recreated if slots are regenerated.");
+        const confirmed = confirm("Permanently remove this Q slot?");
         if (!confirmed) return;
 
         try {
