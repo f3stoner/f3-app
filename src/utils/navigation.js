@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { saveState, saveNavState } from "./storage.js";
 import { runViewCleanup } from "./viewCleanup.js";
+import { canViewPaxOverview } from "./permissions.js";
 
 const NON_HISTORY_VIEWS = new Set([
     "auth",
@@ -18,6 +19,11 @@ const TOP_LEVEL_VIEWS = new Set([
     "plannedWorkoutList",
     "myPlanner",
     "aoManagement",
+]);
+
+const PAX_PROFILE_VIEWS = new Set([
+    "paxProfile",
+    "paxCommunity",
 ]);
 
 export function navigateTo(view) {
@@ -44,7 +50,20 @@ export function navigateTo(view) {
 
 export function goBack(fallbackView = "dashboard") {
     const currentView = state.currentView;
-    const previousView = state.viewHistory.pop();
+
+    let previousView = state.viewHistory.pop();
+
+    // When leaving the PAX profile area, skip profile tabs
+    // and previous PAX profiles until reaching the source view.
+    if (PAX_PROFILE_VIEWS.has(currentView)) {
+        while (
+            previousView &&
+            PAX_PROFILE_VIEWS.has(previousView)
+        ) {
+            previousView = state.viewHistory.pop();
+        }
+    }
+
     const nextView = previousView || fallbackView;
 
     if (currentView && currentView !== nextView) {
@@ -54,4 +73,16 @@ export function goBack(fallbackView = "dashboard") {
     state.currentView = nextView;
     saveNavState(state);
     renderApp();
+}
+
+export function navigateToPaxProfile(memberId) {
+    if (!memberId) return;
+
+    state.selectedPaxId = memberId;
+
+    navigateTo(
+        canViewPaxOverview(memberId)
+            ? "paxProfile"
+            : "paxCommunity"
+    );
 }

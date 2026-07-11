@@ -4,12 +4,12 @@ import { getMemberStats } from "../modules/stats.js";
 import { formatDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
-import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { insertMember } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
 import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
+import { navigateTo, navigateToPaxProfile } from "../utils/navigation.js";
 
 function renderRosterList(rosterContainer, members) {
     rosterContainer.textContent = "";
@@ -51,9 +51,8 @@ function renderRosterList(rosterContainer, members) {
         statsLine.textContent = `Posts: ${memberStats.posts} - Qs: ${memberStats.qs} - Last: ${lastPost}`;
 
         memberCard.addEventListener("click", () => {
-            state.selectedMemberId = member.id;
-            navigateTo("memberDetail");
-        })
+          navigateToPaxProfile(member.id);
+        });
 
         rosterContainer.appendChild(memberCard);
         if (statusBadge) {

@@ -4,6 +4,7 @@ export const PERMISSIONS = {
     VIEW_AO_INSIGHTS: "view_ao_insights",
     VIEW_REGION_INSIGHTS: "view_region_insights",
     VIEW_SESSION_AUDIT: "view_session_audit",
+    VIEW_PAX_OVERVIEW: "view_pax_overview",
 
     MANAGE_AOS: "manage_aos",
     MANAGE_Q_SLOTS: "manage_q_slots",
@@ -33,11 +34,13 @@ export const ROLE_PERMISSIONS = {
     aoq: [
         PERMISSIONS.VIEW_AO_INSIGHTS,
         PERMISSIONS.MANAGE_Q_SLOTS,
+        PERMISSIONS.VIEW_PAX_OVERVIEW,
     ],
 
     slt: [
         PERMISSIONS.VIEW_AO_INSIGHTS,
         PERMISSIONS.VIEW_REGION_INSIGHTS,
+        PERMISSIONS.VIEW_PAX_OVERVIEW,
         PERMISSIONS.MANAGE_AOS,
         PERMISSIONS.MANAGE_Q_SLOTS,
         PERMISSIONS.ACCESS_ADMIN_SETTINGS,
@@ -58,6 +61,7 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.MANAGE_MEMBERS,
         PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
         PERMISSIONS.VIEW_SESSION_AUDIT,
+        PERMISSIONS.VIEW_PAX_OVERVIEW,
     ],
 
     superadmin: Object.values(PERMISSIONS),
@@ -194,4 +198,18 @@ export function canViewSessionAudit(aoId) {
 export function canViewAnySessionAudit() {
     return hasPermission(PERMISSIONS.VIEW_SESSION_AUDIT)
         || getManagedAoIds(AO_SESSION_AUDIT_POSITIONS).length > 0;
+}
+
+export function canViewPaxOverview(memberId) {
+    if (!memberId) return false;
+
+    if (memberId === state.currentUserMemberId) {
+        return true;
+    }
+
+    if (hasPermission(PERMISSIONS.VIEW_PAX_OVERVIEW)) {
+        return true;
+    }
+
+    return getManagedAoIds(AO_LEADERSHIP_POSITIONS).length > 0;
 }

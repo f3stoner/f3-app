@@ -607,7 +607,6 @@ select:focus,
 .user-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 16px;
     margin-bottom: 20px;
 }
@@ -638,18 +637,6 @@ select:focus,
     color: var(--text);
     font-weight: 600;
     line-height: 1.2;
-}
-
-.user-row button {
-    font-size: 14px;
-    padding: 8px 14px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface-strong);
-    color: var(--text);
-}
-
-.user-row button:hover {
-    background: var(--surface-raised);
 }
 
 .role-badge[data-role="superadmin"] {
@@ -2688,18 +2675,6 @@ details.section {
     -webkit-tap-highlight-color: transparent;
 }
 
-.dashboard-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-right: 3.75rem;
-}
-
-.dashboard-header h1 {
-    margin-bottom: 0;
-}
-
 .main-menu-overlay {
     position: fixed;
     inset: 0;
@@ -4603,4 +4578,492 @@ textarea {
     line-height: 1.15;
     font-weight: 700;
     color: var(--text);
+}
+
+.dashboard-profile-link {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+
+    color: var(--text-primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dashboard-profile-link:hover {
+    opacity: .85;
+}
+
+.dashboard-profile-link:hover .dashboard-profile-chevron {
+    transform: translateX(2px);
+}
+
+.dashboard-profile-chevron {
+    opacity: .45;
+    transition: transform .15s ease, opacity .15s ease;
+}
+
+.main-menu-drawer {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-menu-list {
+    flex: 1;
+}
+
+.main-menu-account {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.main-menu-sign-out {
+    width: 100%;
+    margin: 0;
+    color: var(--muted);
+    background: transparent;
+    border-color: var(--border);
+}
+
+.main-menu-sign-out:hover {
+    color: var(--text);
+    background: var(--surface-raised);
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    flex: 1;
+}
+
+.dashboard-header .hamburger-button {
+    flex: 0 0 auto;
+}
+
+.pax-profile-identity {
+    margin: 1rem 0 2rem;
+}
+
+.pax-profile-identity h1 {
+    margin: 0;
+    font-size: clamp(2.6rem, 10vw, 4rem);
+    line-height: 0.9;
+}
+
+.pax-profile-subtitle {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.pax-overall-grid,
+.pax-recent-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.pax-metric-card {
+    min-width: 0;
+    padding: 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.pax-metric-value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.pax-metric-label {
+    margin-top: 0.45rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.pax-metric-card-compact {
+    padding: 0.9rem 1rem;
+}
+
+.pax-metric-card-compact .pax-metric-value {
+    font-size: 1.55rem;
+}
+
+.pax-metric-card-compact .pax-metric-label {
+    font-size: 0.75rem;
+}
+
+.pax-leadership-card {
+    padding: 1.25rem;
+    border: 1px solid rgba(85, 168, 104, 0.35);
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(85, 168, 104, 0.1),
+            rgba(85, 168, 104, 0.035)
+        );
+}
+
+.pax-leadership-card .detail-label {
+    margin-top: 0;
+}
+
+.pax-leadership-title {
+    margin-top: 0.35rem;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.pax-leadership-message {
+    margin: 0.75rem 0 1.25rem;
+    max-width: 34rem;
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.45;
+}
+
+.pax-profile-facts {
+    border-top: 1px solid var(--border);
+}
+
+.pax-profile-fact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.pax-profile-fact-label {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.pax-profile-fact-value {
+    text-align: right;
+    font-weight: 800;
+}
+
+@media (max-width: 420px) {
+    .pax-metric-card {
+        padding: 1rem;
+    }
+
+    .pax-metric-value {
+        font-size: 1.65rem;
+    }
+
+    .pax-metric-label {
+        font-size: 0.78rem;
+    }
+}
+
+.pax-leadership-card-neutral {
+    border-color: rgba(154, 163, 173, 0.35);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(154, 163, 173, 0.09),
+            rgba(154, 163, 173, 0.03)
+        );
+}
+
+.pax-leadership-card-encourage {
+    border-color: rgba(143, 211, 255, 0.35);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(143, 211, 255, 0.09),
+            rgba(143, 211, 255, 0.03)
+        );
+}
+
+.pax-leadership-card-positive {
+    border-color: rgba(85, 168, 104, 0.35);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(85, 168, 104, 0.1),
+            rgba(85, 168, 104, 0.035)
+        );
+}
+
+.pax-leadership-card-watch {
+    border-color: rgba(245, 158, 11, 0.42);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(245, 158, 11, 0.1),
+            rgba(245, 158, 11, 0.035)
+        );
+}
+
+.pax-profile-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin: -0.75rem 0 1.5rem;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+.pax-profile-nav-item {
+    margin: 0;
+    padding: 0.7rem 0.75rem;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    color: var(--muted);
+}
+
+.pax-profile-nav-item:hover {
+    background: var(--surface-raised);
+}
+
+.pax-profile-nav-item.active {
+    background: var(--surface-raised);
+    color: var(--text);
+}
+
+.pax-community-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+}
+
+.pax-community-row {
+    width: 100%;
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0.85rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+}
+
+button.pax-community-row:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.pax-community-rank {
+    width: 1.75rem;
+    flex: 0 0 1.75rem;
+    color: var(--muted);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.pax-community-row-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.pax-community-row-title {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.pax-community-row-subtitle {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.2;
+}
+
+.pax-community-row-value {
+    flex: 0 0 auto;
+    color: var(--accent-bright);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.pax-community-relationship-row {
+    width: 100%;
+    margin: 0;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.pax-community-loading {
+    padding: 1rem 0;
+    color: var(--muted);
+}
+
+.pax-ehd-list {
+    border-top: 0;
+}
+
+.pax-ehd-row {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.pax-ehd-toggle {
+    width: 100%;
+    margin: 0;
+    padding: 0.8rem 0;
+    text-align: center;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    color: var(--accent-bright);
+}
+
+.pax-family-card {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.pax-family-block {
+    padding: 1rem;
+}
+
+.pax-family-block + .pax-family-block {
+    border-top: 1px solid var(--border);
+}
+
+.pax-family-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.pax-family-primary-value {
+    display: block;
+    width: fit-content;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-align: left;
+}
+
+button.pax-family-primary-value:hover {
+    background: transparent;
+    opacity: 0.8;
+}
+
+.pax-family-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+}
+
+.pax-family-count {
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.pax-family-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.pax-family-person-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin: 0;
+    padding: 0.75rem 0;
+
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: left;
+}
+
+.pax-family-person-name {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.pax-family-person-date {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pax-family-toggle {
+    width: 100%;
+    margin: 0;
+    padding: 0.75rem 0 0;
+
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+
+    color: var(--accent-bright);
+    font-size: 0.82rem;
+}
+
+.pax-family-empty {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
 }

@@ -1,6 +1,6 @@
 import { createMetricCard, createSection } from "./aoInsightDetailComponents.js";
 import { formatDate } from "../../utils/date.js";
-import { navigateTo } from "../../utils/navigation.js";
+import { navigateTo, navigateToPaxProfile } from "../../utils/navigation.js";
 import { state } from "../../modules/state.js";
 import { buildNewPaxPipelineInsight } from "../../utils/aoInsights/newPaxPipelineInsights.js";
 
@@ -11,8 +11,7 @@ function createPaxRow({ memberId, name, postCount, firstPostDate, lastPostDate, 
     if (memberId) {
         row.classList.add("clickable-row");
         row.addEventListener("click", () => {
-            state.selectedPaxId = memberId;
-            navigateTo("paxProfile");
+            navigateToPaxProfile(member.id);
         });
     }
 

@@ -1,8 +1,7 @@
 import { state } from "../modules/state.js";
-import { bootApp, renderApp } from "../index.js";
+import { renderApp } from "../index.js";
 import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { signOut } from "../services/auth.js";
 import { 
     checkRegionAccess,
     loadMemberDashboardStats, 
@@ -28,6 +27,7 @@ import { releaseWakeLock } from "../utils/wakelock.js";
 import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { getDashboardLeadershipBadge } from "../utils/leadership.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
+import { createAppHeader } from "../components/appHeader.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -41,11 +41,11 @@ export function renderDashboard() {
 
     document.querySelectorAll(".main-menu-overlay").forEach(menu => menu.remove());
 
-    const title = document.createElement("h1");
-    title.textContent = state.regionName || "F3 App";
-
     const dashboardHeader = document.createElement("div");
     dashboardHeader.classList.add("dashboard-header");
+
+    const title = document.createElement("h1");
+    title.textContent = state.regionName || "F3 App";
 
     const menuButton = document.createElement("button");
     menuButton.type = "button";
@@ -60,7 +60,7 @@ export function renderDashboard() {
     });
 
     dashboardHeader.append(title, menuButton);
-
+    
     let regionSwitcher = null;
     let regionSwitcherLabel = null;
 
@@ -140,57 +140,37 @@ export function renderDashboard() {
         member => member.id === state.currentUserMemberId
     );
 
-    const userName = document.createElement("span");
-    userName.classList.add("user-name");
-    userName.textContent = linkedMember?.paxName || state.currentUserDisplayName || "User";
+    const userName = document.createElement("button");
+    userName.type = "button";
+    userName.classList.add("user-name", "dashboard-profile-link");
+
+    const userNameText = document.createElement("span");
+    userNameText.textContent =
+        linkedMember?.paxName ||
+        state.currentUserDisplayName ||
+        "User";
+
+    const profileChevron = document.createElement("span");
+    profileChevron.classList.add("dashboard-profile-chevron");
+    profileChevron.setAttribute("aria-hidden", "true");
+    profileChevron.textContent = "›";
+
+    userName.append(userNameText, profileChevron);
+
+    userName.setAttribute("aria-label", "View my profile");
+
+    userName.addEventListener("click", () => {
+        if (!linkedMember) return;
+
+        state.selectedPaxId = linkedMember.id;
+        navigateTo("paxProfile");
+    });
 
     const userLeft = document.createElement("div");
     userLeft.classList.add("user-left");
     userLeft.append(roleBadge, userName);
 
-    const signOutButton = document.createElement("button");
-    signOutButton.textContent = "Sign Out";
-
-    signOutButton.addEventListener("click", async () => {
-        try{
-            unsubscribeAllManagedChannels();
-
-            await signOut();
-            localStorage.removeItem("f3AppState");
-            state.regionName = "";
-            state.members = [];
-            state.sessions = [];
-            state.plannedWorkouts = [];
-            state.currentUserId = null;
-            state.currentUserRole = null;
-            state.currentUserDisplayName = null;
-            state.selectedMemberId = null;
-            state.selectedSessionId = null;
-            state.selectedPlannedWorkoutId = null;
-            state.editingMemberId = null;
-            state.editingSessionId = null;
-            state.editingPlannedWorkoutId = null;
-            state.draftSession = null;
-            state.currentView = "dashboard";
-            state.currentRegionId = null;
-            state.profileRegionId = null;
-            state.regionOverrideId = null;
-            state.availableRegions = [];
-            state.qSignupAoFilter = "all";
-            state.qSignupOpenOnly = false;
-            state.currentUserMemberId = null;
-            state.claimingMemberId = null;
-            state.notificationSettings = null;
-            localStorage.removeItem("theQNavState");
-
-            await bootApp();
-        } catch (error) {
-            console.error("Failed to sign out:", error);
-            showToast("Failed to sign out.", "error");
-        }
-    });
-
-    userRow.append(userLeft, signOutButton);
+    userRow.append(userLeft);
 
     function getWorkoutReadinessLabel(workout) {
         if (!workout) return "No Workout Planned";

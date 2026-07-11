@@ -1,7 +1,10 @@
 import { state } from "../modules/state.js";
-import { renderApp } from "../index.js";
 import { navigateTo } from "../utils/navigation.js";
 import { PERMISSIONS, hasPermission, canViewAnyAoInsights, canViewAnyQReadiness, canViewAoInsights, canViewAnySessionAudit } from "../utils/permissions.js";
+import { bootApp, renderApp } from "../index.js";
+import { signOut } from "../services/auth.js";
+import { unsubscribeAllManagedChannels } from "../services/realtime.js";
+import { showToast } from "../utils/toast.js";
 
 function getMonthStart(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
@@ -131,6 +134,56 @@ export function createMainMenu() {
         },
     ];
 
+    async function handleSignOut() {
+        closeMainMenu();
+        renderApp();
+
+        try {
+            unsubscribeAllManagedChannels();
+    
+            await signOut();
+    
+            localStorage.removeItem("f3AppState");
+            localStorage.removeItem("theQNavState");
+    
+            state.regionName = "";
+            state.members = [];
+            state.sessions = [];
+            state.plannedWorkouts = [];
+    
+            state.currentUserId = null;
+            state.currentUserRole = null;
+            state.currentUserDisplayName = null;
+            state.currentUserMemberId = null;
+    
+            state.selectedMemberId = null;
+            state.selectedSessionId = null;
+            state.selectedPlannedWorkoutId = null;
+    
+            state.editingMemberId = null;
+            state.editingSessionId = null;
+            state.editingPlannedWorkoutId = null;
+    
+            state.draftSession = null;
+    
+            state.currentView = "dashboard";
+            state.currentRegionId = null;
+            state.profileRegionId = null;
+            state.regionOverrideId = null;
+            state.availableRegions = [];
+    
+            state.qSignupAoFilter = "all";
+            state.qSignupOpenOnly = false;
+            state.claimingMemberId = null;
+            state.notificationSettings = null;
+    
+            await bootApp();
+        } catch (error) {
+            console.error("Failed to sign out:", error);
+            showToast("Failed to sign out.", "error");
+        }
+    }
+
     function createMenuButton(item) {
         const button = document.createElement("button");
         button.type = "button";
@@ -190,7 +243,24 @@ export function createMainMenu() {
         list.appendChild(details);
     });
 
-    drawer.append(header, list);
+    const accountSection = document.createElement("div");
+    accountSection.classList.add("main-menu-account");
+
+    const signOutButton = document.createElement("button");
+    signOutButton.type = "button";
+    signOutButton.classList.add("main-menu-item", "main-menu-sign-out");
+    signOutButton.textContent = "Sign Out";
+
+    signOutButton.addEventListener("click", async () => {
+        signOutButton.disabled = true;
+        signOutButton.textContent = "Signing Out…";
+    
+        await handleSignOut();
+    });
+
+    accountSection.appendChild(signOutButton);
+
+    drawer.append(header, list, accountSection);
     overlay.append(drawer);
 
     overlay.addEventListener("click", () => {

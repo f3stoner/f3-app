@@ -1839,10 +1839,18 @@ function mapMemberStatsFromDb(row) {
     return {
         memberId: row.member_id,
         regionId: row.region_id,
+
         posts: row.total_posts ?? 0,
         qs: row.total_qs ?? 0,
+
+        posts30Days: row.posts_30_days ?? 0,
+        qs30Days: row.qs_30_days ?? 0,
+        posts90Days: row.posts_90_days ?? 0,
+        qs90Days: row.qs_90_days ?? 0,
+
         fngsEh: row.fngs_eh ?? 0,
         favoriteAo: row.favorite_ao ?? null,
+
         lastPostDate: row.last_post_date ?? null,
         firstPostDate: row.first_post_date ?? null,
         lastQDate: row.last_q_date ?? null,
@@ -2857,4 +2865,166 @@ export async function loadPlannerAnnouncements(regionId) {
     if (error) throw error;
 
     return (data || []).map(mapAnnouncementFromDb);
+}
+
+export async function loadMemberCommunityData(regionId, memberId) {
+    if (!regionId || !memberId) {
+        return {
+            uniquePaxCount: 0,
+            uniqueAoCount: 0,
+            battleBuddies: [],
+            sharedAos: [],
+        };
+    }
+
+    const sessions = await loadMemberCommunitySessions(
+        regionId,
+        memberId
+    );
+
+    const buddyStatsByMemberId = new Map();
+    const aoStatsByKey = new Map();
+    const uniquePaxIds = new Set();
+    const uniqueAoKeys = new Set();
+
+    sessions.forEach(session => {
+        const attendeeIds = Array.isArray(session.attendeeIds)
+            ? [...new Set(session.attendeeIds.filter(Boolean))]
+            : [];
+
+        attendeeIds.forEach(attendeeId => {
+            if (attendeeId === memberId) return;
+
+            uniquePaxIds.add(attendeeId);
+
+            const existing = buddyStatsByMemberId.get(attendeeId) || {
+                memberId: attendeeId,
+                sharedPosts: 0,
+                firstSharedDate: null,
+                lastSharedDate: null,
+            };
+
+            existing.sharedPosts += 1;
+
+            if (
+                !existing.firstSharedDate ||
+                session.date < existing.firstSharedDate
+            ) {
+                existing.firstSharedDate = session.date;
+            }
+
+            if (
+                !existing.lastSharedDate ||
+                session.date > existing.lastSharedDate
+            ) {
+                existing.lastSharedDate = session.date;
+            }
+
+            buddyStatsByMemberId.set(attendeeId, existing);
+        });
+
+        const aoKey =
+            session.aoId ||
+            String(session.aoName || "")
+                .trim()
+                .toLowerCase();
+
+        if (!aoKey) return;
+
+        uniqueAoKeys.add(aoKey);
+
+        const existingAo = aoStatsByKey.get(aoKey) || {
+            aoId: session.aoId || null,
+            aoName: session.aoName || "Unknown AO",
+            posts: 0,
+            firstPostDate: null,
+            lastPostDate: null,
+        };
+
+        existingAo.posts += 1;
+
+        if (
+            !existingAo.firstPostDate ||
+            session.date < existingAo.firstPostDate
+        ) {
+            existingAo.firstPostDate = session.date;
+        }
+
+        if (
+            !existingAo.lastPostDate ||
+            session.date > existingAo.lastPostDate
+        ) {
+            existingAo.lastPostDate = session.date;
+        }
+
+        aoStatsByKey.set(aoKey, existingAo);
+    });
+
+    const battleBuddies = [...buddyStatsByMemberId.values()]
+        .sort((a, b) => {
+            if (b.sharedPosts !== a.sharedPosts) {
+                return b.sharedPosts - a.sharedPosts;
+            }
+
+            return String(b.lastSharedDate || "")
+                .localeCompare(String(a.lastSharedDate || ""));
+        });
+
+    const sharedAos = [...aoStatsByKey.values()]
+        .sort((a, b) => {
+            if (b.posts !== a.posts) {
+                return b.posts - a.posts;
+            }
+
+            return a.aoName.localeCompare(b.aoName);
+        });
+
+    return {
+        uniquePaxCount: uniquePaxIds.size,
+        uniqueAoCount: uniqueAoKeys.size,
+        battleBuddies,
+        sharedAos,
+    };
+}
+
+export async function loadMemberCommunitySessions(regionId, memberId) {
+    if (!regionId || !memberId) return [];
+
+    const pageSize = 1000;
+    let from = 0;
+    const sessions = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from("sessions")
+            .select(`
+                id,
+                date,
+                ao_id,
+                ao_name,
+                attendee_ids,
+                q_ids,
+                q_id,
+                fngs
+            `)
+            .eq("region_id", regionId)
+            .or(
+                `attendee_ids.cs.["${memberId}"],` +
+                `q_ids.cs.{${memberId}},` +
+                `q_id.eq.${memberId}`
+            )
+            .order("date", { ascending: false })
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        if (!data?.length) break;
+
+        sessions.push(...data.map(mapSessionFromDb));
+
+        if (data.length < pageSize) break;
+
+        from += pageSize;
+    }
+
+    return sessions;
 }
