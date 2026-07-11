@@ -2923,14 +2923,25 @@ export async function loadMemberCommunityData(regionId, memberId) {
             buddyStatsByMemberId.set(attendeeId, existing);
         });
 
-        const aoKey =
-            session.aoId ||
-            String(session.aoName || "")
-                .trim()
-                .toLowerCase();
+        const normalizedAoName = String(session.aoName || "")
+            .trim()
+            .toLowerCase();
 
-        if (!aoKey) return;
+        if (
+            normalizedAoName === "the sandbox" ||
+            normalizedAoName === "other" ||
+            normalizedAoName === "blackops" ||
+            normalizedAoName === "csaup" ||
+            normalizedAoName.startsWith("convergence")
+        ) {
+            return;
+        }
 
+        if (!session.aoId) {
+            return;
+        }
+
+        const aoKey = session.aoId;
         uniqueAoKeys.add(aoKey);
 
         const existingAo = aoStatsByKey.get(aoKey) || {
