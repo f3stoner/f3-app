@@ -915,12 +915,11 @@ export function renderQSignupView() {
                 unclaimButton.addEventListener("click", async (event) => {
                     event.stopPropagation();
                     try {
-                        await unclaimQSlot(slot);
+                        const result = await unclaimQSlot(slot);
 
-                        patchQSlotInState({
-                            ...slot,
-                            qUserId: null,
-                        });
+                        if (!result?.success) {
+                            return;
+                        }
 
                         renderApp();
                     } catch (error) {
@@ -975,12 +974,13 @@ export function renderQSignupView() {
                     event.stopPropagation();
                     
                     try{
-                        await unclaimQSlot(slot, { bypassDropGuard: true });
-
-                        patchQSlotInState({
-                            ...slot,
-                            qUserId: null,
+                        const result = await unclaimQSlot(slot, {
+                            bypassDropGuard: true,
                         });
+                        
+                        if (!result?.success) {
+                            return;
+                        }
                         
                         renderApp();
                     } catch (error) {

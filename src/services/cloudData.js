@@ -2413,34 +2413,43 @@ export async function loadQReadiness(regionId, startDate, endDate) {
         );
     }
 
-    const workoutBySlotId = new Map();
+    const workoutBySlotAndMemberId = new Map();
     const legacyWorkoutMap = new Map();
 
     (workouts || []).forEach((workout) => {
-        if (workout.source_q_slot_id && !workoutBySlotId.has(workout.source_q_slot_id)) {
-            workoutBySlotId.set(workout.source_q_slot_id, workout);
-        }
-
         const profile = profileByUserId.get(workout.created_by_user_id);
         const ownerMemberId = profile?.member_id || profile?.memberId || null;
 
         if (!ownerMemberId) return;
 
-        const normalizedAoName = normalizeReadinessAoName(workout.ao_name);
-        const key = `${workout.date}|${normalizedAoName}|${ownerMemberId}`;
+        if (workout.source_q_slot_id) {
+            const slotOwnerKey =
+                `${workout.source_q_slot_id}|${ownerMemberId}`;
 
-        if (!legacyWorkoutMap.has(key)) {
-            legacyWorkoutMap.set(key, workout);
+            if (!workoutBySlotAndMemberId.has(slotOwnerKey)) {
+                workoutBySlotAndMemberId.set(slotOwnerKey, workout);
+            }
+        }
+
+        const normalizedAoName = normalizeReadinessAoName(workout.ao_name);
+        const legacyKey =
+            `${workout.date}|${normalizedAoName}|${ownerMemberId}`;
+
+        if (!legacyWorkoutMap.has(legacyKey)) {
+            legacyWorkoutMap.set(legacyKey, workout);
         }
     });
 
     return (slots || []).map((slot) => {
         const aoName = slot.aos?.name || "Unknown AO";
         const normalizedAoName = normalizeReadinessAoName(aoName);
-        const workoutKey = `${slot.date}|${normalizedAoName}|${slot.q_user_id}`;
+        const slotOwnerKey = `${slot.id}|${slot.q_user_id}`;
+        const legacyWorkoutKey =
+            `${slot.date}|${normalizedAoName}|${slot.q_user_id}`;
+
         const workout =
-            workoutBySlotId.get(slot.id) ||
-            legacyWorkoutMap.get(workoutKey);        const member = slot.members;
+            workoutBySlotAndMemberId.get(slotOwnerKey) ||
+            legacyWorkoutMap.get(legacyWorkoutKey);
 
         return {
             slotId: slot.id,
