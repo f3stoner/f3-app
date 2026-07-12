@@ -1,14 +1,14 @@
 # Official Baseline Final Dry Run
 
-Generated: 2026-07-09T22:52:20.616Z
+Generated: 2026-07-12T19:26:12.407Z
 
 ## Summary
 
 - Region ID: 96c9eef9-3b6e-4365-86cd-51dbeccf231a
 - Source: aggieland_official
-- Baseline cutover date: 2026-07-09
-- Total official rows: 1236
-- Existing members import-ready: 1235
+- Baseline cutover date: 2026-07-11
+- Total official rows: 1241
+- Existing members import-ready: 1240
 - Proposed creates: 0
 - Manually accepted metadata conflicts: 8
 - Existing matches accepted after related create: 1

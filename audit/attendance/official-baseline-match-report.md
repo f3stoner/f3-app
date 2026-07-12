@@ -1,6 +1,6 @@
 # Official Aggieland Baseline Match Audit
 
-Generated: 2026-07-09T22:52:20.614Z
+Generated: 2026-07-12T19:26:12.406Z
 
 ## Inputs
 
@@ -12,24 +12,24 @@ Generated: 2026-07-09T22:52:20.614Z
 
 - Region ID: 96c9eef9-3b6e-4365-86cd-51dbeccf231a
 - Source: aggieland_official
-- Baseline cutover date: 2026-07-09
-- Total official rows: 1236
-- Total official PAX rows: 1236
-- Matched existing members: 1220
+- Baseline cutover date: 2026-07-11
+- Total official rows: 1241
+- Total official PAX rows: 1241
+- Matched existing members: 1225
 - Unmatched official PAX: 0
 - Ambiguous matches: 16
 - Proposed members to create: 0
-- Proposed baseline stat imports: 1220
-- Existing-member import-ready rows: 1220
-- Matched: 439
+- Proposed baseline stat imports: 1225
+- Existing-member import-ready rows: 1225
+- Matched: 444
 - Unmatched: 0
 - Ambiguous Supabase duplicate: 6
 - Metadata conflicts: 10
 - Inactive matches: 781
-- Import-ready rows: 1220
-- Import-ready active: 322
+- Import-ready rows: 1225
+- Import-ready active: 326
 - Import-ready inactive: 570
-- Import-ready qualified identity: 328
+- Import-ready qualified identity: 329
 - Previous review required: 113
 - Review required: 16
 - Review required delta: -97
@@ -39,7 +39,7 @@ Generated: 2026-07-09T22:52:20.614Z
 | Classification | Count |
 |---|---:|
 | inactive_match | 781 |
-| matched | 439 |
+| matched | 444 |
 | metadata_conflict | 10 |
 | ambiguous_supabase_duplicate | 6 |
 
@@ -55,15 +55,15 @@ Generated: 2026-07-09T22:52:20.614Z
 
 | Classification | Official Pax | Hospital Name | First AO | FNG Date | Posts | Qs | Supabase Candidates | Candidate Hospital Names | Recommended Decision | Notes | Reason |
 |---|---|---|---|---|---:|---:|---|---|---|---|---|
-| metadata_conflict | Shaggy | Joshua Samuelson | Cave | 2024-11-23 | 328 | 90 | Shaggy | Justin Samuelson | accept_metadata_conflict | - | Raw Pax Master hospital name (Joshua Samuelson) does not match Supabase real_name (Justin Samuelson). |
-| metadata_conflict | Sinko | Josh | Iron | 2025-05-28 | 133 | 14 | Sinko | Josh Ravichandran | accept_metadata_conflict | - | Raw Pax Master hospital name (Josh) does not match Supabase real_name (Josh Ravichandran). |
-| metadata_conflict | Circuit | Juan Acuna | Watch | 2025-09-20 | 83 | 1 | Circuit | Juan Acuña | accept_metadata_conflict | - | Raw Pax Master hospital name (Juan Acuna) does not match Supabase real_name (Juan Acuña). |
-| metadata_conflict | Hot Wheels | Issac Starnes | Keep | 2025-04-03 | 40 | 0 | Hot Wheels | Issac Starns | accept_metadata_conflict | - | Raw Pax Master hospital name (Issac Starnes) does not match Supabase real_name (Issac Starns). |
+| metadata_conflict | Shaggy | Joshua Samuelson | Cave | 2024-11-23 | 331 | 91 | Shaggy | Justin Samuelson | accept_metadata_conflict | - | Raw Pax Master hospital name (Joshua Samuelson) does not match Supabase real_name (Justin Samuelson). |
+| metadata_conflict | Sinko | Josh | Iron | 2025-05-28 | 135 | 15 | Sinko | Josh Ravichandran | accept_metadata_conflict | - | Raw Pax Master hospital name (Josh) does not match Supabase real_name (Josh Ravichandran). |
+| metadata_conflict | Circuit | Juan Acuna | Watch | 2025-09-20 | 84 | 1 | Circuit | Juan Acuña | accept_metadata_conflict | - | Raw Pax Master hospital name (Juan Acuna) does not match Supabase real_name (Juan Acuña). |
+| metadata_conflict | Hot Wheels | Issac Starnes | Keep | 2025-04-03 | 41 | 1 | Hot Wheels | Issac Starns | accept_metadata_conflict | - | Raw Pax Master hospital name (Issac Starnes) does not match Supabase real_name (Issac Starns). |
 | metadata_conflict | Buttercream | Jared Steffen | Rock | 2026-04-15 | 34 | 0 | Buttercream | Jered Stefflen | accept_metadata_conflict | - | Raw Pax Master hospital name (Jared Steffen) does not match Supabase real_name (Jered Stefflen). |
 | metadata_conflict | Abacus | Barclay Stewart | Iron | 2026-05-04 | 29 | 0 | Abacus | Mark | accept_metadata_conflict | Same PAX; imported metadata conflict accepted. | Raw Pax Master hospital name (Barclay Stewart) does not match Supabase real_name (Mark). |
-| metadata_conflict | Seabiscuit | Jimmy Tillman | Iron | 2026-05-18 | 26 | 0 | Seabiscuit | Jarret Baker-Wilkinson | accept_match_after_create | Official Seabiscuit is Jimmy Tillman. Jarret Baker-Wilkinson belongs to Seabiscuit (Inactive). | Raw Pax Master hospital name (Jimmy Tillman) does not match Supabase real_name (Jarret Baker-Wilkinson). |
+| metadata_conflict | Seabiscuit | Jimmy Tillman | Iron | 2026-05-18 | 27 | 0 | Seabiscuit | Jarret Baker-Wilkinson | accept_match_after_create | Official Seabiscuit is Jimmy Tillman. Jarret Baker-Wilkinson belongs to Seabiscuit (Inactive). | Raw Pax Master hospital name (Jimmy Tillman) does not match Supabase real_name (Jarret Baker-Wilkinson). |
 | ambiguous_supabase_duplicate | Trex (2.0) | Kevin (Narc 2.0) | F3Dads | 2025-06-21 | 12 | 0 | T-Rex (2.0); Trex (2.0) | Kevin (Narc 2.0) | map_to_existing_member | Distinct 2.0 PAX. | Multiple Supabase members share the same normalized pax_name. |
-| ambiguous_supabase_duplicate | Top Hat | Doug Pittman | Iron | 2026-06-17 | 8 | 0 | Top Hat | Doug Pittman; Matthew Murphy | map_to_existing_member | Official Top Hat is Matthew Murphy; map to existing inactive member. Newly created duplicate should be reviewed/removed. | Multiple Supabase members share the same normalized pax_name. |
+| ambiguous_supabase_duplicate | Top Hat | Doug Pittman | Iron | 2026-06-17 | 8 | 0 | Top Hat | Doug Pittman; Matthew Murphy | map_to_existing_member | Official Top Hat is Doug Pittman; map to active Iron member. | Multiple Supabase members share the same normalized pax_name. |
 | ambiguous_supabase_duplicate | T-Rex (2.0) | Kevin (Narc 2.0) | F3Dads | 2025-06-21 | 5 | 0 | T-Rex (2.0); Trex (2.0) | Kevin (Narc 2.0) | map_to_existing_member | Distinct 2.0 PAX. | Multiple Supabase members share the same normalized pax_name. |
 | metadata_conflict | Bus Stop | David Berry | Iron | 2026-05-11 | 4 | 1 | Bus Stop | David Barry | accept_metadata_conflict | - | Raw Pax Master hospital name (David Berry) does not match Supabase real_name (David Barry). |
 | metadata_conflict | Liver King | Jason Rinaldi | Cave | 2026-04-25 | 4 | 0 | Liver King | Jason | accept_metadata_conflict | - | Raw Pax Master hospital name (Jason Rinaldi) does not match Supabase real_name (Jason). |

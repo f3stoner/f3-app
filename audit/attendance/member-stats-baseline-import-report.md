@@ -1,19 +1,19 @@
 # Member Stats Baseline Import Report
 
-Generated: 2026-07-10T02:53:47.823Z
+Generated: 2026-07-12T19:34:40.281Z
 Mode: dry-run
 
 ## Summary
 
-- Plan import batch ID: aggieland_official_20260709T225224Z
-- DB import batch UUID: 007429a9-6ae2-51bb-baee-d16f35e6968e
+- Plan import batch ID: aggieland_official_20260712T192619Z
+- DB import batch UUID: f1503e29-facb-58ee-8fd4-98bfeba7ae4f
 - Source: aggieland_official
-- Rows read: 1236
-- Rows eligible: 1236
+- Rows read: 1241
+- Rows eligible: 1241
 - Rows that would insert: 0
 - Rows inserted: 0
 - Rows updated: 0
-- Rows already exist: 1236
+- Rows already exist: 1241
 - Rows skipped: 0
 - Errors: 0
 - Existing-row check: performed
@@ -29,7 +29,7 @@ Mode: dry-run
 |---|---|---|---:|---:|---|---|
 | already_exists | de4aa862-028c-4f5d-8276-b1d449f0737a | 12 Gauge (DR) | 1 | 0 | 2026-06-26 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 7879ca89-a6db-4490-bdb8-7e2b589513d5 | 4th Quarter | 1 | 0 | 2024-04-23 | Existing baseline row detected; dry-run would skip. |
-| already_exists | 910d4ed7-937b-4b25-9c3a-e2502337ee85 | 4Wheeler | 64 | 2 | 2026-07-08 | Existing baseline row detected; dry-run would skip. |
+| already_exists | 910d4ed7-937b-4b25-9c3a-e2502337ee85 | 4Wheeler | 65 | 2 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 5d5ccad3-cfbd-4408-85f8-5a2826940180 | 6-String | 1 | 0 | 2023-06-20 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 465ee72e-5b41-4e74-8f5a-2c80b55554c6 | 8 Mile | 371 | 49 | 2026-07-02 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 6561df24-7dd8-4882-90cc-1ee28225d227 | 8 Seconds | 2 | 0 | 2026-04-19 | Existing baseline row detected; dry-run would skip. |
@@ -38,7 +38,7 @@ Mode: dry-run
 | already_exists | 0b36ede4-bd1a-46cf-8e84-b0de4144aaf6 | Abacus (Inactive) | 1 | 0 | 2023-04-29 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 2d00bfb4-8e56-4913-9774-1c42062da054 | Accelerator | 1 | 0 | 2025-10-28 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 3ec9c015-8a35-4f09-a087-064b6134e45c | Achilles | 1 | 0 | 2025-06-23 | Existing baseline row detected; dry-run would skip. |
-| already_exists | 483d967c-84f9-430f-874b-028ac3c99730 | Acme | 471 | 20 | 2026-07-09 | Existing baseline row detected; dry-run would skip. |
+| already_exists | 483d967c-84f9-430f-874b-028ac3c99730 | Acme | 471 | 20 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 9617e2d9-f98b-49b8-a119-6f7ff1c2847a | Airball (2.0) | 6 | 0 | 2026-04-19 | Existing baseline row detected; dry-run would skip. |
 | already_exists | c81c9bbf-4974-412a-bb21-300d01a04714 | Airbender (2.0) | 2 | 0 | 2025-06-28 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 389226ac-cf31-4de3-9bfd-0693d0f97301 | Airpods | 4 | 0 | 2025-06-28 | Existing baseline row detected; dry-run would skip. |
@@ -52,36 +52,36 @@ Mode: dry-run
 | already_exists | d2d6cb87-2bb4-47cd-9600-81f9f3f8371c | American Pie | 1 | 0 | 2025-07-17 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 3f982cb8-1c66-49d1-b062-b3fc9e9285da | Amish | 4 | 0 | 2024-08-29 | Existing baseline row detected; dry-run would skip. |
 | already_exists | c6d89346-5ae9-4c90-b92e-4976f9a2804a | Amnesia | 46 | 0 | 2025-01-16 | Existing baseline row detected; dry-run would skip. |
-| already_exists | e670392c-dd17-4e29-a57e-688a5ffa603f | Anakin | 577 | 52 | 2026-07-09 | Existing baseline row detected; dry-run would skip. |
+| already_exists | e670392c-dd17-4e29-a57e-688a5ffa603f | Anakin | 578 | 52 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 035279b6-405c-401e-beee-1b1a122ce7b1 | Angel | 5 | 0 | 2023-06-22 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 64f15f9c-111b-4d33-b9b4-0062c4e67c91 | Ant Farm (DR) | 1 | 0 | 2026-04-17 | Existing baseline row detected; dry-run would skip. |
 | already_exists | f6bd69ec-6abd-4605-9221-b3b662a8e5d5 | AOL | 3 | 0 | 2024-01-12 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ef913b0e-cea7-4259-b922-de9b32d2a82a | Aperture (DR) | 89 | 4 | 2023-04-20 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ff92bca7-d85d-4f69-b1d1-893a24f05e98 | Appleseed | 1 | 0 | 2023-07-29 | Existing baseline row detected; dry-run would skip. |
-| already_exists | 0e27b360-927c-4ebe-a575-13a8a33349e4 | Archy | 282 | 18 | 2026-07-08 | Existing baseline row detected; dry-run would skip. |
+| already_exists | 0e27b360-927c-4ebe-a575-13a8a33349e4 | Archy | 283 | 18 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 44d0fc63-bf82-4744-acd4-7f07d77e116e | Ariel (2.0) | 8 | 0 | 2026-06-13 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 154fc95c-2b2b-42b2-a779-04b8535f3029 | Armadilla | 1 | 0 | 2024-06-15 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 930352c5-4941-48ad-9821-e81f02e142fc | Armstrong (DR) | 9 | 0 | 2025-02-27 | Existing baseline row detected; dry-run would skip. |
-| already_exists | f5174cff-3d24-43c2-b7e8-9303a05744a4 | Artic Fox (2.0) | 11 | 0 | 2025-08-02 | Existing baseline row detected; dry-run would skip. |
+| already_exists | f5174cff-3d24-43c2-b7e8-9303a05744a4 | Artic Fox (2.0) | 12 | 0 | 2026-07-11 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ce249567-7f25-477d-aac0-80dcacf3d602 | Artista  (2.0) | 5 | 0 | 2026-06-27 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 878834e6-0adb-4aeb-b836-b54a64dba07e | Arwen (2.0) | 37 | 2 | 2026-04-25 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 64025010-19f3-4c4e-9e49-c2e5115b89aa | Asiago | 75 | 9 | 2026-07-09 | Existing baseline row detected; dry-run would skip. |
 | already_exists | c7f81402-c11c-408b-bf76-3a2f471cd505 | ATA | 1 | 0 | 2024-10-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 356510d9-ec2b-4aa1-bca8-7940bf6035c6 | Atari | 2 | 0 | 2024-03-29 | Existing baseline row detected; dry-run would skip. |
-| already_exists | 5912629e-7225-4f54-93c6-e6ddd8a42117 | Atlas (2.0) | 19 | 0 | 2026-07-04 | Existing baseline row detected; dry-run would skip. |
+| already_exists | 5912629e-7225-4f54-93c6-e6ddd8a42117 | Atlas (2.0) | 20 | 0 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 65568666-05b2-4321-aa56-cd9e09cef92d | Augusta (2.0) | 4 | 0 | 2024-05-25 | Existing baseline row detected; dry-run would skip. |
 | already_exists | c0cdf6a1-09ef-4d58-91a8-18887a54f33c | AutoCAD | 1 | 0 | 2023-02-04 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 79c03d13-4d17-4059-a1a6-4b11f71a0666 | Avril (2.0) | 3 | 0 | 2024-07-20 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 54b756bb-f9dd-46cc-a611-4b23da730736 | Axolotl (2.0) | 8 | 0 | 2025-11-22 | Existing baseline row detected; dry-run would skip. |
 | already_exists | facfa382-2eda-4904-91ea-4fd8741f8849 | B-I-N-G-O (2.0) | 3 | 0 | 2025-09-06 | Existing baseline row detected; dry-run would skip. |
-| already_exists | b1d416f2-6684-499f-b419-5ed4856cf664 | Babel | 734 | 114 | 2026-07-08 | Existing baseline row detected; dry-run would skip. |
+| already_exists | b1d416f2-6684-499f-b419-5ed4856cf664 | Babel | 737 | 115 | 2026-07-11 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 88b22911-911e-4611-a126-19589b0d0113 | Backdraft | 3 | 0 | 2022-06-30 | Existing baseline row detected; dry-run would skip. |
 | already_exists | a85f1473-aaac-474f-b544-0bfce37aa9b6 | Backhand | 1 | 0 | 2025-04-26 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ddad3938-c9c0-4688-bab3-01ae9b4f00cc | Backorder | 4 | 0 | 2022-10-08 | Existing baseline row detected; dry-run would skip. |
 | already_exists | fe005cd1-600a-405c-b827-e41c3748d84b | Badger | 132 | 2 | 2026-04-09 | Existing baseline row detected; dry-run would skip. |
 | already_exists | cac5ea0a-a2fc-4248-82c8-1ecc2d02922b | Baitmaster | 1 | 0 | 2025-06-04 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 74afcab4-632e-4b0d-9b73-a9078a590532 | Baler | 1 | 0 | 2023-11-09 | Existing baseline row detected; dry-run would skip. |
-| already_exists | e1fcb5dd-69e2-419d-9178-794ce98b3f2f | Ballboy | 267 | 23 | 2026-07-08 | Existing baseline row detected; dry-run would skip. |
+| already_exists | e1fcb5dd-69e2-419d-9178-794ce98b3f2f | Ballboy | 270 | 23 | 2026-07-11 | Existing baseline row detected; dry-run would skip. |
 | already_exists | b27cb908-0e2a-47a1-81dd-0d911a58e80e | Bambino (2.0) | 2 | 0 | 2025-03-15 | Existing baseline row detected; dry-run would skip. |
 | already_exists | fe998114-b65c-4a7a-a1e1-eed026fd8f9d | Bamm Bamm | 40 | 1 | 2025-05-12 | Existing baseline row detected; dry-run would skip. |
 | already_exists | a4b9cd09-9cb3-4964-8e57-8ec66cbcb7c0 | Bandera | 33 | 3 | 2026-01-09 | Existing baseline row detected; dry-run would skip. |
@@ -90,7 +90,7 @@ Mode: dry-run
 | already_exists | 1d78aa5e-8b17-4ead-80c6-bc0ba3749471 | Banjo | 1 | 0 | 2023-01-12 | Existing baseline row detected; dry-run would skip. |
 | already_exists | bd0ce725-7629-4316-8fde-19348fe77981 | Banksy (DR) | 1 | 0 | 2023-04-29 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 92b2859c-04f6-4291-9098-7e2667abc15f | Banner | 333 | 50 | 2026-04-24 | Existing baseline row detected; dry-run would skip. |
-| already_exists | f3eba83e-9e25-4b3a-a1a1-f8fe5f7d6b10 | Barbarosa | 366 | 25 | 2026-07-09 | Existing baseline row detected; dry-run would skip. |
+| already_exists | f3eba83e-9e25-4b3a-a1a1-f8fe5f7d6b10 | Barbarosa | 367 | 25 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 979b3931-65d4-4fbf-bef3-c3062ca4dc4e | Bareback | 100 | 2 | 2026-07-09 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 04b2dc09-6cc1-4526-8106-e2b1f647827a | Barney (DR) | 2 | 1 | 2022-06-04 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 037a2b98-d099-486b-8f85-6c23581d0d4d | Barney Fife | 1 | 0 | 2023-08-26 | Existing baseline row detected; dry-run would skip. |
@@ -122,7 +122,7 @@ Mode: dry-run
 | already_exists | 96b72270-aad5-43a4-b79c-32a5389123bf | Big Papi | 6 | 0 | 2025-11-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 713e5d35-104f-43e3-8ecf-20b90f298761 | Big Papi (Inactive) | 2 | 0 | 2023-08-01 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 66554e50-5e31-497f-b67f-0fa135e05d8b | Big Pharma (DR) | 1 | 0 | 2025-06-03 | Existing baseline row detected; dry-run would skip. |
-| already_exists | 6f927a8f-7ec0-4b97-a4f4-5123d3d5a74b | Big Storm (2.0) | 28 | 0 | 2026-07-04 | Existing baseline row detected; dry-run would skip. |
+| already_exists | 6f927a8f-7ec0-4b97-a4f4-5123d3d5a74b | Big Storm (2.0) | 29 | 0 | 2026-07-11 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ecff2a20-54cc-4957-8a2e-ca112dfbab96 | Big Tuna (DR) | 4 | 1 | 2024-04-27 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ba7af42b-6db9-4499-80fb-2e3790007202 | Biggie | 1 | 0 | 2024-06-22 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 410c20c8-c3c2-4e89-8996-1a6396da838f | BigSky | 2 | 0 | 2023-06-22 | Existing baseline row detected; dry-run would skip. |
@@ -138,11 +138,11 @@ Mode: dry-run
 | already_exists | 08f3dc8a-c19a-41f7-b699-d1513678e551 | Blitz (2.0) | 7 | 0 | 2026-07-02 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 5e7a4dc2-455c-48ff-9536-62d42a42e44d | Bloodsport (2.0) | 1 | 0 | 2023-03-25 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 4ebc6fc5-2202-4ff3-8414-696361b9e248 | Blowout | 4 | 0 | 2026-01-09 | Existing baseline row detected; dry-run would skip. |
-| already_exists | bd63edbc-4b3f-4a3a-b60a-c9bcbb89d458 | Blue | 32 | 0 | 2026-07-03 | Existing baseline row detected; dry-run would skip. |
+| already_exists | bd63edbc-4b3f-4a3a-b60a-c9bcbb89d458 | Blue | 33 | 0 | 2026-07-10 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 6a88753d-84f2-400e-b476-6c8a9eb439a2 | Blue Bell | 2 | 0 | 2026-02-19 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 561ed44d-1e46-4bb4-afa2-7cece4486772 | Blue Bell (inactive) | 1 | 0 | 2022-07-14 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 3b45aa4b-b454-492c-a76c-4d774a3ab64b | Blue Screen | 448 | 130 | 2026-07-08 | Existing baseline row detected; dry-run would skip. |
-| already_exists | c73b3f53-f3a8-4317-8835-1e494dbb4098 | Blue Steel (2.0) | 7 | 0 | 2026-07-07 | Existing baseline row detected; dry-run would skip. |
+| already_exists | c73b3f53-f3a8-4317-8835-1e494dbb4098 | Blue Steel (2.0) | 8 | 0 | 2026-07-11 | Existing baseline row detected; dry-run would skip. |
 | already_exists | ebc46405-789c-4623-b921-2754726b3865 | Bob the Builder | 5 | 0 | 2024-11-25 | Existing baseline row detected; dry-run would skip. |
 | already_exists | f0bd04ea-8d1e-4307-bb5d-c7639d997293 | Bobber | 1 | 0 | 2025-09-08 | Existing baseline row detected; dry-run would skip. |
 | already_exists | a29e4da1-b267-4f9c-90a1-ed28e131bde5 | Bobby Boucher | 1 | 0 | 2024-04-27 | Existing baseline row detected; dry-run would skip. |
@@ -152,7 +152,7 @@ Mode: dry-run
 | already_exists | 618a232e-e157-4936-9a0b-1c4f2b14237c | Booger | 45 | 1 | 2025-01-29 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 3ef206eb-f80c-471a-9e6c-726dc03cf2fe | Boogy | 1 | 0 | 2025-11-27 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 716275e2-6bfa-4dd0-a190-34f0b3c89000 | Bookworm (2.0) | 1 | 0 | 2025-02-15 | Existing baseline row detected; dry-run would skip. |
-| already_exists | 5885007f-4ac7-46af-a359-33cffbc99ace | Boomer | 754 | 60 | 2026-07-08 | Existing baseline row detected; dry-run would skip. |
+| already_exists | 5885007f-4ac7-46af-a359-33cffbc99ace | Boomer | 756 | 60 | 2026-07-11 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 9b060ffd-cc49-40c9-b2e4-11090a1af205 | Boomerang | 1 | 0 | 2024-09-06 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 4d8efbd5-ddad-401b-bf5a-1ddae710ed9d | Booster | 1 | 0 | 2022-12-20 | Existing baseline row detected; dry-run would skip. |
 | already_exists | b44f8e28-22ef-4844-987a-33de94702aff | BOP (DR) | 3 | 1 | 2022-07-23 | Existing baseline row detected; dry-run would skip. |
@@ -177,4 +177,4 @@ Mode: dry-run
 | already_exists | cb273235-b988-431b-a43a-6ce6da5aa345 | Bugs (DR) | 1 | 0 | 2022-04-30 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 0544c223-1594-4706-9901-ebd02faae484 | Builder | 1 | 0 | 2025-07-19 | Existing baseline row detected; dry-run would skip. |
 | already_exists | 339a8aa3-8d14-4974-a4a2-f8ff03f0286e | Bull | 91 | 2 | 2024-02-13 | Existing baseline row detected; dry-run would skip. |
-| ... | 1086 more rows |  |  |  |  |
+| ... | 1091 more rows |  |  |  |  |

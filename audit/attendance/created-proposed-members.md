@@ -1,23 +1,20 @@
 # Created Proposed Aggieland Members
 
-Generated: 2026-07-09T22:45:36.863Z
+Generated: 2026-07-12T19:25:25.561Z
 Mode: commit
 
 ## Summary
 
 - Region ID: 96c9eef9-3b6e-4365-86cd-51dbeccf231a
-- Proposed create rows: 4
-- Created rows: 4
+- Proposed create rows: 1
+- Created rows: 1
 - Dry-run rows: 0
 
 ## Rows
 
 | Status | Member ID | Pax Name | Real Name | Home AO | Invited By ID | First Post Date | Member Status | Skipped Optional Metadata | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| created | 52b1bff2-21fa-4671-9af9-94ad64a12bd4 | Bucky (DR) | Thomas Shaw | Mine | 9b2c2ba0-b800-4530-91c6-ab53e17ab7e1 | 2026-07-04 | active | - | - |
-| created | 61be09ef-5db9-418d-9e70-0fad84df238d | Creeper | Mike Padgett | Mine | 6634dba6-867e-44a5-b2c8-210b40b25ded | 2026-07-04 | active | - | - |
-| created | 0dda7796-b27a-4a36-a30e-c7ef0cc95c9d | Santana | Carlos Solis | Keep | 6bdf6012-3006-4e5a-948e-5d4e1dfc24e6 | 2026-07-03 | active | - | - |
-| created | 9ac75ff7-b811-4859-82e9-afff634ee31f | Sierra Mist (DR) | - | - | - | - | active | - | No first_ao supplied; home_ao skipped.; No proud_papa supplied; invited_by_id skipped. |
+| created | f897ebb4-c223-4fc6-8feb-62adc31795a2 | Moses (2.0) | Lumby (2.0) | Dads | 671dde72-0477-4032-804d-30219ea2cf33 | 2026-07-11 | active | - | - |
 
 ## Safety
 
