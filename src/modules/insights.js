@@ -256,9 +256,19 @@ export function buildRegionInsights({
 
             entry.attendanceCount += getSessionAttendanceCount(session);
 
-            entry.fngsBrought += session.fngs?.filter(
-                fng => fng.invitedById === qId
-            ).length || 0;
+            entry.fngsBrought += (session.fngs || []).filter(fng => {
+                const inviterIds = [
+                    ...(
+                        Array.isArray(fng.inviterIds)
+                            ? fng.inviterIds
+                            : []
+                    ),
+                    fng.invitedById,
+                    fng.invited_by_id,
+                ].filter(Boolean);
+            
+                return new Set(inviterIds).has(qId);
+            }).length;
         });
     });
 

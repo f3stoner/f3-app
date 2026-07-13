@@ -1,8 +1,7 @@
 import { state } from "../modules/state.js";
-import { renderApp } from "../index.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { updateMember } from "../services/appData.js";
-import { goBack, navigateTo } from "../utils/navigation.js";
+import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
@@ -68,33 +67,56 @@ export function renderMemberEdit () {
     realNameInput.value = member.realName || "";
 
     const invitedByLabel = document.createElement("div");
-    invitedByLabel.textContent = "Invited By";
+    invitedByLabel.textContent = "Proud Papas";
     invitedByLabel.classList.add("detail-label");
 
-    const invitedByField = createInvitedByField(member.invitedById || "");
+    const initialInviterIds =
+        Array.isArray(member.inviterIds) && member.inviterIds.length > 0
+            ? member.inviterIds
+            : member.invitedById
+                ? [member.invitedById]
+                : [];
+
+    const invitedByField = createInvitedByField(
+        initialInviterIds,
+        {
+            excludedMemberId: member.id,
+            includeInactive: true,
+        }
+    );
     
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save";
 
     saveButton.addEventListener("click", async () => {
-        const invitedByInput = app.querySelector(".fng-invited-by-select");
-
+        const inviterIds = invitedByField.getSelectedIds();
+    
         const updatedMember = {
             ...member,
             paxName: paxNameInput.value.trim() || member.paxName,
             realName: realNameInput.value.trim(),
-            invitedById: invitedByInput.value || null,
+            inviterIds,
+            invitedById: inviterIds[0] || null,
         };
-
+    
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+    
         try {
             await updateMember(member.id, updatedMember);
+    
             state.selectedMemberId = member.id;
             state.editingMemberId = null;
+    
+            showToast("Member saved", "success");
             navigateTo("memberDetail");
         } catch (error) {
             console.error("Failed to update member:", error);
             showToast("Failed to save member", "error");
-        }   
+    
+            saveButton.disabled = false;
+            saveButton.textContent = "Save";
+        }
     });
 
     app.append(

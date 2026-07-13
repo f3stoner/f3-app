@@ -753,7 +753,10 @@ export async function insertMember(regionId, member) {
                 pax_name: member.paxName,
                 real_name: member.realName || null,
                 home_ao: member.homeAo || null,
-                invited_by_id: member.invitedById || null,
+                invited_by_id:
+                    member.inviterIds?.[0] ??
+                    member.invitedById ??
+                    null,
                 first_post_date: member.firstPostDate || null,
                 status: member.status,
             },
@@ -773,7 +776,10 @@ export async function updateMemberInCloud(regionId, member) {
             pax_name: member.paxName,
             real_name: member.realName || null,
             home_ao: member.homeAo || null,
-            invited_by_id: member.invitedById || null,
+            invited_by_id:
+                member.inviterIds?.[0] ??
+                member.invitedById ??
+                null,
             first_post_date: member.firstPostDate || null,
             status: member.status,
         })
@@ -1744,11 +1750,13 @@ export function getAffectedMemberIdsFromSession(session) {
     });
 
     (session?.fngs || []).forEach(fng => {
-        const invitedById = fng?.invitedById || fng?.invited_by_id;
-
-        if (invitedById) {
-            ids.add(invitedById);
-        }
+        const inviterIds = [
+            ...(fng?.inviterIds || []),
+            fng?.invitedById,
+            fng?.invited_by_id,
+        ].filter(Boolean);
+    
+        inviterIds.forEach(id => ids.add(id));
     });
 
     return [...ids];

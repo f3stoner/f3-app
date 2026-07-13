@@ -192,10 +192,32 @@ export function renderSessionDetail() {
 
                 let rowText = displayName;
 
-                if (fng.invitedById) {
-                    const inviter = state.members.find(m => m.id === fng.invitedById);
-                    const inviterName = inviter ? inviter.paxName : "Unknown";
-                    rowText += ` (Invited by ${inviterName})`;
+                const inviterIds = [
+                    ...(
+                        Array.isArray(fng.inviterIds)
+                            ? fng.inviterIds
+                            : []
+                    ),
+                    fng.invitedById,
+                    fng.invited_by_id,
+                ].filter(Boolean);
+                
+                const uniqueInviterIds = [...new Set(inviterIds)];
+                
+                const inviterNames = uniqueInviterIds
+                    .map(inviterId =>
+                        state.members.find(member => member.id === inviterId)
+                    )
+                    .filter(Boolean)
+                    .map(inviter =>
+                        inviter.paxName ||
+                        inviter.displayName ||
+                        inviter.realName ||
+                        "Unknown PAX"
+                    );
+                
+                if (inviterNames.length > 0) {
+                    rowText += ` (Invited by ${inviterNames.join(", ")})`;
                 }
 
                 const text = document.createElement("span");
@@ -212,12 +234,25 @@ export function renderSessionDetail() {
                 addButton.disabled = alreadyOnRoster;
 
                 addButton.addEventListener("click", async () => {
+                    const inviterIds = [
+                        ...(
+                            Array.isArray(fng.inviterIds)
+                                ? fng.inviterIds
+                                : []
+                        ),
+                        fng.invitedById,
+                        fng.invited_by_id,
+                    ].filter(Boolean);
+                    
+                    const cleanInviterIds = [...new Set(inviterIds)];
+                    
                     const newMember = {
                         id: crypto.randomUUID(),
                         paxName: fng.paxName || fng.realName,
                         realName: fng.realName,
                         homeAo: session.aoName,
-                        invitedById: fng.invitedById,
+                        inviterIds: cleanInviterIds,
+                        invitedById: cleanInviterIds[0] || null,
                         firstPostDate: session.date,
                         status: "active",
                     };
@@ -231,7 +266,15 @@ export function renderSessionDetail() {
                                 existingFng.paxName === fng.paxName;
                         
                             return isTargetFng
-                                ? { ...existingFng, memberId: savedMember.id }
+                                ? {
+                                    ...existingFng,
+                                    memberId: savedMember.id,
+                                    inviterIds: savedMember.inviterIds || cleanInviterIds,
+                                    invitedById:
+                                        savedMember.invitedById ||
+                                        cleanInviterIds[0] ||
+                                        null,
+                                }
                                 : existingFng;
                         });
                         

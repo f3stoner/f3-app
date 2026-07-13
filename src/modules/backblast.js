@@ -119,22 +119,71 @@ export function generateBackblast (session, members) {
     : "None";
 
     const fngText = fngs.length === 0
-    ? "None"
-    : fngs.map(fng => {
-        const displayName = fng.paxName && fng.realName
-            ? `${fng.paxName} (${fng.realName})` 
-            : (fng.paxName || fng.realName || "Unknown");
+        ? "None"
+        : fngs
+            .map(fng => {
+                const displayName =
+                    fng.paxName && fng.realName
+                        ? `${fng.paxName} (${fng.realName})`
+                        : (
+                            fng.paxName ||
+                            fng.realName ||
+                            "Unknown"
+                        );
 
-        if (!fng.invitedById) return displayName;
+                /*
+                * New sessions store all Proud Papas in inviterIds.
+                * Historical sessions may only have invitedById.
+                */
+                const inviterIds = [
+                    ...(
+                        Array.isArray(fng.inviterIds)
+                            ? fng.inviterIds
+                            : []
+                    ),
+                    fng.invitedById,
+                    fng.invited_by_id,
+                ].filter(Boolean);
 
-        const inviter = members.find(m => m.id === fng.invitedById);
-        const inviterName = getMemberBackblastName(inviter);
+                const uniqueInviterIds = [
+                    ...new Set(inviterIds),
+                ];
 
-        return `${displayName} (Invited by @${inviterName})`;
+                if (uniqueInviterIds.length === 0) {
+                    return displayName;
+                }
 
-    })
-    .sort(safeLocaleCompare)
-    .join("\n");
+                const inviterNames = uniqueInviterIds
+                    .map(inviterId => {
+                        const inviter = members.find(
+                            member => member.id === inviterId
+                        );
+
+                        if (!inviter) {
+                            console.warn(
+                                "Backblast inviter not found in members:",
+                                {
+                                    inviterId,
+                                    fngMemberId: fng.memberId || null,
+                                    fngName: displayName,
+                                }
+                            );
+
+                            return null;
+                        }
+
+                        return `@${getMemberBackblastName(inviter)}`;
+                    })
+                    .filter(Boolean);
+
+                if (inviterNames.length === 0) {
+                    return displayName;
+                }
+
+                return `${displayName} (Invited by ${inviterNames.join(", ")})`;
+            })
+            .sort(safeLocaleCompare)
+            .join("\n");
 
     const visitorText = visitors.length === 0
     ? "None"

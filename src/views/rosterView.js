@@ -10,6 +10,7 @@ import { insertMember } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
 import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
 import { navigateTo, navigateToPaxProfile } from "../utils/navigation.js";
+import { addMember } from "../services/appData.js";
 
 function renderRosterList(rosterContainer, members) {
     rosterContainer.textContent = "";
@@ -348,32 +349,28 @@ function openAddPaxModal() {
 
     try {
       const member = {
-        id: crypto.randomUUID(),
-        paxName,
-        realName: realName || null,
-        homeAo: aoSelect.value || null,
-        invitedById: null,
-        firstPostDate: null,
-        status: "active",
-      };
+      id: crypto.randomUUID(),
+      paxName,
+      realName: realName || null,
+      homeAo: aoSelect.value || null,
+      inviterIds: [],
+      invitedById: null,
+      firstPostDate: null,
+      status: "active",
+    };
 
-      const savedMember = await insertMember(
-        state.activeRegionId || state.currentRegionId,
-        member
-      );
+    await addMember(member);
 
-      state.members.push(savedMember);
-
-      overlay.remove();
-      showToast("PAX added.");
-      renderRoster();
-    } catch (error) {
-      console.error("Failed to add PAX:", error);
-      alert("Failed to add PAX.");
-      saveButton.disabled = false;
-      saveButton.textContent = "Save PAX";
-    }
-  });
+    overlay.remove();
+    showToast("PAX added.");
+    renderRoster();
+  } catch (error) {
+    console.error("Failed to add PAX:", error);
+    alert("Failed to add PAX.");
+    saveButton.disabled = false;
+    saveButton.textContent = "Save PAX";
+  }
+});
 
   buttonRow.append(cancelButton, saveButton);
 

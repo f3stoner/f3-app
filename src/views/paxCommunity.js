@@ -328,15 +328,32 @@ export async function renderPaxCommunityView() {
         const buddiesSection =
             createSection("Most Posted With", buddyList);
 
-        const proudPapa = state.members.find(
-            candidate =>
-                candidate.id === member.invitedById
-        ) || null;
+        const inviterIds =
+            member.inviterIds?.length
+                ? member.inviterIds
+                : member.invitedById
+                    ? [member.invitedById]
+                    : [];
+        
+        const proudPapas = state.members
+            .filter(candidate =>
+                inviterIds.includes(candidate.id)
+            )
+            .sort((a, b) =>
+                (a.paxName || "").localeCompare(b.paxName || "")
+            );
         
         const ehdPax = state.members
-            .filter(candidate =>
-                candidate.invitedById === member.id
-            )
+            .filter(candidate => {
+                const candidateInviterIds =
+                    candidate.inviterIds?.length
+                        ? candidate.inviterIds
+                        : candidate.invitedById
+                            ? [candidate.invitedById]
+                            : [];
+        
+                return candidateInviterIds.includes(member.id);
+            })
             .sort((a, b) =>
                 String(a.firstPostDate || "")
                     .localeCompare(String(b.firstPostDate || ""))
@@ -350,34 +367,46 @@ export async function renderPaxCommunityView() {
         
         const proudPapaLabel = document.createElement("div");
         proudPapaLabel.classList.add("pax-family-label");
-        proudPapaLabel.textContent = "Proud Papa";
+        proudPapaLabel.textContent = "Proud Papas";
         
-        const proudPapaValue = document.createElement(
-            proudPapa ? "button" : "div"
-        );
+        const proudPapaList = document.createElement("div");
+        proudPapaList.classList.add("pax-family-list");
         
-        if (proudPapa) {
-            proudPapaValue.type = "button";
-        }
+        if (proudPapas.length === 0) {
+            const empty = document.createElement("div");
+            empty.classList.add("pax-family-empty");
+            empty.textContent = "No Proud Papas recorded.";
         
-        proudPapaValue.classList.add("pax-family-primary-value");
-        proudPapaValue.textContent =
-            proudPapa?.paxName ||
-            proudPapa?.displayName ||
-            "Not recorded";
+            proudPapaList.appendChild(empty);
+        } else {
+            proudPapas.forEach(candidate => {
+                const row = document.createElement("button");
+                row.type = "button";
+                row.classList.add("pax-family-person-row");
         
-        if (proudPapa) {
-            proudPapaValue.addEventListener("click", () => {
-                state.selectedPaxId = proudPapa.id;
-                navigateTo("paxCommunity");
+                const name = document.createElement("span");
+                name.classList.add("pax-family-person-name");
+                name.textContent =
+                    candidate.paxName ||
+                    candidate.displayName ||
+                    "Unknown PAX";
+        
+                row.appendChild(name);
+        
+                row.addEventListener("click", () => {
+                    state.selectedPaxId = candidate.id;
+                    navigateTo("paxCommunity");
+                });
+        
+                proudPapaList.appendChild(row);
             });
         }
         
         proudPapaBlock.append(
             proudPapaLabel,
-            proudPapaValue
+            proudPapaList
         );
-        
+
         const ehdBlock = document.createElement("div");
         ehdBlock.classList.add(
             "pax-family-block",

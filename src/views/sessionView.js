@@ -910,7 +910,14 @@ function addFngRow(fng = null) {
     paxName.placeholder = "FNG F3 Name";
     paxName.value = fng?.paxName || "";
 
-    const invitedByField = createInvitedByField(fng?.invitedById || "");
+    const initialInviterIds =
+    Array.isArray(fng?.inviterIds) && fng.inviterIds.length > 0
+        ? fng.inviterIds
+        : fng?.invitedById
+            ? [fng.invitedById]
+            : [];
+
+    const invitedByField = createInvitedByField(initialInviterIds);
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
@@ -1099,18 +1106,38 @@ function collectFngsFromUi() {
     allFngRows.forEach(row => {
         const realNameInput = row.querySelector(".fng-realname-input");
         const paxNameInput = row.querySelector(".fng-paxname-input");
-        const invitedBySelect = row.querySelector(".fng-invited-by-select");
+        const inviterIdsInput = row.querySelector(".fng-inviter-ids");
 
-        const realName = realNameInput.value.trim();
-        const paxName = paxNameInput.value.trim() || null;
-        const invitedById = invitedBySelect.value || null;
+        const realName = realNameInput?.value.trim() || "";
+        const paxName = paxNameInput?.value.trim() || null;
         const memberId = row.dataset.memberId || null;
+
+        let inviterIds = [];
+
+        try {
+            const parsedIds = JSON.parse(
+                inviterIdsInput?.value || "[]"
+            );
+
+            inviterIds = Array.isArray(parsedIds)
+                ? [...new Set(parsedIds.filter(Boolean))]
+                : [];
+        } catch (error) {
+            console.warn(
+                "Failed to parse FNG inviter IDs:",
+                error
+            );
+            inviterIds = [];
+        }
+
+        const invitedById = inviterIds[0] || null;
 
         if (!realName) return;
 
         fngs.push({
             realName,
             paxName,
+            inviterIds,
             invitedById,
             memberId,
         });

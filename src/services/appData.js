@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { insertAdminFlags, insertMember, updateMemberInCloud, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud, deleteSavedPlannerSectionFromCloud } from "./cloudData.js";
+import { insertAdminFlags, insertMember, updateMemberInCloud, setMemberInviters, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud, deleteSavedPlannerSectionFromCloud } from "./cloudData.js";
 import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
 import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 import { replaceSessionVisitors } from "./sessionVisitorData.js";
@@ -73,21 +73,29 @@ async function ensureFngMembersForSession(activeRegionId, session) {
             continue;
         }
 
-        const savedMember = await insertMember(activeRegionId, {
+        const savedMember = await addMember({
             id: crypto.randomUUID(),
             realName: fng.realName || "",
             paxName: fng.paxName || null,
             status: "active",
             fngStatus: fng.paxName ? "named" : "unnamed",
             firstPostDate: session.date || null,
-            invitedById: fng.invitedById || null,
+            inviterIds:
+                fng.inviterIds ||
+                (fng.invitedById
+                    ? [fng.invitedById]
+                    : []),
+            invitedById:
+                fng.invitedById ||
+                fng.inviterIds?.[0] ||
+                null,
         });
-
-        state.members.push(savedMember);
 
         fngs.push({
             ...fng,
             memberId: savedMember.id,
+            inviterIds: savedMember.inviterIds || [],
+            invitedById: savedMember.invitedById || null,
         });
     }
 
@@ -225,7 +233,25 @@ export async function addMember(member) {
         throw new Error("No active region id");
     }
     const savedMember = await insertMember(activeRegionId, member);
+
+    await setMemberInviters(
+        savedMember.id,
+        member.inviterIds || (
+            member.invitedById
+                ? [member.invitedById]
+                : []
+        )
+    );
+
+    savedMember.inviterIds =
+        member.inviterIds ||
+        (member.invitedById ? [member.invitedById] : []);
+
+    savedMember.invitedById =
+        savedMember.inviterIds[0] || null;
+
     state.members.push(savedMember);
+
     persistAppData();
     return savedMember;
 }
@@ -235,12 +261,39 @@ export async function updateMember(memberId, updatedMember) {
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
-    const savedMember = await updateMemberInCloud(activeRegionId, updatedMember);
-    const index = state.members.findIndex(member => member.id === memberId);
+    const savedMember = await updateMemberInCloud(
+        activeRegionId,
+        updatedMember
+    );
+    
+    await setMemberInviters(
+        memberId,
+        updatedMember.inviterIds || (
+            updatedMember.invitedById
+                ? [updatedMember.invitedById]
+                : []
+        )
+    );
+    
+    savedMember.inviterIds =
+        updatedMember.inviterIds ||
+        (updatedMember.invitedById
+            ? [updatedMember.invitedById]
+            : []);
+    
+    savedMember.invitedById =
+        savedMember.inviterIds[0] || null;
+    
+    const index = state.members.findIndex(
+        member => member.id === memberId
+    );
+    
     if (index === -1) return false;
-
+    
     state.members[index] = savedMember;
+    
     persistAppData();
+    
     return true;
 }
 
