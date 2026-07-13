@@ -179,6 +179,43 @@ export async function loadAllMembers(regionId) {
     return allMembers;
 }
 
+export async function loadMemberInviters(memberIds = []) {
+    const cleanMemberIds = [...new Set(memberIds)].filter(Boolean);
+
+    if (cleanMemberIds.length === 0) return [];
+
+    const batchSize = 500;
+    const allRelationships = [];
+
+    for (let index = 0; index < cleanMemberIds.length; index += batchSize) {
+        const batchIds = cleanMemberIds.slice(index, index + batchSize);
+
+        const { data, error } = await supabase
+            .from("member_inviters")
+            .select(`
+                member_id,
+                inviter_member_id,
+                source,
+                source_metadata,
+                created_at
+            `)
+            .in("member_id", batchIds)
+            .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        allRelationships.push(...(data || []));
+    }
+
+    return allRelationships.map(row => ({
+        memberId: row.member_id,
+        inviterMemberId: row.inviter_member_id,
+        source: row.source || "",
+        sourceMetadata: row.source_metadata || {},
+        createdAt: row.created_at || null,
+    }));
+}
+
 export async function loadAllQSlots(regionId) {
     const pageSize = 1000;
     let from = 0;
@@ -426,11 +463,61 @@ export async function loadRegionData(regionId) {
     if (aoResult.error) throw aoResult.error;
     if (siteResult.error) throw siteResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
+
+    const memberInviterResult = await timed(
+        "loadRegionData:memberInviters",
+        loadMemberInviters(
+            memberResult.map(member => member.id)
+        )
+    );
+
+    const inviterIdsByMemberId = new Map();
+
+    memberInviterResult.forEach(relationship => {
+        if (
+            !relationship.memberId ||
+            !relationship.inviterMemberId
+        ) {
+            return;
+        }
+
+        const existing =
+            inviterIdsByMemberId.get(relationship.memberId) || [];
+
+        if (!existing.includes(relationship.inviterMemberId)) {
+            existing.push(relationship.inviterMemberId);
+        }
+
+        inviterIdsByMemberId.set(
+            relationship.memberId,
+            existing
+        );
+    });
     
     return {
         regionName: regionResult.data.name,
         fngNamingPostNumber: regionResult.data.fng_naming_post_number ?? 1,
-        members: memberResult.map(mapMemberFromDb),
+        members: memberResult.map(row => {
+            const member = mapMemberFromDb(row);
+        
+            /*
+             * Keep the legacy scalar first during the transition.
+             * Additional relationships follow from member_inviters.
+             */
+            const inviterIds = [
+                ...new Set([
+                    member.invitedById,
+                    ...(inviterIdsByMemberId.get(member.id) || []),
+                ].filter(Boolean)),
+            ];
+        
+            return {
+                ...member,
+                inviterIds,
+                invitedById: inviterIds[0] || null,
+            };
+        }),
+        memberInviters: memberInviterResult,
         sessions: sessionResult.map(row => {
             const session = mapSessionFromDb(row);
             const historicalBackblast = backblastLinksBySessionId.get(session.id);
@@ -478,12 +565,15 @@ export async function updateRegionWorkoutFieldLabels(regionId, labels) {
 }
 
 export function mapMemberFromDb(row) {
+    const invitedById = row.invited_by_id || null;
+
     return {
         id: row.id,
         paxName: row.pax_name,
         realName: row.real_name,
         homeAo: row.home_ao,
-        invitedById: row.invited_by_id,
+        invitedById,
+        inviterIds: invitedById ? [invitedById] : [],
         firstPostDate: row.first_post_date,
         status: row.status,
     };
@@ -695,6 +785,48 @@ export async function updateMemberInCloud(regionId, member) {
     if (error) throw error;
     
     return mapMemberFromDb(data);
+}
+
+export async function setMemberInviters(
+    memberId,
+    inviterIds = [],
+    {
+        source = "app",
+        sourceMetadata = {},
+        sessionId = null,
+    } = {}
+) {
+    if (!memberId) {
+        throw new Error("Member id is required to update inviters.");
+    }
+
+    const cleanInviterIds = [
+        ...new Set(
+            (Array.isArray(inviterIds) ? inviterIds : [])
+                .filter(Boolean)
+        ),
+    ];
+
+    const { data, error } = await supabase.rpc(
+        "set_member_inviters",
+        {
+            p_member_id: memberId,
+            p_inviter_member_ids: cleanInviterIds,
+            p_source: source,
+            p_source_metadata: sourceMetadata,
+            p_session_id: sessionId,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(row => ({
+        memberId: row.member_id,
+        inviterMemberId: row.inviter_member_id,
+        source: row.source || "",
+        sourceMetadata: row.source_metadata || {},
+        createdAt: row.created_at || null,
+    }));
 }
 
 export async function insertSession(regionId, session) {
