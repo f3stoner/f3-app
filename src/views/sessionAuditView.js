@@ -4,7 +4,6 @@ import {
     createMainMenu,
     cleanupMainMenu,
 } from "../components/mainMenu.js";
-import { loadSessionAudit } from "../services/cloudData.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { showToast } from "../utils/toast.js";
 import {
@@ -14,8 +13,14 @@ import {
 import { startSessionFromQSlot } from "../utils/sessionNavigation.js";
 import { navigateTo } from "../utils/navigation.js";
 import { canViewSessionAudit, canViewAnySessionAudit } from "../utils/permissions.js";
+import {
+    ignoreSessionAuditSlot,
+    loadSessionAudit,
+    restoreSessionAuditSlot,
+} from "../services/cloudData.js";
 
 const DEFAULT_AUDIT_DAYS = 14;
+let showIgnoredSessions = false;
 
 export async function renderSessionAuditView() {
     cleanupMainMenu();
@@ -29,7 +34,7 @@ export async function renderSessionAuditView() {
     }
 
     const today = getTodayDate();
-    const endDate = addDays(today, -1);
+    const endDate = today;
     const startDate = addDays(
         endDate,
         -(DEFAULT_AUDIT_DAYS - 1)
@@ -48,7 +53,7 @@ export async function renderSessionAuditView() {
     const description = document.createElement("p");
     description.classList.add("detail-value");
     description.textContent =
-        `Scheduled AO sessions from the past ${DEFAULT_AUDIT_DAYS} days.`;
+        `Scheduled AO sessions from today and the previous ${DEFAULT_AUDIT_DAYS - 1} days.`;
 
     const summarySection = document.createElement("div");
     summarySection.classList.add("section");
@@ -73,12 +78,18 @@ export async function renderSessionAuditView() {
             endDate
         );
 
-        const visibleRows = rows
+        const permittedRows = rows
             .filter(row => canViewSessionAudit(row.aoId))
             .sort(compareAuditRows);
 
-        renderSummary(summarySection, visibleRows);
-        renderAuditRows(listSection, visibleRows);
+        const summaryRows = permittedRows.filter(
+            row =>
+                row.status !== "ignored" &&
+                row.status !== "pending"
+        );
+        
+        renderSummary(summarySection, summaryRows);
+        renderAuditRows(listSection, permittedRows);
     } catch (error) {
         console.error("Failed to load session audit", error);
         showToast("Failed to load session audit.", "error");
@@ -153,7 +164,13 @@ function renderSummary(container, rows) {
 function renderAuditRows(container, rows) {
     container.textContent = "";
 
-    if (!rows.length) {
+    const ignored = rows.filter(row => row.status === "ignored");
+
+    const displayRows = showIgnoredSessions
+        ? rows
+        : rows.filter(row => row.status !== "ignored");
+
+    if (!displayRows.length && !ignored.length) {
         const emptyState = document.createElement("div");
         emptyState.classList.add("empty-state");
 
@@ -170,12 +187,62 @@ function renderAuditRows(container, rows) {
         return;
     }
 
-    const needsReview = rows.filter(row => row.status !== "logged");
-    const logged = rows.filter(row => row.status === "logged");
+    if (ignored.length > 0) {
+        const ignoredToggle = document.createElement("label");
+        ignoredToggle.classList.add("session-audit-ignore-toggle");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = showIgnoredSessions;
+
+        checkbox.addEventListener("change", () => {
+            showIgnoredSessions = checkbox.checked;
+            renderAuditRows(container, rows);
+        });
+
+        const toggleText = document.createElement("span");
+        toggleText.textContent =
+            `Show ignored (${ignored.length})`;
+
+        ignoredToggle.append(checkbox, toggleText);
+        container.appendChild(ignoredToggle);
+    }
+
+    const pendingToday = displayRows.filter(
+        row => row.status === "pending"
+    );
+    
+    const needsReview = displayRows.filter(
+        row =>
+            row.status === "missing" ||
+            row.status === "unclaimed"
+    );
+    
+    const logged = displayRows.filter(
+        row => row.status === "logged"
+    );
+
+    const visibleIgnored = displayRows.filter(
+        row => row.status === "ignored"
+    );
+
+    if (pendingToday.length > 0) {
+        const pendingTitle = document.createElement("div");
+        pendingTitle.classList.add("detail-label");
+        pendingTitle.textContent =
+            `Today — Pending Log (${pendingToday.length})`;
+    
+        container.appendChild(pendingTitle);
+    
+        pendingToday.forEach(row => {
+            container.appendChild(createAuditRow(row));
+        });
+    }
 
     const reviewTitle = document.createElement("div");
     reviewTitle.classList.add("detail-label");
-    reviewTitle.textContent = `Needs Review (${needsReview.length})`;
+    reviewTitle.textContent =
+        `Needs Review (${needsReview.length})`;
 
     container.appendChild(reviewTitle);
 
@@ -184,7 +251,8 @@ function renderAuditRows(container, rows) {
         completeState.classList.add("empty-state");
 
         const completeTitle = document.createElement("p");
-        completeTitle.textContent = "All scheduled sessions are accounted for.";
+        completeTitle.textContent =
+            "All scheduled sessions are accounted for.";
 
         const completeDetail = document.createElement("p");
         completeDetail.classList.add("detail-value");
@@ -195,6 +263,19 @@ function renderAuditRows(container, rows) {
         container.appendChild(completeState);
     } else {
         needsReview.forEach(row => {
+            container.appendChild(createAuditRow(row));
+        });
+    }
+
+    if (visibleIgnored.length > 0) {
+        const ignoredTitle = document.createElement("div");
+        ignoredTitle.classList.add("detail-label");
+        ignoredTitle.textContent =
+            `Ignored (${visibleIgnored.length})`;
+
+        container.appendChild(ignoredTitle);
+
+        visibleIgnored.forEach(row => {
             container.appendChild(createAuditRow(row));
         });
     }
@@ -242,21 +323,99 @@ function createAuditRow(row) {
 
     const status = document.createElement("p");
     status.classList.add("detail-value");
-    status.textContent = getStatusLabel(row.status);
+    status.textContent = getStatusLabel(row);
 
     const actions = document.createElement("div");
     actions.classList.add("session-audit-actions");
+
+    if (row.status === "pending" && !row.qId) {
+        const logButton = document.createElement("button");
+        logButton.type = "button";
+        logButton.textContent = "Log Session";
+    
+        logButton.addEventListener("click", () => {
+            startSessionFromQSlot(row);
+        });
+    
+        actions.appendChild(logButton);
+    }
 
     if (row.status === "missing" || row.status === "unclaimed") {
         const logButton = document.createElement("button");
         logButton.type = "button";
         logButton.textContent = "Log Session";
-
+    
         logButton.addEventListener("click", () => {
             startSessionFromQSlot(row);
         });
+    
+        const ignoreButton = document.createElement("button");
+        ignoreButton.type = "button";
+        ignoreButton.classList.add("secondary-button");
+        ignoreButton.textContent = "Ignore";
 
-        actions.appendChild(logButton);
+        ignoreButton.addEventListener("click", async () => {
+            const confirmed = window.confirm(
+                `Ignore the ${row.aoName || "AO"} session scheduled for ${formatDate(row.date)}?`
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            ignoreButton.disabled = true;
+
+            try {
+                await ignoreSessionAuditSlot(state.currentRegionId, row.slotId);
+                showToast("Session audit item ignored.", "success");
+                await renderSessionAuditView();
+            } catch (error) {
+                console.error("Failed to ignore session audit item", error);
+                showToast("Failed to ignore session audit item.", "error");
+                ignoreButton.disabled = false;
+            }
+        });
+
+        actions.append(logButton, ignoreButton);
+    }
+
+    if (row.status === "ignored") {
+        const restoreButton = document.createElement("button");
+        restoreButton.type = "button";
+        restoreButton.classList.add("secondary-button");
+        restoreButton.textContent = "Restore";
+    
+        restoreButton.addEventListener("click", async () => {
+            restoreButton.disabled = true;
+    
+            try {
+                await restoreSessionAuditSlot(
+                    state.currentRegionId,
+                    row.slotId
+                );
+    
+                showToast(
+                    "Session audit item restored.",
+                    "success"
+                );
+    
+                await renderSessionAuditView();
+            } catch (error) {
+                console.error(
+                    "Failed to restore session audit item",
+                    error
+                );
+    
+                showToast(
+                    "Failed to restore session audit item.",
+                    "error"
+                );
+    
+                restoreButton.disabled = false;
+            }
+        });
+    
+        actions.appendChild(restoreButton);
     }
 
     if (row.status === "logged" && row.sessionId) {
@@ -285,16 +444,26 @@ function createAuditRow(row) {
     return rowElement;
 }
 
-function getStatusLabel(status) {
-    if (status === "missing") {
+function getStatusLabel(row) {
+    if (row.status === "missing") {
         return "❌ No session logged";
     }
 
-    if (status === "unclaimed") {
+    if (row.status === "unclaimed") {
         return "⚠️ Unclaimed and not logged";
     }
 
-    if (status === "logged") {
+    if (row.status === "pending") {
+        return row.qId
+            ? "🕒 Pending Q log"
+            : "🕒 Pending log — unclaimed";
+    }
+
+    if (row.status === "ignored") {
+        return "🙈 Ignored";
+    }
+
+    if (row.status === "logged") {
         return "✅ Logged";
     }
 
@@ -303,9 +472,11 @@ function getStatusLabel(status) {
 
 function compareAuditRows(a, b) {
     const priority = {
-        missing: 0,
-        unclaimed: 1,
-        logged: 2,
+        pending: 0,
+        missing: 1,
+        unclaimed: 2,
+        ignored: 3,
+        logged: 4,
     };
 
     const priorityDifference =

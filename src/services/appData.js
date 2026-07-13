@@ -255,6 +255,7 @@ export function replacePersistedData({
     sessions,
     plannedWorkouts,
     aos,
+    sites,
     qSlots,
     adminFlags,
     savedPlannerSections,
@@ -272,6 +273,7 @@ export function replacePersistedData({
     state.sessions = sessions;
     state.plannedWorkouts = plannedWorkouts;
     state.aos = aos || [];
+    state.sites = sites || [];
     state.qSlots = qSlots || [];
     state.adminFlags = adminFlags || [];
     state.savedPlannerSections = savedPlannerSections || [];

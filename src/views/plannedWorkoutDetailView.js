@@ -1119,9 +1119,20 @@ export function renderPlannedWorkoutDetail() {
             state.executionContext?.executionDate ||
             getTodayDate();
 
+        const matchingQSlot = findMatchingQSlotForWorkout(workout);
+
         const session = createSession(sessionDate, {
             aoId: workout.aoId || null,
             aoName: workout.aoName || "",
+            siteId:
+                workout.siteId ||
+                matchingQSlot?.siteId ||
+                null,
+            startTime:
+                workout.startTime ||
+                matchingQSlot?.overrideTime ||
+                matchingQSlot?.startTime ||
+                null,
         });
 
         const currentMemberId = state.currentUserMemberId || null;
@@ -1140,7 +1151,10 @@ export function renderPlannedWorkoutDetail() {
             announcementText: workout.announcementText || "",
         };
         session.sourcePlannedWorkoutId = workout.id;
-        session.sourceQSlotId = workout.sourceQSlotId || null;
+        session.sourceQSlotId =
+            workout.sourceQSlotId ||
+            matchingQSlot?.id ||
+            null;
 
         state.draftSession = session;
         state.selectedSessionId = null;
@@ -1221,6 +1235,15 @@ export function renderPlannedWorkoutDetail() {
             id: crypto.randomUUID(),
             date: nextQSlot?.date || getTodayDate(),
             aoId: nextAo?.id || workout.aoId || null,
+            siteId:
+                nextQSlot?.siteId ||
+                workout.siteId ||
+                null,
+            startTime:
+                nextQSlot?.overrideTime ||
+                nextQSlot?.startTime ||
+                workout.startTime ||
+                null,
             aoName: nextAo?.name || workout.aoName || "",
             createdAt: Date.now(),
             lastModifiedAt: null,
@@ -1301,7 +1324,7 @@ export function renderPlannedWorkoutDetail() {
 
         state.draftPreblastText =
             matchingQSlot?.preblastText ||
-            generatePreblast(workout, state.aos);
+            generatePreblast(workout, state.aos, state.sites);
 
         state.hasAddedPreblastForecast = false;
         navigateTo("preblast");

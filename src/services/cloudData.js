@@ -337,6 +337,7 @@ export async function loadRegionData(regionId) {
         sessionResult,
         plannedWorkoutResult,
         aoResult,
+        siteResult,
         qSlotResult,
         adminFlagResult,
         savedPlannerSectionResult,
@@ -380,6 +381,15 @@ export async function loadRegionData(regionId) {
                 .eq("region_id", regionId)
         ),
 
+        timed(
+            "loadRegionData:sites",
+            supabase
+                .from("sites")
+                .select("*")
+                .eq("region_id", regionId)
+                .order("name", { ascending: true })
+        ),
+
         timed("loadRegionData:qSlots", loadAllQSlots(regionId)),
 
         timed("loadRegionData:adminFlags", loadAdminFlags(regionId)),
@@ -414,6 +424,7 @@ export async function loadRegionData(regionId) {
     if (sessionResult.error) throw sessionResult.error;
     if (plannedWorkoutResult.error) throw plannedWorkoutResult.error;
     if (aoResult.error) throw aoResult.error;
+    if (siteResult.error) throw siteResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
     
     return {
@@ -434,6 +445,7 @@ export async function loadRegionData(regionId) {
         }),        
         plannedWorkouts: plannedWorkoutResult.data.map(mapPlannedWorkoutFromDb),
         aos: aoResult.data.map(mapAoFromDb),
+        sites: (siteResult.data || []).map(mapSiteFromDb),
         qSlots: qSlotResult.map(mapQSlotFromDb),
         adminFlags: adminFlagResult,
         savedPlannerSections: (savedPlannerSectionResult.data || [])
@@ -482,6 +494,7 @@ export function mapSessionFromDb(row) {
         id: row.id,
         date: row.date,
         aoId: row.ao_id,
+        siteId: row.site_id || null,
         aoName: row.ao_name,
         attendeeIds: row.attendee_ids || [],
         qIds: row.q_ids || (row.q_id ? [row.q_id] : []),
@@ -508,6 +521,7 @@ function mapPlannedWorkoutFromDb(row) {
         id: row.id,
         date: row.date,
         aoId: row.ao_id,
+        siteId: row.site_id || null,
         aoName: row.ao_name,
         title: row.title || "",
         introduction: row.introduction || "",
@@ -583,11 +597,31 @@ function mapAoFromDb(row) {
     };
 }
 
+function mapSiteFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        name: row.name,
+        address: row.address || "",
+        mapUrl: row.map_url || "",
+        latitude: row.latitude ?? null,
+        longitude: row.longitude ?? null,
+        weatherLocationLabel: row.weather_location_label || "",
+        weatherEnabled: row.weather_enabled ?? false,
+        isActive: row.is_active ?? true,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
+}
+
 function mapQSlotFromDb(row) {
     return {
         id: row.id,
         aoId: row.ao_id,
+        siteId: row.site_id || null,
         date: row.date,
+        startTime: row.start_time || null,
+        durationMinutes: row.duration_minutes ?? null,
         qUserId: row.q_user_id || null,
         createdAt: row.created_at,
         preblastText: row.preblast_text || "",
@@ -672,6 +706,7 @@ export async function insertSession(regionId, session) {
                 region_id: regionId,
                 date: session.date,
                 ao_id: session.aoId || null,
+                site_id: session.siteId || null,
                 ao_name: session.aoName,
                 q_ids: session.qIds || [],
                 q_id: session.qIds?.[0] || null,
@@ -731,6 +766,7 @@ export async function updateSessionInCloud(regionId, session) {
             region_id: regionId,
             date: session.date,
             ao_id: session.aoId || null,
+            site_id: session.siteId || null,
             ao_name: session.aoName,
             q_ids: session.qIds || [],
             q_id: session.qIds?.[0] || null,
@@ -777,6 +813,7 @@ export async function insertPlannedWorkout(regionId, workout) {
                 region_id: regionId,
                 date: workout.date,
                 ao_id: workout.aoId || null,
+                site_id: workout.siteId || null,
                 ao_name: workout.aoName,
                 title: workout.title || "",
                 introduction: workout.introduction || "",
@@ -829,6 +866,7 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             region_id: regionId,
             date: workout.date,
             ao_id: workout.aoId || null,
+            site_id: workout.siteId || null,
             ao_name: workout.aoName,
             title: workout.title || "",
             introduction: workout.introduction || "",
@@ -1056,6 +1094,9 @@ export async function insertQSlot(regionId, qSlot) {
                 id: qSlot.id,
                 region_id: regionId,
                 ao_id: qSlot.aoId,
+                site_id: qSlot.siteId || null,
+                start_time: qSlot.startTime || null,
+                duration_minutes: qSlot.durationMinutes ?? null,
                 date: qSlot.date,
                 q_user_id: qSlot.qUserId || null,
                 created_at: qSlot.createdAt,
@@ -1079,6 +1120,9 @@ export async function updateQSlotInCloud(regionId, qSlot) {
         .update({
             region_id: regionId,
             ao_id: qSlot.aoId,
+            site_id: qSlot.siteId || null,
+            start_time: qSlot.startTime || null,
+            duration_minutes: qSlot.durationMinutes ?? null,
             date: qSlot.date,
             q_user_id: qSlot.qUserId || null,
             created_at: qSlot.createdAt,
@@ -2481,10 +2525,14 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
             id,
             region_id,
             ao_id,
+            site_id,
             date,
+            start_time,
             q_user_id,
             override_time,
             override_title,
+            session_audit_ignored_at,
+            session_audit_ignored_by,
             aos (
                 id,
                 name
@@ -2565,6 +2613,10 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
 
         if (session) {
             status = "logged";
+        } else if (slot.session_audit_ignored_at) {
+            status = "ignored";
+        } else if (slot.date === getTodayDate()) {
+            status = "pending";
         } else if (slot.q_user_id) {
             status = "missing";
         }
@@ -2572,13 +2624,21 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
         return {
             slotId: slot.id,
             date: slot.date,
-            time: slot.override_time || "",
+            time:
+                slot.override_time ||
+                slot.start_time ||
+                "",
             title: slot.override_title || "",
             aoId: slot.ao_id,
+            siteId: slot.site_id || null,
             aoName,
+            startTime: slot.start_time || null,
+            overrideTime: slot.override_time || null,
             qId: slot.q_user_id || null,
             qName: slot.members?.pax_name || "",
             sessionId: session?.id || null,
+            ignoredAt: slot.session_audit_ignored_at || null,
+            ignoredByUserId: slot.session_audit_ignored_by || null,
             sessionQIds:
                 session?.q_ids ||
                 (session?.q_id ? [session.q_id] : []),
@@ -3047,4 +3107,55 @@ export async function loadMemberCommunitySessions(regionId, memberId) {
     }
 
     return sessions;
+}
+
+export async function ignoreSessionAuditSlot(regionId, qSlotId) {
+    if (!regionId || !qSlotId) {
+        throw new Error("A region ID and Q slot ID are required.");
+    }
+
+    const {
+        data: { user },
+        error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+        throw userError;
+    }
+
+    if (!user) {
+        throw new Error("You must be signed in.");
+    }
+
+    const { error } = await supabase
+        .from("q_slots")
+        .update({
+            session_audit_ignored_at: new Date().toISOString(),
+            session_audit_ignored_by: user.id,
+        })
+        .eq("id", qSlotId)
+        .eq("region_id", regionId);
+
+    if (error) {
+        throw error;
+    }
+}
+
+export async function restoreSessionAuditSlot(regionId, qSlotId) {
+    if (!regionId || !qSlotId) {
+        throw new Error("A region ID and Q slot ID are required.");
+    }
+
+    const { error } = await supabase
+        .from("q_slots")
+        .update({
+            session_audit_ignored_at: null,
+            session_audit_ignored_by: null,
+        })
+        .eq("id", qSlotId)
+        .eq("region_id", regionId);
+
+    if (error) {
+        throw error;
+    }
 }

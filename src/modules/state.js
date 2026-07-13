@@ -39,6 +39,7 @@ export const state = {
     stalePaxThresholdDays: 180,
     stalePaxSearchTerm: "",
     aos: savedState?.aos || [],
+    sites: savedState?.sites || [],
     qSlots: savedState?.qSlots || [],
     homeAoId: savedState?.homeAoId || null,
     favoriteAoIds: savedState?.favoriteAoIds || null,

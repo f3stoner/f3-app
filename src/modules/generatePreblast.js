@@ -1,15 +1,38 @@
 import { formatDate } from "../utils/date.js";
 
-export function generatePreblast(workout, aos = []) {
-    const ao = aos.find(a => a.name === workout.aoName);
+export function generatePreblast(workout, aos = [], sites = []) {
+    const ao =
+        aos.find(a => a.id === workout.aoId) ||
+        aos.find(a => a.name === workout.aoName) ||
+        null;
+
+    const site =
+        sites.find(candidate => candidate.id === workout.siteId) ||
+        null;
 
     const formattedDate = workout.date ? formatDate(workout.date) : "TBD";
     const aoName = workout.aoName || "AO";
-    const aoTime = ao?.time || "";
-    const locationName = ao?.locationName || "";
+    const aoTime =
+        workout.startTime ||
+        ao?.time ||
+        "";
+
+    const locationName =
+        site?.name ||
+        ao?.locationName ||
+        "";
+
     const title = workout.title?.trim() || "F3 Workout";
-    const address = ao?.address || "";
-    const mapUrl = ao?.mapUrl || "";
+
+    const address =
+        site?.address ||
+        ao?.address ||
+        "";
+
+    const mapUrl =
+        site?.mapUrl ||
+        ao?.mapUrl ||
+        "";
 
     const lines = [];
 

@@ -54,6 +54,25 @@ export function generateBackblast (session, members) {
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
     const visitors = session.visitors || [];
 
+    const ao =
+        state.aos.find(candidate => candidate.id === session.aoId) ||
+        state.aos.find(candidate => candidate.name === session.aoName) ||
+        null;
+
+    const site =
+        state.sites?.find(candidate => candidate.id === session.siteId) ||
+        null;
+
+    const siteName =
+        site?.name ||
+        ao?.locationName ||
+        "";
+
+    const siteAddress =
+        site?.address ||
+        ao?.address ||
+        "";
+
     const fngMemberIdSet = new Set(
         fngs
             .map(fng => fng.memberId)
@@ -205,6 +224,8 @@ export function generateBackblast (session, members) {
         backblastIntro,
         backblastIntro ? "" : null,
         `AO: ${session.aoName}`,
+        siteName ? `Site: ${siteName}` : null,
+        siteAddress ? `Address: ${siteAddress}` : null,
         `Date: ${formattedDate}`,
         buildConditionsLine(session.weatherSnapshot),
         "",

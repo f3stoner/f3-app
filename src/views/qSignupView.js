@@ -729,6 +729,34 @@ export function renderQSignupView() {
         return `${nextYear}-${nextMonth}`;
     }
 
+    function formatQSlotTime(value) {
+        const raw = String(value || "").trim();
+    
+        if (!raw) return "";
+    
+        const normalized = raw.includes(":")
+            ? raw
+            : raw.length === 4
+                ? `${raw.slice(0, 2)}:${raw.slice(2)}`
+                : raw;
+    
+        const match = normalized.match(/^(\d{1,2}):(\d{2})/);
+    
+        if (!match) return raw;
+    
+        const hours = Number(match[1]);
+        const minutes = match[2];
+    
+        if (!Number.isInteger(hours) || hours < 0 || hours > 23) {
+            return raw;
+        }
+    
+        const period = hours >= 12 ? "PM" : "AM";
+        const displayHours = hours % 12 || 12;
+    
+        return `${displayHours}:${minutes} ${period}`;
+    }
+
     if (!state.qSignupMonth) {
         state.qSignupMonth = getCurrentMonthKey();
     }
@@ -755,10 +783,24 @@ export function renderQSignupView() {
             return a.date.localeCompare(b.date);
         }
     
+        const timeA = a.startTime || a.overrideTime || "";
+        const timeB = b.startTime || b.overrideTime || "";
+    
+        if (timeA !== timeB) {
+            return timeA.localeCompare(timeB);
+        }
+    
         const aoA = state.aos.find(ao => ao.id === a.aoId)?.name || "";
         const aoB = state.aos.find(ao => ao.id === b.aoId)?.name || "";
     
-        return aoA.localeCompare(aoB);
+        if (aoA !== aoB) {
+            return aoA.localeCompare(aoB);
+        }
+    
+        const siteA = state.sites?.find(site => site.id === a.siteId)?.name || "";
+        const siteB = state.sites?.find(site => site.id === b.siteId)?.name || "";
+    
+        return siteA.localeCompare(siteB);
     });
 
     if (sortedSlots.length === 0) {
@@ -785,13 +827,26 @@ export function renderQSignupView() {
             }
 
             const ao = state.aos.find(a => a.id === slot.aoId);
+
+            const site = state.sites?.find(
+                candidate => candidate.id === slot.siteId
+            ) || null;
+
             const emphasisBadge = createWorkoutEmphasisBadge(slot, ao);
-            const dayKey = String(new Date(`${slot.date}T00:00:00`).getDay());
-            const displayTime =
+
+            const dayKey = String(
+                new Date(`${slot.date}T00:00:00`).getDay()
+            );
+
+            const rawDisplayTime =
                 slot.overrideTime ||
+                slot.startTime ||
                 ao?.timeSchedule?.[dayKey] ||
                 ao?.time ||
                 "";
+
+            const displayTime = formatQSlotTime(rawDisplayTime);
+            const displaySiteName = site?.name || "";
             const displayTitle = slot.overrideTitle || "";
             const isMine = slot.qUserId === state.currentUserMemberId;
             const canEditSlot = managesThisAo || isMine;
@@ -813,6 +868,12 @@ export function renderQSignupView() {
                 ? `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"} - ${displayTitle}`
                 : `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
 
+            const siteLine = document.createElement("div");
+            siteLine.classList.add("stats-line");
+            
+            if (displaySiteName) {
+                siteLine.textContent = displaySiteName;
+            }
 
             const titleLine = document.createElement("div");
             titleLine.classList.add("stats-line");
@@ -880,6 +941,7 @@ export function renderQSignupView() {
                             date: slot.date,
                             aoId: ao?.id || slot.aoId || null,
                             aoName: ao?.name || "",
+                            siteId: slot.siteId || null,
                             title: "",
                             introduction: "",
                             warmorama: "",
@@ -1014,6 +1076,10 @@ export function renderQSignupView() {
             const cardContent = document.createElement("div");
 
             cardContent.append(topLine);
+
+            if (displaySiteName) {
+                cardContent.append(siteLine);
+            }
 
             if (emphasisBadge) {
                 cardContent.append(emphasisBadge);

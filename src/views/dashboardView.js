@@ -60,7 +60,7 @@ export function renderDashboard() {
     });
 
     dashboardHeader.append(title, menuButton);
-    
+
     let regionSwitcher = null;
     let regionSwitcherLabel = null;
 
@@ -573,6 +573,7 @@ export function renderDashboard() {
     
         return (
             slot.overrideTime ||
+            slot.startTime ||
             ao.timeSchedule?.[dayKey] ||
             ao.time ||
             ""
@@ -692,6 +693,15 @@ export function renderDashboard() {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
+                    siteId:
+                        matchingWorkout?.siteId ||
+                        nextQSlot.siteId ||
+                        null,
+                    startTime:
+                        matchingWorkout?.startTime ||
+                        nextQSlot.overrideTime ||
+                        nextQSlot.startTime ||
+                        null,
                     aoName: ao?.name || "",
                     qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
                     attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
@@ -732,6 +742,7 @@ export function renderDashboard() {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
+                    siteId: nextQSlot.siteId || null,
                     aoName: ao?.name || "",
                     title: "",
                     introduction: "",
@@ -823,6 +834,11 @@ export function renderDashboard() {
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
+                    siteId: nextQSlot.siteId || null,
+                    startTime:
+                        nextQSlot.overrideTime ||
+                        nextQSlot.startTime ||
+                        null,
                 };
 
                 state.selectedPreblastQSlotId = nextQSlot.id;
@@ -830,7 +846,7 @@ export function renderDashboard() {
 
                 state.draftPreblastText =
                     nextQSlot.preblastText ||
-                    generatePreblast(matchingWorkout || fallbackWorkout, state.aos);
+                    generatePreblast(matchingWorkout || fallbackWorkout, state.aos, state.sites);
 
                 state.hasAddedPreblastForecast = false;
                 navigateTo("preblast");
@@ -861,6 +877,7 @@ export function renderDashboard() {
                     id: crypto.randomUUID(),
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
+                    siteId: nextQSlot.siteId || null,
                     aoName: ao?.name || "",
                     title: "",
                     introduction: "",
@@ -897,6 +914,15 @@ export function renderDashboard() {
                         id: crypto.randomUUID(),
                         date: nextQSlot.date,
                         aoId: ao?.id || nextQSlot.aoId || null,
+                        siteId:
+                            matchingWorkout?.siteId ||
+                            nextQSlot.siteId ||
+                            null,
+                        startTime:
+                            matchingWorkout?.startTime ||
+                            nextQSlot.overrideTime ||
+                            nextQSlot.startTime ||
+                            null,
                         aoName: ao?.name || "",
                         qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
                         attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
@@ -1202,6 +1228,7 @@ export function renderDashboard() {
                         id: crypto.randomUUID(),
                         date: slot.date,
                         aoId: ao?.id || slot.aoId || null,
+                        siteId: slot.siteId || null,
                         aoName: ao?.name || "",
                         title: "",
                         introduction: "",

@@ -11,9 +11,18 @@ export function startSessionFromQSlot(qSlot) {
     state.draftSession = createSession(qSlot.date, {
         aoId: qSlot.aoId,
         aoName: ao?.name || qSlot.aoName || "",
+        siteId: qSlot.siteId || null,
+        startTime:
+            qSlot.overrideTime ||
+            qSlot.startTime ||
+            null,
     });
 
-    state.draftSession.sourceQSlotId = qSlot.slotId;
+    state.draftSession.sourceQSlotId =
+        qSlot.slotId ||
+        qSlot.id ||
+        null;
+
     state.draftSession.qIds = qSlot.qId ? [qSlot.qId] : [];
     state.draftSession.attendeeIds = qSlot.qId ? [qSlot.qId] : [];
 
