@@ -328,6 +328,7 @@ export function renderRegionInsightsView() {
     const insights = buildRegionInsights({
         sessions: state.sessions,
         members: state.members,
+        aos: state.aos,
         startDate,
         endDate,
     });
@@ -400,6 +401,7 @@ export function renderRegionInsightsView() {
             value: ao.attendance,
             onClick: () => {
                 state.selectedAoInsights = {
+                    aoId: ao.aoId,
                     aoName: ao.aoName,
                     startDate,
                     endDate,

@@ -47,6 +47,7 @@ function normalizeAoName(aoName) {
 export function buildRegionInsights({
     sessions,
     members,
+    aos = [],
     startDate,
     endDate,
 }) {
@@ -58,6 +59,15 @@ export function buildRegionInsights({
             session.date <= endDate
         );
     });
+
+    function getCanonicalAoName(session) {
+        const ao = aos.find(ao => ao.id === session.aoId);
+    
+        return (
+            ao?.name ||
+            normalizeAoName(session.aoName)
+        );
+    }
 
     const totalSessions = filteredSessions.length;
 
@@ -152,10 +162,14 @@ export function buildRegionInsights({
     const attendanceByAoMap = new Map();
 
     filteredSessions.forEach(session => {
-        const aoName = normalizeAoName(session.aoName);
+        if (!session.aoId) return;
 
-        if (!attendanceByAoMap.has(aoName)) {
-            attendanceByAoMap.set(aoName, {
+        const aoId = session.aoId;
+        const aoName = getCanonicalAoName(session);
+
+        if (!attendanceByAoMap.has(aoId)) {
+            attendanceByAoMap.set(aoId, {
+                aoId,
                 aoName,
                 attendance: 0,
                 sessions: 0,
@@ -164,7 +178,7 @@ export function buildRegionInsights({
             });
         }
 
-        const entry = attendanceByAoMap.get(aoName);
+        const entry = attendanceByAoMap.get(aoId);
 
         entry.attendance += getSessionAttendanceCount(session);
         entry.sessions += 1;
@@ -184,13 +198,16 @@ export function buildRegionInsights({
     const attendanceByAoByDayMap = new Map();
 
     filteredSessions.forEach(session => {
-        const aoName = normalizeAoName(session.aoName);
+        if (!session.aoId) return;
+    
+        const aoId = session.aoId;
+        const aoName = getCanonicalAoName(session);
         const sessionDate = new Date(`${session.date}T00:00:00`);
         const dayName = DAYS_OF_WEEK[sessionDate.getDay()];
-
-        if (!attendanceByAoByDayMap.has(aoName)) {
+    
+        if (!attendanceByAoByDayMap.has(aoId)) {
             const days = {};
-
+    
             DAYS_OF_WEEK.forEach(day => {
                 days[day] = {
                     day,
@@ -199,14 +216,15 @@ export function buildRegionInsights({
                     averageAttendance: 0,
                 };
             });
-
-            attendanceByAoByDayMap.set(aoName, {
+    
+            attendanceByAoByDayMap.set(aoId, {
+                aoId,
                 aoName,
                 days,
             });
         }
-
-        const entry = attendanceByAoByDayMap.get(aoName);
+    
+        const entry = attendanceByAoByDayMap.get(aoId);
         const dayEntry = entry.days[dayName];
 
         dayEntry.attendance += getSessionAttendanceCount(session);

@@ -14,13 +14,6 @@ import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 const AO_INSIGHT_LOOKBACK_DAYS = 180;
 
-function normalizeAoName(name = "") {
-    return name
-    .trim()
-    .toLowerCase()
-    .replace(/^the\s+/, "");
-}
-
 function createMetricCard(label, value) {
     const card = document.createElement("div");
     card.classList.add("stat-tile");
@@ -260,46 +253,47 @@ function formatMonthLabel(dateString) {
     });
 }
 
-function getAoNames() {
+function getAvailableAos() {
     return state.aos
         .filter(ao => ao.isActive !== false)
         .filter(ao => canViewAoInsights(ao.id))
-        .map(ao => ao.name)
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b));
+        .filter(ao => ao.id && ao.name)
+        .map(ao => ({
+            aoId: ao.id,
+            aoName: ao.name,
+        }))
+        .sort((a, b) => a.aoName.localeCompare(b.aoName));
 }
 
-function getAdjacentAoName(currentAoName, offset) {
-    const aoNames = getAoNames();
+function getAdjacentAo(currentAoId, offset) {
+    const availableAos = getAvailableAos();
 
-    if (aoNames.length === 0) return currentAoName;
+    if (availableAos.length === 0) return null;
 
-    const currentIndex = aoNames.findIndex(name =>
-        normalizeAoName(name) === normalizeAoName(currentAoName)
+    const currentIndex = availableAos.findIndex(
+        ao => ao.aoId === currentAoId
     );
 
     const safeIndex = currentIndex === -1 ? 0 : currentIndex;
-    const nextIndex = (safeIndex + offset + aoNames.length) % aoNames.length;
+    const nextIndex =
+        (safeIndex + offset + availableAos.length) %
+        availableAos.length;
 
-    return aoNames[nextIndex];
+    return availableAos[nextIndex];
 }
 
-function getAvailableMonthsForAo(aoName) {
+function getAvailableMonthsForAo(aoId) {
     const monthKeys = new Set();
 
     state.sessions.forEach(session => {
-        if (!session.date || !session.aoName) return;
+        if (!session.date || !session.aoId) return;
+        if (session.aoId !== aoId) return;
 
-        const matchesAo =
-            normalizeAoName(session.aoName) === normalizeAoName(aoName);
-
-        if (!matchesAo) return;
-
-        monthKeys.add(session.date.slice(0, 7)); // YYYY-MM
+        monthKeys.add(session.date.slice(0, 7));
     });
 
     return [...monthKeys]
-        .sort((a, b) => b.localeCompare(a)); // newest first
+        .sort((a, b) => b.localeCompare(a));
 }
 
 function formatMonthKey(monthKey) {
@@ -344,7 +338,7 @@ async function openMonthPicker(insights) {
 
         const monthKeys = await loadAoInsightMonths({
             regionId: state.currentRegionId,
-            aoName: insights.aoName,
+            aoId: insights.aoId,
         });
 
         helper.textContent = monthKeys.length
@@ -384,7 +378,7 @@ async function openMonthPicker(insights) {
     }
 }
 
-function openAoPicker(currentAoName) {
+function openAoPicker(currentAoId) {
     const overlay = document.createElement("div");
     overlay.classList.add("modal-overlay", "bottom-sheet-overlay");
 
@@ -397,20 +391,21 @@ function openAoPicker(currentAoName) {
     const list = document.createElement("div");
     list.classList.add("insights-picker-list");
 
-    getAoNames().forEach(aoName => {
+    getAvailableAos().forEach(ao => {
         const button = document.createElement("button");
         button.type = "button";
         button.classList.add("insights-picker-option");
-        button.textContent = aoName;
+        button.textContent = ao.aoName;
 
-        if (normalizeAoName(aoName) === normalizeAoName(currentAoName)) {
+        if (ao.aoId === currentAoId) {
             button.classList.add("active");
         }
 
         button.addEventListener("click", () => {
             state.selectedAoInsights = {
                 ...state.selectedAoInsights,
-                aoName,
+                aoId: ao.aoId,
+                aoName: ao.aoName,
             };
 
             overlay.remove();
@@ -441,7 +436,7 @@ function createInsightsNav(insights) {
     const nav = document.createElement("div");
     nav.classList.add("insights-nav");
 
-    const availableAos = getAoNames();
+    const availableAos = getAvailableAos();
     const showAoNavigation = availableAos.length > 1;
 
     const aoRow = document.createElement("div");
@@ -452,11 +447,16 @@ function createInsightsNav(insights) {
     previousAoButton.classList.add("insights-nav-arrow");
     previousAoButton.textContent = "‹";
     previousAoButton.addEventListener("click", () => {
+        const previousAo = getAdjacentAo(insights.aoId, -1);
+    
+        if (!previousAo) return;
+    
         state.selectedAoInsights = {
             ...state.selectedAoInsights,
-            aoName: getAdjacentAoName(insights.aoName, -1),
+            aoId: previousAo.aoId,
+            aoName: previousAo.aoName,
         };
-
+    
         renderAoInsightsView();
     });
 
@@ -465,7 +465,7 @@ function createInsightsNav(insights) {
     aoTitle.classList.add("insights-nav-title");
     aoTitle.textContent = insights.aoName.toUpperCase();
     aoTitle.addEventListener("click", () => {
-        openAoPicker(insights.aoName);
+        openAoPicker(insights.aoId);
     });
 
     const nextAoButton = document.createElement("button");
@@ -473,11 +473,16 @@ function createInsightsNav(insights) {
     nextAoButton.classList.add("insights-nav-arrow");
     nextAoButton.textContent = "›";
     nextAoButton.addEventListener("click", () => {
+        const nextAo = getAdjacentAo(insights.aoId, 1);
+    
+        if (!nextAo) return;
+    
         state.selectedAoInsights = {
             ...state.selectedAoInsights,
-            aoName: getAdjacentAoName(insights.aoName, 1),
+            aoId: nextAo.aoId,
+            aoName: nextAo.aoName,
         };
-
+    
         renderAoInsightsView();
     });
 
@@ -538,6 +543,7 @@ function createInsightsNav(insights) {
 }
 
 function buildAoInsights({
+    aoId,
     aoName,
     startDate,
     endDate,
@@ -547,26 +553,9 @@ function buildAoInsights({
     const sessions = loadedSessions || [];
     const historySessions = insightHistorySessions || sessions;
 
-    const allAoSessions = state.sessions.filter(session => {
-        return normalizeAoName(session.aoName) === normalizeAoName(aoName);
-    });
-
-    console.log("AO INSIGHTS DEBUG", {
-        selected: { aoName, startDate, endDate },
-        allSessionsForAo: state.sessions
-            .filter(session =>
-                normalizeAoName(session.aoName) === normalizeAoName(aoName)
-            )
-            .map(session => ({
-                date: session.date,
-                aoName: session.aoName,
-            })),
-    
-        filteredSessions: sessions.map(session => ({
-            date: session.date,
-            aoName: session.aoName,
-        })),
-    });
+    const allAoSessions = state.sessions.filter(
+        session => session.aoId === aoId
+    );
 
     const totalSessions = sessions.length;
 
@@ -675,6 +664,7 @@ function buildAoInsights({
     }
 
     return {
+        aoId,
         aoName,
         startDate,
         endDate,
@@ -815,36 +805,57 @@ export async function renderAoInsightsView() {
     }
 
     const selectedAo = state.aos.find(
-        ao => normalizeAoName(ao.name) === normalizeAoName(selected.aoName)
+        ao => ao.id === selected.aoId
     );
 
-    if (selectedAo && !canViewAoInsights(selectedAo.id)) {
+    if (!selectedAo) {
+        showToast("The selected AO could not be found.", "error");
+        navigateTo(
+            hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS)
+                ? "regionInsights"
+                : "dashboard"
+        );
+        return;
+    }
+
+    if (!canViewAoInsights(selectedAo.id)) {
         showToast("You do not have permission to view this AO.", "error");
         navigateTo("dashboard");
         return;
     }
 
-    const selectedSessions = await loadAoInsightSessions({
-        regionId: state.currentRegionId,
-        aoName: selected.aoName,
-        startDate: selected.startDate,
-        endDate: selected.endDate,
-    });
+    let selectedSessions;
+    let insightHistorySessions;
+    try{
+        selectedSessions = await loadAoInsightSessions({
+            regionId: state.currentRegionId,
+            aoId: selected.aoId,
+            startDate: selected.startDate,
+            endDate: selected.endDate,
+        });
 
-    const historyEndDate = new Date(`${selected.endDate}T00:00:00`);
-    const historyStartDate = new Date(historyEndDate);
+        const historyEndDate = new Date(`${selected.endDate}T00:00:00`);
+        const historyStartDate = new Date(historyEndDate);
 
-    historyStartDate.setDate(historyStartDate.getDate() - AO_INSIGHT_LOOKBACK_DAYS);
+        historyStartDate.setDate(historyStartDate.getDate() - AO_INSIGHT_LOOKBACK_DAYS);
 
-    const insightHistorySessions = await loadAoInsightSessions({
-        regionId: state.currentRegionId,
-        aoName: selected.aoName,
-        startDate: historyStartDate.toISOString().slice(0, 10),
-        endDate: selected.endDate,
-    });
+        insightHistorySessions = await loadAoInsightSessions({
+            regionId: state.currentRegionId,
+            aoId: selected.aoId,
+            startDate: historyStartDate.toISOString().slice(0, 10),
+            endDate: selected.endDate,
+        });
+    } catch (error) {
+        console.error("Failed to load AO insights", error);
+        showToast("Failed to load AO insights.", "error");
+        goBack();
+        return;
+    }
     
     const insights = buildAoInsights({
         ...selected,
+        aoId: selectedAo.id,
+        aoName: selectedAo.name,
         sessions: selectedSessions,
         insightHistorySessions,
     });

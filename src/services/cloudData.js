@@ -2041,24 +2041,38 @@ function mapMemberStatsFromDb(row) {
     };
 }
 
-export async function loadAoInsightMonths({ regionId, aoName }) {
-    const { data, error } = await supabase.rpc("get_ao_insight_months", {
-        p_region_id: regionId,
-        p_ao_name: aoName,
-    });
+export async function loadAoInsightMonths({
+    regionId,
+    aoId,
+}) {
+    const { data, error } = await supabase.rpc(
+        "get_ao_insight_months",
+        {
+            p_region_id: regionId,
+            p_ao_id: aoId,
+        }
+    );
 
     if (error) throw error;
 
     return (data || []).map(row => row.month_key);
 }
 
-export async function loadAoInsightSessions({ regionId, aoName, startDate, endDate }) {
-    const { data, error } = await supabase.rpc("get_ao_insight_sessions", {
-        p_region_id: regionId,
-        p_ao_name: aoName,
-        p_start_date: startDate,
-        p_end_date: endDate,
-    });
+export async function loadAoInsightSessions({
+    regionId,
+    aoId,
+    startDate,
+    endDate,
+}) {
+    const { data, error } = await supabase.rpc(
+        "get_ao_insight_sessions",
+        {
+            p_region_id: regionId,
+            p_ao_id: aoId,
+            p_start_date: startDate,
+            p_end_date: endDate,
+        }
+    );
 
     if (error) throw error;
 
