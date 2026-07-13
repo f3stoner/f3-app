@@ -2458,7 +2458,7 @@ export async function loadQReadiness(regionId, startDate, endDate) {
             aoId: slot.ao_id,
             aoName,
             qId: slot.q_user_id,
-            qName: member?.pax_name || "Unknown Q",
+            qName: slot.members?.pax_name || "Unknown Q",
             workoutId: workout?.id || null,
             hasWorkout: Boolean(workout),
             isFinalized: Boolean(workout?.is_finalized),
