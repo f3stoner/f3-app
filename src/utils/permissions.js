@@ -183,7 +183,9 @@ export function canEditAnySessions() {
 }
 
 export function canUseFloatingLogButton() {
-    return getManagedAoIds(["ao_data_q"]).length > 0;
+    return isSuperAdmin()
+        || isDataQ()
+        || getManagedAoIds(["ao_data_q"]).length > 0;
 }
 
 export function canManageAoMembers(aoId) {
