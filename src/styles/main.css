@@ -5630,3 +5630,43 @@ button.insights-bar-row:hover .insights-bar-fill {
     min-height: 48px;
     margin: 0.25rem 0 0;
 }
+
+.region-trend-selector {
+    display: flex;
+    gap: 0.45rem;
+    width: 100%;
+    margin: 0.85rem 0 0.4rem;
+    padding-bottom: 0.2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.region-trend-selector::-webkit-scrollbar {
+    display: none;
+}
+
+.region-trend-button {
+    flex: 0 0 auto;
+    min-height: 2.2rem;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--muted);
+    box-shadow: none;
+    font-size: 0.72rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.region-trend-button:hover {
+    background: rgba(255, 255, 255, 0.065);
+    box-shadow: none;
+}
+
+.region-trend-button.active {
+    border-color: var(--accent-bright);
+    background: var(--accent);
+    color: var(--text);
+}

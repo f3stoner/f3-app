@@ -9,6 +9,82 @@ import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { createHorizontalBarChartSection, createLineChartSection } from "../components/regionInsights/charts.js";
 import { loadRegionInsightSessions } from "../services/cloudData.js";
 
+const REGION_TREND_METRICS = [
+    {
+        key: "averageAttendance",
+        label: "Avg Attendance",
+        title: "12-Month Average Attendance",
+        formatValue: value => Number(value).toFixed(1),
+        getSubtitle: item =>
+            `${item.sessions} session${item.sessions === 1 ? "" : "s"} • ${item.totalAttendance} total posts`,
+    },
+    {
+        key: "totalAttendance",
+        label: "Total Posts",
+        title: "12-Month Total Posts",
+        formatValue: value => Math.round(value),
+        getSubtitle: item =>
+            `${item.sessions} session${item.sessions === 1 ? "" : "s"}`,
+    },
+    {
+        key: "activePax",
+        label: "Active PAX",
+        title: "12-Month Active PAX",
+        formatValue: value => Math.round(value),
+        getSubtitle: () =>
+            "8+ posts during the trailing 60 days",
+    },
+    {
+        key: "fngs",
+        label: "FNGs",
+        title: "12-Month FNG Trend",
+        formatValue: value => Math.round(value),
+        getSubtitle: item =>
+            `${item.sessions} session${item.sessions === 1 ? "" : "s"}`,
+    },
+    {
+        key: "activeQs",
+        label: "Active Qs",
+        title: "12-Month Active Qs",
+        formatValue: value => Math.round(value),
+        getSubtitle: () =>
+            "Unique PAX who Q'd during the month",
+    },
+];
+
+function createTrendMetricSelector({
+    metrics,
+    selectedKey,
+    onSelect,
+}) {
+    const selector = document.createElement("div");
+    selector.classList.add("region-trend-selector");
+
+    metrics.forEach(metric => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.classList.add("region-trend-button");
+        button.textContent = metric.label;
+        button.dataset.metricKey = metric.key;
+
+        if (metric.key === selectedKey) {
+            button.classList.add("active");
+            button.setAttribute("aria-pressed", "true");
+        } else {
+            button.setAttribute("aria-pressed", "false");
+        }
+
+        button.addEventListener("click", () => {
+            onSelect(metric.key);
+        });
+
+        selector.appendChild(button);
+    });
+
+    return selector;
+}
+
 function getCurrentMonthRange() {
     const now = new Date();
 
@@ -431,16 +507,90 @@ export async function renderRegionInsightsView() {
         "No Region Pulse highlights yet."
     );
 
-    const attendanceTrendSection =
-    createLineChartSection({
-        title: "12-Month Attendance Trend",
-        items: insights.attendanceTrend,
-        getLabel: item => item.label,
-        getValue: item => item.averageAttendance,
-        getSubtitle: item =>
-            `${item.sessions} session${item.sessions === 1 ? "" : "s"} • ${item.totalAttendance} total posts`,
-        emptyMessage: "No attendance history available yet.",
-    });
+    if (!state.regionTrendMetric) {
+        state.regionTrendMetric = "averageAttendance";
+    }
+    
+    if (!state.regionTrendMetric) {
+        state.regionTrendMetric = "averageAttendance";
+    }
+    
+    const trendSectionHost = document.createElement("div");
+    trendSectionHost.classList.add(
+        "section",
+        "insights-chart-section",
+        "insights-line-chart-section"
+    );
+    
+    const trendHeading = document.createElement("div");
+    trendHeading.classList.add("insights-section-title");
+    
+    const trendMetricSelector =
+        createTrendMetricSelector({
+            metrics: REGION_TREND_METRICS,
+            selectedKey: state.regionTrendMetric,
+            onSelect: metricKey => {
+                if (metricKey === state.regionTrendMetric) return;
+    
+                state.regionTrendMetric = metricKey;
+                updateTrendSection();
+            },
+        });
+    
+    const trendChartBody = document.createElement("div");
+    
+    trendSectionHost.append(
+        trendHeading,
+        trendMetricSelector,
+        trendChartBody
+    );
+    
+    function updateTrendSection() {
+        const selectedTrendMetric =
+            REGION_TREND_METRICS.find(metric => {
+                return metric.key === state.regionTrendMetric;
+            }) || REGION_TREND_METRICS[0];
+    
+        trendHeading.textContent = selectedTrendMetric.title;
+    
+        trendMetricSelector
+            .querySelectorAll(".region-trend-button")
+            .forEach(button => {
+                const isActive =
+                    button.dataset.metricKey === selectedTrendMetric.key;
+    
+                button.classList.toggle("active", isActive);
+                button.setAttribute(
+                    "aria-pressed",
+                    String(isActive)
+                );
+            });
+    
+        const chartSection =
+            createLineChartSection({
+                title: selectedTrendMetric.title,
+                items: insights.monthlyRegionTrend,
+                getLabel: item => item.label,
+                getValue: item => {
+                    return selectedTrendMetric.formatValue(
+                        item[selectedTrendMetric.key]
+                    );
+                },
+                getSubtitle: item => {
+                    return selectedTrendMetric.getSubtitle(item);
+                },
+                emptyMessage:
+                    "No regional trend history available yet.",
+            });
+    
+        trendChartBody.textContent = "";
+    
+        const chartChildren = [...chartSection.children].slice(1);
+    
+        trendChartBody.append(...chartChildren);
+    }
+    
+    updateTrendSection();
 
     const attendanceByAoChartSection =
     createHorizontalBarChartSection({
@@ -533,7 +683,7 @@ export async function renderRegionInsightsView() {
         overviewSection,
         needsAttentionSection,
         momentumSection,
-        attendanceTrendSection,
+        trendSectionHost,
         attendanceByAoChartSection,
         qLeadershipChartSection,
         postingFrequencySection,

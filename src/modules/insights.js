@@ -356,71 +356,155 @@ export function buildRegionInsights({
         }
     });
 
-    const attendanceTrendMap = new Map();
+    const monthlyRegionTrendMap = new Map();
 
     sessions.forEach(session => {
         if (!session.date) return;
-
+    
         const monthKey = session.date.slice(0, 7);
-
-        if (!attendanceTrendMap.has(monthKey)) {
-            attendanceTrendMap.set(monthKey, {
+    
+        if (!monthlyRegionTrendMap.has(monthKey)) {
+            monthlyRegionTrendMap.set(monthKey, {
                 monthKey,
-                attendance: 0,
                 sessions: 0,
+                totalAttendance: 0,
                 averageAttendance: 0,
+                fngs: 0,
+                activeQIds: new Set(),
             });
         }
-
-        const entry = attendanceTrendMap.get(monthKey);
-
-        entry.attendance += getSessionAttendanceCount(session);
+    
+        const entry = monthlyRegionTrendMap.get(monthKey);
+    
         entry.sessions += 1;
+        entry.totalAttendance += getSessionAttendanceCount(session);
+        entry.fngs += session.fngs?.length || 0;
+    
+        (session.qIds || []).forEach(qId => {
+            if (qId) entry.activeQIds.add(qId);
+        });
     });
-
-    attendanceTrendMap.forEach(entry => {
+    
+    monthlyRegionTrendMap.forEach(entry => {
         entry.averageAttendance =
             entry.sessions > 0
                 ? Number(
-                    (entry.attendance / entry.sessions).toFixed(1)
+                    (
+                        entry.totalAttendance /
+                        entry.sessions
+                    ).toFixed(1)
                 )
                 : 0;
     });
-
+    
     const selectedEndMonth = endDate.slice(0, 7);
+    
     const [selectedYear, selectedMonthNumber] =
         selectedEndMonth.split("-").map(Number);
-
-    const attendanceTrendMonthKeys = [];
-
+    
+    const monthlyRegionTrendKeys = [];
+    
     for (let offset = 11; offset >= 0; offset -= 1) {
         const date = new Date(
             selectedYear,
             selectedMonthNumber - 1 - offset,
             1
         );
-
-        attendanceTrendMonthKeys.push(
+    
+        monthlyRegionTrendKeys.push(
             `${date.getFullYear()}-${String(
                 date.getMonth() + 1
             ).padStart(2, "0")}`
         );
     }
 
-    const attendanceTrend = attendanceTrendMonthKeys.map(monthKey => {
-        const entry = attendanceTrendMap.get(monthKey);
-
+    function getMonthEndDate(monthKey) {
         const [year, month] = monthKey.split("-").map(Number);
+    
+        return new Date(
+            year,
+            month,
+            0,
+            23,
+            59,
+            59
+        );
+    }
+    
+    function getDateKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+    
+        return `${year}-${month}-${day}`;
+    }
+    
+    function calculateActivePaxForMonth(monthKey) {
+        const windowEnd = getMonthEndDate(monthKey);
+    
+        const windowStart = new Date(windowEnd);
+        windowStart.setDate(windowStart.getDate() - 59);
+        windowStart.setHours(0, 0, 0, 0);
+    
+        const windowStartKey = getDateKey(windowStart);
+        const windowEndKey = getDateKey(windowEnd);
+    
+        const postsByMemberId = new Map();
+    
+        sessions.forEach(session => {
+            if (
+                !session.date ||
+                session.date < windowStartKey ||
+                session.date > windowEndKey
+            ) {
+                return;
+            }
+    
+            getRosteredAttendanceIdSet(session).forEach(memberId => {
+                postsByMemberId.set(
+                    memberId,
+                    (postsByMemberId.get(memberId) || 0) + 1
+                );
+            });
+        });
+    
+        return [...postsByMemberId.values()]
+            .filter(postCount => postCount >= 8)
+            .length;
+    }
+
+    const monthlyRegionTrend =
+    monthlyRegionTrendKeys.map(monthKey => {
+        const entry = monthlyRegionTrendMap.get(monthKey);
+
+        const [year, month] =
+            monthKey.split("-").map(Number);
+
         const date = new Date(year, month - 1, 1);
 
         return {
             monthKey,
+
             label: date.toLocaleDateString(undefined, {
                 month: "short",
             }),
-            averageAttendance: entry?.averageAttendance || 0,
-            totalAttendance: entry?.attendance || 0,
+
             sessions: entry?.sessions || 0,
+
+            totalAttendance:
+                entry?.totalAttendance || 0,
+
+            averageAttendance:
+                entry?.averageAttendance || 0,
+
+            activePax:
+                calculateActivePaxForMonth(monthKey),
+
+            fngs:
+                entry?.fngs || 0,
+
+            activeQs:
+                entry?.activeQIds?.size || 0,
         };
     });
 
@@ -441,7 +525,7 @@ export function buildRegionInsights({
         attendanceByDay,
         attendanceByAo,
         attendanceByAoByDay,
-        attendanceTrend,
+        monthlyRegionTrend,
         qFrequency,
         fngStats,
         postingFrequency,
