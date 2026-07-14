@@ -98,7 +98,7 @@ function getLeadershipInsight(stats) {
     return {
         title: "Develop the Next Qs",
         message:
-            "You have demonstrated a strong willingness to lead. The greatest impact now may come from recuiting, encouraging, and preparing other men to take the Q.",
+            "You have demonstrated a strong willingness to lead. The greatest impact now may come from recruiting, encouraging, and preparing other men to take the Q.",
         tone: "watch",
     };
 }

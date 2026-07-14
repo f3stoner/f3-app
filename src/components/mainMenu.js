@@ -135,6 +135,12 @@ export function createMainMenu() {
                 { label: "Import Runs", view: "importRuns", permission: PERMISSIONS.VIEW_IMPORTS },
             ],
         },
+        {
+            label: "Account",
+            items: [
+                { label: "Settings", view: "settings" },
+            ],
+        },
     ];
 
     async function handleSignOut() {

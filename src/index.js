@@ -65,6 +65,7 @@ import { renderAoInsightDetailView } from "./views/aoInsightsDetailView.js";
 import { renderPaxProfileView } from "./views/paxProfileView.js";
 import { renderSessionAuditView } from "./views/sessionAuditView.js";
 import { renderPaxCommunityView } from "./views/paxCommunity.js";
+import { renderSettingsView } from "./views/settingsView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -113,6 +114,7 @@ const RESTORABLE_VIEWS = new Set([
     "importRuns",
     "announcementManagement",
     "backblastReview",
+    "settings",
 ]);
 
 function restoreNavState(nav) {
@@ -296,6 +298,8 @@ function renderApp() {
         renderSessionAuditView();
     } else if (state.currentView === "paxCommunity") {
         renderPaxCommunityView();
+    } else if (state.currentView === "settings") {
+        renderSettingsView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 
@@ -526,6 +530,10 @@ async function bootApp() {
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                         pushSubscription: null,
                     };
+
+                if (state.currentView === "settings") {
+                    renderApp();
+                }
             })
             .catch(error => {
                 console.error("Failed to load notification settings:", error);

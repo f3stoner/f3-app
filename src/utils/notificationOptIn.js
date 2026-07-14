@@ -28,13 +28,48 @@ export async function enableQReminders() {
     state.notificationSettings = {
         ...state.notificationSettings,
         pushEnabled: true,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         pushSubscription,
     };
 
     localStorage.removeItem(DISMISSED_KEY);
 
     showToast("Q reminders enabled.", "success");
+}
+
+export async function disableQReminders() {
+    if (!state.currentUserId) {
+        throw new Error("No signed-in user.");
+    }
+
+    if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+
+        const subscription =
+            await registration.pushManager?.getSubscription();
+
+        if (subscription) {
+            await subscription.unsubscribe();
+        }
+    }
+
+    const timezone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    await upsertNotificationSettings(state.currentUserId, {
+        push_enabled: false,
+        timezone,
+        push_subscription: null,
+    });
+
+    state.notificationSettings = {
+        ...state.notificationSettings,
+        pushEnabled: false,
+        timezone,
+        pushSubscription: null,
+    };
+
+    showToast("Q reminders disabled.", "success");
 }
 
 export function dismissQReminderPrompt() {
