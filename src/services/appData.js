@@ -166,13 +166,16 @@ async function prepareSessionForInsert(
         aoId: session.aoId || null,
         aoName: session.aoName || "",
         announcementMode:
-            session.workout?.announcementMode === "custom"
+            session.workout?.announcementMode === "custom" ||
+            sourcePlannedWorkout?.announcementMode === "custom"
                 ? "custom"
                 : "auto",
         announcementText:
             session.workout?.announcementMode === "custom"
                 ? session.workout?.announcementText || ""
-                : "",
+                : sourcePlannedWorkout?.announcementMode === "custom"
+                    ? sourcePlannedWorkout.announcementText || ""
+                    : "",
     };
 
     const sessionAnnouncements =
@@ -244,15 +247,17 @@ export async function updateSession(sessionId, updatedSession) {
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
-    const normalizedSession = await ensureFngMembersForSession(
-        activeRegionId,
-        updatedSession
-    );
-    
-    const savedSession = await updateSessionInCloud(
-        activeRegionId,
-        normalizedSession
-    );
+    const normalizedSession =
+        await ensureFngMembersForSession(
+            activeRegionId,
+            updatedSession
+        );
+
+    const savedSession =
+        await updateSessionInCloud(
+            activeRegionId,
+            normalizedSession
+        );
 
     await replaceSessionVisitors(
         savedSession.id,
