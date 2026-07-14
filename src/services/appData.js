@@ -1,9 +1,24 @@
 import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
-import { insertAdminFlags, insertMember, updateMemberInCloud, setMemberInviters, updateAdminFlagInCloud, insertSavedPlannerSection, updateSavedPlannerSectionInCloud, deleteSavedPlannerSectionFromCloud } from "./cloudData.js";
-import { insertSession, updateSessionInCloud, deleteSessionFromCloud } from "./cloudData.js";
-import { insertPlannedWorkout, updatePlannedWorkoutInCloud, deletePlannedWorkoutFromCloud } from "./cloudData.js";
 import { replaceSessionVisitors } from "./sessionVisitorData.js";
+import { buildSessionAnnouncementSnapshot } from "../utils/announcements.js";
+import {
+    deletePlannedWorkoutFromCloud,
+    deleteSavedPlannerSectionFromCloud,
+    deleteSessionFromCloud,
+    insertAdminFlags,
+    insertMember,
+    insertPlannedWorkout,
+    insertSavedPlannerSection,
+    insertSession,
+    loadPlannerAnnouncements,
+    setMemberInviters,
+    updateAdminFlagInCloud,
+    updateMemberInCloud,
+    updatePlannedWorkoutInCloud,
+    updateSavedPlannerSectionInCloud,
+    updateSessionInCloud,
+} from "./cloudData.js";
 
 export function persistAppData() {
     saveState({
@@ -113,13 +128,92 @@ async function ensureFngMembersForSession(activeRegionId, session) {
     });
 }
 
+async function prepareSessionForInsert(
+    session,
+    activeRegionId
+) {
+    const announcementCandidates =
+        await loadPlannerAnnouncements(activeRegionId);
+
+    const sourcePlannedWorkout =
+        session.sourcePlannedWorkoutId
+            ? (state.plannedWorkouts || []).find(
+                workout =>
+                    workout.id ===
+                    session.sourcePlannedWorkoutId
+            ) || null
+            : null;
+
+    /*
+     * Prefer the authoritative planned-workout record because it
+     * contains announcementMode and any persisted custom text.
+     *
+     * Dashboard paths may attach a full planned workout directly to
+     * session.workout, so use that next.
+     *
+     * Manual and Q-slot sessions receive a synthetic auto workout
+     * resolved from the final session date and AO.
+     */
+    const snapshotWorkout = {
+        ...(sourcePlannedWorkout || {}),
+        ...(session.workout || {}),
+        id:
+            session.sourcePlannedWorkoutId ||
+            session.workout?.id ||
+            null,
+        regionId: activeRegionId,
+        date: session.date,
+        aoId: session.aoId || null,
+        aoName: session.aoName || "",
+        announcementMode:
+            session.workout?.announcementMode === "custom"
+                ? "custom"
+                : "auto",
+        announcementText:
+            session.workout?.announcementMode === "custom"
+                ? session.workout?.announcementText || ""
+                : "",
+    };
+
+    const sessionAnnouncements =
+        buildSessionAnnouncementSnapshot({
+            workout: snapshotWorkout,
+            announcements: announcementCandidates,
+            regionId: activeRegionId,
+        });
+
+    return {
+        ...session,
+        announcementText: sessionAnnouncements.text,
+        announcementSnapshot:
+            sessionAnnouncements.snapshot,
+        workout: session.workout
+            ? {
+                ...session.workout,
+                announcementText:
+                    sessionAnnouncements.text,
+            }
+            : null,
+    };
+}
+
 export async function addSession(session) {
     const activeRegionId = state.currentRegionId;
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
 
-    const normalizedSession = await ensureFngMembersForSession(activeRegionId, session);
+    const normalizedSession =
+        await ensureFngMembersForSession(
+            activeRegionId,
+            session
+        );
+
+    const preparedSession =
+        await prepareSessionForInsert(
+            normalizedSession,
+            activeRegionId
+        );
 
     console.log("addSession RLS debug", {
         activeRegionId: state.currentRegionId,
@@ -128,7 +222,11 @@ export async function addSession(session) {
         regionName: state.regionName,
     });
 
-    const savedSession = await insertSession(activeRegionId, normalizedSession);
+    const savedSession = await insertSession(
+        activeRegionId,
+        preparedSession
+    );
+
     await replaceSessionVisitors(
         savedSession.id,
         normalizedSession.visitors || [],

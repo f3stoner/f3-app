@@ -77,7 +77,9 @@ export async function loadRecentSessions(regionId, days = 180) {
             unresolved_pax,
             weather_snapshot,
             attendance_review_status,
-            attendance_review_notes
+            attendance_review_notes,
+            announcement_text,
+            announcement_snapshot
         `)
         .eq("region_id", regionId)
         .gte("date", cutoff)
@@ -115,7 +117,9 @@ export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
             unresolved_pax,
             weather_snapshot,
             attendance_review_status,
-            attendance_review_notes
+            attendance_review_notes,
+            announcement_text,
+            announcement_snapshot
         `)
         .eq("region_id", regionId)
         .lte("date", beforeDate)

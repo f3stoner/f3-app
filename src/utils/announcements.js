@@ -1,3 +1,5 @@
+import { state } from "../modules/state.js";
+
 function normalizeDateKey(value) {
     if (typeof value === "string") {
         const dateKey = value.slice(0, 10);

@@ -16,10 +16,7 @@ import { normalizeThangSections } from "../utils/thangs.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { releaseWakeLock, requestWakeLock } from "../utils/wakelock.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
-import {
-    buildSessionAnnouncementSnapshot,
-    getEffectiveWorkoutAnnouncementText,
-} from "../utils/announcements.js";
+import { getEffectiveWorkoutAnnouncementText } from "../utils/announcements.js";
 import { loadPlannerAnnouncements } from "../services/cloudData.js";
 
 let activeTimerIntervalId = null;
@@ -1191,13 +1188,6 @@ export function renderPlannedWorkoutDetail() {
 
         session.qIds = currentMemberId ? [currentMemberId] : [];
         session.attendeeIds = currentMemberId ? [currentMemberId] : [];
-
-        const sessionAnnouncements =
-            buildSessionAnnouncementSnapshot({
-                workout,
-                announcements: state.plannerAnnouncements || [],
-                regionId: state.currentRegionId,
-            });
         
         session.workout = {
             title: workout.title,
@@ -1207,10 +1197,9 @@ export function renderPlannedWorkoutDetail() {
             thangSections: normalizeThangSections(workout),
             finisher: workout.finisher,
             notes: workout.notes,
-            announcementText: sessionAnnouncements.text,
+            announcementText: "",
         };
-        session.announcementText = sessionAnnouncements.text;
-        session.announcementSnapshot = sessionAnnouncements.snapshot;
+        
         session.sourcePlannedWorkoutId = workout.id;
         session.sourceQSlotId =
             workout.sourceQSlotId ||
@@ -1293,6 +1282,9 @@ export function renderPlannedWorkoutDetail() {
 
         const newWorkout = {
             ...workout,
+            announcementMode: "auto",
+            announcementText: "",
+            announcementLegacyText: "",
             id: crypto.randomUUID(),
             date: nextQSlot?.date || getTodayDate(),
             aoId: nextAo?.id || workout.aoId || null,
