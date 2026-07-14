@@ -375,11 +375,6 @@ select:focus,
     margin-top: 4px;
 }
 
-.session-search {
-    margin-top: 4px;
-    margin-bottom: 0;
-}
-
 .sticky-action-bar button {
     flex: 1;
     margin: 0;
@@ -5194,4 +5189,110 @@ button.pax-family-primary-value:hover {
 
 .session-audit-ignored {
     opacity: 0.7;
+}
+
+.session-search-wrap {
+    position: relative;
+    z-index: 30;
+}
+
+.session-search {
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.session-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 1300;
+
+    max-height: min(360px, 55vh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+}
+
+.session-search-results:empty {
+    display: none;
+}
+
+.session-search-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    width: 100%;
+    min-height: 56px;
+    margin: 0;
+    padding: 10px 12px;
+
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+
+    background: var(--surface);
+    color: var(--text);
+
+    box-shadow: none;
+    text-align: left;
+    touch-action: manipulation;
+}
+
+.session-search-result:last-child {
+    border-bottom: 0;
+}
+
+.session-search-result:hover,
+.session-search-result:focus-visible,
+.session-search-result.active {
+    background: var(--surface-raised);
+    box-shadow: none;
+}
+
+.session-search-result:active {
+    transform: none;
+}
+
+.session-search-result-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+}
+
+.session-search-result-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.session-search-result-context {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.session-search-result-add {
+    flex: 0 0 auto;
+    color: var(--accent-bright);
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.session-search-empty {
+    padding: 14px 12px;
+    color: var(--muted);
+    font-size: 14px;
 }

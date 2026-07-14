@@ -371,24 +371,253 @@ aoSelect.addEventListener("change", (event) => {
     cachedLastPostMapByAoKey.clear();
 
     renderMemberList();
+    renderSessionSearchResults();
 });
+
+const searchWrap = document.createElement("div");
+searchWrap.classList.add("session-search-wrap");
 
 const searchInput = document.createElement("input");
 searchInput.type = "text";
-searchInput.placeholder = "Search PAX...";
+searchInput.placeholder = "Search PAX to add...";
 searchInput.classList.add("session-search");
 searchInput.value = state.sessionSearchTerm || "";
+searchInput.autocomplete = "off";
+searchInput.setAttribute("role", "combobox");
+searchInput.setAttribute("aria-autocomplete", "list");
+searchInput.setAttribute("aria-expanded", "false");
+searchInput.setAttribute("aria-controls", "session-search-results");
 
-let searchTimeoutId = null;
+const searchResults = document.createElement("div");
+searchResults.id = "session-search-results";
+searchResults.classList.add("session-search-results");
+searchResults.setAttribute("role", "listbox");
 
-searchInput.addEventListener("input", (event) => {
-    const nextValue = event.target.value;
+searchWrap.append(searchInput, searchResults);
 
-    clearTimeout(searchTimeoutId);
-    searchTimeoutId = setTimeout(() => {
-        state.sessionSearchTerm = nextValue;
-        renderMemberList();
-    }, 220);
+let activeSearchResultIndex = -1;
+
+function stripParentheticals(value = "") {
+    return String(value).replace(/\([^)]*\)/g, "");
+}
+
+function getSessionSearchResults() {
+    const searchTerm = String(state.sessionSearchTerm || "").trim();
+
+    if (!searchTerm) {
+        return [];
+    }
+
+    const lastPostMap = getCachedLastPostMapForAo(
+        draftSession.aoId,
+        draftSession.aoName
+    );
+
+    return getCachedSelectableMembers()
+        .filter(member => !draftSession.attendeeIds.includes(member.id))
+        .filter(member =>
+            doesSearchMatch(member.paxName, searchTerm) ||
+            doesSearchMatch(stripParentheticals(member.realName), searchTerm) ||
+            doesSearchMatch(getCachedMemberDisplayName(member), searchTerm)
+        )
+        .sort((a, b) => {
+            const aRecent = isRecentDate(lastPostMap.get(a.id), 20);
+            const bRecent = isRecentDate(lastPostMap.get(b.id), 20);
+
+            if (aRecent !== bRecent) {
+                return aRecent ? -1 : 1;
+            }
+
+            const aInactive = a.status === "inactive";
+            const bInactive = b.status === "inactive";
+
+            if (aInactive !== bInactive) {
+                return aInactive ? 1 : -1;
+            }
+
+            return getCachedMemberDisplayName(a)
+                .localeCompare(getCachedMemberDisplayName(b));
+        })
+        .slice(0, 8);
+}
+
+function closeSessionSearchResults() {
+    activeSearchResultIndex = -1;
+    searchResults.textContent = "";
+    searchInput.setAttribute("aria-expanded", "false");
+    searchInput.removeAttribute("aria-activedescendant");
+}
+
+async function addMemberFromSearch(member) {
+    if (!member) return;
+
+    if (!draftSession.attendeeIds.includes(member.id)) {
+        draftSession.attendeeIds.push(member.id);
+        await maybePromptForFngName(member);
+    }
+
+    clearSessionSearch();
+    renderMemberList();
+
+    requestAnimationFrame(() => {
+        searchInput.focus();
+    });
+}
+
+function renderSessionSearchResults() {
+    searchResults.textContent = "";
+
+    const searchTerm = String(state.sessionSearchTerm || "").trim();
+
+    if (!searchTerm) {
+        closeSessionSearchResults();
+        return;
+    }
+
+    const matches = getSessionSearchResults();
+
+    searchInput.setAttribute("aria-expanded", "true");
+
+    if (matches.length === 0) {
+        activeSearchResultIndex = -1;
+
+        const empty = document.createElement("div");
+        empty.classList.add("session-search-empty");
+        empty.textContent = "No matching PAX";
+        searchResults.appendChild(empty);
+        return;
+    }
+
+    if (
+        activeSearchResultIndex < 0 ||
+        activeSearchResultIndex >= matches.length
+    ) {
+        activeSearchResultIndex = 0;
+    }
+
+    matches.forEach((member, index) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.id = `session-search-result-${member.id}`;
+        item.classList.add("session-search-result");
+        item.setAttribute("role", "option");
+        item.setAttribute(
+            "aria-selected",
+            index === activeSearchResultIndex ? "true" : "false"
+        );
+
+        if (index === activeSearchResultIndex) {
+            item.classList.add("active");
+        }
+
+        const content = document.createElement("span");
+        content.classList.add("session-search-result-content");
+
+        const name = document.createElement("span");
+        name.classList.add("session-search-result-name");
+        name.textContent = getCachedMemberDisplayName(member);
+
+        content.appendChild(name);
+
+        const lastPostMap = getCachedLastPostMapForAo(
+            draftSession.aoId,
+            draftSession.aoName
+        );
+
+        if (isRecentDate(lastPostMap.get(member.id), 20)) {
+            const context = document.createElement("span");
+            context.classList.add("session-search-result-context");
+            context.textContent = `Recent at ${draftSession.aoName || "this AO"}`;
+            content.appendChild(context);
+        } else if (member.status === "inactive") {
+            const context = document.createElement("span");
+            context.classList.add("session-search-result-context");
+            context.textContent = "Inactive";
+            content.appendChild(context);
+        }
+
+        const addIndicator = document.createElement("span");
+        addIndicator.classList.add("session-search-result-add");
+        addIndicator.textContent = "+";
+        addIndicator.setAttribute("aria-hidden", "true");
+
+        item.append(content, addIndicator);
+
+        item.addEventListener("pointerdown", event => {
+            event.preventDefault();
+        });
+
+        item.addEventListener("click", () => {
+            addMemberFromSearch(member);
+        });
+
+        searchResults.appendChild(item);
+    });
+
+    const activeResult = matches[activeSearchResultIndex];
+
+    if (activeResult) {
+        searchInput.setAttribute(
+            "aria-activedescendant",
+            `session-search-result-${activeResult.id}`
+        );
+    }
+}
+
+searchInput.addEventListener("input", event => {
+    state.sessionSearchTerm = event.target.value;
+    activeSearchResultIndex = 0;
+    renderSessionSearchResults();
+});
+
+searchInput.addEventListener("focus", () => {
+    renderSessionSearchResults();
+});
+
+searchInput.addEventListener("keydown", event => {
+    const matches = getSessionSearchResults();
+
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeSessionSearchResults();
+        searchInput.blur();
+        return;
+    }
+
+    if (matches.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+        event.preventDefault();
+        activeSearchResultIndex =
+            (activeSearchResultIndex + 1) % matches.length;
+        renderSessionSearchResults();
+        return;
+    }
+
+    if (event.key === "ArrowUp") {
+        event.preventDefault();
+        activeSearchResultIndex =
+            (activeSearchResultIndex - 1 + matches.length) % matches.length;
+        renderSessionSearchResults();
+        return;
+    }
+
+    if (event.key === "Enter") {
+        event.preventDefault();
+
+        const selectedMember =
+            matches[activeSearchResultIndex] || matches[0];
+
+        addMemberFromSearch(selectedMember);
+    }
+});
+
+searchWrap.addEventListener("focusout", () => {
+    requestAnimationFrame(() => {
+        if (!searchWrap.contains(document.activeElement)) {
+            closeSessionSearchResults();
+        }
+    });
 });
 
 const memberList = document.createElement("div");
@@ -462,6 +691,7 @@ function preventRemovingOnlyQ(memberId) {
 function clearSessionSearch() {
     state.sessionSearchTerm = "";
     searchInput.value = "";
+    closeSessionSearchResults();
 }
 
 function getFngNamingPostNumber() {
@@ -672,7 +902,7 @@ const sessionHelperText = document.createElement("div");
 sessionHelperText.classList.add("session-helper-text");
 
 const helperLineOne = document.createElement("div");
-helperLineOne.textContent = "Tap card to add PAX";
+helperLineOne.textContent = "Search or tap card to add PAX";
 
 const helperLineTwo = document.createElement("div");
 helperLineTwo.textContent = "Tap Q to assign Q";
@@ -682,7 +912,7 @@ sessionHelperText.append(helperLineOne, helperLineTwo);
 const selectedHeaderSlot = document.createElement("div");
 selectedHeaderSlot.classList.add("session-summary-strip");
 
-stickyHeader.append(searchInput, sessionHelperText, selectedHeaderSlot)
+stickyHeader.append(searchWrap, sessionHelperText, selectedHeaderSlot);
 
 const sessionControls = document.createElement("div");
 sessionControls.classList.add("section");
@@ -744,44 +974,32 @@ function renderMemberList() {
     );
     const selectableMembers = getCachedSelectableMembers();
 
-    const searchTerm = state.sessionSearchTerm || "";
-
-    function stripParentheticals(value = "") {
-        return String(value).replace(/\([^)]*\)/g, "");
-    }
-    
-    const filteredMembers = selectableMembers.filter(member => {
-        return (
-            doesSearchMatch(member.paxName, searchTerm) ||
-            doesSearchMatch(stripParentheticals(member.realName), searchTerm)
-        );
-    });
-
-    const qMembers = selectableMembers.filter(member => 
+    const qMembers = selectableMembers.filter(member =>
         getUniqueQIds().includes(normalizeId(member.id))
     );
-
-    const selectedMembers = filteredMembers.filter(member =>
-    draftSession.attendeeIds.includes(member.id) &&
-    !(draftSession.qIds || []).includes(member.id)
-   );
-
-   const recentMembers = filteredMembers.filter(member => {
-    if (draftSession.attendeeIds.includes(member.id)) return false;
-    const lastAoPost = lastPostMap.get(member.id) || null;
-    return isRecentDate(lastAoPost, 20);
-   });
-
-   const visibleRecentMembers = state.sessionShowAllRecent
+    
+    const selectedMembers = selectableMembers.filter(member =>
+        draftSession.attendeeIds.includes(member.id) &&
+        !(draftSession.qIds || []).includes(member.id)
+    );
+    
+    const recentMembers = selectableMembers.filter(member => {
+        if (draftSession.attendeeIds.includes(member.id)) return false;
+    
+        const lastAoPost = lastPostMap.get(member.id) || null;
+        return isRecentDate(lastAoPost, 20);
+    });
+    
+    const visibleRecentMembers = state.sessionShowAllRecent
         ? recentMembers
         : recentMembers.slice(0, 12);
-
-   const otherMembers = filteredMembers.filter(member => {
-    if (draftSession.attendeeIds.includes(member.id)) return false;
     
-    const lastAoPost = lastPostMap.get(member.id) || null;
-    return !isRecentDate(lastAoPost, 20);
-   });
+    const otherMembers = selectableMembers.filter(member => {
+        if (draftSession.attendeeIds.includes(member.id)) return false;
+    
+        const lastAoPost = lastPostMap.get(member.id) || null;
+        return !isRecentDate(lastAoPost, 20);
+    });
 
    const visibleOtherMembers = state.sessionShowAllOthers
         ? otherMembers
