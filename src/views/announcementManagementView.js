@@ -14,6 +14,7 @@ import { updateAnnouncementDisplayOrder } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { filterDateAwareContent } from "../utils/dateAwareContent.js";
+import { invalidatePlannerAnnouncementCache } from "../utils/announcements.js";
 
 export function renderAnnouncementManagementView() {
     const app = document.getElementById("app");
@@ -179,6 +180,8 @@ export function renderAnnouncementManagementView() {
             state.allAnnouncements = await loadAllAnnouncements(state.currentRegionId);
             state.hasLoadedAllAnnouncements = true;
 
+            invalidatePlannerAnnouncementCache();
+
             renderApp();
         } catch (error) {
             console.error("Failed to save announcement:", error);
@@ -286,6 +289,8 @@ async function moveAnnouncement(announcementId, direction) {
         state.announcements = await loadAnnouncements(state.currentRegionId);
         state.allAnnouncements = await loadAllAnnouncements(state.currentRegionId);
         state.hasLoadedAllAnnouncements = true;
+
+        invalidatePlannerAnnouncementCache();
 
         renderApp();
     } catch (error) {
@@ -398,6 +403,8 @@ function renderAnnouncementList(container, controls) {
                 
                 state.hasLoadedAllAnnouncements = true;
 
+                invalidatePlannerAnnouncementCache();
+
                 renderApp();
             } catch (error) {
                 console.error("Failed to update announcement:", error);
@@ -429,6 +436,8 @@ function renderAnnouncementList(container, controls) {
                     await loadAllAnnouncements(state.currentRegionId);
                 
                 state.hasLoadedAllAnnouncements = true;
+
+                invalidatePlannerAnnouncementCache();
 
                 renderApp();
             } catch (error) {

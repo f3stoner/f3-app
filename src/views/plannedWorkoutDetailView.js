@@ -16,6 +16,10 @@ import { normalizeThangSections } from "../utils/thangs.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { releaseWakeLock, requestWakeLock } from "../utils/wakelock.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
+import {
+    getEffectiveWorkoutAnnouncementText,
+} from "../utils/announcements.js";
+import { loadPlannerAnnouncements } from "../services/cloudData.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -207,6 +211,46 @@ function launchWorkoutExecution(workout, launchSource = "plannedWorkoutDetail") 
 export function renderPlannedWorkoutDetail() {
     removeActiveTimerModal();
 
+    if (
+        state.plannerAnnouncementsRegionId !==
+        state.currentRegionId
+    ) {
+        state.plannerAnnouncements = [];
+        state.plannerAnnouncementsRegionId = null;
+        state.hasLoadedPlannerAnnouncements = false;
+    }
+
+    if (
+        !state.hasLoadedPlannerAnnouncements &&
+        !state.isLoadingPlannerAnnouncements
+    ) {
+        state.isLoadingPlannerAnnouncements = true;
+
+        loadPlannerAnnouncements(state.currentRegionId)
+            .then(announcements => {
+                state.plannerAnnouncements = announcements;
+                state.plannerAnnouncementsRegionId =
+                    state.currentRegionId;
+                state.hasLoadedPlannerAnnouncements = true;
+            })
+            .catch(error => {
+                console.error(
+                    "Failed to load workout announcements:",
+                    error
+                );
+            })
+            .finally(() => {
+                state.isLoadingPlannerAnnouncements = false;
+
+                if (
+                    state.currentView ===
+                    "plannedWorkoutDetail"
+                ) {
+                    renderApp();
+                }
+            });
+    }
+
     if (state.plannedWorkoutLaunchMode === "execution") {
         if (state.preserveExecutionScroll) {
             state.preserveExecutionScroll = false;
@@ -264,6 +308,13 @@ export function renderPlannedWorkoutDetail() {
             ? introTemplateFn?.(currentMember?.paxName)
             : "";
     const resolvedIntroduction = workout.introduction || regionIntroTemplate;
+
+    const effectiveAnnouncements =
+        getEffectiveWorkoutAnnouncementText({
+            workout,
+            announcements: state.plannerAnnouncements || [],
+            regionId: state.currentRegionId,
+        });
 
     const backButton = document.createElement("button");
     backButton.classList.add("secondary-button");
@@ -1067,7 +1118,7 @@ export function renderPlannedWorkoutDetail() {
     const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : getWorkoutFieldLabel(state, "notes"), workout.notes || "-", { hideIfEmpty: isExecutionMode });
     const announcementSection = createDetailSection(
         "Announcements",
-        workout.announcementText || "-",
+        effectiveAnnouncements.text || "-",
         { hideIfEmpty: isExecutionMode }
     );
     
@@ -1139,6 +1190,13 @@ export function renderPlannedWorkoutDetail() {
 
         session.qIds = currentMemberId ? [currentMemberId] : [];
         session.attendeeIds = currentMemberId ? [currentMemberId] : [];
+
+        const sessionAnnouncements =
+            buildSessionAnnouncementSnapshot({
+                workout,
+                announcements: state.plannerAnnouncements || [],
+                regionId: state.currentRegionId,
+            });
         
         session.workout = {
             title: workout.title,
@@ -1148,7 +1206,7 @@ export function renderPlannedWorkoutDetail() {
             thangSections: normalizeThangSections(workout),
             finisher: workout.finisher,
             notes: workout.notes,
-            announcementText: workout.announcementText || "",
+            announcementText: sessionAnnouncements.text,
         };
         session.sourcePlannedWorkoutId = workout.id;
         session.sourceQSlotId =
@@ -1322,9 +1380,18 @@ export function renderPlannedWorkoutDetail() {
         state.selectedPreblastQSlotId = matchingQSlot?.id || null;
         state.selectedPreblastWorkoutId = workout.id;
 
+        const effectiveWorkout = {
+            ...workout,
+            announcementText: effectiveAnnouncements.text,
+        };
+
         state.draftPreblastText =
             matchingQSlot?.preblastText ||
-            generatePreblast(workout, state.aos, state.sites);
+            generatePreblast(
+                effectiveWorkout,
+                state.aos,
+                state.sites
+            )
 
         state.hasAddedPreblastForecast = false;
         navigateTo("preblast");

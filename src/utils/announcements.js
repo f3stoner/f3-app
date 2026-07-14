@@ -285,3 +285,10 @@ export function getSessionAnnouncementText(session) {
 
     return "";
 }
+
+export function invalidatePlannerAnnouncementCache() {
+    state.plannerAnnouncements = [];
+    state.plannerAnnouncementsRegionId = null;
+    state.hasLoadedPlannerAnnouncements = false;
+    state.isLoadingPlannerAnnouncements = false;
+}
