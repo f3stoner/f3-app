@@ -4,40 +4,80 @@ import { navigateTo, navigateToPaxProfile } from "../../utils/navigation.js";
 import { state } from "../../modules/state.js";
 import { buildNewPaxPipelineInsight } from "../../utils/aoInsights/newPaxPipelineInsights.js";
 
-function createPaxRow({ memberId, name, postCount, firstPostDate, lastPostDate, value }) {
+function createPaxRow({
+    memberId,
+    name,
+    subtitle,
+    postCount,
+    firstPostDate,
+    lastPostDate,
+    value,
+}) {
     const row = document.createElement("div");
     row.classList.add("insights-row", "pax-pipeline-row");
 
-    if (memberId) {
+    const hasRosterMember =
+        Boolean(memberId) &&
+        state.members.some(member => member.id === memberId);
+
+    const rosterMember = hasRosterMember
+        ? state.members.find(member => member.id === memberId)
+        : null;
+
+    if (hasRosterMember) {
         row.classList.add("clickable-row");
+
         row.addEventListener("click", () => {
-            navigateToPaxProfile(member.id);
+            navigateToPaxProfile(memberId);
         });
     }
 
     const header = document.createElement("div");
     header.classList.add("pax-pipeline-header");
 
+    const titleWrapper = document.createElement("div");
+
     const titleEl = document.createElement("div");
     titleEl.classList.add("insights-row-title");
-    titleEl.textContent = name || "Unnamed PAX";
+    titleEl.textContent =
+        name ||
+        rosterMember?.realName ||
+        rosterMember?.real_name ||
+        "Unnamed FNG";
+    titleWrapper.appendChild(titleEl);
+
+    if (subtitle) {
+        const subtitleEl = document.createElement("div");
+        subtitleEl.classList.add("stats-line");
+        subtitleEl.textContent = subtitle;
+        titleWrapper.appendChild(subtitleEl);
+    }
 
     const badge = document.createElement("div");
     badge.classList.add("pax-pipeline-badge");
     badge.textContent = value;
 
-    header.append(titleEl, badge);
+    header.append(titleWrapper, badge);
 
-    const meta = document.createElement("div");
-    meta.classList.add("pax-pipeline-meta");
+    const hasMeta =
+        postCount != null ||
+        firstPostDate ||
+        lastPostDate;
 
-    meta.append(
-        createMetaItem("Posts", postCount),
-        createMetaItem("First", formatDate(firstPostDate)),
-        createMetaItem("Last", formatDate(lastPostDate))
-    );
+    if (hasMeta) {
+        const meta = document.createElement("div");
+        meta.classList.add("pax-pipeline-meta");
 
-    row.append(header, meta);
+        meta.append(
+            createMetaItem("Posts", postCount),
+            createMetaItem("First", firstPostDate ? formatDate(firstPostDate) : "-"),
+            createMetaItem("Last", lastPostDate ? formatDate(lastPostDate) : "-")
+        );
+
+        row.append(header, meta);
+    } else {
+        row.appendChild(header);
+    }
 
     return row;
 }
@@ -60,11 +100,11 @@ function createMetaItem(label, value) {
 }
 
 export function renderNewPaxPipelineDetail({ app, selected, sessions }) {
-    const insight = state.selectedAoInsight
-        || buildNewPaxPipelineInsight(sessions, {
-            anchorDate: selected.endDate,
-            memberStats: state.memberStats,
-        });
+    const insight = buildNewPaxPipelineInsight(sessions, {
+        anchorDate: selected.endDate,
+        memberStats: state.memberStats,
+        members: state.members,
+    });
 
     const metrics = insight.metrics;
 

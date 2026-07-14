@@ -27,20 +27,23 @@ function getDefaultAoInsightsSelection() {
     const favoriteAo = memberStats?.favoriteAo;
 
     const favoriteAoRecord = state.aos.find(ao => ao.name === favoriteAo);
-    const safeFavoriteAo =
+
+    const safeFavoriteAoRecord =
         favoriteAoRecord && canViewAoInsights(favoriteAoRecord.id)
-            ? favoriteAo
+            ? favoriteAoRecord
             : null;
 
-    const fallbackAo = state.aos
+    const fallbackAoRecord = state.aos
         .filter(ao => ao.isActive !== false)
         .filter(ao => canViewAoInsights(ao.id))
-        .map(ao => ao.name)
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b))[0];
+        .filter(ao => ao.id && ao.name)
+        .sort((a, b) => a.name.localeCompare(b.name))[0];
+
+    const selectedAo = safeFavoriteAoRecord || fallbackAoRecord;
 
     return {
-        aoName: safeFavoriteAo || fallbackAo,
+        aoId: selectedAo?.id || null,
+        aoName: selectedAo?.name || "",
         startDate: getMonthStart(today),
         endDate: getMonthEnd(today),
     };

@@ -5296,3 +5296,115 @@ button.pax-family-primary-value:hover {
     color: var(--muted);
     font-size: 14px;
 }
+
+.insights-chart-section {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.insights-bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.insights-bar-row {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    box-shadow: none;
+    text-align: left;
+}
+
+button.insights-bar-row {
+    cursor: pointer;
+}
+
+button.insights-bar-row:hover {
+    background: transparent;
+    box-shadow: none;
+}
+
+button.insights-bar-row:active {
+    transform: none;
+    opacity: 0.85;
+}
+
+.insights-bar-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+.insights-bar-label-wrap {
+    min-width: 0;
+    flex: 1;
+}
+
+.insights-bar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.insights-bar-subtitle {
+    margin-top: 0.2rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.insights-bar-value {
+    flex: 0 0 auto;
+    color: var(--accent-bright);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.insights-bar-track {
+    height: 0.65rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.insights-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    background:
+        linear-gradient(
+            90deg,
+            var(--accent),
+            var(--accent-bright)
+        );
+    transition: width 0.25s ease;
+}
+
+button.insights-bar-row:hover .insights-bar-fill {
+    filter: brightness(1.15);
+}
+
+.insights-chart-toggle {
+    display: block;
+    width: 100%;
+    margin: 1rem 0 0;
+    padding: 0.65rem 0;
+    text-align: center;
+    color: var(--accent-bright);
+    opacity: 0.85;
+}

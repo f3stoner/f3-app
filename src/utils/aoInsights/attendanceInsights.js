@@ -1,3 +1,5 @@
+import { getTotalAttendanceCount } from "../sessionAttendance.js";
+
 function getSessionDate(session) {
     if (!session?.date) return null;
     return new Date(`${session.date}T00:00:00`);
@@ -11,24 +13,6 @@ function getWeekday(session) {
     return date.toLocaleDateString(undefined, {
         weekday: "long",
     });
-}
-
-function countAttendance(session) {
-    const attendeeIds = Array.isArray(session?.attendeeIds)
-        ? session.attendeeIds
-        : [];
-
-    const fngs = Array.isArray(session?.fngs) ? session.fngs : [];
-
-    const rosteredFngIds = fngs
-        .map((fng) => fng?.memberId)
-        .filter(Boolean);
-
-    const unrosteredFngCount = fngs.filter((fng) => !fng?.memberId).length;
-
-    const uniqueKnownIds = new Set([...attendeeIds, ...rosteredFngIds]);
-
-    return uniqueKnownIds.size + unrosteredFngCount;
 }
 
 function average(items, valueGetter) {
@@ -62,7 +46,7 @@ function summarizeSessions(sessions) {
     return sessions.map((session) => ({
         date: session.date,
         weekday: getWeekday(session),
-        attendance: countAttendance(session),
+        attendance: getTotalAttendanceCount(session),
         session,
     }));
 }

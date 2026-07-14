@@ -5,6 +5,7 @@ import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
 import { subscribeToManagedChannel, unsubscribeManagedChannel } from "./realtime.js";
 import { getTodayDate } from "../utils/date.js";
 import { resolveActiveAnnouncements } from "../utils/announcements.js";
+import { loadVisitorsForSessions } from "./sessionVisitorData.js";
 
 export async function loadAllSessionsPaginated(regionId) {
     const pageSize = 1000;
@@ -2104,7 +2105,16 @@ export async function loadAoInsightSessions({
 
     if (error) throw error;
 
-    return (data || []).map(mapSessionFromDb);
+    const sessions = (data || []).map(mapSessionFromDb);
+
+    const visitorsBySessionId = await loadVisitorsForSessions(
+        sessions.map(session => session.id)
+    );
+
+    return sessions.map(session => ({
+        ...session,
+        visitors: visitorsBySessionId.get(session.id) || [],
+    }));
 }
 
 export async function loadSessionBackblastLinks() {

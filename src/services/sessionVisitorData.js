@@ -22,6 +22,48 @@ export async function loadSessionVisitors(sessionId) {
     }));
 }
 
+export async function loadVisitorsForSessions(sessionIds = []) {
+    const cleanSessionIds = [...new Set(sessionIds)].filter(Boolean);
+
+    if (cleanSessionIds.length === 0) {
+        return new Map();
+    }
+
+    const { data, error } = await supabase
+        .from("session_visitors")
+        .select("*")
+        .in("session_id", cleanSessionIds)
+        .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    const visitorsBySessionId = new Map();
+
+    cleanSessionIds.forEach(sessionId => {
+        visitorsBySessionId.set(sessionId, []);
+    });
+
+    (data || []).forEach(row => {
+        const visitor = {
+            id: row.id,
+            sessionId: row.session_id,
+            f3Name: row.f3_name,
+            homeRegion: row.home_region || "",
+            realName: row.real_name || "",
+            createdByUserId: row.created_by_user_id || null,
+            createdAt: row.created_at,
+        };
+
+        const visitors =
+            visitorsBySessionId.get(row.session_id) || [];
+
+        visitors.push(visitor);
+        visitorsBySessionId.set(row.session_id, visitors);
+    });
+
+    return visitorsBySessionId;
+}
+
 export async function replaceSessionVisitors(sessionId, visitors = [], createdByUserId = null) {
     if (!sessionId) return [];
 

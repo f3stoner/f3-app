@@ -3,10 +3,10 @@ import { buildRegionInsights } from "../modules/insights.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { createIcon } from "../utils/icons.js";
-import { ArrowUpRight } from "lucide";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { createHorizontalBarChartSection } from "../components/regionInsights/charts.js";
 
 function getCurrentMonthRange() {
     const now = new Date();
@@ -173,9 +173,6 @@ function createInsightsRow({ title, subtitle, value, onClick }) {
 }
 
 function buildLeadershipSnapshot(insights) {
-    const topAos = insights.attendanceByAo.slice(0, 5);
-    const topQs = insights.qFrequency.slice(0, 5);
-
     const needsAttention = [];
 
     const lowCaptureRate =
@@ -233,8 +230,6 @@ function buildLeadershipSnapshot(insights) {
         fngStats: insights.fngStats,
         needsAttention,
         momentum,
-        topAos,
-        topQs,
         postingFrequency: insights.postingFrequency,
     };
 }
@@ -391,40 +386,44 @@ export function renderRegionInsightsView() {
         "No Region Pulse highlights yet."
     );
 
-    const topAoSection = createExpandableListSection({
-        title: "AO Activity",
-        items: snapshot.topAos,
-        initialCount: 5,
-        renderRow: ao => createInsightsRow({
-            title: ao.aoName,
-            subtitle: `${ao.sessions} sessions • ${ao.averageAttendance} avg • ${ao.fngs} FNGs`,
-            value: ao.attendance,
-            onClick: () => {
-                state.selectedAoInsights = {
-                    aoId: ao.aoId,
-                    aoName: ao.aoName,
-                    startDate,
-                    endDate,
-                };
-                navigateTo("aoInsights");
-            },
-        }),
+    const attendanceByAoChartSection =
+    createHorizontalBarChartSection({
+        title: "Average Attendance by AO",
+        items: [...insights.attendanceByAo]
+            .sort((a, b) => {
+                return b.averageAttendance - a.averageAttendance;
+            }),
+        getLabel: ao => ao.aoName,
+        getValue: ao => ao.averageAttendance,
+        getSubtitle: ao =>
+            `${ao.sessions} session${ao.sessions === 1 ? "" : "s"} • ${ao.fngs} FNG${ao.fngs === 1 ? "" : "s"}`,
+        initialCount: 8,
+        onItemClick: ao => {
+            state.selectedAoInsights = {
+                aoId: ao.aoId,
+                aoName: ao.aoName,
+                startDate,
+                endDate,
+            };
+
+            navigateTo("aoInsights");
+        },
     });
 
-    const topQSection = createExpandableListSection({
-        title: "Q Leadership",
-        items: snapshot.topQs,
-        initialCount: 5,
-        renderRow: q => createInsightsRow({
-            title: q.paxName,
-            subtitle: `${q.averageAttendance} avg attendance • ${q.fngsBrought} FNGs EH'd`,
-            value: q.qCount,
-            onClick: () => {
+    const qLeadershipChartSection =
+        createHorizontalBarChartSection({
+            title: "Q Leadership Distribution",
+            items: insights.qFrequency,
+            getLabel: q => q.paxName,
+            getValue: q => q.qCount,
+            getSubtitle: q =>
+                `${q.averageAttendance} avg attendance • ${q.fngsBrought} FNG${q.fngsBrought === 1 ? "" : "s"} EH'd`,
+            initialCount: 10,
+            onItemClick: q => {
                 state.selectedMemberId = q.memberId;
                 navigateTo("memberDetail");
             },
-        }), 
-    });
+        });
 
     const postingFrequencySection = createExpandableListSection({
         title: "Posting Frequency",
@@ -476,8 +475,8 @@ export function renderRegionInsightsView() {
         overviewSection,
         needsAttentionSection,
         momentumSection,
-        topAoSection,
-        topQSection,
+        attendanceByAoChartSection,
+        qLeadershipChartSection,
         postingFrequencySection,
         fngSection,
         nav,

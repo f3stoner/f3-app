@@ -11,6 +11,10 @@ import { showToast } from "../utils/toast.js";
 import { buildAttendanceInsight } from "../utils/aoInsights/attendanceInsights.js";
 import { buildNewPaxPipelineInsight } from "../utils/aoInsights/newPaxPipelineInsights.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import {
+    getRosteredAttendanceIdSet,
+    getTotalAttendanceCount,
+} from "../utils/sessionAttendance.js";
 
 const AO_INSIGHT_LOOKBACK_DAYS = 180;
 
@@ -166,12 +170,15 @@ function getAttendanceStability(sessions) {
         };
     }
 
-    const counts = sessions.map(session => session.attendeeIds?.length || 0);
-    const average = counts.reduce((sum, count) => sum + count, 0) / counts.length;
+    const counts = sessions.map(getTotalAttendanceCount);
 
-    const variance = counts.reduce((sum, count) => {
-        return sum + Math.pow(count - average, 2);
-    }, 0) / counts.length;
+    const average =
+        counts.reduce((sum, count) => sum + count, 0) / counts.length;
+
+    const variance =
+        counts.reduce((sum, count) => {
+            return sum + Math.pow(count - average, 2);
+        }, 0) / counts.length;
 
     const standardDeviation = Math.sqrt(variance);
     const roundedDeviation = Math.round(standardDeviation * 10) / 10;
@@ -182,14 +189,14 @@ function getAttendanceStability(sessions) {
             subtitle: `Attendance usually stays within about ${roundedDeviation} PAX.`,
         };
     }
-    
+
     if (standardDeviation <= 6) {
         return {
             label: "Normal Variation",
             subtitle: `Attendance varies by about ${roundedDeviation} PAX, which is normal for most AOs.`,
         };
     }
-    
+
     return {
         label: "Wide Swings",
         subtitle: `Attendance is swinging by about ${roundedDeviation} PAX from session to session.`,
@@ -206,8 +213,11 @@ function getPotentialNewQs({ aoSessions, allAoSessions }) {
     const attendanceCounts = new Map();
 
     aoSessions.forEach(session => {
-        (session.attendeeIds || []).forEach(memberId => {
-            attendanceCounts.set(memberId, (attendanceCounts.get(memberId) || 0) + 1);
+        getRosteredAttendanceIdSet(session).forEach(memberId => {
+            attendanceCounts.set(
+                memberId,
+                (attendanceCounts.get(memberId) || 0) + 1
+            );
         });
     });
 
@@ -566,12 +576,13 @@ function buildAoInsights({
     const newPaxPipelineInsight = buildNewPaxPipelineInsight(historySessions, {
         anchorDate: endDate,
         memberStats: state.memberStats,
+        members: state.members,
     });
 
     //TODO: Replace with attendanceInsight.metrics once the old snapshot cards are retired
 
     const totalAttendance = sessions.reduce((sum, session) => {
-        return sum + (session.attendeeIds?.length || 0);
+        return sum + getTotalAttendanceCount(session);
     }, 0);
 
     const averageAttendance = totalSessions
@@ -808,14 +819,17 @@ export async function renderAoInsightsView() {
         ao => ao.id === selected.aoId
     );
 
-    if (!selectedAo) {
-        showToast("The selected AO could not be found.", "error");
-        navigateTo(
-            hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS)
-                ? "regionInsights"
-                : "dashboard"
-        );
-        return;
+    const fallbackAo = getAvailableAos()[0];
+
+    if (!selectedAo && fallbackAo) {
+        state.selectedAoInsights = {
+            aoId: fallbackAo.aoId,
+            aoName: fallbackAo.aoName,
+            startDate: selected.startDate,
+            endDate: selected.endDate,
+        };
+
+        return renderAoInsightsView();
     }
 
     if (!canViewAoInsights(selectedAo.id)) {
@@ -823,10 +837,33 @@ export async function renderAoInsightsView() {
         navigateTo("dashboard");
         return;
     }
-
+    
+    app.textContent = "";
+    app.appendChild(header);
+    
+    const loading = document.createElement("div");
+    loading.classList.add("section");
+    
+    const loadingLabel = document.createElement("div");
+    loadingLabel.classList.add("insights-section-title");
+    loadingLabel.textContent = "AO Insights";
+    
+    const loadingMessage = document.createElement("div");
+    loadingMessage.classList.add("detail-value");
+    loadingMessage.textContent =
+        `Loading ${selectedAo.name} insights...`;
+    
+    loading.append(
+        loadingLabel,
+        loadingMessage
+    );
+    
+    app.appendChild(loading);
+    
     let selectedSessions;
     let insightHistorySessions;
-    try{
+    
+    try {
         selectedSessions = await loadAoInsightSessions({
             regionId: state.currentRegionId,
             aoId: selected.aoId,
@@ -1017,7 +1054,7 @@ export async function renderAoInsightsView() {
         recentList.appendChild(createInsightsRow({
             title: formatDate(session.date),
             subtitle: `Q: ${qNames}`,
-            value: `${session.attendeeIds?.length || 0}`,
+            value: `${getTotalAttendanceCount(session)}`,
             onClick: () => {
                 state.selectedSessionId = session.id;
                 navigateTo("sessionDetail");

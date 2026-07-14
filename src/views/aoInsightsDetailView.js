@@ -46,7 +46,7 @@ export async function renderAoInsightDetailView() {
     
     const sessions = await loadAoInsightSessions({
         regionId: state.currentRegionId,
-        aoName: selected.aoName,
+        aoId: selected.aoId,
         startDate: historyStartDate.toISOString().slice(0, 10),
         endDate: selected.endDate,
     });

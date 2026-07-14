@@ -26,7 +26,7 @@ function getMemberIdFromFng(fng) {
 }
 
 function getFngDisplayName(fng) {
-    return fng?.paxName || fng?.name || fng?.f3Name || "Unnamed FNG";
+    return fng?.paxName || fng?.name || fng?.f3Name || null;
 }
 
 function summarizeFngsInWindow(sessions, startDate, endDate) {
@@ -56,6 +56,12 @@ function getMemberStats(memberId, memberStats = []) {
     return memberStats.find((stat) => {
         return stat.memberId === memberId || stat.member_id === memberId;
     }) || null;
+}
+
+function getMember(memberId, members = []) {
+    if (!memberId) return null;
+
+    return members.find((member) => member.id === memberId) || null;
 }
 
 function getStatPostCount(stat) {
@@ -118,6 +124,7 @@ function calculateNewPaxPipelineMetrics(sessions = [], options = {}) {
         anchorDate,
         windowDays = 28,
         memberStats = [],
+        members = [],
     } = options;
 
     const endDate = anchorDate
@@ -131,7 +138,7 @@ function calculateNewPaxPipelineMetrics(sessions = [], options = {}) {
     const postsByMemberId = getPostDatesByMemberId(sessions);
 
     const enrichedFngs = fngs.map((fng) =>
-        enrichFng(fng, postsByMemberId, memberStats)
+        enrichFng(fng, postsByMemberId, memberStats, members)
     );
     const rosteredFngs = enrichedFngs.filter((fng) => fng.memberId);
     const unrosteredFngs = enrichedFngs.filter((fng) => !fng.memberId);
@@ -222,8 +229,23 @@ export function buildNewPaxPipelineInsight(sessions = [], options = {}) {
     };
 }
 
-function enrichFng(fng, postsByMemberId, memberStats = []) {
+function enrichFng(
+    fng,
+    postsByMemberId,
+    memberStats = [],
+    members = []
+) {
     const stat = getMemberStats(fng.memberId, memberStats);
+
+    const member = getMember(fng.memberId, members);
+
+    const displayName =
+        fng.name ||
+        member?.paxName ||
+        member?.pax_name ||
+        member?.realName ||
+        member?.real_name ||
+        "Unnamed FNG";
 
     const postDates = fng.memberId
         ? postsByMemberId.get(fng.memberId) || []
@@ -250,6 +272,7 @@ function enrichFng(fng, postsByMemberId, memberStats = []) {
 
     return {
         ...fng,
+        name: displayName,
         postDates,
         postCount,
         lastPostDate,
