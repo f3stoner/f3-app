@@ -17,12 +17,10 @@ import { launchWorkoutPreview } from "./plannedWorkoutDetailView.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { createLibraryIdeasModal } from "../components/libraryIdeasModal.js";
 import { logLibraryUsageEvent, loadPlannerAnnouncements } from "../services/cloudData.js";
-import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
 import { buildThirdFContentBlock, replaceThirdFContentBlock } from "../utils/thirdFContent.js";
 import {
-    formatAnnouncementsText,
-    resolveActiveAnnouncements,
+    getEffectiveWorkoutAnnouncementText,
 } from "../utils/announcements.js";
 
 let persistDraftTimeout = null;
@@ -116,6 +114,7 @@ export function renderWorkoutPlanner() {
     } else if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
+
         state.draftPlannedWorkout = { ...draftWorkout };
 
         localStorage.setItem(
@@ -157,6 +156,11 @@ export function renderWorkoutPlanner() {
             state.editingPlannedWorkoutId = draftWorkout.id;
         }
     }
+
+    draftWorkout.announcementMode =
+    draftWorkout.announcementMode === "custom"
+        ? "custom"
+        : "auto";
 
     draftWorkout.thangSections = normalizeThangSections(draftWorkout);
     draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
@@ -480,6 +484,9 @@ export function renderWorkoutPlanner() {
             aoName: draftWorkout.aoName || "",
             aoId: draftWorkout.aoId || null,
             sourceQSlotId: null,
+            announcementMode: "auto",
+            announcementText: "",
+            announcementLegacyText: "",
         };
 
         const sourceThangs = normalizeThangSections(sourceWorkout);
@@ -519,6 +526,7 @@ export function renderWorkoutPlanner() {
         
 
         showToast("Copied to Planner", "success");
+        renderApp();
     }
 
     function closeWorkoutBrowseModal() {
@@ -648,7 +656,11 @@ export function renderWorkoutPlanner() {
 
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;
-        draftWorkout.announcementText = buildAnnouncementText();
+    
+        if (draftWorkout.announcementMode !== "custom") {
+            draftWorkout.announcementText = "";
+        }
+    
         dateDisplay.textContent = formatDate(draftWorkout.date);
     
         persistDraftNow();
@@ -719,7 +731,9 @@ export function renderWorkoutPlanner() {
         draftWorkout.aoId = selectedAo?.id || null;
         draftWorkout.aoName = selectedAo?.name || "";
 
-        draftWorkout.announcementText = buildAnnouncementText();
+        if (draftWorkout.announcementMode !== "custom") {
+            draftWorkout.announcementText = "";
+        }
 
         persistDraftNow();
         renderApp();
@@ -1079,17 +1093,27 @@ export function renderWorkoutPlanner() {
     
         draftWorkout.id ||= crypto.randomUUID();
         draftWorkout.thangSections = normalizeThangSections(draftWorkout);
-        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+        draftWorkout.thangs = serializeThangSections(
+            draftWorkout.thangSections
+        );
     
         state.draftPlannedWorkout = { ...draftWorkout };
-
+    
         localStorage.setItem(
             SAVED_PLANNED_WORKOUT_DRAFT_KEY,
             JSON.stringify(state.draftPlannedWorkout)
         );
-
-        launchWorkoutPreview({ ...draftWorkout });
-        });
+    
+        const effectiveAnnouncements =
+            getEffectiveAnnouncements();
+    
+        const previewWorkout = {
+            ...draftWorkout,
+            announcementText: effectiveAnnouncements.text,
+        };
+    
+        launchWorkoutPreview(previewWorkout);
+    });
 
     let isSavingWorkout = false;
 
@@ -1211,22 +1235,15 @@ export function renderWorkoutPlanner() {
 
     primaryActionsRow.append(previewButton, saveButton, finalizeButton);
 
-    function buildAnnouncementText() {
-        const announcements = resolveActiveAnnouncements(
-            state.plannerAnnouncements || [],
-            {
-                regionId: state.currentRegionId,
-                targetDate: draftWorkout.date || getTodayDate(),
-                aoId: draftWorkout.aoId || null,
-            }
-        );
-    
-        return formatAnnouncementsText(announcements);
+    function getEffectiveAnnouncements() {
+        return getEffectiveWorkoutAnnouncementText({
+            workout: draftWorkout,
+            announcements: state.plannerAnnouncements || [],
+            regionId: state.currentRegionId,
+        });
     }
     
-    if (!draftWorkout.announcementText) {
-        draftWorkout.announcementText = buildAnnouncementText();
-    }
+    const effectiveAnnouncements = getEffectiveAnnouncements();
 
     const announcementsLabel = document.createElement("div");
     announcementsLabel.textContent = "Announcements";
@@ -1234,12 +1251,39 @@ export function renderWorkoutPlanner() {
 
     const announcementsInput = document.createElement("textarea");
     announcementsInput.classList.add("notes");
-    announcementsInput.value = draftWorkout.announcementText || "";
+    announcementsInput.value =
+        draftWorkout.announcementMode === "custom"
+            ? draftWorkout.announcementText || ""
+            : effectiveAnnouncements.text;
     announcementsInput.placeholder = "Announcements for this BD...";
 
     announcementsInput.addEventListener("input", event => {
+        if (draftWorkout.announcementMode !== "custom") {
+            draftWorkout.announcementMode = "custom";
+        }
+    
         draftWorkout.announcementText = event.target.value;
-        persistDraft();
+    
+        persistDraftNow();
+    });
+
+    const resetAnnouncementsButton =
+        document.createElement("button");
+
+    resetAnnouncementsButton.type = "button";
+    resetAnnouncementsButton.classList.add("secondary-button");
+    resetAnnouncementsButton.textContent =
+        "Reset to Current Announcements";
+
+    resetAnnouncementsButton.hidden =
+        draftWorkout.announcementMode !== "custom";
+
+    resetAnnouncementsButton.addEventListener("click", () => {
+        draftWorkout.announcementMode = "auto";
+        draftWorkout.announcementText = "";
+
+        persistDraftNow();
+        renderApp();
     });
 
     app.append(
@@ -1275,6 +1319,7 @@ export function renderWorkoutPlanner() {
         notesTemplateControls,
         announcementsLabel,
         announcementsInput,
+        resetAnnouncementsButton,
         shareLabel,
         shareSelect,
         primaryActionsRow,

@@ -157,3 +157,131 @@ export function formatAnnouncementsText(announcements = []) {
         .filter(Boolean)
         .join("\n\n");
 }
+
+export function getEffectiveWorkoutAnnouncementText({
+    workout,
+    announcements = [],
+    regionId = null,
+    targetDate = null,
+    aoId = null,
+    includeRegionScope = true,
+} = {}) {
+    const resolvedMode =
+        workout?.announcementMode === "custom"
+            ? "custom"
+            : "auto";
+
+    const resolvedTargetDate =
+        targetDate ||
+        workout?.date ||
+        getLocalDateKey();
+
+    const resolvedAoId =
+        aoId ??
+        workout?.aoId ??
+        null;
+
+    if (resolvedMode === "custom") {
+        return {
+            text: workout?.announcementText || "",
+            mode: "custom",
+            source: "custom",
+            resolvedAnnouncements: [],
+            targetDate: getLocalDateKey(resolvedTargetDate),
+            aoId: resolvedAoId,
+        };
+    }
+
+    const resolvedAnnouncements = resolveActiveAnnouncements(
+        announcements,
+        {
+            regionId,
+            targetDate: resolvedTargetDate,
+            aoId: resolvedAoId,
+            includeRegionScope,
+        }
+    );
+
+    return {
+        text: formatAnnouncementsText(resolvedAnnouncements),
+        mode: "auto",
+        source: "live_announcements",
+        resolvedAnnouncements,
+        targetDate: getLocalDateKey(resolvedTargetDate),
+        aoId: resolvedAoId,
+    };
+}
+
+function buildAnnouncementSnapshotItem(announcement) {
+    return {
+        id: announcement?.id || null,
+        title: announcement?.title || "",
+        body: announcement?.body || "",
+        scope: announcement?.scope || null,
+        aoId: announcement?.aoId || null,
+        startsOn: announcement?.startsOn || null,
+        endsOn: announcement?.endsOn || null,
+        displayOrder: announcement?.displayOrder ?? null,
+    };
+}
+
+export function buildSessionAnnouncementSnapshot({
+    workout,
+    announcements = [],
+    regionId = null,
+    resolvedAt = new Date(),
+} = {}) {
+    const effective = getEffectiveWorkoutAnnouncementText({
+        workout,
+        announcements,
+        regionId,
+    });
+
+    const resolvedAtIso =
+        resolvedAt instanceof Date &&
+        !Number.isNaN(resolvedAt.getTime())
+            ? resolvedAt.toISOString()
+            : new Date().toISOString();
+
+    const snapshot = {
+        text: effective.text,
+        mode: effective.mode,
+        source: workout?.id
+            ? "planned_workout"
+            : "session_log",
+        resolvedAt: resolvedAtIso,
+        targetDate: effective.targetDate,
+        regionId: regionId || workout?.regionId || null,
+        aoId: effective.aoId,
+        announcementIds: effective.resolvedAnnouncements
+            .map(announcement => announcement?.id)
+            .filter(Boolean),
+        announcements: effective.resolvedAnnouncements
+            .map(buildAnnouncementSnapshotItem),
+    };
+
+    return {
+        text: effective.text,
+        snapshot,
+    };
+}
+
+export function getSessionAnnouncementText(session) {
+    if (typeof session?.announcementText === "string") {
+        return session.announcementText;
+    }
+
+    if (
+        typeof session?.announcementSnapshot?.text === "string"
+    ) {
+        return session.announcementSnapshot.text;
+    }
+
+    if (
+        typeof session?.workout?.announcementText === "string"
+    ) {
+        return session.workout.announcementText;
+    }
+
+    return "";
+}

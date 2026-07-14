@@ -592,6 +592,14 @@ export function mapSessionFromDb(row) {
         fngs: row.fngs || [],
         notes: row.notes || "",
         workout: row.workout || null,
+        announcementText:
+            typeof row.announcement_text === "string"
+                ? row.announcement_text
+                : row.announcement_snapshot?.text ??
+                  row.workout?.announcementText ??
+                  "",
+        announcementSnapshot:
+            row.announcement_snapshot || null,
         sourcePlannedWorkoutId: row.source_planned_workout_id,
         sourceQSlotId: row.source_q_slot_id || null,
         createdAt: row.created_at,
@@ -602,8 +610,10 @@ export function mapSessionFromDb(row) {
         unresolvedPax: row.unresolved_pax || [],
         weatherSnapshot: row.weather_snapshot || null,
         startTime: row.start_time || null,
-        attendanceReviewStatus: row.attendance_review_status || "not_required",
-        attendanceReviewNotes: row.attendance_review_notes || "",
+        attendanceReviewStatus:
+            row.attendance_review_status || "not_required",
+        attendanceReviewNotes:
+            row.attendance_review_notes || "",
     };
 }
 
@@ -632,7 +642,12 @@ function mapPlannedWorkoutFromDb(row) {
         preblastText: row.preblast_text || "",
         preblastLastModifiedAt: row.preblast_last_modified_at || null,
         thangSections: row.thang_sections || null,
+        announcementMode:
+            row.announcement_mode === "custom"
+                ? "custom"
+                : "auto",
         announcementText: row.announcement_text || "",
+        announcementLegacyText: row.announcement_legacy_text || "",
     };
 }
 
@@ -853,6 +868,12 @@ export async function insertSession(regionId, session) {
                 fngs: session.fngs || [],
                 notes: session.notes || "",
                 workout: session.workout || null,
+                announcement_text:
+                    typeof session.announcementText === "string"
+                        ? session.announcementText
+                        : null,
+                announcement_snapshot:
+                    session.announcementSnapshot || null,
                 source_planned_workout_id: session.sourcePlannedWorkoutId || null,
                 source_q_slot_id: session.sourceQSlotId || null,
                 created_at: session.createdAt,
@@ -913,6 +934,12 @@ export async function updateSessionInCloud(regionId, session) {
             fngs: session.fngs || [],
             notes: session.notes || "",
             workout: session.workout || null,
+            announcement_text:
+                typeof session.announcementText === "string"
+                    ? session.announcementText
+                    : null,
+            announcement_snapshot:
+                session.announcementSnapshot || null,
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
             source_q_slot_id: session.sourceQSlotId || null,
             created_at: session.createdAt,
@@ -971,7 +998,14 @@ export async function insertPlannedWorkout(regionId, workout) {
                 preblast_text: workout.preblastText || null,
                 preblast_last_modified_at: workout.preblastLastModifiedAt || null,
                 thang_sections: workout.thangSections || null,
-                announcement_text: workout.announcementText || null,
+                announcement_mode:
+                    workout.announcementMode === "custom"
+                        ? "custom"
+                        : "auto",
+                announcement_text:
+                    workout.announcementMode === "custom"
+                        ? workout.announcementText || ""
+                        : null,
             },
         ])
         .select()
@@ -1024,7 +1058,14 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
             preblast_text: workout.preblastText || null,
             preblast_last_modified_at: workout.preblastLastModifiedAt || null,
             thang_sections: workout.thangSections || null,
-            announcement_text: workout.announcementText || null,
+            announcement_mode:
+                workout.announcementMode === "custom"
+                    ? "custom"
+                    : "auto",
+            announcement_text:
+                workout.announcementMode === "custom"
+                    ? workout.announcementText || ""
+                    : null,
         })
         .eq("id", workout.id)
         .select()
