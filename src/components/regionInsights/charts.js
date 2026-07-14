@@ -275,6 +275,40 @@ export function createLineChartSection({
         svg.appendChild(polyline);
     }
 
+    const selectedPointReadout = document.createElement("div");
+    selectedPointReadout.classList.add("insights-line-selected-point");
+
+    const selectedPointLabel = document.createElement("div");
+    selectedPointLabel.classList.add("insights-line-selected-label");
+
+    const selectedPointValue = document.createElement("div");
+    selectedPointValue.classList.add("insights-line-selected-value");
+
+    const selectedPointSubtitle = document.createElement("div");
+    selectedPointSubtitle.classList.add("insights-line-selected-subtitle");
+
+    selectedPointReadout.append(
+        selectedPointLabel,
+        selectedPointValue,
+        selectedPointSubtitle
+    );
+
+    function selectPoint({ item, value, pointGroup }) {
+        svg
+            .querySelectorAll(".insights-line-point-group")
+            .forEach(group => {
+                group.classList.remove("selected");
+            });
+
+        pointGroup.classList.add("selected");
+
+        selectedPointLabel.textContent = getLabel(item);
+        selectedPointValue.textContent = value;
+
+        selectedPointSubtitle.textContent =
+            getSubtitle?.(item) || "";
+    }
+
     items.forEach((item, index) => {
         const x = getX(index);
         const value = Number(getValue(item)) || 0;
@@ -302,6 +336,13 @@ export function createLineChartSection({
         );
 
         pointGroup.classList.add("insights-line-point-group");
+
+        pointGroup.setAttribute("tabindex", "0");
+        pointGroup.setAttribute("role", "button");
+        pointGroup.setAttribute(
+            "aria-label",
+            `${getLabel(item)}: ${value}`
+        );
 
         const hitArea = document.createElementNS(
             svgNamespace,
@@ -335,10 +376,52 @@ export function createLineChartSection({
             : `${getLabel(item)}: ${value}`;
 
         pointGroup.append(hitArea, point, titleElement);
+        pointGroup.addEventListener("click", () => {
+            selectPoint({
+                item,
+                value,
+                pointGroup,
+            });
+        });
+        
+        pointGroup.addEventListener("keydown", event => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+        
+            event.preventDefault();
+        
+            selectPoint({
+                item,
+                value,
+                pointGroup,
+            });
+        });
+
         svg.appendChild(pointGroup);
     });
 
-    chartWrap.appendChild(svg);
+    const selectablePoints = [...svg.querySelectorAll(
+        ".insights-line-point-group"
+    )];
+    
+    const latestSelectablePoint =
+        selectablePoints[selectablePoints.length - 1];
+    
+    const latestItemWithValue = [...items]
+        .reverse()
+        .find(item => Number(getValue(item)) > 0);
+    
+    if (latestSelectablePoint && latestItemWithValue) {
+        selectPoint({
+            item: latestItemWithValue,
+            value: Number(getValue(latestItemWithValue)),
+            pointGroup: latestSelectablePoint,
+        });
+    }
+
+    chartWrap.append(
+        svg,
+        selectedPointReadout
+    );
 
     const nonZeroItems = items.filter(item => {
         return Number(getValue(item)) > 0;
