@@ -5408,3 +5408,95 @@ button.insights-bar-row:hover .insights-bar-fill {
     color: var(--accent-bright);
     opacity: 0.85;
 }
+
+.insights-line-chart-wrap {
+    width: 100%;
+    overflow: hidden;
+}
+
+.insights-line-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.insights-line-grid {
+    stroke: rgba(255, 255, 255, 0.09);
+    stroke-width: 1;
+}
+
+.insights-line-axis-label {
+    fill: var(--muted);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.insights-line-path {
+    stroke: var(--accent-bright);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.insights-line-point {
+    fill: var(--accent-bright);
+    stroke: var(--surface);
+    stroke-width: 3;
+    transition:
+        r 0.15s ease,
+        filter 0.15s ease;
+}
+
+.insights-line-hit-area {
+    fill: transparent;
+    cursor: pointer;
+}
+
+.insights-line-point-group:hover .insights-line-point {
+    r: 7;
+    filter: brightness(1.2);
+}
+
+.insights-line-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+}
+
+.insights-line-summary-item {
+    min-width: 0;
+}
+
+.insights-line-summary-value {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.insights-line-summary-label {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+    .insights-line-axis-label {
+        font-size: 9px;
+    }
+
+    .insights-line-path {
+        stroke-width: 3;
+    }
+
+    .insights-line-summary-value {
+        font-size: 1rem;
+    }
+}

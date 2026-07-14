@@ -2117,6 +2117,52 @@ export async function loadAoInsightSessions({
     }));
 }
 
+export async function loadRegionInsightSessions({
+    regionId,
+    startDate,
+    endDate,
+}) {
+    const pageSize = 1000;
+    let from = 0;
+    const rows = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .rpc(
+                "get_region_insight_sessions",
+                {
+                    p_region_id: regionId,
+                    p_start_date: startDate,
+                    p_end_date: endDate,
+                }
+            )
+            .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+
+        const page = data || [];
+
+        rows.push(...page);
+
+        if (page.length < pageSize) {
+            break;
+        }
+
+        from += pageSize;
+    }
+
+    const sessions = rows.map(mapSessionFromDb);
+
+    const visitorsBySessionId = await loadVisitorsForSessions(
+        sessions.map(session => session.id)
+    );
+
+    return sessions.map(session => ({
+        ...session,
+        visitors: visitorsBySessionId.get(session.id) || [],
+    }));
+}
+
 export async function loadSessionBackblastLinks() {
     const pageSize = 1000;
     let from = 0;

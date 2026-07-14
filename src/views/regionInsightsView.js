@@ -6,7 +6,8 @@ import { createIcon } from "../utils/icons.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
-import { createHorizontalBarChartSection } from "../components/regionInsights/charts.js";
+import { createHorizontalBarChartSection, createLineChartSection } from "../components/regionInsights/charts.js";
+import { loadRegionInsightSessions } from "../services/cloudData.js";
 
 function getCurrentMonthRange() {
     const now = new Date();
@@ -260,7 +261,7 @@ function createSimpleListSection(title, items, emptyMessage = "Nothing to show y
     return section;
 }
 
-export function renderRegionInsightsView() {
+export async function renderRegionInsightsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -293,6 +294,50 @@ export function renderRegionInsightsView() {
     const selectedMonth = state.regionInsightsMonth;
     const { startDate, endDate } = getMonthRange(selectedMonth);
 
+    const [selectedYear, selectedMonthNumber] =
+        selectedMonth.split("-").map(Number);
+
+    const historyStart = new Date(
+        selectedYear,
+        selectedMonthNumber - 12,
+        1
+    );
+
+    const historyStartDate = formatDateKey(historyStart);
+
+    const loading = document.createElement("div");
+    loading.classList.add("section");
+
+    const loadingMessage = document.createElement("div");
+    loadingMessage.classList.add("detail-value");
+    loadingMessage.textContent = "Loading Region Insights...";
+
+    loading.appendChild(loadingMessage);
+
+    app.append(
+        header,
+        title,
+        subtitle,
+        loading
+    );
+
+    let insightSessions;
+
+    try {
+        insightSessions = await loadRegionInsightSessions({
+            regionId: state.currentRegionId,
+            startDate: historyStartDate,
+            endDate,
+        });
+    } catch (error) {
+        console.error("Failed to load Region Insights", error);
+
+        loadingMessage.textContent =
+            "Could not load Region Insights.";
+
+        return;
+    }
+
     const monthNavRow = document.createElement("div");
     monthNavRow.classList.add("q-signup-month-row");
 
@@ -321,7 +366,7 @@ export function renderRegionInsightsView() {
     monthNavRow.append(previousMonthButton, monthLabel, nextMonthButton);
 
     const insights = buildRegionInsights({
-        sessions: state.sessions,
+        sessions: insightSessions,
         members: state.members,
         aos: state.aos,
         startDate,
@@ -385,6 +430,17 @@ export function renderRegionInsightsView() {
         snapshot.momentum,
         "No Region Pulse highlights yet."
     );
+
+    const attendanceTrendSection =
+    createLineChartSection({
+        title: "12-Month Attendance Trend",
+        items: insights.attendanceTrend,
+        getLabel: item => item.label,
+        getValue: item => item.averageAttendance,
+        getSubtitle: item =>
+            `${item.sessions} session${item.sessions === 1 ? "" : "s"} • ${item.totalAttendance} total posts`,
+        emptyMessage: "No attendance history available yet.",
+    });
 
     const attendanceByAoChartSection =
     createHorizontalBarChartSection({
@@ -467,6 +523,8 @@ export function renderRegionInsightsView() {
 
     const nav = createGlobalNav();
 
+    app.textContent = "";
+
     app.append(
         header,
         title,
@@ -475,6 +533,7 @@ export function renderRegionInsightsView() {
         overviewSection,
         needsAttentionSection,
         momentumSection,
+        attendanceTrendSection,
         attendanceByAoChartSection,
         qLeadershipChartSection,
         postingFrequencySection,

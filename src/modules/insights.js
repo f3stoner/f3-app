@@ -356,6 +356,74 @@ export function buildRegionInsights({
         }
     });
 
+    const attendanceTrendMap = new Map();
+
+    sessions.forEach(session => {
+        if (!session.date) return;
+
+        const monthKey = session.date.slice(0, 7);
+
+        if (!attendanceTrendMap.has(monthKey)) {
+            attendanceTrendMap.set(monthKey, {
+                monthKey,
+                attendance: 0,
+                sessions: 0,
+                averageAttendance: 0,
+            });
+        }
+
+        const entry = attendanceTrendMap.get(monthKey);
+
+        entry.attendance += getSessionAttendanceCount(session);
+        entry.sessions += 1;
+    });
+
+    attendanceTrendMap.forEach(entry => {
+        entry.averageAttendance =
+            entry.sessions > 0
+                ? Number(
+                    (entry.attendance / entry.sessions).toFixed(1)
+                )
+                : 0;
+    });
+
+    const selectedEndMonth = endDate.slice(0, 7);
+    const [selectedYear, selectedMonthNumber] =
+        selectedEndMonth.split("-").map(Number);
+
+    const attendanceTrendMonthKeys = [];
+
+    for (let offset = 11; offset >= 0; offset -= 1) {
+        const date = new Date(
+            selectedYear,
+            selectedMonthNumber - 1 - offset,
+            1
+        );
+
+        attendanceTrendMonthKeys.push(
+            `${date.getFullYear()}-${String(
+                date.getMonth() + 1
+            ).padStart(2, "0")}`
+        );
+    }
+
+    const attendanceTrend = attendanceTrendMonthKeys.map(monthKey => {
+        const entry = attendanceTrendMap.get(monthKey);
+
+        const [year, month] = monthKey.split("-").map(Number);
+        const date = new Date(year, month - 1, 1);
+
+        return {
+            monthKey,
+            label: date.toLocaleDateString(undefined, {
+                month: "short",
+            }),
+            averageAttendance: entry?.averageAttendance || 0,
+            totalAttendance: entry?.attendance || 0,
+            sessions: entry?.sessions || 0,
+        };
+    });
+
     return {
         summary: {
             totalSessions,
@@ -373,6 +441,7 @@ export function buildRegionInsights({
         attendanceByDay,
         attendanceByAo,
         attendanceByAoByDay,
+        attendanceTrend,
         qFrequency,
         fngStats,
         postingFrequency,
