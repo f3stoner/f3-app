@@ -21,6 +21,7 @@ import {
 import { hasPermission, PERMISSIONS, canEditAoSession, canManageAoMembers } from "../utils/permissions.js";
 import { getRegularPaxIds, getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
+import { getSessionAnnouncementText } from "../utils/announcements.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -442,9 +443,13 @@ export function renderSessionDetail() {
             parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
-        if (workout.announcementText) {
-            const cleanText = cleanAnnouncementText(workout.announcementText);
-        
+        const sessionAnnouncementText =
+            getSessionAnnouncementText(session);
+
+        if (sessionAnnouncementText) {
+            const cleanText =
+                cleanAnnouncementText(sessionAnnouncementText);
+
             if (cleanText) {
                 parts.push(`Announcements:\n${cleanText}`);
             }
@@ -514,10 +519,13 @@ export function renderSessionDetail() {
             newWorkout.thangs = session.workout.thangs || "";
             newWorkout.finisher = session.workout.finisher || "";
             newWorkout.notes = session.workout.notes || "";
-            newWorkout.announcementText = session.workout.announcementText || "";
         } else {
             newWorkout.notes = session.notes || "";
         }
+
+        newWorkout.announcementMode = "auto";
+        newWorkout.announcementText = "";
+        newWorkout.announcementLegacyText = "";
 
         newWorkout.id = crypto.randomUUID();
         newWorkout.createdByUserId = state.currentUserId;

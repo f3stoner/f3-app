@@ -17,6 +17,7 @@ import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { releaseWakeLock, requestWakeLock } from "../utils/wakelock.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
 import {
+    buildSessionAnnouncementSnapshot,
     getEffectiveWorkoutAnnouncementText,
 } from "../utils/announcements.js";
 import { loadPlannerAnnouncements } from "../services/cloudData.js";
@@ -1208,6 +1209,8 @@ export function renderPlannedWorkoutDetail() {
             notes: workout.notes,
             announcementText: sessionAnnouncements.text,
         };
+        session.announcementText = sessionAnnouncements.text;
+        session.announcementSnapshot = sessionAnnouncements.snapshot;
         session.sourcePlannedWorkoutId = workout.id;
         session.sourceQSlotId =
             workout.sourceQSlotId ||

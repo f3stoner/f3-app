@@ -1229,8 +1229,23 @@ try {
     }
 
     if (isEditing) {
-        await updateSession(sessionId, draftSession);
-        savedSession = state.sessions.find(session => session.id === sessionId);
+        const sessionToUpdate = {
+            ...draftSession,
+            announcementText:
+                originalSession?.announcementText ??
+                draftSession.announcementText ??
+                "",
+            announcementSnapshot:
+                originalSession?.announcementSnapshot ??
+                draftSession.announcementSnapshot ??
+                null,
+        };
+    
+        await updateSession(sessionId, sessionToUpdate);
+    
+        savedSession = state.sessions.find(
+            session => session.id === sessionId
+        );
     } else {
         const sessionToCreate = {
             ...draftSession,

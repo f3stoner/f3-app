@@ -1,6 +1,7 @@
 import { formatDate } from "../utils/date.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { state } from "./state.js";
+import { getSessionAnnouncementText } from "../utils/announcements.js";
 
 function getBackblastIntroTemplate() {
     return state.customTemplates?.backblastIntro || "";
@@ -246,9 +247,10 @@ export function generateBackblast (session, members) {
             parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
-        const announcementText = (workout.announcementText || "")
-            .replace(/^ANNOUNCEMENTS\s*/i, "")
-            .trim();
+        const announcementText =
+            getSessionAnnouncementText(session)
+                .replace(/^ANNOUNCEMENTS\s*:?\s*/i, "")
+                .trim();
 
         if (announcementText) {
             parts.push(`ANNOUNCEMENTS\n\n${announcementText}`);
