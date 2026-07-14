@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient.js";
 import { AO_WORKOUT_EMPHASIS_RULES } from "../config.js";
 import { subscribeToManagedChannel, unsubscribeManagedChannel } from "./realtime.js";
 import { getTodayDate } from "../utils/date.js";
+import { resolveActiveAnnouncements } from "../utils/announcements.js";
 
 export async function loadAllSessionsPaginated(regionId) {
     const pageSize = 1000;
@@ -1830,48 +1831,30 @@ export async function loadRecentMemberActivity(regionId, memberId, limit = 2) {
     return (data || []).map(mapSessionFromDb);
 }
 
-export async function deactivateExpiredAnnouncements(regionId) {
-    const today = getTodayDate();
-
-    const { error } = await supabase
-        .from("announcements")
-        .update({
-            is_active: false,
-            updated_at: new Date().toISOString(),
-        })
-        .eq("region_id", regionId)
-        .eq("is_active", true)
-        .not("ends_on", "is", null)
-        .lt("ends_on", today);
-
-    if (error) throw error;
-}
-
 export async function loadAnnouncements(regionId) {
-    const today = getTodayDate();
-
-    try {
-        await deactivateExpiredAnnouncements(regionId);
-    } catch (error) {
-        console.warn("Failed to deactivate expired announcements:", error);
-    }
-
     const { data, error } = await supabase
         .from("announcements")
         .select("*")
         .eq("region_id", regionId)
         .eq("is_active", true)
-        .order("display_order", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: false });
+        .order("display_order", {
+            ascending: true,
+            nullsFirst: false,
+        })
+        .order("created_at", {
+            ascending: false,
+        });
 
     if (error) throw error;
 
-    return (data || [])
-        .filter(announcement =>
-            (!announcement.starts_on || announcement.starts_on <= today) &&
-            (!announcement.ends_on || announcement.ends_on >= today)
-        )
-        .map(mapAnnouncementFromDb);
+    return resolveActiveAnnouncements(
+        (data || []).map(mapAnnouncementFromDb),
+        {
+            regionId,
+            targetDate: getTodayDate(),
+            aoId: null,
+        }
+    );
 }
 
 export async function loadAllAnnouncements(regionId) {
@@ -3075,15 +3058,18 @@ export async function setProfileRegionPositions(profileId, regionId, positions =
 }
 
 export async function loadPlannerAnnouncements(regionId) {
-    const today = new Date().toISOString().slice(0, 10);
-
     const { data, error } = await supabase
         .from("announcements")
         .select("*")
         .eq("region_id", regionId)
         .eq("is_active", true)
-        .or(`ends_on.is.null,ends_on.gte.${today}`)
-        .order("display_order", { ascending: true });
+        .order("display_order", {
+            ascending: true,
+            nullsFirst: false,
+        })
+        .order("created_at", {
+            ascending: false,
+        });
 
     if (error) throw error;
 

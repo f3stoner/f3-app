@@ -20,6 +20,10 @@ import { logLibraryUsageEvent, loadPlannerAnnouncements } from "../services/clou
 import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
 import { buildThirdFContentBlock, replaceThirdFContentBlock } from "../utils/thirdFContent.js";
+import {
+    formatAnnouncementsText,
+    resolveActiveAnnouncements,
+} from "../utils/announcements.js";
 
 let persistDraftTimeout = null;
 
@@ -714,7 +718,9 @@ export function renderWorkoutPlanner() {
         
         draftWorkout.aoId = selectedAo?.id || null;
         draftWorkout.aoName = selectedAo?.name || "";
-    
+
+        draftWorkout.announcementText = buildAnnouncementText();
+
         persistDraftNow();
         renderApp();
     });
@@ -1206,13 +1212,16 @@ export function renderWorkoutPlanner() {
     primaryActionsRow.append(previewButton, saveButton, finalizeButton);
 
     function buildAnnouncementText() {
-        return filterDateAwareContent(
+        const announcements = resolveActiveAnnouncements(
             state.plannerAnnouncements || [],
-            draftWorkout.date || getTodayDate()
-        )
-            .filter(announcement => announcement.isActive !== false)
-            .map(announcement => `${announcement.title}\n${announcement.body}`)
-            .join("\n\n");
+            {
+                regionId: state.currentRegionId,
+                targetDate: draftWorkout.date || getTodayDate(),
+                aoId: draftWorkout.aoId || null,
+            }
+        );
+    
+        return formatAnnouncementsText(announcements);
     }
     
     if (!draftWorkout.announcementText) {
