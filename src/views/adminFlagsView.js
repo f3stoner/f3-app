@@ -2,18 +2,28 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate } from "../utils/date.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
-import { updateAdminFlag, setMemberStatus, updateSession, updateMember } from "../services/appData.js";
+import { updateAdminFlag, setMemberStatus, updateSession, updateMember, ensureAdminFlagsLoaded } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
 import { getLastPostDate } from "../utils/memberStats.js";
 import { ADMIN_FLAG_TYPES } from "../modules/adminFlags.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 
 export function renderAdminFlagsView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
     cleanupMainMenu();
+
+    if (!hasPermission(PERMISSIONS.ACCESS_ADMIN_SETTINGS)) {
+        showToast(
+            "You do not have access to Admin Flags.",
+            "error"
+        );
+        navigateTo("dashboard");
+        return;
+    }
 
     const header = createAppHeader({
         title: "",
@@ -27,28 +37,101 @@ export function renderAdminFlagsView() {
 
     const subtitle = document.createElement("div");
     subtitle.classList.add("detail-label");
-    subtitle.textContent = "Items that may need roster or session review.";
+    subtitle.textContent =
+        "Legacy roster and import flags. These are not the new Operations Center audits.";
+
+    const content = document.createElement("div");
+    content.classList.add("admin-flag-list");
+
+    app.append(header, title, subtitle, content);
+
+    renderAdminFlagsContent(content);
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
+}
+
+function renderAdminFlagsContent(content) {
+    content.textContent = "";
+
+    if (state.isLoadingAdminFlags) {
+        const loading = document.createElement("div");
+        loading.textContent = "Loading admin flags…";
+        content.appendChild(loading);
+        return;
+    }
+
+    if (state.adminFlagsLoadError) {
+        const errorMessage = document.createElement("div");
+        errorMessage.classList.add("admin-flag-message");
+        errorMessage.textContent =
+            state.adminFlagsLoadError;
+
+        const retryButton = document.createElement("button");
+        retryButton.type = "button";
+        retryButton.textContent = "Retry";
+
+        retryButton.addEventListener("click", () => {
+            loadAndRenderAdminFlags(content, true);
+        });
+
+        content.append(errorMessage, retryButton);
+        return;
+    }
+
+    if (!state.hasLoadedAdminFlags) {
+        loadAndRenderAdminFlags(content);
+        return;
+    }
 
     const openFlags = (state.adminFlags || [])
         .filter(flag => flag.status === "open")
-        .sort((a, b) => b.createdAt - a.createdAt);
+        .sort((a, b) => {
+            const aTime = new Date(a.createdAt || 0).getTime();
+            const bTime = new Date(b.createdAt || 0).getTime();
 
-    const flagList = document.createElement("div");
-    flagList.classList.add("admin-flag-list");
+            return bTime - aTime;
+        });
 
     if (openFlags.length === 0) {
         const empty = document.createElement("div");
-        empty.textContent = "No open admin flags.";
-        flagList.appendChild(empty);
-    } else {
-        openFlags.forEach(flag => {
-            flagList.appendChild(createAdminFlagCard(flag));
-        });
+        empty.textContent = "No open legacy admin flags.";
+        content.appendChild(empty);
+        return;
     }
 
-    app.append(header, title, subtitle, flagList);
-    if (state.isMainMenuOpen) {
-        document.body.appendChild(createMainMenu());
+    openFlags.forEach(flag => {
+        content.appendChild(createAdminFlagCard(flag));
+    });
+}
+
+async function loadAndRenderAdminFlags(
+    content,
+    force = false
+) {
+    if (state.isLoadingAdminFlags) return;
+
+    const loading = document.createElement("div");
+    loading.textContent = "Loading admin flags…";
+
+    content.textContent = "";
+    content.appendChild(loading);
+
+    try {
+        await ensureAdminFlagsLoaded({ force });
+    } catch (error) {
+        console.error(
+            "Failed to load admin flags:",
+            error
+        );
+    }
+
+    if (
+        state.currentView === "adminFlags" &&
+        content.isConnected
+    ) {
+        renderAdminFlagsContent(content);
     }
 }
 

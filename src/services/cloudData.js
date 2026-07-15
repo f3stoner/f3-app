@@ -382,7 +382,6 @@ export async function loadRegionData(regionId) {
         aoResult,
         siteResult,
         qSlotResult,
-        adminFlagResult,
         savedPlannerSectionResult,
         announcementResult,
         qSourceResult,
@@ -434,8 +433,6 @@ export async function loadRegionData(regionId) {
         ),
 
         timed("loadRegionData:qSlots", loadAllQSlots(regionId)),
-
-        timed("loadRegionData:adminFlags", loadAdminFlags(regionId)),
 
         timed(
             "loadRegionData:savedPlannerSections",
@@ -540,7 +537,6 @@ export async function loadRegionData(regionId) {
         aos: aoResult.data.map(mapAoFromDb),
         sites: (siteResult.data || []).map(mapSiteFromDb),
         qSlots: qSlotResult.map(mapQSlotFromDb),
-        adminFlags: adminFlagResult,
         savedPlannerSections: (savedPlannerSectionResult.data || [])
             .map(mapSavedPlannerSectionFromDb),
         workoutFieldLabels: regionResult.data.workout_field_labels || {},
@@ -1477,11 +1473,47 @@ export async function updateCustomTemplates(userId, customTemplates) {
     return data;
 }
 
-export async function loadAdminFlags(regionId) {
-    const { data, error } = await supabase
+export async function loadAdminFlags(
+    regionId,
+    {
+        status = "open",
+        limit = 100,
+    } = {}
+) {
+    if (!regionId) return [];
+
+    const safeLimit = Math.min(
+        Math.max(Number(limit) || 100, 1),
+        250
+    );
+
+    let query = supabase
         .from("admin_flags")
-        .select("*")
-        .eq("region_id", regionId);
+        .select(`
+            id,
+            region_id,
+            type,
+            status,
+            severity,
+            created_at,
+            created_by_user_id,
+            session_id,
+            proposed_pax_name,
+            matched_member_ids,
+            message,
+            resolved_at,
+            resolved_by_user_id,
+            resolution_notes
+        `)
+        .eq("region_id", regionId)
+        .order("created_at", { ascending: false })
+        .limit(safeLimit);
+
+    if (status) {
+        query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
@@ -1616,6 +1648,7 @@ function mapRegionFromDb(row) {
         name: row.name,
         workoutFieldLabels: row.workout_field_labels || null,
         fngNamingPostNumber: row.fng_naming_post_number ?? 1,
+        includeInReporting: row.include_in_reporting ?? true,
     };
 }
 
@@ -3399,4 +3432,88 @@ export async function restoreSessionAuditSlot(regionId, qSlotId) {
     if (error) {
         throw error;
     }
+}
+
+export async function loadOperationsOverview(
+    regionId = null
+) {
+    const { data, error } = await supabase.rpc(
+        "get_operations_overview",
+        {
+            p_region_id: regionId || null,
+        }
+    );
+
+    if (error) throw error;
+
+    return {
+        generatedAt: data?.generatedAt || null,
+
+        scope: {
+            regionId:
+                data?.scope?.regionId || null,
+        },
+
+        users: {
+            total:
+                Number(data?.users?.total) || 0,
+            linkedPax:
+                Number(data?.users?.linkedPax) || 0,
+            new7d:
+                Number(data?.users?.new7d) || 0,
+            new30d:
+                Number(data?.users?.new30d) || 0,
+        },
+
+        activity: {
+            active7d:
+                Number(data?.activity?.active7d) || 0,
+            active30d:
+                Number(data?.activity?.active30d) || 0,
+            appOpensToday:
+                Number(
+                    data?.activity?.appOpensToday
+                ) || 0,
+        },
+
+        usage7d: {
+            sessionsLogged:
+                Number(
+                    data?.usage7d?.sessionsLogged
+                ) || 0,
+            workoutsCreated:
+                Number(
+                    data?.usage7d?.workoutsCreated
+                ) || 0,
+            executionsStarted:
+                Number(
+                    data?.usage7d?.executionsStarted
+                ) || 0,
+            backblastsGenerated:
+                Number(
+                    data?.usage7d
+                        ?.backblastsGenerated
+                ) || 0,
+        },
+
+        health: {
+            status:
+                data?.health?.status ||
+                "not_configured",
+            criticalCount:
+                Number(
+                    data?.health?.criticalCount
+                ) || 0,
+            warningCount:
+                Number(
+                    data?.health?.warningCount
+                ) || 0,
+            passingCount:
+                Number(
+                    data?.health?.passingCount
+                ) || 0,
+            lastAuditAt:
+                data?.health?.lastAuditAt || null,
+        },
+    };
 }

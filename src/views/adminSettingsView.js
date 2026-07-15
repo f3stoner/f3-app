@@ -8,7 +8,7 @@ import { updateRegionWorkoutFieldLabels } from "../services/cloudData.js";
 import { createElement } from "lucide";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, isSuperAdmin } from "../utils/permissions.js";
 
 export function renderAdminSettingsView() {
     const app = document.getElementById("app");
@@ -58,15 +58,43 @@ export function renderAdminSettingsView() {
     const adminHubGrid = document.createElement("div");
     adminHubGrid.classList.add("admin-hub-grid");
 
-    const openFlagsCount = (state.adminFlags || [])
-        .filter(flag => flag.status === "open").length;
-
-    adminHubGrid.append(
-        createAdminCard("Manage AOs", "Create, edit, and activate workout locations.", "aoManagement"),
-        createAdminCard("Admin Flags", `${openFlagsCount} open issue${openFlagsCount === 1 ? "" : "s"} to review.`, "adminFlags"),
-        createAdminCard("Review Stale PAX", "Find inactive or outdated roster records.", "stalePax"),
-        createAdminCard("Import Runs", "Review nightly Aggieland dry-run results.", "importRuns")
-    );
+    const adminCards = [
+        createAdminCard(
+            "Manage AOs",
+            "Create, edit, and activate workout locations.",
+            "aoManagement"
+        ),
+        createAdminCard(
+            "Admin Flags",
+            "Review legacy roster and import flags.",
+            "adminFlags"
+        ),
+        createAdminCard(
+            "Review Stale PAX",
+            "Find inactive or outdated roster records.",
+            "stalePax"
+        ),
+        createAdminCard(
+            "Import Runs",
+            "Review nightly Aggieland dry-run results.",
+            "importRuns"
+        ),
+    ];
+    
+    if (
+        isSuperAdmin() &&
+        hasPermission(PERMISSIONS.ACCESS_OPERATIONS_CENTER)
+    ) {
+        adminCards.unshift(
+            createAdminCard(
+                "Operations Center",
+                "Review system health, platform analytics, and operations.",
+                "operationsCenter"
+            )
+        );
+    }
+    
+    adminHubGrid.append(...adminCards);
 
     const sectionTitle = document.createElement("h2");
     sectionTitle.textContent = "Region Settings";

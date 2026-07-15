@@ -133,6 +133,7 @@ export function createMainMenu() {
                 { label: "Library Workbench", view: "libraryWorkbench", permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH },
                 { label: "AO Management", view: "aoManagement", permission: PERMISSIONS.MANAGE_AOS },
                 { label: "Import Runs", view: "importRuns", permission: PERMISSIONS.VIEW_IMPORTS },
+                { label: "Operations Center", view: "operationsCenter", permission: PERMISSIONS.ACCESS_OPERATIONS_CENTER},
             ],
         },
         {

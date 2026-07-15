@@ -66,6 +66,7 @@ import { renderPaxProfileView } from "./views/paxProfileView.js";
 import { renderSessionAuditView } from "./views/sessionAuditView.js";
 import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
+import { renderOperationsCenterView } from "./views/operationsCenterView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -115,6 +116,7 @@ const RESTORABLE_VIEWS = new Set([
     "announcementManagement",
     "backblastReview",
     "settings",
+    "operationsCenter",
 ]);
 
 function restoreNavState(nav) {
@@ -300,6 +302,8 @@ function renderApp() {
         renderPaxCommunityView();
     } else if (state.currentView === "settings") {
         renderSettingsView();
+    } else if (state.currentView === "operationsCenter") {
+        renderOperationsCenterView();
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

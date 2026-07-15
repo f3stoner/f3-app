@@ -18,6 +18,7 @@ import {
     updatePlannedWorkoutInCloud,
     updateSavedPlannerSectionInCloud,
     updateSessionInCloud,
+    loadAdminFlags
 } from "./cloudData.js";
 
 export function persistAppData() {
@@ -37,7 +38,6 @@ export function persistAppData() {
         rosterSearchTerm: state.rosterSearchTerm,
         showMyPlannedWorkoutsOnly: state.showMyPlannedWorkoutsOnly,
         customTemplates: state.customTemplates,
-        adminFlags: state.adminFlags,
     });
 }
 
@@ -413,7 +413,6 @@ export function replacePersistedData({
     aos,
     sites,
     qSlots,
-    adminFlags,
     savedPlannerSections,
     workoutFieldLabels,
     announcements,
@@ -431,7 +430,10 @@ export function replacePersistedData({
     state.aos = aos || [];
     state.sites = sites || [];
     state.qSlots = qSlots || [];
-    state.adminFlags = adminFlags || [];
+    state.adminFlags = [];
+    state.hasLoadedAdminFlags = false;
+    state.isLoadingAdminFlags = false;
+    state.adminFlagsLoadError = null;
     state.savedPlannerSections = savedPlannerSections || [];
     state.workoutFieldLabels = workoutFieldLabels || {};
     state.announcements = announcements || [];
@@ -455,6 +457,66 @@ export function replacePersistedData({
     state.selectedPreblastWorkoutId = null;
 }
 
+export async function ensureAdminFlagsLoaded({
+    force = false,
+} = {}) {
+    const activeRegionId = state.currentRegionId;
+
+    if (!activeRegionId) {
+        throw new Error("No active region id");
+    }
+
+    if (
+        state.hasLoadedAdminFlags &&
+        !force
+    ) {
+        return state.adminFlags;
+    }
+
+    if (state.isLoadingAdminFlags) {
+        return state.adminFlags;
+    }
+
+    state.isLoadingAdminFlags = true;
+    state.adminFlagsLoadError = null;
+
+    try {
+        const flags = await loadAdminFlags(
+            activeRegionId,
+            {
+                status: "open",
+                limit: 100,
+            }
+        );
+
+        /*
+         * The active region may have changed while the request
+         * was running. Do not put one region's flags into another
+         * region's state.
+         */
+        if (state.currentRegionId !== activeRegionId) {
+            return [];
+        }
+
+        state.adminFlags = flags;
+        state.hasLoadedAdminFlags = true;
+
+        return flags;
+    } catch (error) {
+        if (state.currentRegionId === activeRegionId) {
+            state.adminFlagsLoadError =
+                error?.message ||
+                "Failed to load admin flags.";
+        }
+
+        throw error;
+    } finally {
+        if (state.currentRegionId === activeRegionId) {
+            state.isLoadingAdminFlags = false;
+        }
+    }
+}
+
 export async function addAdminFlags(flags) {
     if (!Array.isArray(flags) || flags.length === 0) return [];
 
@@ -466,6 +528,7 @@ export async function addAdminFlags(flags) {
     const savedFlags = await insertAdminFlags(activeRegionId, flags);
 
     state.adminFlags.push(...savedFlags);
+    state.hasLoadedAdminFlags = true;
     persistAppData();
 
     return savedFlags;
