@@ -6,7 +6,7 @@ import { createIcon } from "../utils/icons.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
-import { createHorizontalBarChartSection, createLineChartSection } from "../components/regionInsights/charts.js";
+import { createHorizontalBarChartSection, createLineChartSection, createMultiLineChartSection, createHeatMapSection, createPipelineSection } from "../components/regionInsights/charts.js";
 import { loadRegionInsightSessions } from "../services/cloudData.js";
 
 const REGION_TREND_METRICS = [
@@ -51,6 +51,77 @@ const REGION_TREND_METRICS = [
             "Unique PAX who Q'd during the month",
     },
 ];
+
+function createAoTrendSelector({
+    aos,
+    selectedAoIds,
+    maxSelected = 8,
+    onChange,
+}) {
+    const selector = document.createElement("div");
+    selector.classList.add("region-trend-selector");
+
+    aos.forEach(ao => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.classList.add("region-trend-button");
+        button.dataset.aoId = ao.aoId;
+        button.textContent = ao.aoName;
+
+        const isSelected =
+            selectedAoIds.includes(ao.aoId);
+
+        button.classList.toggle(
+            "active",
+            isSelected
+        );
+
+        button.setAttribute(
+            "aria-pressed",
+            String(isSelected)
+        );
+
+        button.addEventListener("click", () => {
+            const currentSelectedIds = [
+                ...selector.querySelectorAll(
+                    ".region-trend-button.active"
+                ),
+            ].map(activeButton => {
+                return activeButton.dataset.aoId;
+            });
+
+            const currentlySelected =
+                currentSelectedIds.includes(ao.aoId);
+
+            if (currentlySelected) {
+                onChange(
+                    currentSelectedIds.filter(
+                        aoId => aoId !== ao.aoId
+                    )
+                );
+
+                return;
+            }
+
+            if (
+                currentSelectedIds.length >=
+                maxSelected
+            ) {
+                return;
+            }
+
+            onChange([
+                ...currentSelectedIds,
+                ao.aoId,
+            ]);
+        });
+
+        selector.appendChild(button);
+    });
+
+    return selector;
+}
 
 function createTrendMetricSelector({
     metrics,
@@ -444,6 +515,7 @@ export async function renderRegionInsightsView() {
     const insights = buildRegionInsights({
         sessions: insightSessions,
         members: state.members,
+        memberStats: state.memberStats,
         aos: state.aos,
         startDate,
         endDate,
@@ -511,10 +583,6 @@ export async function renderRegionInsightsView() {
         state.regionTrendMetric = "averageAttendance";
     }
     
-    if (!state.regionTrendMetric) {
-        state.regionTrendMetric = "averageAttendance";
-    }
-    
     const trendSectionHost = document.createElement("div");
     trendSectionHost.classList.add(
         "section",
@@ -544,6 +612,30 @@ export async function renderRegionInsightsView() {
         trendMetricSelector,
         trendChartBody
     );
+
+    const fngPipelineSection =
+    createPipelineSection({
+        title: "New PAX Retention Pipeline",
+        stages: insights.regionFngPipeline.stages,
+
+        onStageClick: stage => {
+            state.rosterFilter = {
+                type: "region-fng-pipeline",
+                stageKey: stage.key,
+                label: stage.label,
+                memberIds: stage.members
+                    .map(member => member.memberId)
+                    .filter(Boolean),
+                startDate,
+                endDate,
+            };
+        
+            navigateTo("roster");
+        },
+
+        emptyMessage:
+            "No FNGs were logged during this month.",
+    });
     
     function updateTrendSection() {
         const selectedTrendMetric =
@@ -591,6 +683,228 @@ export async function renderRegionInsightsView() {
     }
     
     updateTrendSection();
+
+    const availableAoTrends =
+        insights.monthlyAoAttendanceTrend;
+
+    const maxSelectedAos = 8;
+
+    if (!Array.isArray(state.regionTrendAoIds)) {
+        state.regionTrendAoIds =
+            availableAoTrends
+                .slice(0, 3)
+                .map(ao => ao.aoId);
+    }
+
+    const validAoIds = new Set(
+        availableAoTrends.map(ao => ao.aoId)
+    );
+
+    state.regionTrendAoIds =
+        state.regionTrendAoIds
+            .filter(aoId => validAoIds.has(aoId))
+            .slice(0, maxSelectedAos);
+
+    if (
+        state.regionTrendAoIds.length === 0 &&
+        availableAoTrends.length > 0
+    ) {
+        state.regionTrendAoIds =
+            availableAoTrends
+                .slice(0, 3)
+                .map(ao => ao.aoId);
+    }
+
+    const aoTrendSectionHost =
+        document.createElement("div");
+
+    aoTrendSectionHost.classList.add(
+        "section",
+        "insights-chart-section",
+        "insights-line-chart-section"
+    );
+
+    const aoTrendHeading =
+        document.createElement("div");
+
+    aoTrendHeading.classList.add(
+        "insights-section-title"
+    );
+
+    aoTrendHeading.textContent =
+        "AO Attendance Comparison";
+
+    const aoTrendSelector =
+        createAoTrendSelector({
+            aos: availableAoTrends,
+            selectedAoIds: state.regionTrendAoIds,
+            maxSelected: maxSelectedAos,
+            onChange: nextAoIds => {
+                if (nextAoIds.length === 0) return;
+
+                state.regionTrendAoIds = nextAoIds;
+
+                updateAoTrendSelector();
+                updateAoTrendChart();
+            },
+        });
+
+    const aoTrendChartBody =
+        document.createElement("div");
+
+    aoTrendSectionHost.append(
+        aoTrendHeading,
+        aoTrendSelector,
+        aoTrendChartBody
+    );
+
+function updateAoTrendSelector() {
+    aoTrendSelector
+        .querySelectorAll(".region-trend-button")
+        .forEach(button => {
+            const isSelected =
+                state.regionTrendAoIds.includes(
+                    button.dataset.aoId
+                );
+
+            button.classList.toggle(
+                "active",
+                isSelected
+            );
+
+            button.setAttribute(
+                "aria-pressed",
+                String(isSelected)
+            );
+
+            const selectionLimitReached =
+                state.regionTrendAoIds.length >=
+                maxSelectedAos;
+
+            button.disabled =
+                !isSelected &&
+                selectionLimitReached;
+        });
+}
+
+function updateAoTrendChart() {
+    aoTrendChartBody.textContent = "";
+
+    const selectedAos =
+        availableAoTrends.filter(ao => {
+            return state.regionTrendAoIds
+                .includes(ao.aoId);
+        });
+
+    const labels =
+        insights.monthlyRegionTrend.map(
+            month => month.label
+        );
+
+    const chartSection =
+        createMultiLineChartSection({
+            title: "AO Attendance Comparison",
+
+            labels,
+
+            series: selectedAos.map(ao => ({
+                key: ao.aoId,
+                label: ao.aoName,
+
+                values: ao.months.map(
+                    month =>
+                        month.averageAttendance
+                ),
+
+                months: ao.months,
+            })),
+
+            getPointSubtitle: ({
+                series,
+                pointIndex,
+            }) => {
+                const month =
+                    series.months?.[pointIndex];
+
+                if (!month) return "";
+
+                return (
+                    `${month.sessions} session` +
+                    `${month.sessions === 1 ? "" : "s"}` +
+                    ` • ${month.totalAttendance} total posts`
+                );
+            },
+
+            emptyMessage:
+                "No AO attendance trend data available.",
+        });
+
+    const chartChildren =
+        [...chartSection.children].slice(1);
+
+    aoTrendChartBody.append(
+        ...chartChildren
+    );
+}
+
+updateAoTrendSelector();
+updateAoTrendChart();
+
+
+const heatMapDays = [
+    { key: "Monday", label: "Mon" },
+    { key: "Tuesday", label: "Tue" },
+    { key: "Wednesday", label: "Wed" },
+    { key: "Thursday", label: "Thu" },
+    { key: "Friday", label: "Fri" },
+    { key: "Saturday", label: "Sat" },
+    { key: "Sunday", label: "Sun" },
+];
+
+const activeHeatMapDays = heatMapDays.filter(day => {
+    return insights.attendanceByAoByDay.some(ao => {
+        return ao.days?.[day.key]?.sessions > 0;
+    });
+});
+
+const aoAttendanceHeatMap =
+    createHeatMapSection({
+        title: "AO Attendance Heat Map",
+
+        rows: insights.attendanceByAoByDay,
+
+        columns: activeHeatMapDays,
+
+        getRowLabel: ao => ao.aoName,
+
+        getCellValue: (ao, day) => {
+            return ao.days?.[day.key]?.averageAttendance || 0;
+        },
+
+        getCellSubtitle: (ao, day) => {
+            const dayData = ao.days?.[day.key];
+
+            if (!dayData?.sessions) return "";
+
+            return `${dayData.sessions} session${
+                dayData.sessions === 1 ? "" : "s"
+            }`;
+        },
+
+        onCellClick: ({ row }) => {
+            state.selectedAoInsights = {
+                aoId: row.aoId,
+                aoName: row.aoName,
+                startDate,
+                endDate,
+            };
+
+            navigateTo("aoInsights");
+        },
+
+        emptyMessage:
+            "No AO attendance data available for this month.",
+    });
 
     const attendanceByAoChartSection =
     createHorizontalBarChartSection({
@@ -684,6 +998,9 @@ export async function renderRegionInsightsView() {
         needsAttentionSection,
         momentumSection,
         trendSectionHost,
+        fngPipelineSection,
+        aoTrendSectionHost,
+        aoAttendanceHeatMap,
         attendanceByAoChartSection,
         qLeadershipChartSection,
         postingFrequencySection,

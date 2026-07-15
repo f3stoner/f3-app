@@ -139,6 +139,14 @@ function memberMatchesRosterFilter(member) {
     }
   }
 
+  if (state.rosterFilter.type === "region-fng-pipeline") {
+    const memberIds = new Set(
+        state.rosterFilter.memberIds || []
+    );
+
+    return memberIds.has(member.id);
+}
+
   return true;
 }
 
@@ -237,8 +245,15 @@ export function renderRoster() {
     const filterText = document.createElement("div");
     filterText.classList.add("detail-value");
 
-    if (state.rosterFilter.type === "posting-frequency") {
-      filterText.textContent = `Showing PAX in posting bucket: ${state.rosterFilter.label || state.rosterFilter.bucket}`;
+    if (state.rosterFilter.type === "region-fng-pipeline") {
+      filterText.textContent =
+        `Showing ${state.rosterFilter.label} from the New PAX Pipeline`;
+    } else if (state.rosterFilter.type === "posting-frequency") {
+      filterText.textContent =
+        `Showing PAX in posting bucket: ${
+          state.rosterFilter.label ||
+          state.rosterFilter.bucket
+        }`;
     } else {
       filterText.textContent = state.rosterFilter.label;
     }

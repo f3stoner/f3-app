@@ -535,3 +535,742 @@ export function createLineChartSection({
 
     return section;
 }
+
+export function createMultiLineChartSection({
+    title,
+    labels = [],
+    series = [],
+    getPointSubtitle,
+    emptyMessage = "No comparison data available.",
+}) {
+    const section = document.createElement("div");
+
+    section.classList.add(
+        "section",
+        "insights-chart-section",
+        "insights-line-chart-section",
+        "insights-multi-line-chart-section"
+    );
+
+    const heading = document.createElement("div");
+    heading.classList.add("insights-section-title");
+    heading.textContent = title;
+
+    const visibleSeries = series
+        .map((entry, index) => ({
+            ...entry,
+            chartIndex: index,
+            values: Array.isArray(entry.values)
+                ? entry.values.map(value => Number(value) || 0)
+                : [],
+        }))
+        .filter(entry => entry.values.some(value => value > 0));
+
+    if (!labels.length || !visibleSeries.length) {
+        const empty = document.createElement("div");
+
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+
+        section.append(heading, empty);
+
+        return section;
+    }
+
+    const allValues = visibleSeries.flatMap(entry => {
+        return entry.values.filter(value => value > 0);
+    });
+
+    if (!allValues.length) {
+        const empty = document.createElement("div");
+
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+
+        section.append(heading, empty);
+
+        return section;
+    }
+
+    const legend = document.createElement("div");
+    legend.classList.add("insights-multi-line-legend");
+
+    visibleSeries.forEach(entry => {
+        const legendItem = document.createElement("div");
+
+        legendItem.classList.add(
+            "insights-multi-line-legend-item",
+            `insights-series-${entry.chartIndex % 6}`
+        );
+
+        const marker = document.createElement("span");
+        marker.classList.add("insights-multi-line-legend-marker");
+
+        const label = document.createElement("span");
+        label.textContent = entry.label;
+
+        legendItem.append(marker, label);
+        legend.appendChild(legendItem);
+    });
+
+    const chartWrap = document.createElement("div");
+    chartWrap.classList.add("insights-line-chart-wrap");
+
+    const selectedPointReadout = document.createElement("div");
+    selectedPointReadout.classList.add(
+        "insights-line-selected-point",
+        "insights-multi-line-selected-point"
+    );
+
+    const selectedPointLabel = document.createElement("div");
+    selectedPointLabel.classList.add("insights-line-selected-label");
+
+    const selectedPointValue = document.createElement("div");
+    selectedPointValue.classList.add("insights-line-selected-value");
+
+    const selectedPointSubtitle = document.createElement("div");
+    selectedPointSubtitle.classList.add(
+        "insights-line-selected-subtitle"
+    );
+
+    selectedPointReadout.append(
+        selectedPointLabel,
+        selectedPointValue,
+        selectedPointSubtitle
+    );
+
+    const svgNamespace = "http://www.w3.org/2000/svg";
+
+    const width = 700;
+    const height = 280;
+
+    const padding = {
+        top: 24,
+        right: 20,
+        bottom: 50,
+        left: 42,
+    };
+
+    const chartWidth =
+        width - padding.left - padding.right;
+
+    const chartHeight =
+        height - padding.top - padding.bottom;
+
+    const maxValue = Math.max(...allValues, 1);
+    const minValue = Math.min(...allValues, 0);
+
+    const paddedMax = Math.ceil(maxValue * 1.15);
+    const range = Math.max(paddedMax - minValue, 1);
+
+    const getX = index => {
+        if (labels.length === 1) {
+            return padding.left + chartWidth / 2;
+        }
+
+        return (
+            padding.left +
+            (index / (labels.length - 1)) * chartWidth
+        );
+    };
+
+    const getY = value => {
+        return (
+            padding.top +
+            chartHeight -
+            ((value - minValue) / range) * chartHeight
+        );
+    };
+
+    const svg = document.createElementNS(
+        svgNamespace,
+        "svg"
+    );
+
+    svg.setAttribute(
+        "viewBox",
+        `0 0 ${width} ${height}`
+    );
+
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", title);
+    svg.classList.add(
+        "insights-line-chart",
+        "insights-multi-line-chart"
+    );
+
+    const gridLineCount = 4;
+
+    for (
+        let index = 0;
+        index <= gridLineCount;
+        index += 1
+    ) {
+        const ratio = index / gridLineCount;
+        const y = padding.top + ratio * chartHeight;
+
+        const line = document.createElementNS(
+            svgNamespace,
+            "line"
+        );
+
+        line.setAttribute("x1", padding.left);
+        line.setAttribute(
+            "x2",
+            width - padding.right
+        );
+        line.setAttribute("y1", y);
+        line.setAttribute("y2", y);
+        line.classList.add("insights-line-grid");
+
+        svg.appendChild(line);
+
+        const gridValue =
+            paddedMax - ratio * range;
+
+        const valueLabel = document.createElementNS(
+            svgNamespace,
+            "text"
+        );
+
+        valueLabel.setAttribute(
+            "x",
+            padding.left - 8
+        );
+
+        valueLabel.setAttribute("y", y + 4);
+        valueLabel.setAttribute(
+            "text-anchor",
+            "end"
+        );
+
+        valueLabel.classList.add(
+            "insights-line-axis-label"
+        );
+
+        valueLabel.textContent =
+            Number(gridValue.toFixed(1));
+
+        svg.appendChild(valueLabel);
+    }
+
+    labels.forEach((labelText, index) => {
+        const xLabel = document.createElementNS(
+            svgNamespace,
+            "text"
+        );
+
+        xLabel.setAttribute("x", getX(index));
+        xLabel.setAttribute("y", height - 18);
+        xLabel.setAttribute(
+            "text-anchor",
+            "middle"
+        );
+
+        xLabel.classList.add(
+            "insights-line-axis-label"
+        );
+
+        xLabel.textContent = labelText;
+
+        svg.appendChild(xLabel);
+    });
+
+    function selectPoint({
+        seriesEntry,
+        pointIndex,
+        value,
+        pointGroup,
+    }) {
+        svg
+            .querySelectorAll(
+                ".insights-multi-line-point-group"
+            )
+            .forEach(group => {
+                group.classList.remove("selected");
+            });
+
+        pointGroup.classList.add("selected");
+
+        const label = labels[pointIndex] || "";
+
+        selectedPointLabel.textContent =
+            `${seriesEntry.label} · ${label}`;
+
+        selectedPointValue.textContent = value;
+
+        selectedPointSubtitle.textContent =
+            getPointSubtitle?.({
+                series: seriesEntry,
+                pointIndex,
+                label,
+                value,
+            }) || "";
+    }
+
+    const selectablePoints = [];
+
+    visibleSeries.forEach(seriesEntry => {
+        const validPoints = seriesEntry.values
+            .map((value, index) => ({
+                value,
+                index,
+            }))
+            .filter(point => point.value > 0);
+
+        if (validPoints.length > 1) {
+            const pointString = validPoints
+                .map(point => {
+                    return (
+                        `${getX(point.index)},` +
+                        `${getY(point.value)}`
+                    );
+                })
+                .join(" ");
+
+            const polyline =
+                document.createElementNS(
+                    svgNamespace,
+                    "polyline"
+                );
+
+            polyline.setAttribute(
+                "points",
+                pointString
+            );
+
+            polyline.setAttribute("fill", "none");
+
+            polyline.classList.add(
+                "insights-multi-line-path",
+                `insights-series-${
+                    seriesEntry.chartIndex % 6
+                }`
+            );
+
+            svg.appendChild(polyline);
+        }
+
+        validPoints.forEach(pointData => {
+            const x = getX(pointData.index);
+            const y = getY(pointData.value);
+
+            const pointGroup =
+                document.createElementNS(
+                    svgNamespace,
+                    "g"
+                );
+
+            pointGroup.classList.add(
+                "insights-multi-line-point-group",
+                `insights-series-${
+                    seriesEntry.chartIndex % 6
+                }`
+            );
+
+            pointGroup.setAttribute(
+                "tabindex",
+                "0"
+            );
+
+            pointGroup.setAttribute(
+                "role",
+                "button"
+            );
+
+            pointGroup.setAttribute(
+                "aria-label",
+                `${seriesEntry.label}, ` +
+                `${labels[pointData.index]}: ` +
+                `${pointData.value}`
+            );
+
+            const hitArea =
+                document.createElementNS(
+                    svgNamespace,
+                    "circle"
+                );
+
+            hitArea.setAttribute("cx", x);
+            hitArea.setAttribute("cy", y);
+            hitArea.setAttribute("r", 16);
+
+            hitArea.classList.add(
+                "insights-line-hit-area"
+            );
+
+            const point =
+                document.createElementNS(
+                    svgNamespace,
+                    "circle"
+                );
+
+            point.setAttribute("cx", x);
+            point.setAttribute("cy", y);
+            point.setAttribute("r", 4);
+
+            point.classList.add(
+                "insights-multi-line-point"
+            );
+
+            pointGroup.append(hitArea, point);
+
+            const selectCurrentPoint = () => {
+                selectPoint({
+                    seriesEntry,
+                    pointIndex: pointData.index,
+                    value: pointData.value,
+                    pointGroup,
+                });
+            };
+
+            pointGroup.addEventListener(
+                "click",
+                selectCurrentPoint
+            );
+
+            pointGroup.addEventListener(
+                "keydown",
+                event => {
+                    if (
+                        event.key !== "Enter" &&
+                        event.key !== " "
+                    ) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    selectCurrentPoint();
+                }
+            );
+
+            svg.appendChild(pointGroup);
+
+            selectablePoints.push({
+                seriesEntry,
+                pointIndex: pointData.index,
+                value: pointData.value,
+                pointGroup,
+            });
+        });
+    });
+
+    const latestPoint = selectablePoints
+        .sort((a, b) => {
+            if (b.pointIndex !== a.pointIndex) {
+                return b.pointIndex - a.pointIndex;
+            }
+
+            return b.value - a.value;
+        })[0];
+
+    if (latestPoint) {
+        selectPoint(latestPoint);
+    }
+
+    chartWrap.append(
+        svg,
+        selectedPointReadout
+    );
+
+    section.append(
+        heading,
+        legend,
+        chartWrap
+    );
+
+    return section;
+}
+
+export function createHeatMapSection({
+    title,
+    rows = [],
+    columns = [],
+    getRowLabel,
+    getCellValue,
+    getCellSubtitle,
+    onCellClick,
+    emptyMessage = "No heat map data available.",
+}) {
+    const section = document.createElement("div");
+
+    section.classList.add(
+        "section",
+        "insights-chart-section",
+        "insights-heat-map-section"
+    );
+
+    const heading = document.createElement("div");
+    heading.classList.add("insights-section-title");
+    heading.textContent = title;
+
+    const values = rows.flatMap(row => {
+        return columns.map(column => {
+            return Number(getCellValue(row, column)) || 0;
+        });
+    });
+
+    const maxValue = Math.max(...values, 0);
+
+    if (!rows.length || !columns.length || maxValue === 0) {
+        const empty = document.createElement("div");
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+
+        section.append(heading, empty);
+        return section;
+    }
+
+    const scrollWrap = document.createElement("div");
+    scrollWrap.classList.add("insights-heat-map-scroll");
+
+    const grid = document.createElement("div");
+    grid.classList.add("insights-heat-map-grid");
+
+    grid.style.setProperty(
+        "--heat-map-columns",
+        String(columns.length)
+    );
+
+    const corner = document.createElement("div");
+    corner.classList.add(
+        "insights-heat-map-cell",
+        "insights-heat-map-corner"
+    );
+
+    grid.appendChild(corner);
+
+    columns.forEach(column => {
+        const columnHeader = document.createElement("div");
+
+        columnHeader.classList.add(
+            "insights-heat-map-cell",
+            "insights-heat-map-column-header"
+        );
+
+        columnHeader.textContent = column.label;
+
+        grid.appendChild(columnHeader);
+    });
+
+    rows.forEach(row => {
+        const rowHeader = document.createElement("div");
+
+        rowHeader.classList.add(
+            "insights-heat-map-cell",
+            "insights-heat-map-row-header"
+        );
+
+        rowHeader.textContent = getRowLabel(row);
+
+        grid.appendChild(rowHeader);
+
+        columns.forEach(column => {
+            const value =
+                Number(getCellValue(row, column)) || 0;
+
+            const cell = document.createElement(
+                onCellClick && value > 0
+                    ? "button"
+                    : "div"
+            );
+
+            cell.classList.add(
+                "insights-heat-map-cell",
+                "insights-heat-map-value-cell"
+            );
+
+            if (value <= 0) {
+                cell.classList.add("empty");
+                cell.textContent = "—";
+            } else {
+                const intensity =
+                    maxValue > 0
+                        ? Math.max(value / maxValue, 0.12)
+                        : 0;
+
+                cell.style.setProperty(
+                    "--heat-intensity",
+                    String(intensity)
+                );
+
+                const valueEl = document.createElement("div");
+                valueEl.classList.add(
+                    "insights-heat-map-value"
+                );
+
+                valueEl.textContent = value;
+
+                const subtitleText =
+                    getCellSubtitle?.(row, column);
+
+                cell.appendChild(valueEl);
+
+                if (subtitleText) {
+                    const subtitle =
+                        document.createElement("div");
+
+                    subtitle.classList.add(
+                        "insights-heat-map-subtitle"
+                    );
+
+                    subtitle.textContent = subtitleText;
+
+                    cell.appendChild(subtitle);
+                }
+
+                if (onCellClick) {
+                    cell.type = "button";
+
+                    cell.addEventListener("click", () => {
+                        onCellClick({
+                            row,
+                            column,
+                            value,
+                        });
+                    });
+                }
+            }
+
+            grid.appendChild(cell);
+        });
+    });
+
+    scrollWrap.appendChild(grid);
+
+    section.append(
+        heading,
+        scrollWrap
+    );
+
+    return section;
+}
+
+export function createPipelineSection({
+    title,
+    stages = [],
+    onStageClick,
+    emptyMessage = "No pipeline data available.",
+}) {
+    const section = document.createElement("div");
+
+    section.classList.add(
+        "section",
+        "insights-chart-section",
+        "insights-pipeline-section"
+    );
+
+    const heading = document.createElement("div");
+    heading.classList.add("insights-section-title");
+    heading.textContent = title;
+
+    const hasData = stages.some(stage => {
+        return Number(stage.count) > 0;
+    });
+
+    if (!stages.length || !hasData) {
+        const empty = document.createElement("div");
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+
+        section.append(heading, empty);
+        return section;
+    }
+
+    const pipeline = document.createElement("div");
+    pipeline.classList.add("insights-pipeline");
+
+    const startingCount = Math.max(
+        Number(stages[0]?.count) || 0,
+        1
+    );
+
+    stages.forEach((stage, index) => {
+        const count = Number(stage.count) || 0;
+
+        const stageElement = document.createElement(
+            onStageClick ? "button" : "div"
+        );
+
+        stageElement.classList.add(
+            "insights-pipeline-stage"
+        );
+
+        if (onStageClick) {
+            stageElement.type = "button";
+            stageElement.addEventListener("click", () => {
+                onStageClick(stage);
+            });
+        }
+
+        const header = document.createElement("div");
+        header.classList.add(
+            "insights-pipeline-stage-header"
+        );
+
+        const label = document.createElement("div");
+        label.classList.add(
+            "insights-pipeline-stage-label"
+        );
+        label.textContent = stage.label;
+
+        const value = document.createElement("div");
+        value.classList.add(
+            "insights-pipeline-stage-value"
+        );
+        value.textContent = count;
+
+        header.append(label, value);
+
+        const subtitle = document.createElement("div");
+        subtitle.classList.add(
+            "insights-pipeline-stage-subtitle"
+        );
+        subtitle.textContent = stage.subtitle || "";
+
+        const track = document.createElement("div");
+        track.classList.add(
+            "insights-pipeline-stage-track"
+        );
+
+        const fill = document.createElement("div");
+        fill.classList.add(
+            "insights-pipeline-stage-fill"
+        );
+
+        const widthPercent =
+            Math.max(
+                (count / startingCount) * 100,
+                count > 0 ? 5 : 0
+            );
+
+        fill.style.width = `${widthPercent}%`;
+
+        track.appendChild(fill);
+
+        stageElement.append(
+            header,
+            subtitle,
+            track
+        );
+
+        pipeline.appendChild(stageElement);
+
+        if (index < stages.length - 1) {
+            const connector =
+                document.createElement("div");
+
+            connector.classList.add(
+                "insights-pipeline-connector"
+            );
+
+            connector.textContent = "↓";
+
+            pipeline.appendChild(connector);
+        }
+    });
+
+    section.append(heading, pipeline);
+
+    return section;
+}

@@ -47,6 +47,7 @@ function normalizeAoName(aoName) {
 export function buildRegionInsights({
     sessions,
     members,
+    memberStats = [],
     aos = [],
     startDate,
     endDate,
@@ -320,7 +321,193 @@ export function buildRegionInsights({
         rosterCaptureRate,
     };
 
-
+    function getEffectivePostCount(memberId) {
+        if (!memberId) return null;
+    
+        const stat = memberStats.find(item => {
+            return (
+                item.memberId === memberId ||
+                item.member_id === memberId
+            );
+        });
+    
+        if (!stat) return null;
+    
+        return (
+            stat.totalPosts ??
+            stat.total_posts ??
+            stat.posts ??
+            stat.postCount ??
+            stat.post_count ??
+            stat.attendanceCount ??
+            stat.attendance_count ??
+            stat.totalAttendance ??
+            stat.total_attendance ??
+            null
+        );
+    }
+    
+    function getMemberDisplayName(memberId) {
+        const member = members.find(item => {
+            return item.id === memberId;
+        });
+    
+        return (
+            member?.paxName ||
+            member?.pax_name ||
+            member?.realName ||
+            member?.real_name ||
+            "Unnamed FNG"
+        );
+    }
+    
+    const rosteredFngCohortMap = new Map();
+    const unrosteredFngCohort = [];
+    
+    filteredSessions.forEach(session => {
+        (session.fngs || []).forEach((fng, index) => {
+            const memberId =
+                fng.memberId ||
+                fng.member_id ||
+                null;
+    
+            if (!memberId) {
+                unrosteredFngCohort.push({
+                    key: `${session.id || session.date}-${index}`,
+                    memberId: null,
+                    name:
+                        fng.paxName ||
+                        fng.pax_name ||
+                        fng.name ||
+                        fng.f3Name ||
+                        fng.f3_name ||
+                        "Unnamed FNG",
+                    firstPostDate: session.date,
+                    aoId: session.aoId || null,
+                    aoName: getCanonicalAoName(session),
+                    postCount: 1,
+                    status: "Unrostered",
+                });
+    
+                return;
+            }
+    
+            const existing =
+                rosteredFngCohortMap.get(memberId);
+    
+            if (
+                existing &&
+                existing.firstPostDate <= session.date
+            ) {
+                return;
+            }
+    
+            const postCount =
+                getEffectivePostCount(memberId) ?? 1;
+    
+            let status = "Needs Follow-Up";
+    
+            if (postCount >= 10) {
+                status = "Regular";
+            } else if (postCount >= 5) {
+                status = "Building Habit";
+            } else if (postCount >= 2) {
+                status = "Returned";
+            }
+    
+            rosteredFngCohortMap.set(memberId, {
+                memberId,
+                name: getMemberDisplayName(memberId),
+                firstPostDate: session.date,
+                aoId: session.aoId || null,
+                aoName: getCanonicalAoName(session),
+                postCount,
+                status,
+            });
+        });
+    });
+    
+    const rosteredFngCohort = [
+        ...rosteredFngCohortMap.values(),
+    ];
+    
+    const returnedFngCohort =
+        rosteredFngCohort.filter(pax => {
+            return pax.postCount >= 2;
+        });
+    
+    const buildingHabitFngCohort =
+        rosteredFngCohort.filter(pax => {
+            return pax.postCount >= 5;
+        });
+    
+    const regularFngCohort =
+        rosteredFngCohort.filter(pax => {
+            return pax.postCount >= 10;
+        });
+    
+    const regionFngPipeline = {
+        totalFngs:
+            rosteredFngCohort.length +
+            unrosteredFngCohort.length,
+    
+        rosteredFngs:
+            rosteredFngCohort.length,
+    
+        unrosteredFngs:
+            unrosteredFngCohort.length,
+    
+        returnedCount:
+            returnedFngCohort.length,
+    
+        buildingHabitCount:
+            buildingHabitFngCohort.length,
+    
+        regularCount:
+            regularFngCohort.length,
+    
+        stages: [
+            {
+                key: "fngs",
+                label: "FNGs",
+                count:
+                    rosteredFngCohort.length +
+                    unrosteredFngCohort.length,
+                subtitle:
+                    `${rosteredFngCohort.length} rostered` +
+                    (
+                        unrosteredFngCohort.length
+                            ? ` • ${unrosteredFngCohort.length} unrostered`
+                            : ""
+                    ),
+                members: [
+                    ...rosteredFngCohort,
+                    ...unrosteredFngCohort,
+                ],
+            },
+            {
+                key: "returned",
+                label: "Returned",
+                count: returnedFngCohort.length,
+                subtitle: "Reached 2 beatdowns",
+                members: returnedFngCohort,
+            },
+            {
+                key: "buildingHabit",
+                label: "Building Habit",
+                count: buildingHabitFngCohort.length,
+                subtitle: "Reached 5 beatdowns",
+                members: buildingHabitFngCohort,
+            },
+            {
+                key: "regulars",
+                label: "Regulars",
+                count: regularFngCohort.length,
+                subtitle: "Reached 10 beatdowns",
+                members: regularFngCohort,
+            },
+        ],
+    };
 
     const postCountByMemberId = new Map();
 
@@ -508,6 +695,109 @@ export function buildRegionInsights({
         };
     });
 
+    const monthlyAoTrendMap = new Map();
+
+    sessions.forEach(session => {
+        if (!session.date || !session.aoId) return;
+
+        const monthKey = session.date.slice(0, 7);
+        const aoId = session.aoId;
+        const aoName = getCanonicalAoName(session);
+
+        if (!monthlyAoTrendMap.has(aoId)) {
+            monthlyAoTrendMap.set(aoId, {
+                aoId,
+                aoName,
+                totalSessions: 0,
+                months: new Map(),
+            });
+        }
+
+        const aoEntry = monthlyAoTrendMap.get(aoId);
+
+        if (!aoEntry.months.has(monthKey)) {
+            aoEntry.months.set(monthKey, {
+                monthKey,
+                sessions: 0,
+                totalAttendance: 0,
+                averageAttendance: 0,
+            });
+        }
+
+        const monthEntry = aoEntry.months.get(monthKey);
+
+        monthEntry.sessions += 1;
+        monthEntry.totalAttendance +=
+            getSessionAttendanceCount(session);
+
+        aoEntry.totalSessions += 1;
+    });
+
+    monthlyAoTrendMap.forEach(aoEntry => {
+        aoEntry.months.forEach(monthEntry => {
+            monthEntry.averageAttendance =
+                monthEntry.sessions > 0
+                    ? Number(
+                        (
+                            monthEntry.totalAttendance /
+                            monthEntry.sessions
+                        ).toFixed(1)
+                    )
+                    : 0;
+        });
+    });
+
+    const monthlyAoAttendanceTrend = [
+        ...monthlyAoTrendMap.values(),
+    ]
+        .map(aoEntry => ({
+            aoId: aoEntry.aoId,
+            aoName: aoEntry.aoName,
+            totalSessions: aoEntry.totalSessions,
+
+            months: monthlyRegionTrendKeys.map(monthKey => {
+                const monthEntry =
+                    aoEntry.months.get(monthKey);
+
+                const [year, month] =
+                    monthKey.split("-").map(Number);
+
+                const date = new Date(
+                    year,
+                    month - 1,
+                    1
+                );
+
+                return {
+                    monthKey,
+
+                    label: date.toLocaleDateString(
+                        undefined,
+                        {
+                            month: "short",
+                        }
+                    ),
+
+                    sessions:
+                        monthEntry?.sessions || 0,
+
+                    totalAttendance:
+                        monthEntry?.totalAttendance || 0,
+
+                    averageAttendance:
+                        monthEntry?.averageAttendance || 0,
+                };
+            }),
+        }))
+        .filter(ao => {
+            return ao.months.some(month => {
+                return month.sessions > 0;
+            });
+        })
+        .sort((a, b) => {
+            return b.totalSessions - a.totalSessions;
+        });
+
     return {
         summary: {
             totalSessions,
@@ -526,8 +816,10 @@ export function buildRegionInsights({
         attendanceByAo,
         attendanceByAoByDay,
         monthlyRegionTrend,
+        monthlyAoAttendanceTrend,
         qFrequency,
         fngStats,
+        regionFngPipeline,
         postingFrequency,
     };
 }
