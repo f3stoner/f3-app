@@ -6,7 +6,7 @@ import { createIcon } from "../utils/icons.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
-import { createHorizontalBarChartSection, createLineChartSection, createMultiLineChartSection, createHeatMapSection, createPipelineSection } from "../components/regionInsights/charts.js";
+import { createHorizontalBarChartSection, createLineChartSection, createMultiLineChartSection, createHeatMapSection, createPipelineSection, } from "../components/regionInsights/charts.js";
 import { loadRegionInsightSessions } from "../services/cloudData.js";
 
 const REGION_TREND_METRICS = [
@@ -382,6 +382,133 @@ function buildLeadershipSnapshot(insights) {
     };
 }
 
+function createLeadershipActionSection({
+    title,
+    description,
+    groups,
+    onGroupClick,
+    emptyMessage = "No leadership action data available.",
+}) {
+    const section = document.createElement("div");
+    section.classList.add(
+        "section",
+        "leadership-action-section"
+    );
+
+    const heading = document.createElement("div");
+    heading.classList.add("insights-section-title");
+    heading.textContent = title;
+
+    const descriptionEl = document.createElement("div");
+    descriptionEl.classList.add(
+        "leadership-action-description"
+    );
+    descriptionEl.textContent = description;
+
+    const groupList = document.createElement("div");
+    groupList.classList.add(
+        "leadership-action-groups"
+    );
+
+    if (!groups.length) {
+        const empty = document.createElement("div");
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+
+        section.append(
+            heading,
+            descriptionEl,
+            empty
+        );
+
+        return section;
+    }
+
+    groups.forEach(group => {
+        const hasMembers = group.count > 0;
+
+        const card = document.createElement("button");
+
+        card.type = "button";
+        card.disabled = !hasMembers || !onGroupClick;
+
+        card.classList.add(
+            "leadership-action-card",
+            `leadership-action-${group.tone || "neutral"}`
+        );
+
+        if (!hasMembers) {
+            card.classList.add("empty");
+        }
+
+        if (hasMembers && onGroupClick) {
+            card.addEventListener("click", () => {
+                onGroupClick(group);
+            });
+        }
+
+        const main = document.createElement("div");
+        main.classList.add(
+            "leadership-action-main"
+        );
+
+        const symbol = document.createElement("div");
+        symbol.classList.add(
+            "leadership-action-symbol"
+        );
+        symbol.textContent = group.symbol || "→";
+
+        const text = document.createElement("div");
+        text.classList.add(
+            "leadership-action-text"
+        );
+
+        const label = document.createElement("div");
+        label.classList.add(
+            "leadership-action-label"
+        );
+        label.textContent = group.label;
+
+        const groupDescription =
+            document.createElement("div");
+
+        groupDescription.classList.add(
+            "leadership-action-group-description"
+        );
+
+        groupDescription.textContent =
+            group.description || "";
+
+        text.append(
+            label,
+            groupDescription
+        );
+
+        const count = document.createElement("div");
+        count.classList.add(
+            "leadership-action-count"
+        );
+        count.textContent = group.count;
+
+        main.append(
+            symbol,
+            text,
+            count
+        );
+
+        card.appendChild(main);
+        groupList.appendChild(card);
+    });
+
+    section.append(
+        heading,
+        descriptionEl,
+        groupList
+    );
+
+    return section;
+}
+
 function createSimpleListSection(title, items, emptyMessage = "Nothing to show yet.") {
     const section = document.createElement("div");
     section.classList.add("section");
@@ -435,12 +562,23 @@ export async function renderRegionInsightsView() {
 
     if (!state.regionInsightsMonth) {
         const { startDate } = getCurrentMonthRange();
-        state.regionInsightsMonth = startDate.slice(0,7);
+        state.regionInsightsMonth = startDate.slice(0, 7);
     }
-
+    
     const selectedMonth = state.regionInsightsMonth;
-    const { startDate, endDate } = getMonthRange(selectedMonth);
-
+    
+    const {
+        startDate,
+        endDate,
+    } = getMonthRange(selectedMonth);
+    
+    const todayKey = formatDateKey(new Date());
+    
+    const accelerationEndDate =
+        selectedMonth === todayKey.slice(0, 7)
+            ? todayKey
+            : endDate;
+    
     const [selectedYear, selectedMonthNumber] =
         selectedMonth.split("-").map(Number);
 
@@ -519,6 +657,7 @@ export async function renderRegionInsightsView() {
         aos: state.aos,
         startDate,
         endDate,
+        accelerationEndDate,
     });
 
     const snapshot = buildLeadershipSnapshot(insights);
@@ -614,28 +753,66 @@ export async function renderRegionInsightsView() {
     );
 
     const fngPipelineSection =
-    createPipelineSection({
-        title: "New PAX Retention Pipeline",
-        stages: insights.regionFngPipeline.stages,
+        createPipelineSection({
+            title: "New PAX Retention Pipeline",
+            stages: insights.regionFngPipeline.stages,
 
-        onStageClick: stage => {
-            state.rosterFilter = {
-                type: "region-fng-pipeline",
-                stageKey: stage.key,
-                label: stage.label,
-                memberIds: stage.members
-                    .map(member => member.memberId)
-                    .filter(Boolean),
-                startDate,
-                endDate,
-            };
-        
-            navigateTo("roster");
-        },
+            onStageClick: stage => {
+                state.rosterFilter = {
+                    type: "region-fng-pipeline",
+                    stageKey: stage.key,
+                    label: stage.label,
+                    memberIds: stage.members
+                        .map(member => member.memberId)
+                        .filter(Boolean),
+                    startDate,
+                    endDate,
+                    sourceView: "regionInsights",
+                };
+            
+                navigateTo("roster");
+            },
 
-        emptyMessage:
-            "No FNGs were logged during this month.",
+            emptyMessage:
+                "No FNGs were logged during this month.",
     });
+
+    const accelerationAnchorLabel =
+    new Date(
+        `${accelerationEndDate}T00:00:00`
+    ).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+
+    const accelerationSection =
+        createLeadershipActionSection({
+            title: "PAX Acceleration",
+
+            description:
+                `Last 60 days compared with the previous 60 days, ending ${accelerationAnchorLabel}.`,
+
+            groups: insights.paxAcceleration,
+
+            onGroupClick: group => {
+                state.rosterFilter = {
+                    type: "pax-acceleration",
+                    label: group.label,
+                    memberIds: group.members
+                        .map(member => member.memberId)
+                        .filter(Boolean),
+                    startDate,
+                    endDate: accelerationEndDate,
+                    sourceView: "regionInsights",
+                };
+
+                navigateTo("roster");
+            },
+
+            emptyMessage:
+                "No PAX posted during either comparison window.",
+        });
     
     function updateTrendSection() {
         const selectedTrendMetric =
@@ -681,6 +858,32 @@ export async function renderRegionInsightsView() {
     
         trendChartBody.append(...chartChildren);
     }
+
+    const checkTheSixSection =
+    createLeadershipActionSection({
+        title: "Check the Six",
+
+        description:
+            `PAX who have not posted recently, measured through ${accelerationAnchorLabel}.`,
+
+        groups: insights.checkTheSix,
+
+        onGroupClick: group => {
+            state.rosterFilter = {
+                type: "check-the-six",
+                label: group.label,
+                memberIds: group.members
+                    .map(member => member.memberId)
+                    .filter(Boolean),
+                sourceView: "regionInsights",
+            };
+
+            navigateTo("roster");
+        },
+
+        emptyMessage:
+            "No active PAX have gone 30 or more days without posting.",
+    });
     
     updateTrendSection();
 
@@ -960,6 +1163,7 @@ const aoAttendanceHeatMap =
                     label: bucket.label,
                     startDate,
                     endDate,
+                    sourceView: "regionInsights",
                 };
                 navigateTo("roster");
             },
@@ -999,6 +1203,8 @@ const aoAttendanceHeatMap =
         momentumSection,
         trendSectionHost,
         fngPipelineSection,
+        accelerationSection,
+        checkTheSixSection,
         aoTrendSectionHost,
         aoAttendanceHeatMap,
         attendanceByAoChartSection,

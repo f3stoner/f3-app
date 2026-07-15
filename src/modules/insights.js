@@ -51,6 +51,7 @@ export function buildRegionInsights({
     aos = [],
     startDate,
     endDate,
+    accelerationEndDate = endDate,
 }) {
     const filteredSessions = sessions.filter(session => {
         if (!session.date) return false;
@@ -346,6 +347,48 @@ export function buildRegionInsights({
             null
         );
     }
+
+    function getEffectiveLastPostDate(memberId) {
+        if (!memberId) return null;
+    
+        const stat = memberStats.find(item => {
+            return (
+                item.memberId === memberId ||
+                item.member_id === memberId
+            );
+        });
+    
+        return (
+            stat?.lastPostDate ??
+            stat?.last_post_date ??
+            stat?.lastPostedAt ??
+            stat?.last_posted_at ??
+            null
+        );
+    }
+
+    function countPostsBetween(startKey, endKey) {
+        const posts = new Map();
+    
+        sessions.forEach(session => {
+            if (
+                !session.date ||
+                session.date < startKey ||
+                session.date > endKey
+            ) {
+                return;
+            }
+    
+            getRosteredAttendanceIdSet(session).forEach(memberId => {
+                posts.set(
+                    memberId,
+                    (posts.get(memberId) || 0) + 1
+                );
+            });
+        });
+    
+        return posts;
+    }
     
     function getMemberDisplayName(memberId) {
         const member = members.find(item => {
@@ -542,6 +585,331 @@ export function buildRegionInsights({
             postingFrequency[4].count += 1;
         }
     });
+
+    const currentWindowEnd = accelerationEndDate;
+
+    const currentWindowStart = (() => {
+        const d = new Date(`${currentWindowEnd}T00:00:00`);
+        d.setDate(d.getDate() - 59);
+        return getDateKey(d);
+    })();
+
+    const previousWindowEnd = (() => {
+        const d = new Date(`${currentWindowStart}T00:00:00`);
+        d.setDate(d.getDate() - 1);
+        return getDateKey(d);
+    })();
+
+    const previousWindowStart = (() => {
+        const d = new Date(`${previousWindowEnd}T00:00:00`);
+        d.setDate(d.getDate() - 59);
+        return getDateKey(d);
+    })();
+
+    const currentPosts =
+        countPostsBetween(
+            currentWindowStart,
+            currentWindowEnd
+        );
+
+    const previousPosts =
+        countPostsBetween(
+            previousWindowStart,
+            previousWindowEnd
+        );
+
+    const memberIds = new Set([
+        ...currentPosts.keys(),
+        ...previousPosts.keys(),
+    ]);
+    
+    const paxAcceleration = [];
+    
+    memberIds.forEach(memberId => {
+        const member =
+            members.find(m => m.id === memberId);
+    
+        if (!member) return;
+    
+        const current =
+            currentPosts.get(memberId) || 0;
+    
+        const previous =
+            previousPosts.get(memberId) || 0;
+    
+        if (current === 0 && previous === 0) {
+            return;
+        }
+    
+        const change =
+            current - previous;
+    
+        let percentChange = null;
+    
+        if (previous > 0) {
+            percentChange =
+                ((current - previous) / previous) * 100;
+        }
+    
+        let status;
+    
+        if (previous === 0 && current >= 8) {
+            status = "New Regular";
+        } else if (previous === 0 && current > 0) {
+            status = "Moderate Increase";
+        } else if (
+            percentChange !== null &&
+            percentChange >= 50
+        ) {
+            status = "Strong Increase";
+        } else if (
+            percentChange !== null &&
+            percentChange >= 20
+        ) {
+            status = "Moderate Increase";
+        } else if (
+            percentChange === null ||
+            percentChange > -20
+        ) {
+            status = "Consistent";
+        } else if (percentChange > -50) {
+            status = "Moderate Drop";
+        } else {
+            status = "Sharp Drop";
+        }
+    
+        paxAcceleration.push({
+            memberId,
+            paxName:
+                member.paxName ||
+                member.pax_name ||
+                member.realName ||
+                member.real_name ||
+                "Unnamed PAX",
+        
+            currentPosts: current,
+            previousPosts: previous,
+            change,
+            percentChange,
+            lastPostDate:
+                getEffectiveLastPostDate(memberId),
+            status,
+        });
+    });
+
+    paxAcceleration.sort((a, b) => {
+
+        if (a.status !== b.status) {
+    
+            const order = {
+                "New Regular": 0,
+                "Strong Increase": 1,
+                "Moderate Increase": 2,
+                "Consistent": 3,
+                "Moderate Drop": 4,
+                "Sharp Drop": 5,
+            };
+    
+            return order[a.status] - order[b.status];
+        }
+    
+        return (
+            (b.percentChange ?? -Infinity) -
+            (a.percentChange ?? -Infinity)
+        );
+    });
+
+    const accelerationGroupDefinitions = [
+        {
+            status: "New Regular",
+            key: "newly-active",
+            label: "Newly Active",
+            description:
+                "Reached 8+ posts after having no posts in the previous window",
+            tone: "positive",
+            symbol: "★",
+        },
+        {
+            status: "Strong Increase",
+            key: "rising-fast",
+            label: "Rising Fast",
+            description:
+                "Posting increased by 50% or more",
+            tone: "positive",
+            symbol: "↗",
+        },
+        {
+            status: "Moderate Increase",
+            key: "gaining-momentum",
+            label: "Gaining Momentum",
+            description:
+                "Posting increased, including newly returning PAX",
+            tone: "positive",
+            symbol: "↗",
+        },
+        {
+            status: "Consistent",
+            key: "holding-steady",
+            label: "Holding Steady",
+            description:
+                "Posting changed by less than 20%",
+            tone: "neutral",
+            symbol: "→",
+        },
+        {
+            status: "Moderate Drop",
+            key: "cooling-off",
+            label: "Cooling Off",
+            description:
+                "Posting decreased by 20–49%",
+            tone: "warning",
+            symbol: "↘",
+        },
+        {
+            status: "Sharp Drop",
+            key: "needs-attention",
+            label: "Needs Attention",
+            description:
+                "Posting decreased by 50% or more",
+            tone: "danger",
+            symbol: "↓",
+        },
+    ];
+    
+    const accelerationBuckets =
+        accelerationGroupDefinitions.map(definition => {
+            const members =
+                paxAcceleration.filter(pax => {
+                    return pax.status === definition.status;
+                });
+    
+            return {
+                ...definition,
+                count: members.length,
+                members,
+            };
+        });
+
+        const checkTheSixAnchorDate =
+        new Date(`${accelerationEndDate}T00:00:00`);
+    
+    function getDaysSinceDate(dateKey) {
+        if (!dateKey) return null;
+    
+        const date = new Date(`${dateKey.slice(0, 10)}T00:00:00`);
+    
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+    
+        const millisecondsPerDay =
+            1000 * 60 * 60 * 24;
+    
+        return Math.floor(
+            (
+                checkTheSixAnchorDate.getTime() -
+                date.getTime()
+            ) / millisecondsPerDay
+        );
+    }
+    
+    const checkTheSixMembers = members
+        .filter(member => {
+            return member.status !== "inactive";
+        })
+        .map(member => {
+            const lastPostDate =
+                getEffectiveLastPostDate(member.id);
+    
+            const daysSinceLastPost =
+                getDaysSinceDate(lastPostDate);
+    
+            return {
+                memberId: member.id,
+    
+                paxName:
+                    member.paxName ||
+                    member.pax_name ||
+                    member.realName ||
+                    member.real_name ||
+                    "Unnamed PAX",
+    
+                lastPostDate,
+                daysSinceLastPost,
+            };
+        })
+        .filter(member => {
+            return (
+                member.daysSinceLastPost !== null &&
+                member.daysSinceLastPost >= 30
+            );
+        })
+        .sort((a, b) => {
+            return (
+                b.daysSinceLastPost -
+                a.daysSinceLastPost
+            );
+        });
+    
+    const checkTheSixDefinitions = [
+        {
+            key: "watch-list",
+            label: "Watch List",
+            description:
+                "Last posted 30–59 days ago",
+            tone: "warning",
+            symbol: "!",
+            minDays: 30,
+            maxDays: 59,
+        },
+        {
+            key: "reach-out",
+            label: "Reach Out",
+            description:
+                "Last posted 60–89 days ago",
+            tone: "danger",
+            symbol: "↗",
+            minDays: 60,
+            maxDays: 89,
+        },
+        {
+            key: "kotter-watch",
+            label: "Kotter Watch",
+            description:
+                "Last posted 90 or more days ago",
+            tone: "danger",
+            symbol: "↓",
+            minDays: 90,
+            maxDays: null,
+        },
+    ];
+    
+    const checkTheSix =
+        checkTheSixDefinitions.map(definition => {
+            const matchingMembers =
+                checkTheSixMembers.filter(member => {
+                    const meetsMinimum =
+                        member.daysSinceLastPost >=
+                        definition.minDays;
+    
+                    const meetsMaximum =
+                        definition.maxDays === null ||
+                        member.daysSinceLastPost <=
+                        definition.maxDays;
+    
+                    return meetsMinimum && meetsMaximum;
+                });
+    
+            return {
+                key: definition.key,
+                label: definition.label,
+                description: definition.description,
+                tone: definition.tone,
+                symbol: definition.symbol,
+                count: matchingMembers.length,
+                members: matchingMembers,
+            };
+        });
 
     const monthlyRegionTrendMap = new Map();
 
@@ -820,6 +1188,8 @@ export function buildRegionInsights({
         qFrequency,
         fngStats,
         regionFngPipeline,
+        paxAcceleration: accelerationBuckets,
+        checkTheSix,
         postingFrequency,
     };
 }

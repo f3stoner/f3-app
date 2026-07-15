@@ -147,6 +147,22 @@ function memberMatchesRosterFilter(member) {
     return memberIds.has(member.id);
 }
 
+  if (state.rosterFilter.type === "pax-acceleration") {
+    const memberIds = new Set(
+        state.rosterFilter.memberIds || []
+    );
+
+    return memberIds.has(member.id);
+  }
+
+  if (state.rosterFilter.type === "check-the-six") {
+    const memberIds = new Set(
+        state.rosterFilter.memberIds || []
+    );
+
+    return memberIds.has(member.id);
+  }
+
   return true;
 }
 
@@ -191,9 +207,11 @@ export function renderRoster() {
   const header = createAppHeader({
     title: "",
     showBack: true,
-    fallbackView: "dashboard",
+    fallbackView:
+        state.rosterFilter?.sourceView ||
+        "dashboard",
     showMenu: true,
-  });
+});
 
   const title = document.createElement("h1");
   title.textContent = "Roster";
@@ -228,12 +246,6 @@ export function renderRoster() {
 
   renderRosterList(rosterContainer, getVisibleRosterMembers());
 
-  const backButton = document.createElement("button");
-  backButton.textContent = "Back to Dashboard";
-  backButton.addEventListener("click", () => {
-    navigateTo("dashboard");
-  });
-
   const nav = createGlobalNav();
 
   let activeFilterNotice = null;
@@ -247,16 +259,27 @@ export function renderRoster() {
 
     if (state.rosterFilter.type === "region-fng-pipeline") {
       filterText.textContent =
-        `Showing ${state.rosterFilter.label} from the New PAX Pipeline`;
-    } else if (state.rosterFilter.type === "posting-frequency") {
+          `Showing ${state.rosterFilter.label} from the New PAX Pipeline`;
+  
+  } else if (state.rosterFilter.type === "pax-acceleration") {
       filterText.textContent =
-        `Showing PAX in posting bucket: ${
-          state.rosterFilter.label ||
-          state.rosterFilter.bucket
-        }`;
-    } else {
-      filterText.textContent = state.rosterFilter.label;
-    }
+          `Showing ${state.rosterFilter.label} from PAX Acceleration`;
+  
+  } else if (state.rosterFilter.type === "check-the-six") {
+      filterText.textContent =
+          `Showing ${state.rosterFilter.label} from Check the Six`;
+  
+  } else if (state.rosterFilter.type === "posting-frequency") {
+      filterText.textContent =
+          `Showing PAX in posting bucket: ${
+              state.rosterFilter.label ||
+              state.rosterFilter.bucket
+          }`;
+  
+  } else {
+      filterText.textContent =
+          state.rosterFilter.label;
+  }
 
     const clearButton = document.createElement("button");
     clearButton.classList.add("secondary-button");
@@ -277,7 +300,6 @@ export function renderRoster() {
       activeFilterNotice,
       searchInput,
       rosterContainer,
-      backButton,
       nav
     );
   } else {
@@ -286,7 +308,6 @@ export function renderRoster() {
       titleRow,
       searchInput,
       rosterContainer,
-      backButton,
       nav
     );
   }

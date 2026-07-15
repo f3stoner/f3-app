@@ -5936,3 +5936,115 @@ button.insights-pipeline-stage:active {
     font-size: 1rem;
     font-weight: 900;
 }
+
+.leadership-action-description {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.leadership-action-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+}
+
+.leadership-action-card {
+    width: 100%;
+    margin: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--text);
+    box-shadow: none;
+    text-align: left;
+}
+
+button.leadership-action-card {
+    cursor: pointer;
+}
+
+button.leadership-action-card:hover {
+    background: rgba(255, 255, 255, 0.055);
+    box-shadow: none;
+}
+
+button.leadership-action-card:active {
+    opacity: 0.85;
+    transform: none;
+}
+
+.leadership-action-card.empty {
+    opacity: 0.48;
+}
+
+.leadership-action-main {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.leadership-action-symbol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.055);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.leadership-action-label {
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.leadership-action-group-description {
+    margin-top: 0.18rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.leadership-action-count {
+    min-width: 2rem;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: right;
+}
+
+.leadership-action-positive {
+    border-left: 3px solid var(--accent-bright);
+}
+
+.leadership-action-warning {
+    border-left: 3px solid #f59e0b;
+}
+
+.leadership-action-danger {
+    border-left: 3px solid #ef4444;
+}
+
+.leadership-action-neutral {
+    border-left: 3px solid var(--border);
+}
+
+.leadership-action-card {
+    display: block;
+    box-sizing: border-box;
+}
+
+button.leadership-action-card:disabled {
+    cursor: default;
+}
