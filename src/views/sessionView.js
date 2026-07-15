@@ -1277,46 +1277,6 @@ async function attachWeatherSnapshot(session) {
     }
 }
 
-function refreshAffectedMemberStatsInBackground(memberIds = []) {
-    const uniqueMemberIds = [...new Set(memberIds)].filter(Boolean);
-
-    if (uniqueMemberIds.length === 0 || !state.currentRegionId) return;
-
-    rebuildMemberStatsForMembers(state.currentRegionId, uniqueMemberIds)
-        .then(() => Promise.all(
-            uniqueMemberIds.map(async memberId => {
-                const stats = await loadMemberDashboardStats(
-                    state.currentRegionId,
-                    memberId
-                );
-
-                if (!stats) return;
-
-                state.memberStatsByMemberId = {
-                    ...(state.memberStatsByMemberId || {}),
-                    [memberId]: stats,
-                };
-
-                state.memberStats = [
-                    ...(state.memberStats || []).filter(existing => existing.memberId !== memberId),
-                    {
-                        memberId,
-                        regionId: state.currentRegionId,
-                        ...stats,
-                    },
-                ];
-            })
-        ))
-        .then(() => {
-            if (state.currentView === "roster") {
-                renderApp();
-            }
-        })
-        .catch(error => {
-            console.error("Failed to refresh affected member stats:", error);
-        });
-}
-
 function collectFngsFromUi() {
     const allFngRows = document.querySelectorAll(".fng-row");
     const fngs = [];
@@ -1482,8 +1442,6 @@ try {
         
         invalidateMemberStatsCache(affectedMemberIds);
         invalidateRecentMemberActivityCache(affectedMemberIds);
-
-        refreshAffectedMemberStatsInBackground(affectedMemberIds);
 
     const flags = createDuplicateFngNameFlags(
         savedSession,
