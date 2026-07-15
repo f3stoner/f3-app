@@ -367,6 +367,45 @@ export function buildRegionInsights({
         );
     }
 
+    function getEffectiveLastQDate(memberId) {
+        if (!memberId) return null;
+    
+        const stat = memberStats.find(item => {
+            return (
+                item.memberId === memberId ||
+                item.member_id === memberId
+            );
+        });
+    
+        return (
+            stat?.lastQDate ??
+            stat?.last_q_date ??
+            stat?.lastQedAt ??
+            stat?.last_qed_at ??
+            null
+        );
+    }
+
+    function getEffectiveQCount(memberId) {
+        if (!memberId) return 0;
+    
+        const stat = memberStats.find(item => {
+            return (
+                item.memberId === memberId ||
+                item.member_id === memberId
+            );
+        });
+    
+        return (
+            stat?.totalQs ??
+            stat?.total_qs ??
+            stat?.qs ??
+            stat?.qCount ??
+            stat?.q_count ??
+            0
+        );
+    }
+
     function countPostsBetween(startKey, endKey) {
         const posts = new Map();
     
@@ -911,6 +950,264 @@ export function buildRegionInsights({
             };
         });
 
+    const readyToVqDefinitions = [
+        {
+            key: "ready-now",
+            label: "Ready Now",
+            description:
+                "15+ posts, no Qs, active within 60 days",
+            tone: "positive",
+            symbol: "★",
+            minimumPosts: 15,
+            maximumPosts: null,
+        },
+        {
+            key: "strong-candidate",
+            label: "Strong Candidate",
+            description:
+                "8–14 posts, no Qs, active within 60 days",
+            tone: "positive",
+            symbol: "↗",
+            minimumPosts: 8,
+            maximumPosts: 14,
+        },
+        {
+            key: "on-the-radar",
+            label: "On the Radar",
+            description:
+                "4–7 posts, no Qs, active within 60 days",
+            tone: "neutral",
+            symbol: "→",
+            minimumPosts: 4,
+            maximumPosts: 7,
+        },
+    ];
+
+    const readyToVqCandidates = members
+        .filter(member => member.status !== "inactive")
+        .map(member => {
+
+            const posts =
+                getEffectivePostCount(member.id);
+
+            const stats =
+                memberStats.find(item =>
+                    item.memberId === member.id ||
+                    item.member_id === member.id
+                );
+
+            const qs =
+                stats?.qs ??
+                stats?.qs_count ??
+                0;
+
+            const lastPostDate =
+                getEffectiveLastPostDate(member.id);
+
+            const firstPostDate =
+                stats?.firstPostDate ??
+                stats?.first_post_date ??
+                null;
+
+            return {
+                memberId: member.id,
+
+                paxName:
+                    member.paxName ||
+                    member.pax_name ||
+                    member.realName ||
+                    member.real_name,
+
+                posts,
+                qs,
+
+                firstPostDate,
+                lastPostDate,
+
+                daysSinceLastPost:
+                    getDaysSinceDate(lastPostDate),
+
+                daysSinceFirstPost:
+                    getDaysSinceDate(firstPostDate),
+            };
+        })
+        .filter(member => {
+
+            if (member.qs > 0) {
+                return false;
+            }
+
+            if (member.posts < 4) {
+                return false;
+            }
+
+            if (
+                member.daysSinceLastPost === null ||
+                member.daysSinceLastPost > 60
+            ) {
+                return false;
+            }
+
+            if (
+                member.daysSinceFirstPost === null ||
+                member.daysSinceFirstPost < 21
+            ) {
+                return false;
+            }
+
+            return true;
+        });
+
+        const readyToVq =
+            readyToVqDefinitions.map(definition => {
+        
+                const members =
+                    readyToVqCandidates.filter(member => {
+        
+                        if (
+                            member.posts <
+                            definition.minimumPosts
+                        ) {
+                            return false;
+                        }
+        
+                        if (
+                            definition.maximumPosts !== null &&
+                            member.posts >
+                            definition.maximumPosts
+                        ) {
+                            return false;
+                        }
+        
+                        return true;
+                    });
+        
+                return {
+                    ...definition,
+                    count: members.length,
+                    members,
+                };
+            });
+
+            const readyToQAgainCandidates = members
+    .filter(member => {
+        return member.status !== "inactive";
+    })
+    .map(member => {
+        const qCount =
+            getEffectiveQCount(member.id);
+
+        const lastQDate =
+            getEffectiveLastQDate(member.id);
+
+        const lastPostDate =
+            getEffectiveLastPostDate(member.id);
+
+        return {
+            memberId: member.id,
+
+            paxName:
+                member.paxName ||
+                member.pax_name ||
+                member.realName ||
+                member.real_name ||
+                "Unnamed PAX",
+
+            qCount,
+            lastQDate,
+            lastPostDate,
+
+            daysSinceLastQ:
+                getDaysSinceDate(lastQDate),
+
+            daysSinceLastPost:
+                getDaysSinceDate(lastPostDate),
+        };
+    })
+    .filter(member => {
+        if (member.qCount < 1) {
+            return false;
+        }
+
+        if (
+            member.daysSinceLastQ === null ||
+            member.daysSinceLastQ < 45
+        ) {
+            return false;
+        }
+
+        if (
+            member.daysSinceLastPost === null ||
+            member.daysSinceLastPost > 60
+        ) {
+            return false;
+        }
+
+        return true;
+    })
+    .sort((a, b) => {
+        return (
+            b.daysSinceLastQ -
+            a.daysSinceLastQ
+        );
+    });
+
+const readyToQAgainDefinitions = [
+    {
+        key: "due-soon",
+        label: "Due Soon",
+        description:
+            "Last Q was 45–74 days ago",
+        tone: "neutral",
+        symbol: "→",
+        minimumDays: 45,
+        maximumDays: 74,
+    },
+    {
+        key: "ready-again",
+        label: "Ready Again",
+        description:
+            "Last Q was 75–119 days ago",
+        tone: "warning",
+        symbol: "↗",
+        minimumDays: 75,
+        maximumDays: 119,
+    },
+    {
+        key: "long-overdue",
+        label: "Long Overdue",
+        description:
+            "Last Q was 120 or more days ago",
+        tone: "danger",
+        symbol: "!",
+        minimumDays: 120,
+        maximumDays: null,
+    },
+];
+
+const readyToQAgain =
+    readyToQAgainDefinitions.map(definition => {
+        const matchingMembers =
+            readyToQAgainCandidates.filter(member => {
+                const meetsMinimum =
+                    member.daysSinceLastQ >=
+                    definition.minimumDays;
+
+                const meetsMaximum =
+                    definition.maximumDays === null ||
+                    member.daysSinceLastQ <=
+                    definition.maximumDays;
+
+                return meetsMinimum && meetsMaximum;
+            });
+
+        return {
+            ...definition,
+            count: matchingMembers.length,
+            members: matchingMembers,
+        };
+    });
+
     const monthlyRegionTrendMap = new Map();
 
     sessions.forEach(session => {
@@ -1190,6 +1487,8 @@ export function buildRegionInsights({
         regionFngPipeline,
         paxAcceleration: accelerationBuckets,
         checkTheSix,
+        readyToVq,
+        readyToQAgain,
         postingFrequency,
     };
 }

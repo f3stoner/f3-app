@@ -163,6 +163,22 @@ function memberMatchesRosterFilter(member) {
     return memberIds.has(member.id);
   }
 
+  if (state.rosterFilter.type === "ready-to-vq") {
+    const memberIds = new Set(
+        state.rosterFilter.memberIds || []
+    );
+
+    return memberIds.has(member.id);
+}
+
+if (state.rosterFilter.type === "ready-to-q-again") {
+  const memberIds = new Set(
+      state.rosterFilter.memberIds || []
+  );
+
+  return memberIds.has(member.id);
+}
+
   return true;
 }
 
@@ -275,10 +291,17 @@ export function renderRoster() {
               state.rosterFilter.label ||
               state.rosterFilter.bucket
           }`;
-  
-  } else {
-      filterText.textContent =
-          state.rosterFilter.label;
+  } else if (state.rosterFilter.type === "ready-to-vq") {
+    filterText.textContent =
+        `Showing ${state.rosterFilter.label} from Ready to VQ`;
+  } else if (
+    state.rosterFilter.type === "ready-to-q-again"
+) {
+    filterText.textContent =
+        `Showing ${state.rosterFilter.label} from Ready to Q Again`;}
+    else {
+    filterText.textContent =
+        state.rosterFilter.label;
   }
 
     const clearButton = document.createElement("button");

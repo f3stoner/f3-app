@@ -6048,3 +6048,11 @@ button.leadership-action-card:active {
 button.leadership-action-card:disabled {
     cursor: default;
 }
+
+.region-insights-section-selector {
+    margin-bottom: 1rem;
+}
+
+.region-insights-panel[hidden] {
+    display: none;
+}

@@ -156,6 +156,58 @@ function createTrendMetricSelector({
     return selector;
 }
 
+function createRegionInsightsSectionSelector({
+    selectedSection,
+    onSelect,
+}) {
+    const selector = document.createElement("div");
+    selector.classList.add(
+        "region-trend-selector",
+        "region-insights-section-selector"
+    );
+
+    const sections = [
+        {
+            key: "overview",
+            label: "Overview",
+        },
+        {
+            key: "leadership",
+            label: "Leadership",
+        },
+    ];
+
+    sections.forEach(section => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.classList.add("region-trend-button");
+        button.dataset.sectionKey = section.key;
+        button.textContent = section.label;
+
+        const isSelected =
+            section.key === selectedSection;
+
+        button.classList.toggle(
+            "active",
+            isSelected
+        );
+
+        button.setAttribute(
+            "aria-pressed",
+            String(isSelected)
+        );
+
+        button.addEventListener("click", () => {
+            onSelect(section.key);
+        });
+
+        selector.appendChild(button);
+    });
+
+    return selector;
+}
+
 function getCurrentMonthRange() {
     const now = new Date();
 
@@ -558,7 +610,12 @@ export async function renderRegionInsightsView() {
 
     const subtitle = document.createElement("div");
     subtitle.classList.add("view-subtitle");
-    subtitle.textContent = "Monthly region report.";
+    subtitle.textContent =
+        "Regional performance and leadership intelligence.";
+
+    if (!state.regionInsightsSection) {
+        state.regionInsightsSection = "overview";
+    }
 
     if (!state.regionInsightsMonth) {
         const { startDate } = getCurrentMonthRange();
@@ -662,12 +719,32 @@ export async function renderRegionInsightsView() {
 
     const snapshot = buildLeadershipSnapshot(insights);
 
+    const sectionSelector =
+    createRegionInsightsSectionSelector({
+        selectedSection:
+            state.regionInsightsSection,
+
+        onSelect: sectionKey => {
+            if (
+                sectionKey ===
+                state.regionInsightsSection
+            ) {
+                return;
+            }
+
+            state.regionInsightsSection =
+                sectionKey;
+
+            updateVisibleRegionSection();
+        },
+    });
+
     const overviewSection = document.createElement("div");
     overviewSection.classList.add("section");
 
     const overviewHeading = document.createElement("div");
     overviewHeading.classList.add("insights-section-title");
-    overviewHeading.textContent = "Leadership Snapshot";
+    overviewHeading.textContent = "Region Activity";
 
     const overviewGrid = document.createElement("div");
     overviewGrid.classList.add("stats-grid");
@@ -676,12 +753,12 @@ export async function renderRegionInsightsView() {
         createMetricCard("Total Posts", snapshot.summary.totalAttendance),
         createMetricCard("Avg Attendance", snapshot.summary.averageAttendance),
         createMetricCard(
-            "Active PAX",
+            "Unique PAX",
             snapshot.summary.uniquePax,
             () => {
                 state.rosterFilter = {
                     type: "active-pax",
-                    label: "Active PAX",
+                    label: "Unique PAX",
                     startDate,
                     endDate,
                 };
@@ -713,9 +790,9 @@ export async function renderRegionInsightsView() {
     );
 
     const momentumSection = createSimpleListSection(
-        "Region Pulse",
+        "Key Insights",
         snapshot.momentum,
-        "No Region Pulse highlights yet."
+        "No Key Insights yet."
     );
 
     if (!state.regionTrendMetric) {
@@ -860,30 +937,82 @@ export async function renderRegionInsightsView() {
     }
 
     const checkTheSixSection =
-    createLeadershipActionSection({
-        title: "Check the Six",
+        createLeadershipActionSection({
+            title: "Check the Six",
 
-        description:
-            `PAX who have not posted recently, measured through ${accelerationAnchorLabel}.`,
+            description:
+                `PAX who have not posted recently, measured through ${accelerationAnchorLabel}.`,
 
-        groups: insights.checkTheSix,
+            groups: insights.checkTheSix,
 
-        onGroupClick: group => {
-            state.rosterFilter = {
-                type: "check-the-six",
-                label: group.label,
-                memberIds: group.members
-                    .map(member => member.memberId)
-                    .filter(Boolean),
-                sourceView: "regionInsights",
-            };
+            onGroupClick: group => {
+                state.rosterFilter = {
+                    type: "check-the-six",
+                    label: group.label,
+                    memberIds: group.members
+                        .map(member => member.memberId)
+                        .filter(Boolean),
+                    sourceView: "regionInsights",
+                };
 
-            navigateTo("roster");
-        },
+                navigateTo("roster");
+            },
 
-        emptyMessage:
-            "No active PAX have gone 30 or more days without posting.",
-    });
+            emptyMessage:
+                "No active PAX have gone 30 or more days without posting.",
+        });
+    
+        const readyToVqSection =
+        createLeadershipActionSection({
+            title: "Ready to VQ",
+    
+            description:
+                `Active PAX with no recorded Qs, evaluated through ${accelerationAnchorLabel}.`,
+    
+            groups: insights.readyToVq,
+    
+            onGroupClick: group => {
+                state.rosterFilter = {
+                    type: "ready-to-vq",
+                    label: group.label,
+                    memberIds: group.members
+                        .map(member => member.memberId)
+                        .filter(Boolean),
+                    sourceView: "regionInsights",
+                };
+    
+                navigateTo("roster");
+            },
+    
+            emptyMessage:
+                "No active PAX currently meet the VQ candidate criteria.",
+        });
+
+        const readyToQAgainSection =
+            createLeadershipActionSection({
+                title: "Ready to Q Again",
+
+                description:
+                    `Active former Qs who may be ready to lead again, evaluated through ${accelerationAnchorLabel}.`,
+
+                groups: insights.readyToQAgain,
+
+                onGroupClick: group => {
+                    state.rosterFilter = {
+                        type: "ready-to-q-again",
+                        label: group.label,
+                        memberIds: group.members
+                            .map(member => member.memberId)
+                            .filter(Boolean),
+                        sourceView: "regionInsights",
+                    };
+
+                    navigateTo("roster");
+                },
+
+                emptyMessage:
+                    "No active former Qs currently meet these criteria.",
+            });
     
     updateTrendSection();
 
@@ -1170,24 +1299,86 @@ const aoAttendanceHeatMap =
         }),
     });
 
-    const fngSection = document.createElement("div");
-    fngSection.classList.add("section");
+    const overviewPanel =
+    document.createElement("div");
 
-    const fngHeading = document.createElement("div");
-    fngHeading.classList.add("insights-section-title");
-    fngHeading.textContent = "FNG Pipeline";
-
-    const fngGrid = document.createElement("div");
-    fngGrid.classList.add("stats-grid");
-
-    fngGrid.append(
-        createMetricCard("Total FNGs", snapshot.fngStats.totalFngs),
-        createMetricCard("Rostered", snapshot.fngStats.rosteredFngs),
-        createMetricCard("Unrostered", snapshot.fngStats.unrosteredFngs),
-        createMetricCard("Capture Rate", `${snapshot.fngStats.rosterCaptureRate}%`),
+    overviewPanel.classList.add(
+        "region-insights-panel"
     );
 
-    fngSection.append(fngHeading, fngGrid);
+    overviewPanel.append(
+        monthNavRow,
+        overviewSection,
+        needsAttentionSection,
+        momentumSection,
+        trendSectionHost,
+        fngPipelineSection,
+        aoTrendSectionHost,
+        aoAttendanceHeatMap,
+        attendanceByAoChartSection,
+        qLeadershipChartSection,
+        postingFrequencySection,
+    );
+
+    const leadershipPanel =
+        document.createElement("div");
+
+    leadershipPanel.classList.add(
+        "region-insights-panel"
+    );
+
+    const leadershipDate =
+        document.createElement("div");
+
+    leadershipDate.classList.add(
+        "section",
+        "leadership-action-description"
+    );
+
+    leadershipDate.textContent =
+        `Leadership signals updated through ${accelerationAnchorLabel}.`;
+
+    leadershipPanel.append(
+        leadershipDate,
+        accelerationSection,
+        checkTheSixSection,
+        readyToVqSection,
+        readyToQAgainSection,
+    );
+
+    function updateVisibleRegionSection() {
+        const showOverview =
+            state.regionInsightsSection ===
+            "overview";
+    
+        overviewPanel.hidden =
+            !showOverview;
+    
+        leadershipPanel.hidden =
+            showOverview;
+    
+        sectionSelector
+            .querySelectorAll(
+                ".region-trend-button"
+            )
+            .forEach(button => {
+                const isActive =
+                    button.dataset.sectionKey ===
+                    state.regionInsightsSection;
+    
+                button.classList.toggle(
+                    "active",
+                    isActive
+                );
+    
+                button.setAttribute(
+                    "aria-pressed",
+                    String(isActive)
+                );
+            });
+    }
+    
+    updateVisibleRegionSection();
 
     const nav = createGlobalNav();
 
@@ -1197,22 +1388,12 @@ const aoAttendanceHeatMap =
         header,
         title,
         subtitle,
-        monthNavRow,
-        overviewSection,
-        needsAttentionSection,
-        momentumSection,
-        trendSectionHost,
-        fngPipelineSection,
-        accelerationSection,
-        checkTheSixSection,
-        aoTrendSectionHost,
-        aoAttendanceHeatMap,
-        attendanceByAoChartSection,
-        qLeadershipChartSection,
-        postingFrequencySection,
-        fngSection,
-        nav,
+        sectionSelector,
+        overviewPanel,
+        leadershipPanel,
+        nav
     );
+
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());
     }
