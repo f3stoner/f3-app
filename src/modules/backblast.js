@@ -247,6 +247,16 @@ export function generateBackblast (session, members) {
             parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
+        const thirdFText = String(
+            workout.thirdFText || ""
+        )
+            .replace(/^THIRD F\s*:?\s*/i, "")
+            .trim();
+        
+        if (thirdFText) {
+            parts.push(`THIRD F\n\n${thirdFText}`);
+        }
+
         const announcementText =
             getSessionAnnouncementText(session)
                 .replace(/^ANNOUNCEMENTS\s*:?\s*/i, "")

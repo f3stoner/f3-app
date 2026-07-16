@@ -17,6 +17,13 @@ export function createPlannedWorkout(date, { aoId = null, aoName = "" } = {}) {
         ],
         finisher: "",
         notes: "",
+        announcementMode: "auto",
+        announcementText: "",
+        announcementLegacyText: "",
+
+        thirdFMode: "auto",
+        thirdFText: "",
+        thirdFLegacyText: "",
         createdAt: Date.now(),
         lastModifiedAt: Date.now(),
         sourceWorkoutId: null,

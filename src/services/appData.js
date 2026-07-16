@@ -2,6 +2,8 @@ import { state } from "../modules/state.js";
 import { saveState } from "../utils/storage.js";
 import { replaceSessionVisitors } from "./sessionVisitorData.js";
 import { buildSessionAnnouncementSnapshot } from "../utils/announcements.js";
+import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
+import { loadThirdFDiscussions } from "./thirdFData.js";
 import {
     deletePlannedWorkoutFromCloud,
     deleteSavedPlannerSectionFromCloud,
@@ -135,6 +137,9 @@ async function prepareSessionForInsert(
     const announcementCandidates =
         await loadPlannerAnnouncements(activeRegionId);
 
+    const thirdFCandidates =
+        await loadThirdFDiscussions(activeRegionId);
+
     const sourcePlannedWorkout =
         session.sourcePlannedWorkoutId
             ? (state.plannedWorkouts || []).find(
@@ -185,6 +190,13 @@ async function prepareSessionForInsert(
             regionId: activeRegionId,
         });
 
+    const effectiveThirdF =
+        getEffectiveWorkoutThirdF({
+            workout: snapshotWorkout,
+            thirdFItems: thirdFCandidates,
+            targetDate: session.date,
+        });
+
     return {
         ...session,
         announcementText: sessionAnnouncements.text,
@@ -195,6 +207,8 @@ async function prepareSessionForInsert(
                 ...session.workout,
                 announcementText:
                     sessionAnnouncements.text,
+                thirdFText:
+                    effectiveThirdF.text,
             }
             : null,
     };

@@ -443,6 +443,16 @@ export function renderSessionDetail() {
             parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
         }
 
+        const thirdFText = String(
+            workout.thirdFText || ""
+        )
+            .replace(/^THIRD F\s*:?\s*/i, "")
+            .trim();
+        
+        if (thirdFText) {
+            parts.push(`Third F:\n${thirdFText}`);
+        }
+
         const sessionAnnouncementText =
             getSessionAnnouncementText(session);
 
@@ -526,6 +536,10 @@ export function renderSessionDetail() {
         newWorkout.announcementMode = "auto";
         newWorkout.announcementText = "";
         newWorkout.announcementLegacyText = "";
+
+        newWorkout.thirdFMode = "auto";
+        newWorkout.thirdFText = "";
+        newWorkout.thirdFLegacyText = "";
 
         newWorkout.id = crypto.randomUUID();
         newWorkout.createdByUserId = state.currentUserId;

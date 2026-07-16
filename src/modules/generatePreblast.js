@@ -59,6 +59,24 @@ export function generatePreblast(workout, aos = [], sites = []) {
     lines.push(`Why: To get 1% better`);
     lines.push("");
     lines.push(`What to bring: Water`);
+
+    const thirdFText = String(workout.thirdFText || "").trim();
+
+    if (thirdFText) {
+        lines.push("");
+        lines.push(thirdFText);
+    }
+
+    const announcementText =
+        String(workout.announcementText || "").trim();
+
+    if (announcementText) {
+        lines.push("");
+        lines.push("ANNOUNCEMENTS");
+        lines.push("");
+        lines.push(announcementText);
+    }
+
     lines.push("");
     lines.push("HC below!");
 
@@ -85,14 +103,4 @@ function buildWhenLine(formattedDate, aoTime) {
     }
 
     return formattedDate;
-}
-
-function buildExtraText(workout) {
-    const intro = String(workout.introduction || "").trim();
-    const notes = String(workout.notes || "").trim();
-
-    if (intro) return intro;
-    if (notes) return notes;
-
-    return "";
 }

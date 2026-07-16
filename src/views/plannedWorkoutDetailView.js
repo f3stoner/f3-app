@@ -18,6 +18,8 @@ import { releaseWakeLock, requestWakeLock } from "../utils/wakelock.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
 import { getEffectiveWorkoutAnnouncementText } from "../utils/announcements.js";
 import { loadPlannerAnnouncements } from "../services/cloudData.js";
+import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
+import { loadThirdFDiscussions } from "../services/thirdFData.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -210,6 +212,49 @@ export function renderPlannedWorkoutDetail() {
     removeActiveTimerModal();
 
     if (
+        state.plannerThirdFDiscussionsRegionId !==
+        state.currentRegionId
+    ) {
+        state.plannerThirdFDiscussions = [];
+        state.plannerThirdFDiscussionsRegionId = null;
+        state.hasLoadedPlannerThirdFDiscussions = false;
+    }
+    
+    if (
+        !state.hasLoadedPlannerThirdFDiscussions &&
+        !state.isLoadingPlannerThirdFDiscussions
+    ) {
+        state.isLoadingPlannerThirdFDiscussions = true;
+    
+        loadThirdFDiscussions(state.currentRegionId)
+            .then(discussions => {
+                state.plannerThirdFDiscussions =
+                    discussions || [];
+    
+                state.plannerThirdFDiscussionsRegionId =
+                    state.currentRegionId;
+    
+                state.hasLoadedPlannerThirdFDiscussions = true;
+            })
+            .catch(error => {
+                console.error(
+                    "Failed to load workout Third F discussions:",
+                    error
+                );
+            })
+            .finally(() => {
+                state.isLoadingPlannerThirdFDiscussions = false;
+    
+                if (
+                    state.currentView ===
+                    "plannedWorkoutDetail"
+                ) {
+                    renderApp();
+                }
+            });
+    }
+
+    if (
         state.plannerAnnouncementsRegionId !==
         state.currentRegionId
     ) {
@@ -312,6 +357,12 @@ export function renderPlannedWorkoutDetail() {
             workout,
             announcements: state.plannerAnnouncements || [],
             regionId: state.currentRegionId,
+        });
+
+    const effectiveThirdF =
+        getEffectiveWorkoutThirdF({
+            workout,
+            thirdFItems: state.plannerThirdFDiscussions || [],
         });
 
     const backButton = document.createElement("button");
@@ -1122,6 +1173,14 @@ export function renderPlannedWorkoutDetail() {
     
     announcementSection?.classList.add("workout-announcement-section");
 
+    const thirdFSection = createDetailSection(
+        "Third F",
+        effectiveThirdF.text || "-",
+        {
+            hideIfEmpty: isExecutionMode,
+        }
+    );
+
     const visibilitySection = createDetailSection(
         "Visibility",
         workout.isShared ? "Workout Library" : "My Planner"
@@ -1197,6 +1256,7 @@ export function renderPlannedWorkoutDetail() {
             thangSections: normalizeThangSections(workout),
             finisher: workout.finisher,
             notes: workout.notes,
+            thirdFText: effectiveThirdF.text,
             announcementText: "",
         };
         
@@ -1285,6 +1345,9 @@ export function renderPlannedWorkoutDetail() {
             announcementMode: "auto",
             announcementText: "",
             announcementLegacyText: "",
+            thirdFMode: "auto",
+            thirdFText: "",
+            thirdFLegacyText: "",
             id: crypto.randomUUID(),
             date: nextQSlot?.date || getTodayDate(),
             aoId: nextAo?.id || workout.aoId || null,
@@ -1378,6 +1441,7 @@ export function renderPlannedWorkoutDetail() {
         const effectiveWorkout = {
             ...workout,
             announcementText: effectiveAnnouncements.text,
+            thirdFText: effectiveThirdF.text,
         };
 
         state.draftPreblastText =
@@ -1535,6 +1599,7 @@ export function renderPlannedWorkoutDetail() {
         ...(finisherSection ? [finisherSection] : []),
         ...createTimerButtonsForSection("finisher"),
         ...(notesSection ? [notesSection] : []),
+        ...(thirdFSection ? [thirdFSection] : []),
         ...(announcementSection ? [announcementSection] : []),
         primaryActionsRow,
         ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
