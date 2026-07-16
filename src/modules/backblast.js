@@ -227,10 +227,6 @@ export function generateBackblast (session, members) {
             parts.push(`Title: ${workout.title}`);
         }
 
-        if (workout.introduction) {
-            parts.push(`${getWorkoutFieldLabel(state, "introduction")}:\n${workout.introduction}`);
-        }
-
         if (workout.warmorama) {
             parts.push(`${getWorkoutFieldLabel(state, "warmorama")}:\n${workout.warmorama}`);
         }
