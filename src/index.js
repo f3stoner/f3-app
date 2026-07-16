@@ -51,7 +51,6 @@ import { importOld300AttendanceCsv } from "./services/importOld300.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
 import { hasPermission, PERMISSIONS, isRegionalAdmin, getManagedAoIds, managesAo } from "./utils/permissions.js";
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
-import { renderThangReviewView } from "./views/thangReviewView.js";
 import { renderQReadinessView } from "./views/qReadinessView.js";
 import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
 import { renderLibraryWorkbenchView } from "./views/libraryWorkbenchView.js";
@@ -204,6 +203,12 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-backblast-review" */
             "./views/backblastReviewView.js"
         ).then(module => module.renderBackblastReview),
+
+    thangReview: () =>
+        import(
+            /* webpackChunkName: "route-thang-review" */
+            "./views/thangReviewView.js"
+        ).then(module => module.renderThangReviewView),
 };
 
 const lazyRoutePromises = new Map();
@@ -212,6 +217,7 @@ function getLazyRouteLabel(viewName) {
     const labels = {
         importRuns: "Import Runs",
         backblastReview: "Backblast Review",
+        thangReview: "Thang Review",
     };
 
     return labels[viewName] || "Screen";
@@ -459,7 +465,10 @@ function renderApp() {
             currentRenderSequence
         );
     } else if (state.currentView === "thangReview") {
-        renderThangReviewView();
+        renderLazyRoute(
+            "thangReview",
+            currentRenderSequence
+        );
     } else if (state.currentView === "qReadiness") {
         renderQReadinessView();
     } else if (state.currentView === "qSourceManagement") {
