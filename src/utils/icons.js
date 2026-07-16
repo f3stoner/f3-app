@@ -30,6 +30,11 @@ import {
     Medal,
     Pencil,
     Pen,
+    Users,
+    HeartHandshake,
+    ShieldCheck,
+    Settings2,
+    CircleUserRound,
 } from "lucide";
 
 const ICONS = {
@@ -55,6 +60,12 @@ const ICONS = {
     shield: Shield,
     medal: Medal,
     pencil: Pencil,
+    firstF: Dumbbell,
+    secondF: Users,
+    thirdF: HeartHandshake,
+    leadership: ShieldCheck,
+    administration: Settings2,
+    account: CircleUserRound,
 };
 
 const weatherIconMap = {

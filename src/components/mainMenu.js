@@ -7,6 +7,7 @@ import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 import { showToast } from "../utils/toast.js";
 import { logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
+import { createIcon } from "../utils/icons.js";
 
 const AGGIELAND_REGION_ID = "96c9eef9-3b6e-4365-86cd-51dbeccf231a";
 
@@ -15,6 +16,9 @@ const EMERGENCY_CONTACT_LOOKUP_URL =
 
 const EMERGENCY_CONTACT_FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLSciSk7z6sreim6Qw7fpDfFrSaEeVTsRjG5H3H9VKFK19bINbA/viewform";
+
+const DOUBLE_DOWN_TRACKER_URL =
+    "https://f3aggieland.com/dd/";
 
 function confirmEmergencyContactLookup() {
     return window.confirm(
@@ -142,16 +146,23 @@ export function createMainMenu() {
 
     const menuGroups = [
         {
-            label: "Plan",
+            label: "First F",
+            icon: "firstF",
             items: [
                 { label: "Dashboard", view: "dashboard" },
+                {
+                    label: "Double Down Tracker",
+                    externalUrl: DOUBLE_DOWN_TRACKER_URL,
+                    isVisible: isAggielandRegion,
+                },
                 { label: "My Templates", view: "templateHub" },
                 { label: "Session History", view: "sessionHistory" },
                 { label: "Workout Library", view: "plannedWorkoutList" },
             ],
         },
         {
-            label: "People",
+            label: "Second F",
+            icon: "secondF",
             items: [
                 {
                     label: "Add / Update Emergency Contact",
@@ -167,32 +178,97 @@ export function createMainMenu() {
             ],
         },
         {
-            label: "Leadership",
+            label: "Third F",
+            icon: "thirdF",
             items: [
-                { label: "Announcements", view: "announcementManagement", permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS },
-                { label: "AO Insights", view: "aoInsights", isVisible: canViewAnyAoInsights },
-                { label: "Q Readiness", view: "qReadiness", isVisible: canViewAnyQReadiness },
-                { label: "Session Audit", view: "sessionAudit", isVisible: canViewAnySessionAudit },
-                { label: "Backblast Review", view: "backblastReview", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
-                { label: "Manage Third F", view: "thirdFManagement", permission: PERMISSIONS.MANAGE_Q_SOURCE },
-                { label: "Region Insights", view: "regionInsights", permission: PERMISSIONS.VIEW_REGION_INSIGHTS },
-                { label: "Thang Review", view: "thangReview", permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH },
                 { label: "Third F", view: "thirdF" },
+                {
+                    label: "Manage Third F",
+                    view: "thirdFManagement",
+                    permission: PERMISSIONS.MANAGE_Q_SOURCE,
+                },
             ],
         },
         {
-            label: "Admin",
+            label: "Leadership",
+            icon: "leadership",
             items: [
-                { label: "Admin Management", view: "adminManagement", permission: PERMISSIONS.MANAGE_ROLES },
-                { label: "Admin Settings", view: "adminSettings", permission: PERMISSIONS.ACCESS_ADMIN_SETTINGS },
-                { label: "Library Workbench", view: "libraryWorkbench", permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH },
-                { label: "AO Management", view: "aoManagement", permission: PERMISSIONS.MANAGE_AOS },
-                { label: "Import Runs", view: "importRuns", permission: PERMISSIONS.VIEW_IMPORTS },
-                { label: "Operations Center", view: "operationsCenter", permission: PERMISSIONS.ACCESS_OPERATIONS_CENTER},
+                {
+                    label: "Announcements",
+                    view: "announcementManagement",
+                    permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS,
+                },
+                {
+                    label: "AO Insights",
+                    view: "aoInsights",
+                    isVisible: canViewAnyAoInsights,
+                },
+                {
+                    label: "Backblast Review",
+                    view: "backblastReview",
+                    permission: PERMISSIONS.VIEW_REGION_INSIGHTS,
+                },
+                {
+                    label: "Q Readiness",
+                    view: "qReadiness",
+                    isVisible: canViewAnyQReadiness,
+                },
+                {
+                    label: "Region Insights",
+                    view: "regionInsights",
+                    permission: PERMISSIONS.VIEW_REGION_INSIGHTS,
+                },
+                {
+                    label: "Session Audit",
+                    view: "sessionAudit",
+                    isVisible: canViewAnySessionAudit,
+                },
+                {
+                    label: "Thang Review",
+                    view: "thangReview",
+                    permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
+                },
             ],
         },
         {
-            label: "Account",
+            label: "Administration",
+            icon: "administration",
+            items: [
+                {
+                    label: "Admin Management",
+                    view: "adminManagement",
+                    permission: PERMISSIONS.MANAGE_ROLES,
+                },
+                {
+                    label: "Admin Settings",
+                    view: "adminSettings",
+                    permission: PERMISSIONS.ACCESS_ADMIN_SETTINGS,
+                },
+                {
+                    label: "AO Management",
+                    view: "aoManagement",
+                    permission: PERMISSIONS.MANAGE_AOS,
+                },
+                {
+                    label: "Import Runs",
+                    view: "importRuns",
+                    permission: PERMISSIONS.VIEW_IMPORTS,
+                },
+                {
+                    label: "Library Workbench",
+                    view: "libraryWorkbench",
+                    permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
+                },
+                {
+                    label: "Operations Center",
+                    view: "operationsCenter",
+                    permission: PERMISSIONS.ACCESS_OPERATIONS_CENTER,
+                },
+            ],
+        },
+        {
+            label: "My Account",
+            icon: "account",
             items: [
                 { label: "Settings", view: "settings" },
             ],
@@ -321,34 +397,171 @@ export function createMainMenu() {
     const list = document.createElement("div");
     list.classList.add("main-menu-list");
 
-    menuGroups.forEach(group => {
+    let openMenuGroup = null;
+
+    function closeMenuGroup(groupElement) {
+        const headingButton = groupElement.querySelector(
+            ".main-menu-group-heading"
+        );
+
+        const panel = groupElement.querySelector(
+            ".main-menu-group-panel"
+        );
+
+        if (!headingButton || !panel) return;
+
+        headingButton.setAttribute("aria-expanded", "false");
+        groupElement.classList.remove("open");
+
+        panel.style.maxHeight = `${panel.scrollHeight}px`;
+
+        requestAnimationFrame(() => {
+            panel.style.maxHeight = "0px";
+            panel.style.opacity = "0";
+        });
+
+        if (openMenuGroup === groupElement) {
+            openMenuGroup = null;
+        }
+    }
+
+    function openMenuGroupPanel(groupElement) {
+        const headingButton = groupElement.querySelector(
+            ".main-menu-group-heading"
+        );
+
+        const panel = groupElement.querySelector(
+            ".main-menu-group-panel"
+        );
+
+        if (!headingButton || !panel) return;
+
+        if (openMenuGroup && openMenuGroup !== groupElement) {
+            closeMenuGroup(openMenuGroup);
+        }
+
+        headingButton.setAttribute("aria-expanded", "true");
+        groupElement.classList.add("open");
+
+        panel.style.maxHeight = `${panel.scrollHeight}px`;
+        panel.style.opacity = "1";
+
+        openMenuGroup = groupElement;
+    }
+
+    menuGroups.forEach((group, groupIndex) => {
         const visibleItems = group.items
             .filter(item => {
                 if (item.isVisible) return item.isVisible();
-                if (item.permission) return hasPermission(item.permission);
+                if (item.permission) {
+                    return hasPermission(item.permission);
+                }
+
                 return true;
             })
             .sort((a, b) => a.label.localeCompare(b.label));
 
         if (visibleItems.length === 0) return;
 
-        const details = document.createElement("details");
-        details.classList.add("main-menu-group");
+        const groupElement = document.createElement("section");
+        groupElement.classList.add("main-menu-group");
 
-        const isActiveGroup = visibleItems.some(item => item.view === state.currentView);
-        details.open = isActiveGroup;
+        const panelId = `main-menu-group-panel-${groupIndex}`;
 
-        const summary = document.createElement("summary");
-        summary.classList.add("main-menu-group-heading");
-        summary.textContent = group.label;
+        const headingButton = document.createElement("button");
+        headingButton.type = "button";
+        headingButton.classList.add("main-menu-group-heading");
+        headingButton.setAttribute("aria-controls", panelId);
+        headingButton.setAttribute("aria-expanded", "false");
 
-        details.appendChild(summary);
+        const headingContent = document.createElement("span");
+        headingContent.classList.add(
+            "main-menu-group-heading-content"
+        );
+
+        const headingIcon = createIcon(
+            group.icon,
+            "main-menu-group-icon"
+        );
+
+        const headingLabel = document.createElement("span");
+        headingLabel.textContent = group.label;
+
+        const headingChevron = document.createElement("span");
+        headingChevron.classList.add(
+            "main-menu-group-chevron"
+        );
+        headingChevron.textContent = "›";
+        headingChevron.setAttribute("aria-hidden", "true");
+
+        headingContent.append(headingIcon, headingLabel);
+        headingButton.append(
+            headingContent,
+            headingChevron
+        );
+
+        const panel = document.createElement("div");
+        panel.id = panelId;
+        panel.classList.add("main-menu-group-panel");
+        panel.setAttribute("role", "region");
+
+        const panelInner = document.createElement("div");
+        panelInner.classList.add(
+            "main-menu-group-panel-inner"
+        );
 
         visibleItems.forEach(item => {
-            details.appendChild(createMenuButton(item));
+            panelInner.appendChild(createMenuButton(item));
         });
 
-        list.appendChild(details);
+        panel.appendChild(panelInner);
+        groupElement.append(headingButton, panel);
+
+        const isActiveGroup = visibleItems.some(
+            item => item.view === state.currentView
+        );
+
+        if (isActiveGroup) {
+            groupElement.classList.add("open");
+            headingButton.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+
+            panel.style.opacity = "1";
+            openMenuGroup = groupElement;
+        }
+
+        headingButton.addEventListener("click", () => {
+            const isOpen =
+                headingButton.getAttribute("aria-expanded")
+                === "true";
+
+            if (isOpen) {
+                closeMenuGroup(groupElement);
+                return;
+            }
+
+            openMenuGroupPanel(groupElement);
+        });
+
+        panel.addEventListener("transitionend", event => {
+            if (event.propertyName !== "max-height") return;
+
+            const isOpen =
+                headingButton.getAttribute("aria-expanded")
+                === "true";
+
+            if (isOpen) {
+                panel.style.maxHeight = "none";
+            }
+        });
+
+        list.appendChild(groupElement);
+
+        if (isActiveGroup) {
+            panel.style.maxHeight = "none";
+        }
     });
 
     const accountSection = document.createElement("div");
