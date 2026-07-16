@@ -1,7 +1,27 @@
-import html2canvas from "html2canvas";
 import { state } from "../modules/state.js";
 import { formatDate } from "./date.js";
 import { getWorkoutEmphasisForSlot } from "./workoutEmphasis.js";
+
+let html2canvasPromise = null;
+
+function loadHtml2Canvas() {
+    if (!html2canvasPromise) {
+        html2canvasPromise = import(
+            /* webpackChunkName: "vendor-html2canvas" */
+            "html2canvas"
+        )
+            .then(module => module.default || module)
+            .catch(error => {
+                /*
+                 * Allow a later retry if the chunk request fails.
+                 */
+                html2canvasPromise = null;
+                throw error;
+            });
+    }
+
+    return html2canvasPromise;
+}
 
 const EXPORT_WIDTH = 1600;
 const EXPORT_HEIGHT = 980;
@@ -364,6 +384,8 @@ export async function shareWeeklyQScheduleImage({ weekStart, weekEnd, weekDates 
     document.body.appendChild(exportWrap);
 
     try {
+        const html2canvas = await loadHtml2Canvas();
+
         const canvas = await html2canvas(card, {
             backgroundColor: "#050505",
             scale: 2,
