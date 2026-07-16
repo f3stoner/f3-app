@@ -191,29 +191,62 @@ export async function loadMemberInviters(memberIds = []) {
     if (cleanMemberIds.length === 0) return [];
 
     const batchSize = 500;
-    const allRelationships = [];
+    const batches = [];
 
-    for (let index = 0; index < cleanMemberIds.length; index += batchSize) {
-        const batchIds = cleanMemberIds.slice(index, index + batchSize);
-
-        const { data, error } = await supabase
-            .from("member_inviters")
-            .select(`
-                member_id,
-                inviter_member_id,
-                source,
-                source_metadata,
-                created_at
-            `)
-            .in("member_id", batchIds)
-            .order("created_at", { ascending: true });
-
-        if (error) throw error;
-
-        allRelationships.push(...(data || []));
+    for (
+        let index = 0;
+        index < cleanMemberIds.length;
+        index += batchSize
+    ) {
+        batches.push(
+            cleanMemberIds.slice(index, index + batchSize)
+        );
     }
 
+    const batchResults = await Promise.all(
+        batches.map(async batchIds => {
+            const { data, error } = await supabase
+                .from("member_inviters")
+                .select(`
+                    member_id,
+                    inviter_member_id,
+                    source,
+                    source_metadata,
+                    created_at
+                `)
+                .in("member_id", batchIds)
+                .order("created_at", { ascending: true });
+
+            if (error) throw error;
+
+            return data || [];
+        })
+    );
+
+    const allRelationships = batchResults.flat();
+
     return allRelationships.map(row => ({
+        memberId: row.member_id,
+        inviterMemberId: row.inviter_member_id,
+        source: row.source || "",
+        sourceMetadata: row.source_metadata || {},
+        createdAt: row.created_at || null,
+    }));
+}
+
+export async function loadMemberInvitersForRegion(regionId) {
+    if (!regionId) return [];
+
+    const { data, error } = await supabase.rpc(
+        "load_region_member_inviters",
+        {
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(row => ({
         memberId: row.member_id,
         inviterMemberId: row.inviter_member_id,
         source: row.source || "",
@@ -407,6 +440,7 @@ export async function loadRegionData(
         memberStatsResult,
         aoLeadershipContactResult,
         profileRegionPositionResult,
+        memberInviterResult,
     ] = await Promise.all([
         timed(
             "loadRegionData:region",
@@ -525,7 +559,14 @@ export async function loadRegionData(
             timings,
             "profileRegionPositionsMs"
         ),
-    ]);
+        
+        timed(
+            "loadRegionData:memberInviters",
+            loadMemberInvitersForRegion(regionId),
+            timings,
+            "memberInvitersMs"
+        ),
+        ]);
 
     const backblastLinksBySessionId = new Map();
 
@@ -535,15 +576,6 @@ export async function loadRegionData(
     if (aoResult.error) throw aoResult.error;
     if (siteResult.error) throw siteResult.error;
     if (savedPlannerSectionResult.error) throw savedPlannerSectionResult.error;
-
-    const memberInviterResult = await timed(
-        "loadRegionData:memberInviters",
-        loadMemberInviters(
-            memberResult.map(member => member.id)
-        ),
-        timings,
-        "memberInvitersMs"
-    );
 
     const inviterIdsByMemberId = new Map();
 
