@@ -216,3 +216,8 @@ export function canViewPaxOverview(memberId) {
 
     return getManagedAoIds(AO_LEADERSHIP_POSITIONS).length > 0;
 }
+
+export function shouldShowAuditLogFab() {
+    return state.currentUserId === "1cb38626-0058-45de-8e07-52ac0d19fa71";
+}
+

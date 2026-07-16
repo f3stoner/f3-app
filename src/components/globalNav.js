@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { navigateTo } from "../utils/navigation.js";
 import { closeMainMenu } from "./mainMenu.js";
-import { canUseFloatingLogButton, canViewAnySessionAudit } from "../utils/permissions.js";
+import { canUseFloatingLogButton, canViewAnySessionAudit, shouldShowAuditLogFab } from "../utils/permissions.js";
 
 const EDIT_ACTION_VIEWS = new Set([
     "workoutPlanner",
@@ -64,7 +64,7 @@ export function createGlobalNav () {
         nav.appendChild(fabButton);
     }
 
-    if (canViewAnySessionAudit()) {
+    if (shouldShowAuditLogFab()) {
         const auditFabButton = document.createElement("button");
         auditFabButton.classList.add("global-fab", "global-audit-fab");
         auditFabButton.textContent = "Audit";
