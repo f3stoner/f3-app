@@ -637,6 +637,7 @@ function getSharedWorkoutIdFromUrl() {
 
 async function bootApp() {
     const bootStartedAt = performance.now();
+    const bootPhases = {};
 
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
@@ -650,13 +651,25 @@ async function bootApp() {
     }
 
     try {
-        console.time("getCurrentSession");
+        let phaseStartedAt = performance.now();
+    
         let session = await getCurrentSession();
-        console.timeEnd("getCurrentSession");
-
+    
+        bootPhases.getCurrentSessionMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
+    
         if (!session) {
+            phaseStartedAt = performance.now();
+    
             await new Promise(resolve => setTimeout(resolve, 500));
             session = await getCurrentSession();
+    
+            bootPhases.sessionRetryMs = Math.round(
+                performance.now() - phaseStartedAt
+            );
+        } else {
+            bootPhases.sessionRetryMs = 0;
         }
 
         if (!session) {
@@ -672,9 +685,16 @@ async function bootApp() {
             return;
         }
 
-        console.time("ensureMyProfile");
-        const profile = await ensureMyProfile(session.user.id, session);
-        console.timeEnd("ensureMyProfile");
+        phaseStartedAt = performance.now();
+
+        const profile = await ensureMyProfile(
+            session.user.id,
+            session
+        );
+
+        bootPhases.ensureMyProfileMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
 
         state.currentUserId = session.user.id;
         state.currentUserRole = profile.role || "pax";
@@ -686,12 +706,18 @@ async function bootApp() {
         state.customTemplates = profile.custom_templates || state.customTemplates;
         state.hasInitializedQSignupFilter = false;
 
-        console.time("settings-and-regions");
+        phaseStartedAt = performance.now();
+
         const regions = await loadAllRegions();
-        console.timeEnd("settings-and-regions");
-                
+
+        bootPhases.loadAllRegionsMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
+
         state.availableRegions = regions || [];
         
+        phaseStartedAt = performance.now();
+
         const [
             regionLoaded,
             profileAoPermissions,
@@ -701,7 +727,11 @@ async function bootApp() {
             loadProfileAoPermissions(profile.region_id),
             loadProfileRegionPositions(profile.region_id),
         ]);
-        
+
+        bootPhases.regionBootstrapMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
+
         if (!regionLoaded) {
             console.log(
                 `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
@@ -779,7 +809,11 @@ async function bootApp() {
                 preBootMs: Math.round(preBootDurationMs),
                 bootMs: Math.round(bootDurationMs),
                 renderMs: Math.round(renderDurationMs),
-                documentToUsableMs: Math.round(documentToUsableDurationMs),
+                documentToUsableMs: Math.round(
+                    documentToUsableDurationMs
+                ),
+
+                phases: bootPhases,
 
                 visibilityState: document.visibilityState,
                 online: navigator.onLine,
