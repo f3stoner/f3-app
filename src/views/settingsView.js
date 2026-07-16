@@ -53,6 +53,9 @@ export function renderSettingsView() {
     const notificationsSection = document.createElement("section");
     notificationsSection.classList.add("settings-section");
 
+    const appInfoSection = document.createElement("section");
+    appInfoSection.classList.add("settings-section");
+
     const profileHeading = document.createElement("h2");
     profileHeading.textContent = "Profile";
 
@@ -252,7 +255,26 @@ pushButton.addEventListener("click", async () => {
 
 renderPushControls();
 
-    profileSection.append(
+const appInfoHeading = document.createElement("h2");
+appInfoHeading.textContent = "App Info";
+
+const buildLabel = document.createElement("div");
+buildLabel.classList.add("detail-label");
+buildLabel.textContent = "Build";
+
+const buildValue = document.createElement("div");
+buildValue.classList.add(
+    "detail-value",
+    "settings-readonly-value"
+);
+
+const buildDate = new Date(__BUILD_ID__);
+
+buildValue.textContent = Number.isNaN(buildDate.getTime())
+    ? __BUILD_ID__
+    : buildDate.toLocaleString();
+
+profileSection.append(
         profileHeading,
         paxNameLabel,
         paxNameValue,
@@ -271,13 +293,20 @@ renderPushControls();
         pushHelp,
         pushButton
     );
+
+    appInfoSection.append(
+        appInfoHeading,
+        buildLabel,
+        buildValue
+    );
     
     app.append(
         header,
         title,
         subtitle,
         profileSection,
-        notificationsSection
+        notificationsSection,
+        appInfoSection
     );
 
     if (state.isMainMenuOpen) {

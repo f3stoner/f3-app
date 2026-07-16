@@ -2,9 +2,11 @@ import path from "node:path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import CopyPlugin from "copy-webpack-plugin";
+import webpack from "webpack";
 
 export default (env, argv) => {
     const isProd = argv.mode === "production";
+    const buildId = new Date().toISOString();
 
     return {
         mode: argv.mode || "development",
@@ -27,6 +29,9 @@ export default (env, argv) => {
             allowedHosts: "all",
         },
         plugins: [
+            new webpack.DefinePlugin({
+                __BUILD_ID__: JSON.stringify(buildId),
+            }),
             new HtmlWebpackPlugin({
                 template: "./index.html",
             }),
