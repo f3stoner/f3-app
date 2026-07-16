@@ -53,7 +53,6 @@ import { hasPermission, PERMISSIONS, isRegionalAdmin, getManagedAoIds, managesAo
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
 import { renderQReadinessView } from "./views/qReadinessView.js";
 import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
-import { renderLibraryWorkbenchView } from "./views/libraryWorkbenchView.js";
 import { loadLibraryAutocompleteItems, loadLibraryFilterOptions } from "./services/libraryData.js";
 import { renderThirdFManagementView } from "./views/thirdFManagementView.js";
 import { renderThirdFView } from "./views/thirdFView.js";
@@ -219,6 +218,12 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-operations-center" */
             "./views/operationsCenterView.js"
         ).then(module => module.renderOperationsCenterView),
+    
+    libraryWorkbench: () =>
+        import(
+            /* webpackChunkName: "route-library-workbench" */
+            "./views/libraryWorkbenchView.js"
+        ).then(module => module.renderLibraryWorkbenchView),
 };
 
 const lazyRoutePromises = new Map();
@@ -230,6 +235,7 @@ function getLazyRouteLabel(viewName) {
         thangReview: "Thang Review",
         adminManagement: "Admin Management",
         operationsCenter: "Operations Center",
+        libraryWorkbench: "Library Workbench",
     };
 
     return labels[viewName] || "Screen";
@@ -486,7 +492,10 @@ function renderApp() {
     } else if (state.currentView === "qSourceManagement") {
         renderQSourceManagementView();
     } else if (state.currentView === "libraryWorkbench") {
-        renderLibraryWorkbenchView();
+        renderLazyRoute(
+            "libraryWorkbench",
+            currentRenderSequence
+        );
     } else if (state.currentView === "adminManagement") {
         renderLazyRoute(
             "adminManagement",
