@@ -718,14 +718,35 @@ async function bootApp() {
         
         phaseStartedAt = performance.now();
 
+        const timeRegionalPhase = async (phaseName, operation) => {
+            const startedAt = performance.now();
+
+            try {
+                return await operation();
+            } finally {
+                bootPhases[phaseName] = Math.round(
+                    performance.now() - startedAt
+                );
+            }
+        };
+
         const [
             regionLoaded,
             profileAoPermissions,
             profileRegionPositions,
         ] = await Promise.all([
-            loadActiveRegionData(profile.region_id),
-            loadProfileAoPermissions(profile.region_id),
-            loadProfileRegionPositions(profile.region_id),
+            timeRegionalPhase(
+                "activeRegionDataMs",
+                () => loadActiveRegionData(profile.region_id)
+            ),
+            timeRegionalPhase(
+                "profileAoPermissionsMs",
+                () => loadProfileAoPermissions(profile.region_id)
+            ),
+            timeRegionalPhase(
+                "profileRegionPositionsMs",
+                () => loadProfileRegionPositions(profile.region_id)
+            ),
         ]);
 
         bootPhases.regionBootstrapMs = Math.round(
