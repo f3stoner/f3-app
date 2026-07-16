@@ -11,11 +11,12 @@ export default (env, argv) => {
         entry: "./src/index.js",
         output: {
             filename: "[name].[contenthash].js",
+            chunkFilename: "[name].[contenthash].js",
             path: path.resolve(import.meta.dirname, "dist"),
             clean: true,
             publicPath: isProd ? "/f3-app/" : "/",
         },
-        devtool: "eval-source-map",
+        devtool: isProd ? false : "eval-source-map",
         devServer: {
             host: "0.0.0.0",
             port: 8080,
