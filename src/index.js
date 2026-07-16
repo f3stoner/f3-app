@@ -386,7 +386,14 @@ async function loadActiveRegionData(profileRegionId) {
 
     const cloudData = await loadRegionData(activeRegionId);
 
+    const replaceStartedAt = performance.now();
+
     replacePersistedData(cloudData);
+
+    console.log(
+        `replacePersistedData: ${(performance.now() - replaceStartedAt).toFixed(1)} ms`
+    );
+
     state.currentRegionId = activeRegionId;
 
     Promise.all([
@@ -423,6 +430,7 @@ function getSharedWorkoutIdFromUrl() {
 }
 
 async function bootApp() {
+    const bootStartedAt = performance.now();
 
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
@@ -436,7 +444,6 @@ async function bootApp() {
     }
 
     try {
-        console.time("bootApp");
         console.time("getCurrentSession");
         let session = await getCurrentSession();
         console.timeEnd("getCurrentSession");
@@ -448,11 +455,17 @@ async function bootApp() {
 
         if (!session) {
             console.log("No session found, rendering auth");
+        
+            console.log(
+                `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
+            );
+        
             state.currentView = "auth";
             renderAuthView();
             hideBootSplash();
             return;
         }
+
         console.time("ensureMyProfile");
         const profile = await ensureMyProfile(session.user.id, session);
         console.timeEnd("ensureMyProfile");
@@ -484,6 +497,10 @@ async function bootApp() {
         ]);
         
         if (!regionLoaded) {
+            console.log(
+                `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
+            );
+
             hideBootSplash();
             return;
         }
@@ -515,9 +532,13 @@ async function bootApp() {
                 state.currentView = "dashboard";
             }
         }
-        console.time("first-render");
+        const renderStartedAt = performance.now();
+
         renderApp();
-        console.timeEnd("first-render");
+
+        console.log(
+            `renderApp:first: ${(performance.now() - renderStartedAt).toFixed(1)} ms`
+        );
 
         //hydrateHistoricalBackblastLinks(state.currentRegionId);
 
@@ -542,9 +563,24 @@ async function bootApp() {
             .catch(error => {
                 console.error("Failed to load notification settings:", error);
             });
-        console.timeEnd("bootApp");
+        console.log(
+            `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
+        );
+        
+        console.log(
+            `Launch: app usable ${
+                (
+                    performance.now() -
+                    (window.__launchStart ?? bootStartedAt)
+                ).toFixed(1)
+            } ms`
+        );
         hideBootSplash();
     } catch (error) {
+
+        console.log(
+            `bootApp FAILED: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
+        );
 
         logActionFailure("bootApp", error, {
             mode,
@@ -559,6 +595,15 @@ async function bootApp() {
         hideBootSplash();
     }
 }
+
+console.log(
+    `Launch: before bootApp ${
+        (
+            performance.now() -
+            (window.__launchStart ?? performance.now())
+        ).toFixed(1)
+    } ms`
+);
 
 bootApp();
 
