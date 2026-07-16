@@ -19,13 +19,9 @@ import {
     loadProfileAoPermissions,
     loadProfileRegionPositions,
 } from "./services/cloudData.js";
-import { importPaxMasterCsv, repairAggielandDeltaSessions, auditPotentialMergedMembers, auditMergedMemberDetail, splitMergedMemberByRawName, runAggielandSync } from "./services/importAggieland.js";
-import { importAoLogCsv, runAggielandDeltaAoImports } from "./services/importAggieland.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
 import { renderMyPlanner } from "./views/myPlannerView.js";
-import { groupHistoricRowsIntoSessions, parseHistoricCsvToPreview, mapGroupedSessionsToAppFormat } from "./utils/historicImport.js";
-import { renderHistoricImportPreview } from "./views/historicImportPreviewView.js";
 import { renderStalePaxView } from "./views/stalePaxView.js";
 import { renderQSignupView } from "./views/qSignupView.js";
 import { renderAoManagementView } from "./views/aoManagementView.js";
@@ -46,8 +42,6 @@ import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
 import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 import { renderAoInsightsView } from "./views/aoInsightsView.js";
-import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit.js";
-import { importOld300AttendanceCsv } from "./services/importOld300.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
 import { hasPermission, PERMISSIONS, isRegionalAdmin, getManagedAoIds, managesAo } from "./utils/permissions.js";
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
@@ -63,23 +57,67 @@ import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
 
 if (process.env.NODE_ENV === "development") {
-window.state = state;
-window.renderApp = renderApp;
-window.runAggielandDeltaAoImports = runAggielandDeltaAoImports;
-window.importPaxMasterCsv = importPaxMasterCsv;
-window.repairAggielandDeltaSessions = repairAggielandDeltaSessions;
-window.auditPotentialMergedMembers = auditPotentialMergedMembers;
-window.auditMergedMemberDetail = auditMergedMemberDetail;
-window.splitMergedMemberByRawName = splitMergedMemberByRawName;
-window.logAppEvent = logAppEvent;
-window.triagePotentialMemberMisassignments = triagePotentialMemberMisassignments;
-window.runAggielandSync = runAggielandSync;
-window.importOld300AttendanceCsv = importOld300AttendanceCsv;
-window.permissions = {
-    isRegionalAdmin,
-    getManagedAoIds,
-    managesAo,
-};
+    window.state = state;
+    window.renderApp = renderApp;
+    window.logAppEvent = logAppEvent;
+
+    const loadAggielandTools = () =>
+        import(
+            /* webpackChunkName: "dev-import-aggieland" */
+            "./services/importAggieland.js"
+        );
+
+    const loadOld300Tools = () =>
+        import(
+            /* webpackChunkName: "dev-import-old300" */
+            "./services/importOld300.js"
+        );
+
+    window.importPaxMasterCsv = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.importPaxMasterCsv(...args);
+    };
+
+    window.runAggielandDeltaAoImports = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.runAggielandDeltaAoImports(...args);
+    };
+
+    window.repairAggielandDeltaSessions = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.repairAggielandDeltaSessions(...args);
+    };
+
+    window.auditPotentialMergedMembers = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.auditPotentialMergedMembers(...args);
+    };
+
+    window.auditMergedMemberDetail = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.auditMergedMemberDetail(...args);
+    };
+
+    window.splitMergedMemberByRawName = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.splitMergedMemberByRawName(...args);
+    };
+
+    window.runAggielandSync = async (...args) => {
+        const module = await loadAggielandTools();
+        return module.runAggielandSync(...args);
+    };
+
+    window.importOld300AttendanceCsv = async (...args) => {
+        const module = await loadOld300Tools();
+        return module.importOld300AttendanceCsv(...args);
+    };
+
+    window.permissions = {
+        isRegionalAdmin,
+        getManagedAoIds,
+        managesAo,
+    };
 }
 
 if ("serviceWorker" in navigator) {
@@ -127,62 +165,6 @@ function restoreNavState(nav) {
 
     state.editingPlannedWorkoutId = null;
     state.editingSessionId = null;
-}
-
-async function runHistoricPreview() {
-    const response = await fetch("/import/Historic_Log.csv");
-    const csvText = await response.text();
-
-    const preview = parseHistoricCsvToPreview(csvText);
-    const grouped = groupHistoricRowsIntoSessions(preview.parsedRows);
-    const converted = mapGroupedSessionsToAppFormat(grouped, state.members);
-
-    console.log("Converted Sessions:", converted.sessions.length);
-    console.log("Missing Pax:", converted.missingPax);
-
-    state._historicImport = converted;
-
-    renderHistoricImportPreview(preview, converted);
-}
-
-async function runPaxImport() {
-    const response = await fetch("/import/Pax_Master.csv");
-    const csvText = await response.text();
-    await importPaxMasterCsv(csvText);
-    console.log("Pax Master import complete");
-}
-
-async function runForestImport() {
-    const response = await fetch("/import/Forest_Log.csv");
-    const csvText = await response.text();
-    await importAoLogCsv(csvText, "Forest");
-    console.log("Forest Import complete");
-}
-
-async function runAggielandAoImports() {
-    const aoFiles = [
-        ["Forest", "/import/Forest_Log.csv"],
-        ["Cave", "/import/Cave_Log.csv"],
-        ["Iron", "/import/Iron_Log.csv"],
-        ["Keep", "/import/Keep_Log.csv"],
-        ["Rock", "/import/Rock_Log.csv"],
-        ["Mine", "/import/Mine_Log.csv"],
-        ["Southie", "/import/Southie_Log.csv"],
-        ["Watch", '/import/Watch_Log.csv'],
-        ["Dads", "/import/Dads_Log.csv"],
-        ["BlackOps", "/import/BlackOps_Log.csv"],
-        ["CSAUP", "/import/CSAUP_Log.csv"],
-        ["Other", "/import/Other_Log.csv"],
-    ];
-
-    for (const [aoName, path] of aoFiles) {
-        const response = await fetch(path);
-        const csvText = await response.text();
-        await importAoLogCsv(csvText, aoName);
-        console.log(`${aoName} import complete`);
-    }
-
-    console.log("All AO imports complete");
 }
 
 let lastRenderedView = null;
