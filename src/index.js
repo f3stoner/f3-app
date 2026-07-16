@@ -566,15 +566,7 @@ async function bootApp() {
         console.log(
             `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
         );
-        
-        console.log(
-            `Launch: app usable ${
-                (
-                    performance.now() -
-                    (window.__launchStart ?? bootStartedAt)
-                ).toFixed(1)
-            } ms`
-        );
+
         hideBootSplash();
     } catch (error) {
 
@@ -595,15 +587,6 @@ async function bootApp() {
         hideBootSplash();
     }
 }
-
-console.log(
-    `Launch: before bootApp ${
-        (
-            performance.now() -
-            (window.__launchStart ?? performance.now())
-        ).toFixed(1)
-    } ms`
-);
 
 bootApp();
 

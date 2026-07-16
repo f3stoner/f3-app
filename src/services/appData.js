@@ -90,23 +90,28 @@ async function ensureFngMembersForSession(activeRegionId, session) {
             continue;
         }
 
-        const savedMember = await addMember({
-            id: crypto.randomUUID(),
-            realName: fng.realName || "",
-            paxName: fng.paxName || null,
-            status: "active",
-            fngStatus: fng.paxName ? "named" : "unnamed",
-            firstPostDate: session.date || null,
-            inviterIds:
-                fng.inviterIds ||
-                (fng.invitedById
-                    ? [fng.invitedById]
-                    : []),
-            invitedById:
-                fng.invitedById ||
-                fng.inviterIds?.[0] ||
-                null,
-        });
+        const savedMember = await addMember(
+            {
+                id: crypto.randomUUID(),
+                realName: fng.realName || "",
+                paxName: fng.paxName || null,
+                status: "active",
+                fngStatus: fng.paxName ? "named" : "unnamed",
+                firstPostDate: session.date || null,
+                inviterIds:
+                    fng.inviterIds ||
+                    (fng.invitedById
+                        ? [fng.invitedById]
+                        : []),
+                invitedById:
+                    fng.invitedById ||
+                    fng.inviterIds?.[0] ||
+                    null,
+            },
+            {
+                deferInviterSave: true,
+            }
+        );
 
         fngs.push({
             ...fng,
@@ -128,6 +133,30 @@ async function ensureFngMembersForSession(activeRegionId, session) {
             ...fngMemberIds,
         ],
     });
+}
+
+async function saveSessionFngInviters(session) {
+    for (const fng of session.fngs || []) {
+        if (!fng.memberId) continue;
+
+        const inviterIds =
+            fng.inviterIds ||
+            (fng.invitedById
+                ? [fng.invitedById]
+                : []);
+
+        await setMemberInviters(
+            fng.memberId,
+            inviterIds,
+            {
+                source: "session_fng",
+                sourceMetadata: {
+                    createdDuringSessionLogging: true,
+                },
+                sessionId: session.id,
+            }
+        );
+    }
 }
 
 async function prepareSessionForInsert(
@@ -244,6 +273,11 @@ export async function addSession(session) {
         preparedSession
     );
 
+    await saveSessionFngInviters({
+        ...savedSession,
+        fngs: normalizedSession.fngs,
+    });
+
     await replaceSessionVisitors(
         savedSession.id,
         normalizedSession.visitors || [],
@@ -272,6 +306,11 @@ export async function updateSession(sessionId, updatedSession) {
             activeRegionId,
             normalizedSession
         );
+
+    await saveSessionFngInviters({
+        ...savedSession,
+        fngs: normalizedSession.fngs,
+    });
 
     await replaceSessionVisitors(
         savedSession.id,
@@ -344,32 +383,53 @@ export async function deletePlannedWorkout(workoutId) {
     persistAppData();
 }
 
-export async function addMember(member) {
+export async function addMember(
+    member,
+    {
+        deferInviterSave = false,
+        sessionId = null,
+    } = {}
+) {
     const activeRegionId = state.currentRegionId;
+
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
-    const savedMember = await insertMember(activeRegionId, member);
 
-    await setMemberInviters(
-        savedMember.id,
-        member.inviterIds || (
-            member.invitedById
-                ? [member.invitedById]
-                : []
-        )
+    const inviterIds =
+        member.inviterIds ||
+        (member.invitedById
+            ? [member.invitedById]
+            : []);
+
+    const savedMember = await insertMember(
+        activeRegionId,
+        member
     );
 
-    savedMember.inviterIds =
-        member.inviterIds ||
-        (member.invitedById ? [member.invitedById] : []);
+    /*
+     * New FNGs are created before their session exists.
+     * Their inviter relationships must be saved after the
+     * session has been inserted.
+     */
+    if (!deferInviterSave) {
+        await setMemberInviters(
+            savedMember.id,
+            inviterIds,
+            {
+                sessionId,
+            }
+        );
+    }
 
+    savedMember.inviterIds = inviterIds;
     savedMember.invitedById =
-        savedMember.inviterIds[0] || null;
+        inviterIds[0] || null;
 
     state.members.push(savedMember);
 
     persistAppData();
+
     return savedMember;
 }
 
