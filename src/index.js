@@ -754,6 +754,17 @@ async function bootApp() {
             `renderApp:first: ${renderDurationMs.toFixed(1)} ms`
         );
 
+        const launchStartedAt =
+            typeof window.__launchStart === "number"
+                ? window.__launchStart
+                : bootStartedAt;
+
+        const preBootDurationMs =
+            bootStartedAt - launchStartedAt;
+
+        const documentToUsableDurationMs =
+            usableAt - launchStartedAt;
+
         logAppEvent({
             type: APP_EVENTS.APP_OPENED,
             metadata: {
@@ -765,10 +776,10 @@ async function bootApp() {
                 standalone: isStandalone,
                 navigationType: navigationEntry?.type || null,
 
-                preBootMs: Math.round(bootStartedAt),
+                preBootMs: Math.round(preBootDurationMs),
                 bootMs: Math.round(bootDurationMs),
                 renderMs: Math.round(renderDurationMs),
-                documentToUsableMs: Math.round(usableAt),
+                documentToUsableMs: Math.round(documentToUsableDurationMs),
 
                 visibilityState: document.visibilityState,
                 online: navigator.onLine,
