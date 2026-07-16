@@ -1164,21 +1164,6 @@ if (draftSession.fngs.length > 0) {
 
 updateFngButtonText();
 
-if (isEditing && sessionId && draftSession.visitors.length === 0) {
-    loadSessionVisitors(sessionId)
-        .then(visitors => {
-            draftSession.visitors = visitors || [];
-            visitorContainer.textContent = "";
-            draftSession.visitors.forEach(visitor => addVisitorRow(visitor));
-        })
-        .catch(error => {
-            console.error("Failed to load DR visitors:", error);
-            showToast("Failed to load DR visitors.", "error");
-        });
-}
-
-let isSavingSession = false;
-
 function normalizeSessionForSave(session) {
     const qIds = [...new Set(session.qIds || (session.qId ? [session.qId] : []))]
         .map(normalizeId)
@@ -1355,7 +1340,98 @@ function collectVisitorsFromUi() {
 
 const saveButton = document.createElement("button");
 saveButton.textContent = "Save";
+
+let isSavingSession = false;
+let visitorLoadStatus =
+    isEditing && sessionId
+        ? "loading"
+        : "ready";
+
+function updateSaveButtonState() {
+    const visitorsUnavailable =
+        visitorLoadStatus === "loading" ||
+        visitorLoadStatus === "failed";
+
+    addVisitorButton.disabled =
+        isSavingSession ||
+        visitorsUnavailable;
+
+    visitorContainer
+        .querySelectorAll("input, button")
+        .forEach(control => {
+            control.disabled =
+                isSavingSession ||
+                visitorsUnavailable;
+        });
+
+    if (isSavingSession) {
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+        return;
+    }
+
+    if (visitorLoadStatus === "loading") {
+        saveButton.disabled = true;
+        saveButton.textContent = "Loading visitors...";
+        return;
+    }
+
+    if (visitorLoadStatus === "failed") {
+        saveButton.disabled = true;
+        saveButton.textContent = "Visitor load failed";
+        return;
+    }
+
+    saveButton.disabled = false;
+    saveButton.textContent = "Save";
+}
+
+async function loadExistingSessionVisitors() {
+    if (!isEditing || !sessionId) {
+        visitorLoadStatus = "ready";
+        updateSaveButtonState();
+        return;
+    }
+
+    visitorLoadStatus = "loading";
+    updateSaveButtonState();
+
+    try {
+        const visitors = await loadSessionVisitors(sessionId);
+
+        draftSession.visitors = visitors || [];
+
+        visitorContainer.textContent = "";
+        draftSession.visitors.forEach(visitor => {
+            addVisitorRow(visitor);
+        });
+
+        visitorLoadStatus = "ready";
+    } catch (error) {
+        console.error("Failed to load DR visitors:", error);
+
+        visitorLoadStatus = "failed";
+
+        showToast(
+            "Visitors could not be loaded. This session cannot be saved until they are reloaded.",
+            "error"
+        );
+    }
+
+    updateSaveButtonState();
+}
+
 saveButton.addEventListener("click", async () => {
+    if (visitorLoadStatus !== "ready") {
+        showToast(
+            visitorLoadStatus === "failed"
+                ? "Visitors failed to load. Leave and reopen the session before saving."
+                : "Visitors are still loading.",
+            "error"
+        );
+
+        return;
+    }
     draftSession.fngs = collectFngsFromUi();
     draftSession.visitors = collectVisitorsFromUi();
     draftSession.notes = notes.value.trim();
@@ -1385,9 +1461,9 @@ saveButton.addEventListener("click", async () => {
     }
 
     if (isSavingSession) return;
+
     isSavingSession = true;
-    saveButton.disabled = true;
-    saveButton.textContent = "Saving...";
+    updateSaveButtonState();
 
 try {
     let savedSession;
@@ -1506,10 +1582,12 @@ try {
     });
 } finally {
     isSavingSession = false;
-    saveButton.disabled = false;
-    saveButton.textContent = "Save";
-}
+    updateSaveButtonState();
+    }
 });
+
+updateSaveButtonState();
+loadExistingSessionVisitors();
 
 const notes = document.createElement("textarea");
 notes.classList.add("notes");

@@ -81,34 +81,44 @@ export async function loadVisitorsForSessions(sessionIds = []) {
     return visitorsBySessionId;
 }
 
-export async function replaceSessionVisitors(sessionId, visitors = [], createdByUserId = null) {
+export async function replaceSessionVisitors(
+    sessionId,
+    visitors = [],
+    createdByUserId = null
+) {
     if (!sessionId) return [];
-
-    const { error: deleteError } = await supabase
-        .from("session_visitors")
-        .delete()
-        .eq("session_id", sessionId);
-
-    if (deleteError) throw deleteError;
 
     const cleanVisitors = visitors
         .map(visitor => ({
-            session_id: sessionId,
-            f3_name: visitor.f3Name?.trim(),
-            home_region: visitor.homeRegion?.trim() || null,
-            real_name: visitor.realName?.trim() || null,
-            created_by_user_id: visitor.createdByUserId || createdByUserId || null,
+            id: visitor.id || null,
+            f3Name: visitor.f3Name?.trim() || "",
+            homeRegion: visitor.homeRegion?.trim() || "",
+            realName: visitor.realName?.trim() || "",
+            createdByUserId:
+                visitor.createdByUserId ||
+                createdByUserId ||
+                null,
         }))
-        .filter(visitor => visitor.f3_name);
+        .filter(visitor => visitor.f3Name);
 
-    if (cleanVisitors.length === 0) return [];
-
-    const { data, error } = await supabase
-        .from("session_visitors")
-        .insert(cleanVisitors)
-        .select();
+    const { data, error } = await supabase.rpc(
+        "replace_session_visitors",
+        {
+            p_session_id: sessionId,
+            p_visitors: cleanVisitors,
+            p_created_by_user_id: createdByUserId,
+        }
+    );
 
     if (error) throw error;
 
-    return data || [];
+    return (data || []).map(row => ({
+        id: row.id,
+        sessionId: row.session_id,
+        f3Name: row.f3_name,
+        homeRegion: row.home_region || "",
+        realName: row.real_name || "",
+        createdByUserId: row.created_by_user_id || null,
+        createdAt: row.created_at,
+    }));
 }
