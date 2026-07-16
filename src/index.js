@@ -576,10 +576,24 @@ function hydrateHistoricalBackblastLinks(regionId) {
         });
 }
 
-async function loadActiveRegionData(profileRegionId) {
+async function loadActiveRegionData(
+    profileRegionId,
+    bootPhases = null
+) {
     const activeRegionId = profileRegionId;
 
-    const access = await checkRegionAccess(state.currentUserId, activeRegionId);
+    let phaseStartedAt = performance.now();
+
+    const access = await checkRegionAccess(
+        state.currentUserId,
+        activeRegionId
+    );
+
+    if (bootPhases) {
+        bootPhases.checkRegionAccessMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
+    }
 
     if (!access) {
         state.currentRegionId = activeRegionId;
@@ -590,15 +604,25 @@ async function loadActiveRegionData(profileRegionId) {
         return false;
     }
 
+    phaseStartedAt = performance.now();
+
     const cloudData = await loadRegionData(activeRegionId);
 
-    const replaceStartedAt = performance.now();
+    if (bootPhases) {
+        bootPhases.loadRegionDataMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
+    }
+
+    phaseStartedAt = performance.now();
 
     replacePersistedData(cloudData);
 
-    console.log(
-        `replacePersistedData: ${(performance.now() - replaceStartedAt).toFixed(1)} ms`
-    );
+    if (bootPhases) {
+        bootPhases.replacePersistedDataMs = Math.round(
+            performance.now() - phaseStartedAt
+        );
+    }
 
     state.currentRegionId = activeRegionId;
 
@@ -737,7 +761,11 @@ async function bootApp() {
         ] = await Promise.all([
             timeRegionalPhase(
                 "activeRegionDataMs",
-                () => loadActiveRegionData(profile.region_id)
+                () =>
+                    loadActiveRegionData(
+                        profile.region_id,
+                        bootPhases
+                    )
             ),
             timeRegionalPhase(
                 "profileAoPermissionsMs",
