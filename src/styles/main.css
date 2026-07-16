@@ -6144,3 +6144,7 @@ button.leadership-action-card:disabled {
     text-transform: uppercase;
     opacity: 0.65;
 }
+
+.global-audit-fab {
+    bottom: 9rem;
+}
