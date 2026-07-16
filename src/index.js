@@ -47,7 +47,6 @@ import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 import { renderAoInsightsView } from "./views/aoInsightsView.js";
 import { triagePotentialMemberMisassignments } from "./utils/memberIdentityAudit.js";
-import { renderImportRunsView } from "./views/importRunsView.js";
 import { importOld300AttendanceCsv } from "./services/importOld300.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
 import { hasPermission, PERMISSIONS, isRegionalAdmin, getManagedAoIds, managesAo } from "./utils/permissions.js";
@@ -192,10 +191,179 @@ async function runAggielandAoImports() {
 }
 
 let lastRenderedView = null;
+let routeRenderSequence = 0;
+
+const lazyRouteLoaders = {
+    importRuns: () =>
+        import(
+            /* webpackChunkName: "route-import-runs" */
+            "./views/importRunsView.js"
+        ).then(module => module.renderImportRunsView),
+};
+
+const lazyRoutePromises = new Map();
+
+function getLazyRouteLabel(viewName) {
+    const labels = {
+        importRuns: "Import Runs",
+    };
+
+    return labels[viewName] || "Screen";
+}
+
+function getLazyRouteRenderer(viewName) {
+    const existingPromise = lazyRoutePromises.get(viewName);
+
+    if (existingPromise) {
+        return existingPromise;
+    }
+
+    const loader = lazyRouteLoaders[viewName];
+
+    if (!loader) {
+        return Promise.reject(
+            new Error(
+                `No lazy route loader is registered for "${viewName}".`
+            )
+        );
+    }
+
+    const loadingPromise = loader().catch(error => {
+        /*
+         * A failed chunk must not remain cached. Removing it allows
+         * the retry button to make a fresh request.
+         */
+        lazyRoutePromises.delete(viewName);
+        throw error;
+    });
+
+    lazyRoutePromises.set(viewName, loadingPromise);
+
+    return loadingPromise;
+}
+
+function clearAppRoot() {
+    const app = document.getElementById("app");
+
+    if (!app) return null;
+
+    app.replaceChildren();
+
+    return app;
+}
+
+function renderLazyRouteLoading(viewName) {
+    const app = clearAppRoot();
+
+    if (!app) return;
+
+    const container = document.createElement("main");
+    container.className = "route-load-state";
+    container.setAttribute("aria-live", "polite");
+
+    const spinner = document.createElement("div");
+    spinner.className = "route-load-spinner";
+    spinner.setAttribute("aria-hidden", "true");
+
+    const message = document.createElement("p");
+    message.className = "route-load-message";
+    message.textContent =
+        `Loading ${getLazyRouteLabel(viewName)}…`;
+
+    container.append(spinner, message);
+    app.append(container);
+}
+
+function renderLazyRouteError(viewName, error) {
+    const app = clearAppRoot();
+
+    if (!app) return;
+
+    console.error(
+        `Failed to load lazy route "${viewName}":`,
+        error
+    );
+
+    const container = document.createElement("main");
+    container.className =
+        "route-load-state route-load-state-error";
+    container.setAttribute("role", "alert");
+
+    const heading = document.createElement("h2");
+    heading.className = "route-load-heading";
+    heading.textContent = "Unable to load this screen";
+
+    const message = document.createElement("p");
+    message.className = "route-load-message";
+    message.textContent =
+        "Check your connection and try again.";
+
+    const actions = document.createElement("div");
+    actions.className = "route-load-actions";
+
+    const retryButton = document.createElement("button");
+    retryButton.type = "button";
+    retryButton.className = "route-load-button";
+    retryButton.textContent = "Try Again";
+
+    retryButton.addEventListener("click", () => {
+        lazyRoutePromises.delete(viewName);
+
+        if (state.currentView === viewName) {
+            renderApp();
+        }
+    });
+
+    const reloadButton = document.createElement("button");
+    reloadButton.type = "button";
+    reloadButton.className =
+        "route-load-button route-load-button-secondary";
+    reloadButton.textContent = "Reload App";
+
+    reloadButton.addEventListener("click", () => {
+        window.location.reload();
+    });
+
+    actions.append(retryButton, reloadButton);
+    container.append(heading, message, actions);
+    app.append(container);
+}
+
+function renderLazyRoute(viewName, renderSequence) {
+    renderLazyRouteLoading(viewName);
+
+    getLazyRouteRenderer(viewName)
+        .then(renderView => {
+            /*
+             * Ignore an old route request if the user navigated away
+             * before its chunk finished loading.
+             */
+            if (
+                renderSequence !== routeRenderSequence ||
+                state.currentView !== viewName
+            ) {
+                return;
+            }
+
+            renderView();
+        })
+        .catch(error => {
+            if (
+                renderSequence !== routeRenderSequence ||
+                state.currentView !== viewName
+            ) {
+                return;
+            }
+
+            renderLazyRouteError(viewName, error);
+        });
+}
 
 function renderApp() {
+    const currentRenderSequence = ++routeRenderSequence;
 
     const app = document.getElementById("app");
+
     if (app) {
         app.classList.add(`view-${state.currentView}`); 
     }
@@ -273,7 +441,10 @@ function renderApp() {
     } else if (state.currentView === "aoInsights") {
         renderAoInsightsView();
     } else if (state.currentView === "importRuns") {
-        renderImportRunsView();
+        renderLazyRoute(
+            "importRuns",
+            currentRenderSequence
+        );
     } else if (state.currentView === "announcementManagement") {
         renderAnnouncementManagementView();
     } else if (state.currentView === "backblastReview") {

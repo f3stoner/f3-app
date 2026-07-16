@@ -6262,3 +6262,63 @@ button.leadership-action-card:disabled {
     flex: 0 0 auto;
     opacity: 0.82;
 }
+
+.route-load-state {
+    min-height: 55vh;
+    padding: 3rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.route-load-heading,
+.route-load-message {
+    margin: 0;
+}
+
+.route-load-spinner {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0.25rem solid rgba(255, 255, 255, 0.2);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: route-load-spin 700ms linear infinite;
+}
+
+.route-load-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.route-load-button {
+    min-height: 2.75rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.route-load-button-secondary {
+    background: transparent;
+    color: inherit;
+}
+
+@keyframes route-load-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .route-load-spinner {
+        animation: none;
+    }
+}
