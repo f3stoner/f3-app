@@ -25,4 +25,6 @@ export const APP_EVENTS = {
 
     SAVE_FAILURE: "save_failure",
     ACTION_FAILURE: "action_failure",
+
+    EMERGENCY_CONTACT_LOOKUP_OPENED: "emergency_contact_lookup_opened",
 };

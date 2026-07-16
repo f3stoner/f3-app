@@ -27,6 +27,7 @@ export const PERMISSIONS = {
     ACCESS_DEBUG_TOOLS: "access_debug_tools",
     ACCESS_ADMIN_SETTINGS: "access_admin_settings",
     ACCESS_OPERATIONS_CENTER: "access_operations_center",
+    ACCESS_EMERGENCY_CONTACT_LOOKUP: "access_emergency_contact_lookup",
 };
 
 export const ROLE_PERMISSIONS = {

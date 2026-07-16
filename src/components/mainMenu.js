@@ -5,6 +5,51 @@ import { bootApp, renderApp } from "../index.js";
 import { signOut } from "../services/auth.js";
 import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 import { showToast } from "../utils/toast.js";
+import { logAppEvent } from "../services/appEvents.js";
+import { APP_EVENTS } from "../constants/appEvents.js";
+
+const AGGIELAND_REGION_ID = "96c9eef9-3b6e-4365-86cd-51dbeccf231a";
+
+const EMERGENCY_CONTACT_LOOKUP_URL =
+    "https://script.google.com/macros/s/AKfycbw9jaovBZnmQoNTlhrhTwKsk0QBIOxBqvk8ju9hGKimbZlj9Kt0esfnWeAbqZwUjFI/exec";
+
+const EMERGENCY_CONTACT_FORM_URL =
+    "https://docs.google.com/forms/d/e/1FAIpQLSciSk7z6sreim6Qw7fpDfFrSaEeVTsRjG5H3H9VKFK19bINbA/viewform";
+
+function confirmEmergencyContactLookup() {
+    return window.confirm(
+        [
+            "Emergency Contact Lookup",
+            "",
+            "You are opening Aggieland's Emergency Contact system.",
+            "",
+            "Use this information only for legitimate emergency or safety-related situations.",
+            "",
+            "Every lookup is logged and may be reviewed.",
+            "",
+            "Continue?",
+        ].join("\n")
+    );
+}
+
+function isAggielandRegion() {
+    return state.currentRegionId === AGGIELAND_REGION_ID;
+}
+
+function canOpenAggielandEmergencyLookup() {
+    return isAggielandRegion()
+        && Boolean(state.currentUserDisplayName)
+        && Boolean(state.currentUserMemberId);
+}
+
+function getEmergencyContactLookupUrl() {
+    const url = new URL(EMERGENCY_CONTACT_LOOKUP_URL);
+
+    url.searchParams.set("appUser", state.currentUserDisplayName);
+    url.searchParams.set("appUserId", state.currentUserMemberId);
+
+    return url.toString();
+}
 
 function getMonthStart(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
@@ -108,6 +153,16 @@ export function createMainMenu() {
         {
             label: "People",
             items: [
+                {
+                    label: "Add / Update Emergency Contact",
+                    externalUrl: EMERGENCY_CONTACT_FORM_URL,
+                    isVisible: isAggielandRegion,
+                },
+                {
+                    label: "Emergency Contact Lookup",
+                    getExternalUrl: getEmergencyContactLookupUrl,
+                    isVisible: canOpenAggielandEmergencyLookup,
+                },
                 { label: "Roster", view: "roster" },
             ],
         },
@@ -199,24 +254,67 @@ export function createMainMenu() {
         button.type = "button";
         button.classList.add("main-menu-item");
         button.textContent = item.label;
-
-        const isActive = state.currentView === item.view;
-
+    
+        const isExternal =
+            Boolean(item.externalUrl) ||
+            typeof item.getExternalUrl === "function";
+    
+        const isActive =
+            !isExternal &&
+            state.currentView === item.view;
+    
         if (isActive) {
             button.classList.add("active");
             button.disabled = true;
-        } else {
-            button.addEventListener("click", () => {
-                closeMainMenu();
-
-                if (item.view === "aoInsights" && !state.selectedAoInsights) {
-                    state.selectedAoInsights = getDefaultAoInsightsSelection();
-                }
-
-                navigateTo(item.view);
-            });
+            return button;
         }
-
+    
+        button.addEventListener("click", () => {
+            closeMainMenu();
+    
+            if (isExternal) {
+                if (
+                    item.label === "Emergency Contact Lookup"
+                    && !confirmEmergencyContactLookup()
+                ) {
+                    renderApp();
+                    return;
+                }
+            
+                const url =
+                    typeof item.getExternalUrl === "function"
+                        ? item.getExternalUrl()
+                        : item.externalUrl;
+            
+                if (!url) {
+                    showToast("This external tool is unavailable.", "error");
+                    renderApp();
+                    return;
+                }
+            
+                if (item.label === "Emergency Contact Lookup") {
+                    void logAppEvent({
+                        type: APP_EVENTS.EMERGENCY_CONTACT_LOOKUP_OPENED,
+                        message: "Emergency contact lookup opened",
+                        metadata: {
+                            source: "main_menu",
+                        },
+                    });
+                }
+            
+                window.open(url, "_blank", "noopener,noreferrer");
+            
+                renderApp();
+                return;
+            }
+    
+            if (item.view === "aoInsights" && !state.selectedAoInsights) {
+                state.selectedAoInsights = getDefaultAoInsightsSelection();
+            }
+    
+            navigateTo(item.view);
+        });
+    
         return button;
     }
 
