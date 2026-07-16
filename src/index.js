@@ -38,8 +38,6 @@ import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 import { logActionFailure, logAppEvent } from "./services/appEvents.js";
 import { renderTemplateHubView } from "./views/templateHubView.js";
 import { APP_EVENTS } from "./constants/appEvents.js";
-import { renderWeeklyQCalendarView } from "./views/weeklyQCalendarView.js";
-import { generateQSlotsForCurrentRegion } from "./services/qSlotGeneration.js";
 import { renderRegionInsightsView } from "./views/regionInsightsView.js";
 import { renderAoInsightsView } from "./views/aoInsightsView.js";
 import { loadBackblastLinks } from "./services/cloudData.js";
@@ -206,6 +204,12 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-library-workbench" */
             "./views/libraryWorkbenchView.js"
         ).then(module => module.renderLibraryWorkbenchView),
+
+    weeklyQCalendar: () =>
+        import(
+            /* webpackChunkName: "route-weekly-q-calendar" */
+            "./views/weeklyQCalendarView.js"
+        ).then(module => module.renderWeeklyQCalendarView),
 };
 
 const lazyRoutePromises = new Map();
@@ -218,6 +222,7 @@ function getLazyRouteLabel(viewName) {
         adminManagement: "Admin Management",
         operationsCenter: "Operations Center",
         libraryWorkbench: "Library Workbench",
+        weeklyQCalendar: "Weekly Q Calendar",
     };
 
     return labels[viewName] || "Screen";
@@ -447,7 +452,10 @@ function renderApp() {
     } else if (state.currentView === "templateHub") {
         renderTemplateHubView();
     } else if (state.currentView === "weeklyQCalendar") {
-        renderWeeklyQCalendarView();
+        renderLazyRoute(
+            "weeklyQCalendar",
+            currentRenderSequence
+        );
     } else if (state.currentView === "regionInsights") {
         renderRegionInsightsView();
     } else if (state.currentView === "aoInsights") {
