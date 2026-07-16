@@ -62,7 +62,6 @@ import { renderPaxProfileView } from "./views/paxProfileView.js";
 import { renderSessionAuditView } from "./views/sessionAuditView.js";
 import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
-import { renderOperationsCenterView } from "./views/operationsCenterView.js";
 
 if (process.env.NODE_ENV === "development") {
 window.state = state;
@@ -214,6 +213,12 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-admin-management" */
             "./views/adminManagementView.js"
         ).then(module => module.renderAdminManagementView),
+
+    operationsCenter: () =>
+        import(
+            /* webpackChunkName: "route-operations-center" */
+            "./views/operationsCenterView.js"
+        ).then(module => module.renderOperationsCenterView),
 };
 
 const lazyRoutePromises = new Map();
@@ -224,6 +229,7 @@ function getLazyRouteLabel(viewName) {
         backblastReview: "Backblast Review",
         thangReview: "Thang Review",
         adminManagement: "Admin Management",
+        operationsCenter: "Operations Center",
     };
 
     return labels[viewName] || "Screen";
@@ -501,7 +507,10 @@ function renderApp() {
     } else if (state.currentView === "settings") {
         renderSettingsView();
     } else if (state.currentView === "operationsCenter") {
-        renderOperationsCenterView();
+        renderLazyRoute(
+            "operationsCenter",
+            currentRenderSequence
+        );
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 
