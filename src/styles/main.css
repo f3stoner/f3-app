@@ -122,11 +122,22 @@ p {
     flex-shrink: 0;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    box-shadow: none;
+    opacity: 0.6;
 }
 
 .q-button.q-selected::after {
     content: " ✓";
     font-weight: 700;
+}
+
+.q-button:hover {
+    background: var(--surface-raised);
+    border-color: var(--accent);
+    color: var(--text);
 }
 
 .attendance-toggle {
@@ -4712,11 +4723,12 @@ textarea {
 
 .member-card-add-indicator {
     flex-shrink: 0;
-    font-size: 1.5rem;
-    font-weight: 800;
+    font-size: 1.7rem;
+    font-weight: 900;
     line-height: 1;
-    color: var(--muted);
-    opacity: 0.5;
+    color: var(--accent-bright);
+    opacity: 1;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
     pointer-events: none;
     user-select: none;
 }
