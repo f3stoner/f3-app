@@ -606,12 +606,20 @@ async function loadActiveRegionData(
 
     phaseStartedAt = performance.now();
 
-    const cloudData = await loadRegionData(activeRegionId);
+    const loadRegionDataQueries = {};
+
+    const cloudData = await loadRegionData(
+        activeRegionId,
+        loadRegionDataQueries
+    );
 
     if (bootPhases) {
         bootPhases.loadRegionDataMs = Math.round(
             performance.now() - phaseStartedAt
         );
+
+        bootPhases.loadRegionDataQueries =
+            loadRegionDataQueries;
     }
 
     phaseStartedAt = performance.now();

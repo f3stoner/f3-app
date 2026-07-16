@@ -366,14 +366,33 @@ function mapExerciseFromDb(row) {
     };
 }
 
-async function timed(label, promise) {
-    console.time(label);
-    const result = await promise;
-    console.timeEnd(label);
-    return result;
+async function timed(
+    label,
+    promise,
+    timings = null,
+    timingKey = null
+) {
+    const startedAt = performance.now();
+
+    try {
+        return await promise;
+    } finally {
+        const durationMs = Math.round(
+            performance.now() - startedAt
+        );
+
+        console.log(`${label}: ${durationMs} ms`);
+
+        if (timings && timingKey) {
+            timings[timingKey] = durationMs;
+        }
+    }
 }
 
-export async function loadRegionData(regionId) {
+export async function loadRegionData(
+    regionId,
+    timings = null
+) {
     const [
         regionResult,
         memberResult,
@@ -400,19 +419,33 @@ export async function loadRegionData(regionId) {
                     fng_naming_post_number
                 `)
                 .eq("id", regionId)
-                .single()
+                .single(),
+            timings,
+            "regionMs"
         ),
 
-        timed("loadRegionData:members", loadAllMembers(regionId)),
+        timed(
+            "loadRegionData:members",
+            loadAllMembers(regionId),
+            timings,
+            "membersMs"
+        ),
 
-        timed("loadRegionData:sessions", loadRecentSessions(regionId)),
+        timed(
+            "loadRegionData:sessions",
+            loadRecentSessions(regionId),
+            timings,
+            "sessionsMs"
+        ),
 
         timed(
             "loadRegionData:plannedWorkouts",
             supabase
                 .from("planned_workouts")
                 .select("*")
-                .eq("region_id", regionId)
+                .eq("region_id", regionId),
+            timings,
+            "plannedWorkoutsMs"
         ),
 
         timed(
@@ -420,7 +453,9 @@ export async function loadRegionData(regionId) {
             supabase
                 .from("aos")
                 .select("*")
-                .eq("region_id", regionId)
+                .eq("region_id", regionId),
+            timings,
+            "aosMs"
         ),
 
         timed(
@@ -429,10 +464,17 @@ export async function loadRegionData(regionId) {
                 .from("sites")
                 .select("*")
                 .eq("region_id", regionId)
-                .order("name", { ascending: true })
+                .order("name", { ascending: true }),
+            timings,
+            "sitesMs"
         ),
 
-        timed("loadRegionData:qSlots", loadAllQSlots(regionId)),
+        timed(
+            "loadRegionData:qSlots",
+            loadAllQSlots(regionId),
+            timings,
+            "qSlotsMs"
+        ),
 
         timed(
             "loadRegionData:savedPlannerSections",
@@ -440,21 +482,48 @@ export async function loadRegionData(regionId) {
                 .from("saved_planner_sections")
                 .select("*")
                 .eq("region_id", regionId)
-                .order("last_used_at", { ascending: false, nullsFirst: false })
-                .order("created_at", { ascending: false })
+                .order("last_used_at", {
+                    ascending: false,
+                    nullsFirst: false,
+                })
+                .order("created_at", { ascending: false }),
+            timings,
+            "savedPlannerSectionsMs"
         ),
 
-        timed("loadRegionData:announcements", loadAnnouncements(regionId)),
+        timed(
+            "loadRegionData:announcements",
+            loadAnnouncements(regionId),
+            timings,
+            "announcementsMs"
+        ),
 
-        timed("loadRegionData:qSources", loadQSources(regionId)),
+        timed(
+            "loadRegionData:qSources",
+            loadQSources(regionId),
+            timings,
+            "qSourcesMs"
+        ),
 
-        timed("loadRegionData:memberStats", loadRegionMemberStats(regionId)),
+        timed(
+            "loadRegionData:memberStats",
+            loadRegionMemberStats(regionId),
+            timings,
+            "memberStatsMs"
+        ),
 
-        timed("loadRegionData:aoLeadershipContacts", loadAoLeadershipContacts(regionId)),
+        timed(
+            "loadRegionData:aoLeadershipContacts",
+            loadAoLeadershipContacts(regionId),
+            timings,
+            "aoLeadershipContactsMs"
+        ),
 
         timed(
             "loadRegionData:profileRegionPositions",
             loadProfileRegionPositions(regionId),
+            timings,
+            "profileRegionPositionsMs"
         ),
     ]);
 
@@ -471,7 +540,9 @@ export async function loadRegionData(regionId) {
         "loadRegionData:memberInviters",
         loadMemberInviters(
             memberResult.map(member => member.id)
-        )
+        ),
+        timings,
+        "memberInvitersMs"
     );
 
     const inviterIdsByMemberId = new Map();
