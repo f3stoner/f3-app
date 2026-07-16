@@ -649,7 +649,14 @@ function mapPlannedWorkoutFromDb(row) {
                 : "auto",
         announcementText: row.announcement_text || "",
         announcementLegacyText: row.announcement_legacy_text || "",
-    };
+        thirdFMode:
+            row.third_f_mode === "custom"
+                ? "custom"
+                : "auto",
+        thirdFText: row.third_f_text || "",
+        thirdFLegacyText:
+            row.third_f_legacy_text || "",
+            };
 }
 
 function getDefaultEmphasisScheduleForAo(aoName) {
@@ -1007,6 +1014,16 @@ export async function insertPlannedWorkout(regionId, workout) {
                     workout.announcementMode === "custom"
                         ? workout.announcementText || ""
                         : null,
+                third_f_mode:
+                    workout.thirdFMode === "custom"
+                        ? "custom"
+                        : "auto",
+                third_f_text:
+                    workout.thirdFMode === "custom"
+                        ? workout.thirdFText || ""
+                        : null,
+                third_f_legacy_text:
+                    workout.thirdFLegacyText || null,
             },
         ])
         .select()
@@ -1067,6 +1084,16 @@ export async function updatePlannedWorkoutInCloud(regionId, workout) {
                 workout.announcementMode === "custom"
                     ? workout.announcementText || ""
                     : null,
+            third_f_mode:
+                workout.thirdFMode === "custom"
+                    ? "custom"
+                    : "auto",
+            third_f_text:
+                workout.thirdFMode === "custom"
+                    ? workout.thirdFText || ""
+                    : null,
+            third_f_legacy_text:
+                workout.thirdFLegacyText || null,
         })
         .eq("id", workout.id)
         .select()

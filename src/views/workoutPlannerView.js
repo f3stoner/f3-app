@@ -18,7 +18,7 @@ import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.j
 import { createLibraryIdeasModal } from "../components/libraryIdeasModal.js";
 import { logLibraryUsageEvent, loadPlannerAnnouncements } from "../services/cloudData.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
-import { buildThirdFContentBlock, replaceThirdFContentBlock } from "../utils/thirdFContent.js";
+import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
 import {
     getEffectiveWorkoutAnnouncementText,
 } from "../utils/announcements.js";
@@ -159,6 +159,11 @@ export function renderWorkoutPlanner() {
 
     draftWorkout.announcementMode =
     draftWorkout.announcementMode === "custom"
+        ? "custom"
+        : "auto";
+
+    draftWorkout.thirdFMode =
+    draftWorkout.thirdFMode === "custom"
         ? "custom"
         : "auto";
 
@@ -487,6 +492,9 @@ export function renderWorkoutPlanner() {
             announcementMode: "auto",
             announcementText: "",
             announcementLegacyText: "",
+            thirdFMode: "auto",
+            thirdFText: "",
+            thirdFLegacyText: "",
         };
 
         const sourceThangs = normalizeThangSections(sourceWorkout);
@@ -660,6 +668,10 @@ export function renderWorkoutPlanner() {
         if (draftWorkout.announcementMode !== "custom") {
             draftWorkout.announcementText = "";
         }
+
+        if (draftWorkout.thirdFMode !== "custom") {
+            draftWorkout.thirdFText = "";
+        }
     
         dateDisplay.textContent = formatDate(draftWorkout.date);
     
@@ -733,6 +745,10 @@ export function renderWorkoutPlanner() {
 
         if (draftWorkout.announcementMode !== "custom") {
             draftWorkout.announcementText = "";
+        }
+
+        if (draftWorkout.thirdFMode !== "custom") {
+            draftWorkout.thirdFText = "";
         }
 
         persistDraftNow();
@@ -1021,39 +1037,68 @@ export function renderWorkoutPlanner() {
     const warmoramaTimers = renderTimerList("warmorama");
     const finisherTimers = renderTimerList("finisher");
 
+    const effectiveThirdF = getEffectiveWorkoutThirdF({
+        workout: draftWorkout,
+        thirdFItems: state.plannerThirdFDiscussions || [],
+    });
+
     const notesLabel = document.createElement("div");
     notesLabel.textContent = getWorkoutFieldLabel(state, "notes");
     notesLabel.classList.add("detail-label");
-
-    const thirdFText = buildThirdFContentBlock(
-        state.plannerThirdFDiscussions || [],
-        draftWorkout.date || getTodayDate()
-    );
     
-    const nextNotes = replaceThirdFContentBlock(
-        draftWorkout.notes || "",
-        thirdFText
-    );
-    
-    if (nextNotes !== (draftWorkout.notes || "")) {
-        draftWorkout.notes = nextNotes;
-        persistDraftNow();
-    }
-
     const notesInput = document.createElement("textarea");
     notesInput.classList.add("notes");
     notesInput.value = draftWorkout.notes || "";
-
-    notesInput.addEventListener("input", (event) => {
+    
+    notesInput.addEventListener("input", event => {
         draftWorkout.notes = event.target.value;
         persistDraft();
     });
-
+    
     const notesTemplateControls = createSectionTemplateControls(
         "notes",
         notesInput,
         getWorkoutFieldLabel(state, "notes")
     );
+
+    const thirdFLabel = document.createElement("div");
+    thirdFLabel.textContent = "Third F";
+    thirdFLabel.classList.add("detail-label");
+
+    const thirdFInput = document.createElement("textarea");
+    thirdFInput.classList.add("notes");
+    thirdFInput.placeholder = "Third F discussion";
+
+    thirdFInput.value = effectiveThirdF.text;
+
+    thirdFInput.addEventListener("input", event => {
+        if (draftWorkout.thirdFMode !== "custom") {
+            draftWorkout.thirdFMode = "custom";
+        }
+
+        draftWorkout.thirdFText = event.target.value;
+
+        persistDraftNow();
+
+        resetThirdFButton.hidden = false;
+    });
+
+    const resetThirdFButton = document.createElement("button");
+    resetThirdFButton.type = "button";
+    resetThirdFButton.classList.add("secondary-button");
+    resetThirdFButton.textContent =
+        "Reset to Current Third F";
+
+    resetThirdFButton.hidden =
+        draftWorkout.thirdFMode !== "custom";
+
+    resetThirdFButton.addEventListener("click", () => {
+        draftWorkout.thirdFMode = "auto";
+        draftWorkout.thirdFText = "";
+
+        persistDraftNow();
+        renderApp();
+    });
 
     const shareLabel = document.createElement("div");
     shareLabel.textContent = "Visibility";
@@ -1107,9 +1152,15 @@ export function renderWorkoutPlanner() {
         const effectiveAnnouncements =
             getEffectiveAnnouncements();
     
+        const effectiveThirdF = getEffectiveWorkoutThirdF({
+            workout: draftWorkout,
+            thirdFItems: state.plannerThirdFDiscussions || [],
+        });
+        
         const previewWorkout = {
             ...draftWorkout,
             announcementText: effectiveAnnouncements.text,
+            thirdFText: effectiveThirdF.text,
         };
     
         launchWorkoutPreview(previewWorkout);
@@ -1122,6 +1173,10 @@ export function renderWorkoutPlanner() {
 
         if (!isEditing) {
             draftWorkout.id ||= crypto.randomUUID();
+        }
+
+        if (draftWorkout.thirdFMode !== "custom") {
+            draftWorkout.thirdFText = "";
         }
 
         draftWorkout.createdByUserId ||= state.currentUserId;
@@ -1317,6 +1372,9 @@ export function renderWorkoutPlanner() {
         notesLabel,
         notesInput,
         notesTemplateControls,
+        thirdFLabel,
+        thirdFInput,
+        resetThirdFButton,
         announcementsLabel,
         announcementsInput,
         resetAnnouncementsButton,
