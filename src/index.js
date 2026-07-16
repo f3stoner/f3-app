@@ -713,15 +713,6 @@ async function bootApp() {
 
         state.profileAoPermissions = profileAoPermissions || [];
         state.profileRegionPositions = profileRegionPositions || [];
-        
-        logAppEvent({
-            type: APP_EVENTS.APP_OPENED,
-            metadata: {
-                role: state.currentUserRole,
-                hasLinkedMember: Boolean(state.currentUserMemberId),
-                restoredFromSharedWorkout: Boolean(sharedWorkoutId),
-            },
-        });
 
         if (sharedWorkoutId) {
             state.selectedPlannedWorkoutId = sharedWorkoutId;
@@ -738,13 +729,51 @@ async function bootApp() {
                 state.currentView = "dashboard";
             }
         }
+        
         const renderStartedAt = performance.now();
 
         renderApp();
 
+        const usableAt = performance.now();
+        const renderDurationMs = usableAt - renderStartedAt;
+        const bootDurationMs = usableAt - bootStartedAt;
+
+        const buildId =
+            typeof __BUILD_ID__ !== "undefined"
+                ? __BUILD_ID__
+                : "unknown";
+
+        const navigationEntry =
+            performance.getEntriesByType("navigation")[0] || null;
+
+        const isStandalone =
+            window.matchMedia("(display-mode: standalone)").matches ||
+            window.navigator.standalone === true;
+
         console.log(
-            `renderApp:first: ${(performance.now() - renderStartedAt).toFixed(1)} ms`
+            `renderApp:first: ${renderDurationMs.toFixed(1)} ms`
         );
+
+        logAppEvent({
+            type: APP_EVENTS.APP_OPENED,
+            metadata: {
+                role: state.currentUserRole,
+                hasLinkedMember: Boolean(state.currentUserMemberId),
+                restoredFromSharedWorkout: Boolean(sharedWorkoutId),
+
+                buildId,
+                standalone: isStandalone,
+                navigationType: navigationEntry?.type || null,
+
+                preBootMs: Math.round(bootStartedAt),
+                bootMs: Math.round(bootDurationMs),
+                renderMs: Math.round(renderDurationMs),
+                documentToUsableMs: Math.round(usableAt),
+
+                visibilityState: document.visibilityState,
+                online: navigator.onLine,
+            },
+        });
 
         //hydrateHistoricalBackblastLinks(state.currentRegionId);
 

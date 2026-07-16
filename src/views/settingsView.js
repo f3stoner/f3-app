@@ -268,11 +268,18 @@ buildValue.classList.add(
     "settings-readonly-value"
 );
 
-const buildDate = new Date(__BUILD_ID__);
+const buildId =
+    typeof __BUILD_ID__ !== "undefined"
+        ? __BUILD_ID__
+        : "unknown";
 
-buildValue.textContent = Number.isNaN(buildDate.getTime())
-    ? __BUILD_ID__
-    : buildDate.toLocaleString();
+const buildDate = new Date(buildId);
+
+buildValue.textContent =
+    buildId === "unknown" ||
+    Number.isNaN(buildDate.getTime())
+        ? buildId
+        : buildDate.toLocaleString();
 
 profileSection.append(
         profileHeading,
