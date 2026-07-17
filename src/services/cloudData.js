@@ -962,6 +962,149 @@ export async function setMemberInviters(
     }));
 }
 
+export async function saveSessionCommand(
+    regionId,
+    session,
+    {
+        mode = "create",
+        fngs = [],
+        visitors = [],
+    } = {}
+) {
+    if (!regionId) {
+        throw new Error("Region id is required");
+    }
+
+    if (!session?.id) {
+        throw new Error("Session id is required");
+    }
+
+    if (mode !== "create" && mode !== "update") {
+        throw new Error(
+            `Invalid session save mode: ${mode}`
+        );
+    }
+
+    const commandFngs = (fngs || []).map(fng => ({
+        memberId: fng.memberId || null,
+        realName: fng.realName || "",
+        paxName: fng.paxName || null,
+        inviterIds: Array.isArray(fng.inviterIds)
+            ? [...new Set(fng.inviterIds.filter(Boolean))]
+            : [],
+        invitedById:
+            fng.invitedById ||
+            fng.inviterIds?.[0] ||
+            null,
+        isNew: Boolean(fng.isNew),
+    }));
+
+    const commandVisitors = (visitors || [])
+        .filter(visitor =>
+            String(visitor.f3Name || "").trim()
+        )
+        .map(visitor => ({
+            id: visitor.id || null,
+            f3Name: String(visitor.f3Name || "").trim(),
+            homeRegion:
+                String(visitor.homeRegion || "").trim(),
+            realName:
+                String(visitor.realName || "").trim(),
+        }));
+
+    const sessionPayload = {
+        id: session.id,
+        date: session.date,
+        aoId: session.aoId || null,
+        siteId: session.siteId || null,
+        aoName: session.aoName || "",
+        qIds: session.qIds || [],
+        attendeeIds: session.attendeeIds || [],
+        notes: session.notes || "",
+        workout: session.workout || null,
+        announcementText:
+            typeof session.announcementText === "string"
+                ? session.announcementText
+                : null,
+        announcementSnapshot:
+            session.announcementSnapshot || null,
+        sourcePlannedWorkoutId:
+            session.sourcePlannedWorkoutId || null,
+        sourceQSlotId:
+            session.sourceQSlotId || null,
+        createdAt: session.createdAt || Date.now(),
+        backblastText: session.backblastText || "",
+        backblastStatus:
+            session.backblastStatus || null,
+        backblastPostedAt:
+            session.backblastPostedAt || null,
+        unresolvedPax:
+            session.unresolvedPax || [],
+        weatherSnapshot:
+            session.weatherSnapshot || null,
+        startTime: session.startTime || null,
+        attendanceReviewStatus:
+            session.attendanceReviewStatus ||
+            "not_required",
+        attendanceReviewNotes:
+            session.attendanceReviewNotes || null,
+    };
+
+    const { data, error } = await supabase.rpc(
+        "save_session_command",
+        {
+            p_mode: mode,
+            p_region_id: regionId,
+            p_session: sessionPayload,
+            p_fngs: commandFngs,
+            p_visitors: commandVisitors,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "saveSessionCommand failed:",
+            {
+                mode,
+                regionId,
+                sessionId: session.id,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.session) {
+        throw new Error(
+            "Session command returned no session"
+        );
+    }
+
+    return {
+        session: {
+            ...mapSessionFromDb(data.session),
+            visitors: (data.visitors || []).map(
+                visitor => ({
+                    id: visitor.id,
+                    sessionId: visitor.session_id,
+                    f3Name: visitor.f3_name,
+                    homeRegion:
+                        visitor.home_region || "",
+                    realName: visitor.real_name || "",
+                    createdByUserId:
+                        visitor.created_by_user_id ||
+                        null,
+                    createdAt:
+                        visitor.created_at || null,
+                })
+            ),
+        },
+        fngs: data.fngs || [],
+        visitors: data.visitors || [],
+    };
+}
+
 export async function insertSession(regionId, session) {
     const { data, error } = await supabase
         .from("sessions")

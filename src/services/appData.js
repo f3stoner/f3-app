@@ -20,7 +20,8 @@ import {
     updatePlannedWorkoutInCloud,
     updateSavedPlannerSectionInCloud,
     updateSessionInCloud,
-    loadAdminFlags
+    loadAdminFlags,
+    saveSessionCommand
 } from "./cloudData.js";
 
 export function persistAppData() {
