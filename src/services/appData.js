@@ -23,6 +23,8 @@ import {
     loadAdminFlags,
     saveSessionCommand
 } from "./cloudData.js";
+import { prepareSessionSaveCommand } from "../utils/sessionSaveCommand.js";
+
 
 export function persistAppData() {
     saveState({
@@ -44,61 +46,23 @@ export function persistAppData() {
     });
 }
 
-function normalizeId(id) {
-    return String(id || "").trim();
-}
+async function persistPreparedFngMembers(command) {
 
-function normalizeSessionForSave(session) {
-    const qIds = [...new Set(session.qIds || (session.qId ? [session.qId] : []))]
-        .map(normalizeId)
-        .filter(Boolean);
-
-    const fngMemberIds = (session.fngs || [])
-        .map(fng => normalizeId(fng.memberId))
-        .filter(Boolean);
-
-    const attendeeIds = [
-        ...new Set([
-            ...(session.attendeeIds || []).map(normalizeId),
-            ...qIds,
-            ...fngMemberIds,
-        ]),
-    ].filter(Boolean);
-
-    return {
-        ...session,
-        id: session.id || crypto.randomUUID(),
-        qIds,
-        attendeeIds,
-        fngs: session.fngs || [],
-        visitors: session.visitors || [],
-        notes: session.notes || "",
-        workout: session.workout || null,
-        backblastText: session.backblastText || "",
-        createdAt: session.createdAt || Date.now(),
-        createdByUserId: session.createdByUserId || state.currentUserId,
-    };
-}
-
-async function ensureFngMembersForSession(activeRegionId, session) {
-    const fngs = [];
-
-    for (const fng of session.fngs || []) {
+    for (const fng of command.fngs || []) {
         if (!fng.realName && !fng.paxName) continue;
 
-        if (fng.memberId) {
-            fngs.push(fng);
+        if (!fng.isNew) {
             continue;
         }
 
-        const savedMember = await addMember(
+        await addMember(
             {
-                id: crypto.randomUUID(),
+                id: fng.memberId,
                 realName: fng.realName || "",
                 paxName: fng.paxName || null,
                 status: "active",
                 fngStatus: fng.paxName ? "named" : "unnamed",
-                firstPostDate: session.date || null,
+                firstPostDate: command.session.date || null,
                 inviterIds:
                     fng.inviterIds ||
                     (fng.invitedById
@@ -113,27 +77,7 @@ async function ensureFngMembersForSession(activeRegionId, session) {
                 deferInviterSave: true,
             }
         );
-
-        fngs.push({
-            ...fng,
-            memberId: savedMember.id,
-            inviterIds: savedMember.inviterIds || [],
-            invitedById: savedMember.invitedById || null,
-        });
     }
-
-    const fngMemberIds = fngs
-        .map(fng => normalizeId(fng.memberId))
-        .filter(Boolean);
-
-    return normalizeSessionForSave({
-        ...session,
-        fngs,
-        attendeeIds: [
-            ...(session.attendeeIds || []),
-            ...fngMemberIds,
-        ],
-    });
 }
 
 async function saveSessionFngInviters(session) {
@@ -250,15 +194,13 @@ export async function addSession(session) {
         throw new Error("No active region id");
     }
 
-    const normalizedSession =
-        await ensureFngMembersForSession(
-            activeRegionId,
-            session
-        );
+    const command = prepareSessionSaveCommand(session);
+
+    await persistPreparedFngMembers(command);
 
     const preparedSession =
         await prepareSessionForInsert(
-            normalizedSession,
+            command.session,
             activeRegionId
         );
 
@@ -276,16 +218,16 @@ export async function addSession(session) {
 
     await saveSessionFngInviters({
         ...savedSession,
-        fngs: normalizedSession.fngs,
+        fngs: command.fngs,
     });
 
     await replaceSessionVisitors(
         savedSession.id,
-        normalizedSession.visitors || [],
+        command.visitors || [],
         state.currentUserId
     );
     
-    savedSession.visitors = normalizedSession.visitors || [];
+    savedSession.visitors = command.visitors || [];
     state.sessions.push(savedSession);
     persistAppData();
     return savedSession;
@@ -296,30 +238,29 @@ export async function updateSession(sessionId, updatedSession) {
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
-    const normalizedSession =
-        await ensureFngMembersForSession(
-            activeRegionId,
-            updatedSession
-        );
+
+    const command = prepareSessionSaveCommand(updatedSession);
+
+    await persistPreparedFngMembers(command);
 
     const savedSession =
         await updateSessionInCloud(
             activeRegionId,
-            normalizedSession
+            command.session
         );
 
     await saveSessionFngInviters({
         ...savedSession,
-        fngs: normalizedSession.fngs,
+        fngs: command.fngs,
     });
 
     await replaceSessionVisitors(
         savedSession.id,
-        normalizedSession.visitors || [],
+        command.visitors || [],
         state.currentUserId
     );
     
-    savedSession.visitors = normalizedSession.visitors || [];
+    savedSession.visitors = command.visitors || [];
     
     const index = state.sessions.findIndex(session => session.id === sessionId);
     if (index === -1) return false;
