@@ -47,36 +47,90 @@ export function persistAppData() {
 }
 
 async function persistPreparedFngMembers(command) {
-
     for (const fng of command.fngs || []) {
         if (!fng.realName && !fng.paxName) continue;
 
-        if (!fng.isNew) {
+        if (fng.isNew) {
+            const savedMember = await addMember(
+                {
+                    id: fng.memberId,
+                    realName: fng.realName || "",
+                    paxName: fng.paxName || null,
+                    status: "active",
+                    fngStatus: fng.paxName ? "named" : "unnamed",
+                    firstPostDate: command.session.date || null,
+                    inviterIds:
+                        fng.inviterIds ||
+                        (fng.invitedById
+                            ? [fng.invitedById]
+                            : []),
+                    invitedById:
+                        fng.invitedById ||
+                        fng.inviterIds?.[0] ||
+                        null,
+                },
+                {
+                    deferInviterSave: true,
+                }
+            );
+
+            fng.memberId = savedMember.id;
+            fng.isNew = false;
+
             continue;
         }
 
-        await addMember(
-            {
-                id: fng.memberId,
-                realName: fng.realName || "",
-                paxName: fng.paxName || null,
-                status: "active",
-                fngStatus: fng.paxName ? "named" : "unnamed",
-                firstPostDate: command.session.date || null,
-                inviterIds:
+        const existingMember = state.members.find(
+            member => member.id === fng.memberId
+        );
+
+        if (!existingMember) continue;
+
+        const nextPaxName = fng.paxName || null;
+        const nextRealName = fng.realName || "";
+
+        const nextInviterIds = Array.from(
+            new Set(
+                (
                     fng.inviterIds ||
                     (fng.invitedById
                         ? [fng.invitedById]
-                        : []),
-                invitedById:
-                    fng.invitedById ||
-                    fng.inviterIds?.[0] ||
-                    null,
-            },
-            {
-                deferInviterSave: true,
-            }
-        );
+                        : [])
+                ).filter(Boolean)
+            )
+        ).sort();
+        
+        const existingInviterIds = Array.from(
+            new Set(
+                (
+                    existingMember.inviterIds ||
+                    (existingMember.invitedById
+                        ? [existingMember.invitedById]
+                        : [])
+                ).filter(Boolean)
+            )
+        ).sort();
+        
+        const memberChanged =
+            existingMember.paxName !== nextPaxName ||
+            existingMember.realName !== nextRealName;
+        
+        const invitersChanged =
+            nextInviterIds.length !== existingInviterIds.length ||
+            nextInviterIds.some(
+                (id, index) => id !== existingInviterIds[index]
+            );
+        
+        if (!memberChanged && !invitersChanged) continue;
+        
+        await updateMember(fng.memberId, {
+            ...existingMember,
+            paxName: nextPaxName,
+            realName: nextRealName,
+            fngStatus: nextPaxName ? "named" : "unnamed",
+            inviterIds: nextInviterIds,
+            invitedById: nextInviterIds[0] || null,
+        });
     }
 }
 

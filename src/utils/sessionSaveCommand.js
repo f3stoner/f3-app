@@ -57,12 +57,24 @@ function normalizeVisitors(visitors = []) {
     return visitors
         .map((visitor) => ({
             ...visitor,
-            name: visitor.name?.trim() ?? ""
+            f3Name: String(
+                visitor.f3Name ||
+                visitor.name ||
+                ""
+            ).trim(),
+            homeRegion: String(
+                visitor.homeRegion || ""
+            ).trim(),
         }))
-        .filter((visitor) => visitor.name.length > 0);
+        .filter((visitor) => visitor.f3Name.length > 0);
 }
 
-export function prepareSessionSaveCommand(session, { visitors = [] } = {}) {
+export function prepareSessionSaveCommand(
+    session,
+    {
+        visitors = session.visitors ?? [],
+    } = {}
+) {
     const fngs = normalizeFngs(session.fngs ?? []);
 
     const attendeeIds = normalizeAttendance(
@@ -71,12 +83,18 @@ export function prepareSessionSaveCommand(session, { visitors = [] } = {}) {
         fngs
     );
 
-    return {
-        session: {
-            ...session,
-            attendeeIds
-        },
+    const normalizedVisitors = normalizeVisitors(visitors);
+
+    const normalizedSession = {
+        ...session,
+        attendeeIds,
         fngs,
-        visitors: normalizeVisitors(visitors)
+        visitors: normalizedVisitors,
+    };
+
+    return {
+        session: normalizedSession,
+        fngs,
+        visitors: normalizedVisitors,
     };
 }
