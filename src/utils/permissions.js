@@ -70,7 +70,7 @@ export const ROLE_PERMISSIONS = {
 };
 
 const AO_LEADERSHIP_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
-const AO_INSIGHTS_POSITIONS = ["aoq", "ao_coq", "first_f", "ao_data_q"];
+const AO_INSIGHTS_POSITIONS = ["aoq", "ao_coq", "first_f", "second_f", "third_f", "ao_data_q"];
 const AO_Q_READINESS_POSITIONS = ["aoq", "ao_coq", "first_f"];
 const AO_SESSION_EDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 const AO_MEMBER_MANAGEMENT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
