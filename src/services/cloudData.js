@@ -3790,3 +3790,71 @@ export async function loadOperationsOverview(
         },
     };
 }
+
+export async function loadMembersByIds(
+    regionId,
+    memberIds = []
+) {
+    const cleanIds = [
+        ...new Set(memberIds.filter(Boolean)),
+    ];
+
+    if (!regionId || cleanIds.length === 0) {
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from("members")
+        .select("*")
+        .eq("region_id", regionId)
+        .in("id", cleanIds);
+
+    if (error) throw error;
+
+    const inviterRelationships =
+        await loadMemberInviters(cleanIds);
+
+    const inviterIdsByMemberId = new Map();
+
+    inviterRelationships.forEach(relationship => {
+        const existing =
+            inviterIdsByMemberId.get(
+                relationship.memberId
+            ) || [];
+
+        if (
+            relationship.inviterMemberId &&
+            !existing.includes(
+                relationship.inviterMemberId
+            )
+        ) {
+            existing.push(
+                relationship.inviterMemberId
+            );
+        }
+
+        inviterIdsByMemberId.set(
+            relationship.memberId,
+            existing
+        );
+    });
+
+    return (data || []).map(row => {
+        const member = mapMemberFromDb(row);
+
+        const inviterIds = [
+            ...new Set([
+                member.invitedById,
+                ...(inviterIdsByMemberId.get(
+                    member.id
+                ) || []),
+            ].filter(Boolean)),
+        ];
+
+        return {
+            ...member,
+            inviterIds,
+            invitedById: inviterIds[0] || null,
+        };
+    });
+}

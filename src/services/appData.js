@@ -21,7 +21,8 @@ import {
     updateSavedPlannerSectionInCloud,
     updateSessionInCloud,
     loadAdminFlags,
-    saveSessionCommand
+    saveSessionCommand,
+    loadMembersByIds,
 } from "./cloudData.js";
 import { prepareSessionSaveCommand } from "../utils/sessionSaveCommand.js";
 
@@ -250,40 +251,89 @@ export async function addSession(session) {
 
     const command = prepareSessionSaveCommand(session);
 
-    await persistPreparedFngMembers(command);
-
     const preparedSession =
-        await prepareSessionForInsert(
-            command.session,
-            activeRegionId
+    await prepareSessionForInsert(
+        command.session,
+        activeRegionId
+    );
+
+    const attendeeIds =
+    preparedSession.attendeeIds || [];
+
+const qIds =
+    preparedSession.qIds ||
+    (preparedSession.qId
+        ? [preparedSession.qId]
+        : []);
+
+const fngMemberIds = (command.fngs || [])
+    .map(fng => fng.memberId)
+    .filter(Boolean);
+
+console.group("SESSION COMMAND ATTENDEE DEBUG");
+
+console.log({
+    activeRegionId,
+    sessionId: preparedSession.id,
+    sourcePlannedWorkoutId:
+        preparedSession.sourcePlannedWorkoutId,
+    qSlotId: preparedSession.qSlotId,
+    attendeeIds,
+    qIds,
+    fngMemberIds,
+});
+
+console.table(
+    attendeeIds.map(id => {
+        const member = state.members.find(
+            candidate => candidate.id === id
         );
 
-    console.log("addSession RLS debug", {
-        activeRegionId: state.currentRegionId,
-        currentUserId: state.currentUserId,
-        profileRegionId: state.profileRegionId,
-        regionName: state.regionName,
-    });
+        return {
+            id,
+            foundInState: Boolean(member),
+            paxName: member?.paxName || "",
+            realName: member?.realName || "",
+            memberRegionId:
+                member?.regionId ||
+                member?.region_id ||
+                "",
+            activeRegionId,
+            isQ: qIds.includes(id),
+            isFng: fngMemberIds.includes(id),
+        };
+    })
+);
 
-    const savedSession = await insertSession(
+console.groupEnd();
+
+    const result = await saveSessionCommand(
         activeRegionId,
-        preparedSession
-    );
-
-    await saveSessionFngInviters({
-        ...savedSession,
-        fngs: command.fngs,
-    });
-
-    await replaceSessionVisitors(
-        savedSession.id,
-        command.visitors || [],
-        state.currentUserId
+        preparedSession,
+        {
+            mode: "create",
+            fngs: command.fngs,
+            visitors: command.visitors,
+        }
     );
     
-    savedSession.visitors = command.visitors || [];
+    const savedSession = result.session;
+    
+    const affectedMemberIds = command.fngs
+        .map(fng => fng.memberId)
+        .filter(Boolean);
+    
+    const refreshedMembers =
+        await loadMembersByIds(
+            activeRegionId,
+            affectedMemberIds
+        );
+    
+    mergeMembersIntoState(refreshedMembers);
+    
     state.sessions.push(savedSession);
     persistAppData();
+    
     return savedSession;
 }
 
@@ -295,26 +345,35 @@ export async function updateSession(sessionId, updatedSession) {
 
     const command = prepareSessionSaveCommand(updatedSession);
 
-    await persistPreparedFngMembers(command);
+    const preparedSession =
+    await prepareSessionForInsert(
+        command.session,
+        activeRegionId
+    );
 
-    const savedSession =
-        await updateSessionInCloud(
+    const result = await saveSessionCommand(
+        activeRegionId,
+        preparedSession,
+        {
+            mode: "update",
+            fngs: command.fngs,
+            visitors: command.visitors,
+        }
+    );
+
+    const savedSession = result.session;
+
+    const affectedMemberIds = command.fngs
+        .map(fng => fng.memberId)
+        .filter(Boolean);
+
+    const refreshedMembers =
+        await loadMembersByIds(
             activeRegionId,
-            command.session
+            affectedMemberIds
         );
 
-    await saveSessionFngInviters({
-        ...savedSession,
-        fngs: command.fngs,
-    });
-
-    await replaceSessionVisitors(
-        savedSession.id,
-        command.visitors || [],
-        state.currentUserId
-    );
-    
-    savedSession.visitors = command.visitors || [];
+    mergeMembersIntoState(refreshedMembers);
     
     const index = state.sessions.findIndex(session => session.id === sessionId);
     if (index === -1) return false;
@@ -695,4 +754,19 @@ export async function deleteSavedPlannerSection(sectionId) {
     );
 
     persistAppData();
+}
+
+function mergeMembersIntoState(members = []) {
+    members.forEach(savedMember => {
+        const index = state.members.findIndex(
+            member => member.id === savedMember.id
+        );
+
+        if (index === -1) {
+            state.members.push(savedMember);
+            return;
+        }
+
+        state.members[index] = savedMember;
+    });
 }
