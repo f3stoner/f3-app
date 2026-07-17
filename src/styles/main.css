@@ -6322,3 +6322,23 @@ button.leadership-action-card:disabled {
         animation: none;
     }
 }
+
+.insights-bar-row-positive .insights-bar-fill {
+    background: var(--success);
+}
+
+.insights-bar-row-negative .insights-bar-fill {
+    background: var(--danger);
+}
+
+.insights-bar-row-neutral .insights-bar-fill {
+    background: var(--primary);
+}
+
+.insights-bar-row-positive .insights-bar-subtitle {
+    color: var(--success);
+}
+
+.insights-bar-row-negative .insights-bar-subtitle {
+    color: var(--danger);
+}

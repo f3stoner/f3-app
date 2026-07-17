@@ -4,6 +4,7 @@ export function createHorizontalBarChartSection({
     getLabel,
     getValue,
     getSubtitle,
+    getTone,
     onItemClick,
     initialCount = null,
 }) {
@@ -47,6 +48,12 @@ export function createHorizontalBarChartSection({
             );
     
             row.classList.add("insights-bar-row");
+
+            const tone = getTone?.(item);
+
+            if (tone) {
+                row.classList.add(`insights-bar-row-${tone}`);
+            }
     
             if (onItemClick) {
                 row.type = "button";

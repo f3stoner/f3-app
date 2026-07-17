@@ -15,6 +15,7 @@ import {
     getRosteredAttendanceIdSet,
     getTotalAttendanceCount,
 } from "../utils/sessionAttendance.js";
+import { createHorizontalBarChartSection } from "../components/regionInsights/charts.js";
 
 const AO_INSIGHT_LOOKBACK_DAYS = 180;
 
@@ -552,6 +553,130 @@ function createInsightsNav(insights) {
     return nav;
 }
 
+const WEEKDAY_DEFINITIONS = [
+    { dayIndex: 1, label: "Monday" },
+    { dayIndex: 2, label: "Tuesday" },
+    { dayIndex: 3, label: "Wednesday" },
+    { dayIndex: 4, label: "Thursday" },
+    { dayIndex: 5, label: "Friday" },
+    { dayIndex: 6, label: "Saturday" },
+    { dayIndex: 0, label: "Sunday" },
+];
+
+function getSessionsInDateRange(sessions, startDate, endDate) {
+    return sessions.filter(session => {
+        if (!session.date) return false;
+
+        return (
+            session.date >= startDate &&
+            session.date <= endDate
+        );
+    });
+}
+
+function getWeekdayAttendanceAverages(sessions) {
+    const attendanceByDay = new Map();
+
+    sessions.forEach(session => {
+        if (!session.date) return;
+
+        const date = new Date(`${session.date}T00:00:00`);
+        const dayIndex = date.getDay();
+
+        const current = attendanceByDay.get(dayIndex) || {
+            totalAttendance: 0,
+            sessionCount: 0,
+        };
+
+        current.totalAttendance += getTotalAttendanceCount(session);
+        current.sessionCount += 1;
+
+        attendanceByDay.set(dayIndex, current);
+    });
+
+    return WEEKDAY_DEFINITIONS.map(({ dayIndex, label }) => {
+        const totals = attendanceByDay.get(dayIndex);
+
+        return {
+            dayIndex,
+            label,
+            sessionCount: totals?.sessionCount || 0,
+            averageAttendance: totals?.sessionCount
+                ? Math.round(
+                    (
+                        totals.totalAttendance /
+                        totals.sessionCount
+                    ) * 10
+                ) / 10
+                : null,
+        };
+    });
+}
+
+function buildWeekdayAttendanceComparison({
+    currentSessions,
+    historySessions,
+    startDate,
+}) {
+    const previousMonthStart = shiftMonth(startDate, -1);
+    const previousMonthEnd = getMonthEnd(previousMonthStart);
+
+    const previousSessions = getSessionsInDateRange(
+        historySessions,
+        previousMonthStart,
+        previousMonthEnd
+    );
+
+    const currentAverages =
+        getWeekdayAttendanceAverages(currentSessions);
+
+    const previousAverages =
+        getWeekdayAttendanceAverages(previousSessions);
+
+    const previousByDay = new Map(
+        previousAverages.map(item => [
+            item.dayIndex,
+            item,
+        ])
+    );
+
+    return currentAverages
+        .filter(item => item.sessionCount > 0)
+        .map(item => {
+            const previous = previousByDay.get(item.dayIndex);
+
+            const previousAverage =
+                previous?.averageAttendance ?? null;
+
+            const delta =
+                previousAverage === null
+                    ? null
+                    : Math.round(
+                        (
+                            item.averageAttendance -
+                            previousAverage
+                        ) * 10
+                    ) / 10;
+
+            let tone = "neutral";
+
+            if (delta !== null && delta >= 1) {
+                tone = "positive";
+            } else if (delta !== null && delta <= -1) {
+                tone = "negative";
+            }
+
+            return {
+                ...item,
+                previousAverage,
+                previousSessionCount:
+                    previous?.sessionCount || 0,
+                delta,
+                tone,
+            };
+        });
+}
+
 function buildAoInsights({
     aoId,
     aoName,
@@ -674,6 +799,13 @@ function buildAoInsights({
         healthSubtitle = "Multiple regular PAX may be ready to step into Qing.";
     }
 
+    const weekdayAttendanceComparison =
+        buildWeekdayAttendanceComparison({
+            currentSessions: sessions,
+            historySessions,
+            startDate,
+    });
+
     return {
         aoId,
         aoName,
@@ -697,6 +829,7 @@ function buildAoInsights({
         strongEmergingQs,
         attendanceInsight,
         newPaxPipelineInsight,
+        weekdayAttendanceComparison,
     };
 }
 
@@ -939,6 +1072,43 @@ export async function renderAoInsightsView() {
 
     const overviewSection = createSection("AO Snapshot", overviewGrid);
 
+    const weekdayAttendanceSection =
+        createHorizontalBarChartSection({
+            title: "Average Attendance by Weekday",
+            items: insights.weekdayAttendanceComparison,
+            getLabel: item => item.label,
+            getValue: item => item.averageAttendance,
+            getTone: item => item.tone,
+            getSubtitle: item => {
+                const sessionLabel =
+                    `${item.sessionCount} ${
+                        item.sessionCount === 1
+                            ? "session"
+                            : "sessions"
+                    }`;
+
+                if (item.delta === null) {
+                    return `${sessionLabel} · No previous-month data`;
+                }
+
+                if (item.delta > 0) {
+                    return (
+                        `${sessionLabel} · ▲ +${item.delta} ` +
+                        `vs previous month`
+                    );
+                }
+
+                if (item.delta < 0) {
+                    return (
+                        `${sessionLabel} · ▼ ${item.delta} ` +
+                        `vs previous month`
+                    );
+                }
+
+                return `${sessionLabel} · No change vs previous month`;
+            },
+    });
+
     const leadershipList = document.createElement("div");
     leadershipList.classList.add("insights-list");
 
@@ -1086,6 +1256,7 @@ export async function renderAoInsightsView() {
         attendanceBriefing,
         newPaxPipelineBriefing,
         overviewSection,
+        weekdayAttendanceSection,
         leadershipSection,
         qRotationSection,
         pipelineSection,
