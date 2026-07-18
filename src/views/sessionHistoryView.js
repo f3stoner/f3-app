@@ -72,16 +72,22 @@ export function renderSessionHistory() {
         .sort((a, b) => a.name.localeCompare(b.name))
         .forEach(ao => {
             const option = document.createElement("option");
-            option.value = ao.name;
+            option.value = ao.id;
             option.textContent = ao.name;
             aoSelect.appendChild(option);
         });
 
-    aoSelect.value = state.sessionHistoryAoFilter?.aoName || "";
+    aoSelect.value = state.sessionHistoryAoFilter?.aoId || "";
 
     aoSelect.addEventListener("change", (event) => {
-        state.sessionHistoryAoFilter = event.target.value
-            ? { aoName: event.target.value }
+        const aoId = event.target.value;
+        const selectedAo = state.aos.find(ao => ao.id === aoId);
+
+        state.sessionHistoryAoFilter = aoId
+            ? {
+                aoId,
+                aoName: selectedAo?.name || "",
+            }
             : null;
 
         renderSessionList();
@@ -276,8 +282,8 @@ function renderSessionList() {
 
         if (state.sessionHistoryAoFilter) {
             const matchesAo =
-                !state.sessionHistoryAoFilter.aoName ||
-                session.aoName === state.sessionHistoryAoFilter.aoName;
+                !state.sessionHistoryAoFilter.aoId ||
+                session.aoId === state.sessionHistoryAoFilter.aoId;
         
             const matchesDate =
                 (!state.sessionHistoryAoFilter.startDate ||
