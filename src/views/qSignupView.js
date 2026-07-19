@@ -20,7 +20,7 @@ import { hasPermission, PERMISSIONS, managesAo } from "../utils/permissions.js";
 import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
-import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 
 
 let qSlotRealtimeChannel = null;
@@ -965,8 +965,14 @@ export function renderQSignupView() {
 
                     if (hasPlannedWorkout) {
                         if (!matchingWorkout.isFinalized) {
+                    
+                            savePlannerDraft(
+                                createExistingPlannerDraft(matchingWorkout)
+                            );
+                    
                             state.editingPlannedWorkoutId = matchingWorkout.id;
                             state.selectedPlannedWorkoutId = null;
+                    
                             navigateTo("workoutPlanner");
                             return;
                         }

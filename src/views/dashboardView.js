@@ -28,7 +28,7 @@ import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { getDashboardLeadershipBadge } from "../utils/leadership.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 
 function createBlankWorkout({
     date = getTodayDate(),
@@ -801,10 +801,15 @@ export function renderDashboard() {
             actionButton.addEventListener("click", event => {
                 event.stopPropagation();
         
+                savePlannerDraft(
+                    createExistingPlannerDraft(matchingWorkout)
+                );
+                
                 state.editingPlannedWorkoutId = matchingWorkout.id;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
+                
                 navigateTo("workoutPlanner");
             });
         
@@ -1247,10 +1252,16 @@ export function renderDashboard() {
                     navigateTo("workoutPlanner");
                 } else {
                     if (!matchingWorkout.isFinalized) {
+
+                        savePlannerDraft(
+                            createExistingPlannerDraft(matchingWorkout)
+                        );
+                    
                         state.editingPlannedWorkoutId = matchingWorkout.id;
                         state.selectedPlannedWorkoutId = null;
                         state.returnToViewAfterPlanner = "dashboard";
                         state.returnToLaunchModeAfterPlanner = null;
+                    
                         navigateTo("workoutPlanner");
                         return;
                     }

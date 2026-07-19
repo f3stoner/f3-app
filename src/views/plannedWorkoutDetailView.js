@@ -20,7 +20,7 @@ import { getEffectiveWorkoutAnnouncementText } from "../utils/announcements.js";
 import { loadPlannerAnnouncements } from "../services/cloudData.js";
 import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
-import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -1212,8 +1212,14 @@ export function renderPlannedWorkoutDetail() {
         }
 
         state.plannedWorkoutLaunchMode = null;
+
+        savePlannerDraft(
+            createExistingPlannerDraft(workout)
+        );
+
         state.editingPlannedWorkoutId = workout.id;
-        navigateTo("workoutPlanner")
+
+        navigateTo("workoutPlanner");
     });
 
     const logButton = document.createElement("button");
