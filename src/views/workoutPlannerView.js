@@ -84,9 +84,19 @@ export function renderWorkoutPlanner() {
             });
     }
 
-    let isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
     let plannerDraft = getPlannerDraft();
+
+    const plannerOrigin = plannerDraft?.origin ?? null;
+
+    const legacyEditingWorkoutId =
+        state.editingPlannedWorkoutId;
+
+    let isEditing =
+        plannerOrigin?.kind === "existing";
+
+    let editingWorkoutId =
+        plannerOrigin?.workoutId ?? null;
 
     function returnAfterPlanner(fallbackView = "dashboard") {
         const returnView = state.returnToViewAfterPlanner || fallbackView;
@@ -104,13 +114,17 @@ export function renderWorkoutPlanner() {
 
     if (plannerDraft) {
         draftWorkout = { ...plannerDraft.content };
-    } else if (isEditing) {
-        const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
+    } else if (legacyEditingWorkoutId) {
+        const existingWorkout = state.plannedWorkouts.find(workout => workout.id === legacyEditingWorkoutId);
         draftWorkout = { ...existingWorkout };
 
         plannerDraft = savePlannerDraft(
             createExistingPlannerDraft(draftWorkout)
         );
+
+        // bring planner into canonical mode
+        isEditing = true;
+        editingWorkoutId = legacyEditingWorkoutId;
 
     } else {
         const plannerDate = state.pendingPlannerDate || getTodayDate();
@@ -141,7 +155,7 @@ export function renderWorkoutPlanner() {
     
         if (existingWorkout) {
             isEditing = true;
-            state.editingPlannedWorkoutId = draftWorkout.id;
+            editingWorkoutId = draftWorkout.id;
         }
     }
 
@@ -152,8 +166,8 @@ export function renderWorkoutPlanner() {
                 ? {
                     kind: "existing",
                     workoutId:
-                        state.editingPlannedWorkoutId ||
-                        draftWorkout.id ||
+                        editingWorkoutId ??
+                        draftWorkout.id ??
                         null,
                 }
                 : {
@@ -1226,7 +1240,9 @@ export function renderWorkoutPlanner() {
             prepareWorkoutForSave({ finalized });
     
             if (isEditing) {
-                const workoutId = state.editingPlannedWorkoutId || draftWorkout.id;
+                const workoutId =
+                    editingWorkoutId ||
+                    draftWorkout.id;
             
                 const workoutToSave = {
                     ...draftWorkout,
@@ -1236,7 +1252,12 @@ export function renderWorkoutPlanner() {
                 await updatePlannedWorkout(workoutId, workoutToSave);
             } else {
                 await addPlannedWorkout(draftWorkout);
+
                 isEditing = true;
+                editingWorkoutId = draftWorkout.id;
+
+                // compatibility
+                state.editingPlannedWorkoutId = draftWorkout.id;
             }
     
             if (!finalized) {
