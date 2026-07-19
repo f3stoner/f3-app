@@ -87,7 +87,7 @@ export function renderWorkoutPlanner() {
     let isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
 
-    getPlannerDraft();
+    const restoredPlannerDraft = getPlannerDraft();
 
     function returnAfterPlanner(fallbackView = "dashboard") {
         const returnView = state.returnToViewAfterPlanner || fallbackView;
@@ -103,8 +103,8 @@ export function renderWorkoutPlanner() {
         renderApp();
     }
 
-    if (state.draftPlannedWorkout) {
-        draftWorkout = { ...state.draftPlannedWorkout };
+    if (restoredPlannerDraft) {
+        draftWorkout = { ...restoredPlannerDraft.content };
     } else if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
