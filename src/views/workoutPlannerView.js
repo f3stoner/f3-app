@@ -86,8 +86,7 @@ export function renderWorkoutPlanner() {
 
     let isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
-
-    const restoredPlannerDraft = getPlannerDraft();
+    let plannerDraft = getPlannerDraft();
 
     function returnAfterPlanner(fallbackView = "dashboard") {
         const returnView = state.returnToViewAfterPlanner || fallbackView;
@@ -103,13 +102,13 @@ export function renderWorkoutPlanner() {
         renderApp();
     }
 
-    if (restoredPlannerDraft) {
-        draftWorkout = { ...restoredPlannerDraft.content };
+    if (plannerDraft) {
+        draftWorkout = { ...plannerDraft.content };
     } else if (isEditing) {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
 
-        savePlannerDraft({ ...draftWorkout });
+        plannerDraft = savePlannerDraft({ ...draftWorkout });
 
     } else {
         const plannerDate = state.pendingPlannerDate || getTodayDate();
@@ -128,7 +127,7 @@ export function renderWorkoutPlanner() {
         state.pendingPlannerAoId = null;
         state.pendingPlannerQSlotId = null;
 
-        savePlannerDraft({ ...draftWorkout });
+        plannerDraft = savePlannerDraft({ ...draftWorkout });
     }
 
     if (!isEditing && draftWorkout?.id) {
@@ -140,6 +139,35 @@ export function renderWorkoutPlanner() {
             isEditing = true;
             state.editingPlannedWorkoutId = draftWorkout.id;
         }
+    }
+
+    function buildCurrentPlannerDraft() {
+        return {
+            ...plannerDraft,
+            origin: isEditing
+                ? {
+                    kind: "existing",
+                    workoutId:
+                        state.editingPlannedWorkoutId ||
+                        draftWorkout.id ||
+                        null,
+                }
+                : {
+                    kind: "new",
+                    workoutId: null,
+                },
+            content: {
+                ...draftWorkout,
+                thangSections: normalizeThangSections(draftWorkout),
+                thangs: serializeThangSections(
+                    normalizeThangSections(draftWorkout)
+                ),
+            },
+            sync: {
+                ...plannerDraft?.sync,
+                status: plannerDraft?.sync?.status || "editing",
+            },
+        };
     }
 
     draftWorkout.announcementMode =
@@ -164,26 +192,32 @@ export function renderWorkoutPlanner() {
 
     function persistDraft() {
         draftWorkout.thangSections = normalizeThangSections(draftWorkout);
-        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+        draftWorkout.thangs = serializeThangSections(
+            draftWorkout.thangSections
+        );
     
-        state.draftPlannedWorkout = { ...draftWorkout };
+        plannerDraft = buildCurrentPlannerDraft();
+        state.draftPlannedWorkout = plannerDraft;
     
         cancelPendingDraftWrite();
     
         persistDraftTimeout = setTimeout(() => {
-            savePlannerDraft(state.draftPlannedWorkout);
+            plannerDraft = savePlannerDraft(plannerDraft);
         }, 300);
     }
 
     function persistDraftNow() {
         draftWorkout.thangSections = normalizeThangSections(draftWorkout);
-        draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
+        draftWorkout.thangs = serializeThangSections(
+            draftWorkout.thangSections
+        );
     
-        state.draftPlannedWorkout = { ...draftWorkout };
+        plannerDraft = buildCurrentPlannerDraft();
+        state.draftPlannedWorkout = plannerDraft;
     
         cancelPendingDraftWrite();
     
-        savePlannerDraft(state.draftPlannedWorkout);
+        plannerDraft = savePlannerDraft(plannerDraft);
     }
 
     function createSectionTemplateControls(sectionType, input, labelText, targetThangId = null) {
@@ -499,7 +533,16 @@ export function renderWorkoutPlanner() {
             section: thangIdMap.get(timer.section) || timer.section,
         }));
     
-        savePlannerDraft(copiedWorkout);
+        savePlannerDraft({
+            origin: {
+                kind: "new",
+                workoutId: null,
+            },
+            content: copiedWorkout,
+            sync: {
+                status: "editing",
+            },
+        });
     
         state.workoutBrowseModalOpen = false;
         state.selectedWorkoutPreviewId = null;
@@ -1116,7 +1159,9 @@ export function renderWorkoutPlanner() {
             draftWorkout.thangSections
         );
     
-        savePlannerDraft({ ...draftWorkout });
+        plannerDraft = savePlannerDraft(
+            buildCurrentPlannerDraft()
+        );
     
         const effectiveAnnouncements =
             getEffectiveAnnouncements();
@@ -1202,7 +1247,9 @@ export function renderWorkoutPlanner() {
             
                 state.editingPlannedWorkoutId = draftWorkout.id;
 
-                savePlannerDraft({ ...draftWorkout });
+                plannerDraft = savePlannerDraft(
+                    buildCurrentPlannerDraft()
+                );
             
                 renderApp();
                 return;
