@@ -2091,7 +2091,9 @@ export function unsubscribeFromChannel(channelOrKey) {
     supabase.removeChannel(channelOrKey);
 }
 
-export function getAffectedMemberIdsFromSession(session) {
+export function getAffectedMemberIdsFromSession(
+    session
+) {
     const ids = new Set();
 
     (session?.attendeeIds || []).forEach(id => {
@@ -2103,12 +2105,21 @@ export function getAffectedMemberIdsFromSession(session) {
     });
 
     (session?.fngs || []).forEach(fng => {
+        const fngMemberId =
+            fng?.memberId ||
+            fng?.member_id ||
+            null;
+
+        if (fngMemberId) {
+            ids.add(fngMemberId);
+        }
+
         const inviterIds = [
             ...(fng?.inviterIds || []),
             fng?.invitedById,
             fng?.invited_by_id,
         ].filter(Boolean);
-    
+
         inviterIds.forEach(id => ids.add(id));
     });
 
@@ -2630,7 +2641,7 @@ export async function loadAttendanceReviewSessions(regionId) {
     return (data || []).map(mapSessionFromDb);
 }
 
-export async function updateSessionAttendanceReviewStatus(regionId, sessionId, status, notes = null) {
+export async function AttendanceReviewStatus(regionId, sessionId, status, notes = null) {
     const { data, error } = await supabase
         .from("sessions")
         .update({

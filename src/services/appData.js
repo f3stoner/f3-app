@@ -23,6 +23,8 @@ import {
     loadAdminFlags,
     saveSessionCommand,
     loadMembersByIds,
+    rebuildMemberStatsForMembers,
+    getAffectedMemberIdsFromSession
 } from "./cloudData.js";
 import { prepareSessionSaveCommand } from "../utils/sessionSaveCommand.js";
 
@@ -258,54 +260,54 @@ export async function addSession(session) {
     );
 
     const attendeeIds =
-    preparedSession.attendeeIds || [];
+        preparedSession.attendeeIds || [];
 
-const qIds =
-    preparedSession.qIds ||
-    (preparedSession.qId
-        ? [preparedSession.qId]
-        : []);
+    const qIds =
+        preparedSession.qIds ||
+        (preparedSession.qId
+            ? [preparedSession.qId]
+            : []);
 
-const fngMemberIds = (command.fngs || [])
-    .map(fng => fng.memberId)
-    .filter(Boolean);
+    const fngMemberIds = (command.fngs || [])
+        .map(fng => fng.memberId)
+        .filter(Boolean);
 
-console.group("SESSION COMMAND ATTENDEE DEBUG");
+    console.group("SESSION COMMAND ATTENDEE DEBUG");
 
-console.log({
-    activeRegionId,
-    sessionId: preparedSession.id,
-    sourcePlannedWorkoutId:
-        preparedSession.sourcePlannedWorkoutId,
-    qSlotId: preparedSession.qSlotId,
-    attendeeIds,
-    qIds,
-    fngMemberIds,
-});
+    console.log({
+        activeRegionId,
+        sessionId: preparedSession.id,
+        sourcePlannedWorkoutId:
+            preparedSession.sourcePlannedWorkoutId,
+        qSlotId: preparedSession.qSlotId,
+        attendeeIds,
+        qIds,
+        fngMemberIds,
+    });
 
-console.table(
-    attendeeIds.map(id => {
-        const member = state.members.find(
-            candidate => candidate.id === id
-        );
+    console.table(
+        attendeeIds.map(id => {
+            const member = state.members.find(
+                candidate => candidate.id === id
+            );
 
-        return {
-            id,
-            foundInState: Boolean(member),
-            paxName: member?.paxName || "",
-            realName: member?.realName || "",
-            memberRegionId:
-                member?.regionId ||
-                member?.region_id ||
-                "",
-            activeRegionId,
-            isQ: qIds.includes(id),
-            isFng: fngMemberIds.includes(id),
-        };
-    })
-);
+            return {
+                id,
+                foundInState: Boolean(member),
+                paxName: member?.paxName || "",
+                realName: member?.realName || "",
+                memberRegionId:
+                    member?.regionId ||
+                    member?.region_id ||
+                    "",
+                activeRegionId,
+                isQ: qIds.includes(id),
+                isFng: fngMemberIds.includes(id),
+            };
+        })
+    );
 
-console.groupEnd();
+    console.groupEnd();
 
     const result = await saveSessionCommand(
         activeRegionId,
@@ -316,8 +318,20 @@ console.groupEnd();
             visitors: command.visitors,
         }
     );
-    
+
     const savedSession = result.session;
+
+    try {
+        await rebuildMemberStatsForMembers(
+            activeRegionId,
+            getAffectedMemberIdsFromSession(savedSession)
+        );
+    } catch (error) {
+        console.warn(
+            "Session saved, but member stats rebuild failed:",
+            error
+        );
+    }
     
     const affectedMemberIds = command.fngs
         .map(fng => fng.memberId)
@@ -337,19 +351,38 @@ console.groupEnd();
     return savedSession;
 }
 
-export async function updateSession(sessionId, updatedSession) {
+export async function updateSession(
+    sessionId,
+    updatedSession
+) {
     const activeRegionId = state.currentRegionId;
+
     if (!activeRegionId) {
         throw new Error("No active region id");
     }
 
-    const command = prepareSessionSaveCommand(updatedSession);
+    if (
+        updatedSession.id &&
+        updatedSession.id !== sessionId
+    ) {
+        throw new Error("Session id mismatch");
+    }
+
+    const existingSession =
+        state.sessions.find(
+            session => session.id === sessionId
+        ) || null;
+
+    const command = prepareSessionSaveCommand({
+        ...updatedSession,
+        id: sessionId,
+    });
 
     const preparedSession =
-    await prepareSessionForInsert(
-        command.session,
-        activeRegionId
-    );
+        await prepareSessionForInsert(
+            command.session,
+            activeRegionId
+        );
 
     const result = await saveSessionCommand(
         activeRegionId,
@@ -363,23 +396,51 @@ export async function updateSession(sessionId, updatedSession) {
 
     const savedSession = result.session;
 
-    const affectedMemberIds = command.fngs
+    const affectedStatsMemberIds = [
+        ...new Set([
+            ...getAffectedMemberIdsFromSession(
+                existingSession
+            ),
+            ...getAffectedMemberIdsFromSession(
+                savedSession
+            ),
+        ]),
+    ];
+
+    try {
+        await rebuildMemberStatsForMembers(
+            activeRegionId,
+            affectedStatsMemberIds
+        );
+    } catch (error) {
+        console.warn(
+            "Session saved, but member stats rebuild failed:",
+            error
+        );
+    }
+
+    const affectedFngMemberIds = command.fngs
         .map(fng => fng.memberId)
         .filter(Boolean);
 
     const refreshedMembers =
         await loadMembersByIds(
             activeRegionId,
-            affectedMemberIds
+            affectedFngMemberIds
         );
 
     mergeMembersIntoState(refreshedMembers);
-    
-    const index = state.sessions.findIndex(session => session.id === sessionId);
+
+    const index = state.sessions.findIndex(
+        session => session.id === sessionId
+    );
+
     if (index === -1) return false;
 
     state.sessions[index] = savedSession;
+
     persistAppData();
+
     return true;
 }
 
