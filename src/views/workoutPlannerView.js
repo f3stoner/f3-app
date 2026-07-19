@@ -22,6 +22,7 @@ import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
 import {
     getEffectiveWorkoutAnnouncementText,
 } from "../utils/announcements.js";
+import { getPlannerDraft, savePlannerDraft, clearPlannerDraft } from "../services/plannerDraftRepository.js";
 
 let persistDraftTimeout = null;
 
@@ -86,13 +87,7 @@ export function renderWorkoutPlanner() {
     let isEditing = Boolean(state.editingPlannedWorkoutId);
     let draftWorkout;
 
-    const SAVED_PLANNED_WORKOUT_DRAFT_KEY = "draftPlannedWorkout";
-
-    const savedDraft = localStorage.getItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
-
-    if (!state.draftPlannedWorkout && savedDraft) {
-        state.draftPlannedWorkout = JSON.parse(savedDraft);
-    }
+    getPlannerDraft();
 
     function returnAfterPlanner(fallbackView = "dashboard") {
         const returnView = state.returnToViewAfterPlanner || fallbackView;
@@ -101,11 +96,10 @@ export function renderWorkoutPlanner() {
         state.returnToViewAfterPlanner = null;
         state.returnToLaunchModeAfterPlanner = null;
         state.editingPlannedWorkoutId = null;
-        state.draftPlannedWorkout = null;
         state.plannedWorkoutLaunchMode = returnLaunchMode || null;
         state.currentView = returnView;
         cancelPendingDraftWrite();
-        localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
+        clearPlannerDraft();
         renderApp();
     }
 
@@ -115,12 +109,8 @@ export function renderWorkoutPlanner() {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
 
-        state.draftPlannedWorkout = { ...draftWorkout };
+        savePlannerDraft({ ...draftWorkout });
 
-        localStorage.setItem(
-            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-            JSON.stringify(state.draftPlannedWorkout)
-        );
     } else {
         const plannerDate = state.pendingPlannerDate || getTodayDate();
         const plannerAoName = state.pendingPlannerAoName || "";
@@ -138,12 +128,7 @@ export function renderWorkoutPlanner() {
         state.pendingPlannerAoId = null;
         state.pendingPlannerQSlotId = null;
 
-        state.draftPlannedWorkout = { ...draftWorkout };
-
-        localStorage.setItem(
-            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-            JSON.stringify(state.draftPlannedWorkout)
-        );
+        savePlannerDraft({ ...draftWorkout });
     }
 
     if (!isEditing && draftWorkout?.id) {
@@ -180,16 +165,13 @@ export function renderWorkoutPlanner() {
     function persistDraft() {
         draftWorkout.thangSections = normalizeThangSections(draftWorkout);
         draftWorkout.thangs = serializeThangSections(draftWorkout.thangSections);
-
+    
         state.draftPlannedWorkout = { ...draftWorkout };
-
+    
         cancelPendingDraftWrite();
-
+    
         persistDraftTimeout = setTimeout(() => {
-            localStorage.setItem(
-                SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-                JSON.stringify(state.draftPlannedWorkout)
-            );
+            savePlannerDraft(state.draftPlannedWorkout);
         }, 300);
     }
 
@@ -201,10 +183,7 @@ export function renderWorkoutPlanner() {
     
         cancelPendingDraftWrite();
     
-        localStorage.setItem(
-            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-            JSON.stringify(state.draftPlannedWorkout)
-        );
+        savePlannerDraft(state.draftPlannedWorkout);
     }
 
     function createSectionTemplateControls(sectionType, input, labelText, targetThangId = null) {
@@ -520,12 +499,7 @@ export function renderWorkoutPlanner() {
             section: thangIdMap.get(timer.section) || timer.section,
         }));
     
-        state.draftPlannedWorkout = copiedWorkout;
-    
-        localStorage.setItem(
-            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-            JSON.stringify(copiedWorkout)
-        );
+        savePlannerDraft(copiedWorkout);
     
         state.workoutBrowseModalOpen = false;
         state.selectedWorkoutPreviewId = null;
@@ -1142,12 +1116,7 @@ export function renderWorkoutPlanner() {
             draftWorkout.thangSections
         );
     
-        state.draftPlannedWorkout = { ...draftWorkout };
-    
-        localStorage.setItem(
-            SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-            JSON.stringify(state.draftPlannedWorkout)
-        );
+        savePlannerDraft({ ...draftWorkout });
     
         const effectiveAnnouncements =
             getEffectiveAnnouncements();
@@ -1232,12 +1201,8 @@ export function renderWorkoutPlanner() {
                 showToast("Draft saved.", "success");
             
                 state.editingPlannedWorkoutId = draftWorkout.id;
-                state.draftPlannedWorkout = { ...draftWorkout };
-            
-                localStorage.setItem(
-                    SAVED_PLANNED_WORKOUT_DRAFT_KEY,
-                    JSON.stringify(state.draftPlannedWorkout)
-                );
+
+                savePlannerDraft({ ...draftWorkout });
             
                 renderApp();
                 return;
@@ -1247,10 +1212,8 @@ export function renderWorkoutPlanner() {
 
             cancelPendingDraftWrite();
             
-            state.draftPlannedWorkout = null;
+            clearPlannerDraft();
             state.editingPlannedWorkoutId = null;
-            
-            localStorage.removeItem(SAVED_PLANNED_WORKOUT_DRAFT_KEY);
             
             state.returnToViewAfterPlanner = null;
             state.returnToLaunchModeAfterPlanner = null;

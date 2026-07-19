@@ -28,6 +28,7 @@ import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { getDashboardLeadershipBadge } from "../utils/leadership.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { clearPlannerDraft } from "../services/plannerDraftRepository.js";
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -109,7 +110,7 @@ export function renderDashboard() {
             const cloudData = await loadRegionData(activeRegionId);
             replacePersistedData(cloudData);
 
-            state.draftPlannedWorkout = null;
+            clearPlannerDraft();
             state.editingPlannedWorkoutId = null;
             state.selectedPlannedWorkoutId = null;
             state.draftSession = null;
@@ -118,8 +119,6 @@ export function renderDashboard() {
             state.plannedWorkoutLaunchMode = null;
             state.qSignupAoFilter = null;
             state.hasInitializedQSignupFilter = false;
-
-            localStorage.removeItem("draftPlannedWorkout");
             
             renderApp();
         });
