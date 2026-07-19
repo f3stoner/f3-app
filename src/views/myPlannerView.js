@@ -5,6 +5,42 @@ import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
+import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+
+function createBlankWorkout({
+    date = getTodayDate(),
+    aoId = null,
+    aoName = "",
+    qSlotId = null,
+} = {}) {
+    return {
+        id: crypto.randomUUID(),
+        date,
+        aoId,
+        aoName,
+        title: "",
+        introduction: "",
+        warmorama: "",
+        thangs: "",
+        thangSections: [
+            {
+                id: crypto.randomUUID(),
+                title: "Thang 1",
+                content: "",
+            },
+        ],
+        finisher: "",
+        notes: "",
+        sourceWorkoutId: null,
+        sourceSessionId: null,
+        sourceQSlotId: qSlotId,
+        createdAt: Date.now(),
+        lastModifiedAt: null,
+        createdByUserId: state.currentUserId,
+        isShared: false,
+        timers: [],
+    };
+}
 
 export function renderMyPlanner() {
     const app = document.getElementById("app");
@@ -30,8 +66,13 @@ export function renderMyPlanner() {
     newWorkoutButton.textContent = "Plan New Workout";
 
     newWorkoutButton.addEventListener("click", () => {
+        const newWorkout = createBlankWorkout();
+    
+        savePlannerDraft(
+            createNewPlannerDraft(newWorkout)
+        );
+    
         state.editingPlannedWorkoutId = null;
-        state.draftPlannedWorkout = null;
         navigateTo("workoutPlanner");
     });
 
@@ -105,12 +146,18 @@ export function renderMyPlanner() {
                     return;
                 }
 
+                const newWorkout = createBlankWorkout({
+                    date: slot.date,
+                    aoId: slot.aoId || null,
+                    aoName,
+                    qSlotId: slot.id,
+                });
+                
+                savePlannerDraft(
+                    createNewPlannerDraft(newWorkout)
+                );
+                
                 state.editingPlannedWorkoutId = null;
-                state.draftPlannedWorkout = null;
-                state.pendingPlannerDate = slot.date;
-                state.pendingPlannerAoId = slot.aoId || null;
-                state.pendingPlannerAoName = aoName;
-                state.pendingPlannerQSlotId = slot.id;
                 navigateTo("workoutPlanner");
             });
 

@@ -1,6 +1,6 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { formatDate } from "../utils/date.js";
+import { formatDate, getTodayDate } from "../utils/date.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { createPlannedWorkout } from "../modules/plannedWorkouts.js";
@@ -22,6 +22,8 @@ import { hasPermission, PERMISSIONS, canEditAoSession, canManageAoMembers } from
 import { getRegularPaxIds, getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 import { getSessionAnnouncementText } from "../utils/announcements.js";
+import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+import { normalizeThangSections } from "../utils/thangs.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -518,17 +520,34 @@ export function renderSessionDetail() {
     copyToPlanButton.textContent = "Copy to Plan";
 
     copyToPlanButton.addEventListener("click", () => {
-        const newWorkout = createPlannedWorkout(session.date, {
+        const newWorkout = createPlannedWorkout(getTodayDate(), {
             aoId: session.aoId || null,
             aoName: session.aoName || "",
         });
 
         if (session.workout) {
+            const copiedThangSections = normalizeThangSections(
+                session.workout
+            ).map((section, index) => ({
+                ...section,
+                id: crypto.randomUUID(),
+                title: section.title || `Thang ${index + 1}`,
+                content: section.content || "",
+            }));
+        
             newWorkout.title = session.workout.title || "";
-            newWorkout.warmorama = session.workout.warmorama || "";
-            newWorkout.thangs = session.workout.thangs || "";
-            newWorkout.finisher = session.workout.finisher || "";
-            newWorkout.notes = session.workout.notes || "";
+            newWorkout.introduction =
+                session.workout.introduction || "";
+            newWorkout.warmorama =
+                session.workout.warmorama || "";
+            newWorkout.thangSections = copiedThangSections;
+            newWorkout.thangs = copiedThangSections
+                .map(section => `${section.title}\n${section.content}`)
+                .join("\n\n");
+            newWorkout.finisher =
+                session.workout.finisher || "";
+            newWorkout.notes =
+                session.workout.notes || "";
         } else {
             newWorkout.notes = session.notes || "";
         }
@@ -547,7 +566,10 @@ export function renderSessionDetail() {
         newWorkout.createdAt = Date.now();
         newWorkout.lastModifiedAt = Date.now();
 
-        state.draftPlannedWorkout = newWorkout;
+        savePlannerDraft(
+            createNewPlannerDraft(newWorkout)
+        );
+        
         state.editingPlannedWorkoutId = null;
         state.selectedPlannedWorkoutId = null;
         state.pendingPlannerDate = null;

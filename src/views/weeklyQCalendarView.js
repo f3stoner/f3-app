@@ -8,13 +8,14 @@ import { showToast } from "../utils/toast.js";
 import { logActionFailure, logAppEvent } from "../services/appEvents.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
-import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleIMage.js";
+import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleImage.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
+import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -417,7 +418,7 @@ export function renderWeeklyQCalendarView() {
                             return;
                         }
 
-                        state.draftPlannedWorkout = {
+                        const newWorkout = {
                             id: crypto.randomUUID(),
                             date: slot.date,
                             aoId: ao?.id || slot.aoId || null,
@@ -444,7 +445,11 @@ export function renderWeeklyQCalendarView() {
                             isShared: false,
                             timers: [],
                         };
-
+                        
+                        savePlannerDraft(
+                            createNewPlannerDraft(newWorkout)
+                        );
+                        
                         state.editingPlannedWorkoutId = null;
                         navigateTo("workoutPlanner");
                     });
