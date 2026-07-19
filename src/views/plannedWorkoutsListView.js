@@ -5,6 +5,37 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+
+function createBlankWorkout() {
+    return {
+        id: crypto.randomUUID(),
+        date: getTodayDate(),
+        aoId: null,
+        aoName: "",
+        title: "",
+        introduction: "",
+        warmorama: "",
+        thangs: "",
+        thangSections: [
+            {
+                id: crypto.randomUUID(),
+                title: "Thang 1",
+                content: "",
+            },
+        ],
+        finisher: "",
+        notes: "",
+        sourceWorkoutId: null,
+        sourceSessionId: null,
+        sourceQSlotId: null,
+        createdAt: Date.now(),
+        lastModifiedAt: null,
+        createdByUserId: state.currentUserId,
+        isShared: false,
+        timers: [],
+    };
+}
 
 export function renderPlannedWorkoutsList () {
     const app = document.getElementById("app");
@@ -42,6 +73,12 @@ export function renderPlannedWorkoutsList () {
     newWorkoutButton.textContent = "Plan New Workout";
 
     newWorkoutButton.addEventListener("click", () => {
+        const newWorkout = createBlankWorkout();
+    
+        savePlannerDraft(
+            createNewPlannerDraft(newWorkout)
+        );
+    
         state.editingPlannedWorkoutId = null;
         navigateTo("workoutPlanner");
     });

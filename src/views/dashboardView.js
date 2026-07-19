@@ -28,7 +28,45 @@ import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { getDashboardLeadershipBadge } from "../utils/leadership.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { clearPlannerDraft } from "../services/plannerDraftRepository.js";
+import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+
+function createBlankWorkout({
+    date = getTodayDate(),
+    aoId = null,
+    aoName = "",
+    siteId = null,
+    qSlotId = null,
+} = {}) {
+    return {
+        id: crypto.randomUUID(),
+        date,
+        aoId,
+        aoName,
+        siteId,
+        title: "",
+        introduction: "",
+        warmorama: "",
+        thangs: "",
+        thangSections: [
+            {
+                id: crypto.randomUUID(),
+                title: "Thang 1",
+                content: "",
+            },
+        ],
+        finisher: "",
+        notes: "",
+        sourceWorkoutId: null,
+        sourceSessionId: null,
+        sourceQSlotId: qSlotId,
+        createdAt: Date.now(),
+        lastModifiedAt: null,
+        createdByUserId: state.currentUserId,
+        isShared: false,
+        isFinalized: false,
+        timers: [],
+    };
+}
 
 export function renderDashboard() {
     const app = document.getElementById("app");
@@ -737,40 +775,23 @@ export function renderDashboard() {
             actionButton.addEventListener("click", event => {
                 event.stopPropagation();
         
-                state.draftPlannedWorkout = {
-                    id: crypto.randomUUID(),
+                const newWorkout = createBlankWorkout({
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
-                    siteId: nextQSlot.siteId || null,
                     aoName: ao?.name || "",
-                    title: "",
-                    introduction: "",
-                    warmorama: "",
-                    thangs: "",
-                    thangSections: [
-                        {
-                            id: crypto.randomUUID(),
-                            title: "Thang 1",
-                            content: "",
-                        },
-                    ],
-                    finisher: "",
-                    notes: "",
-                    sourceWorkoutId: null,
-                    sourceSessionId: null,
-                    sourceQSlotId: nextQSlot.id,
-                    createdAt: Date.now(),
-                    lastModifiedAt: null,
-                    createdByUserId: state.currentUserId,
-                    isShared: false,
-                    isFinalized: false,
-                    timers: [],
-                };
-        
+                    siteId: nextQSlot.siteId || null,
+                    qSlotId: nextQSlot.id,
+                });
+                
+                savePlannerDraft(
+                    createNewPlannerDraft(newWorkout)
+                );
+                
                 state.editingPlannedWorkoutId = null;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
+                
                 navigateTo("workoutPlanner");
             });
         
@@ -872,40 +893,23 @@ export function renderDashboard() {
 
         nextQCard.addEventListener("click", () => {
             if (!hasPlannedWorkout) {
-                state.draftPlannedWorkout = {
-                    id: crypto.randomUUID(),
+                const newWorkout = createBlankWorkout({
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
-                    siteId: nextQSlot.siteId || null,
                     aoName: ao?.name || "",
-                    title: "",
-                    introduction: "",
-                    warmorama: "",
-                    thangs: "",
-                    thangSections: [
-                        {
-                            id: crypto.randomUUID(),
-                            title: "Thang 1",
-                            content: "",
-                        },
-                    ],
-                    finisher: "",
-                    notes: "",
-                    sourceWorkoutId: null,
-                    sourceSessionId: null,
-                    sourceQSlotId: nextQSlot.id,
-                    createdAt: Date.now(),
-                    lastModifiedAt: null,
-                    createdByUserId: state.currentUserId,
-                    isShared: false,
-                    isFinalized: false,
-                    timers: [],
-                };
-
+                    siteId: nextQSlot.siteId || null,
+                    qSlotId: nextQSlot.id,
+                });
+                
+                savePlannerDraft(
+                    createNewPlannerDraft(newWorkout)
+                );
+                
                 state.editingPlannedWorkoutId = null;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
+                
                 navigateTo("workoutPlanner");
             } else {
                 if (matchingWorkout && isTodayQ && isPastTodayWorkout && !loggedSession) {
@@ -1223,40 +1227,23 @@ export function renderDashboard() {
                 const ao = state.aos.find(a => a.id === slot.aoId);
 
                 if (!matchingWorkout) {
-                    state.draftPlannedWorkout = {
-                        id: crypto.randomUUID(),
+                    const newWorkout = createBlankWorkout({
                         date: slot.date,
                         aoId: ao?.id || slot.aoId || null,
-                        siteId: slot.siteId || null,
                         aoName: ao?.name || "",
-                        title: "",
-                        introduction: "",
-                        warmorama: "",
-                        thangs: "",
-                        thangSections: [
-                            {
-                                id: crypto.randomUUID(),
-                                title: "Thang 1",
-                                content: "",
-                            },
-                        ],
-                        finisher: "",
-                        notes: "",
-                        sourceWorkoutId: null,
-                        sourceSessionId: null,
-                        sourceQSlotId: slot.id,
-                        createdAt: Date.now(),
-                        lastModifiedAt: null,
-                        createdByUserId: state.currentUserId,
-                        isShared: false,
-                        isFinalized: false,
-                        timers: [],
-                    };
-
+                        siteId: slot.siteId || null,
+                        qSlotId: slot.id,
+                    });
+                    
+                    savePlannerDraft(
+                        createNewPlannerDraft(newWorkout)
+                    );
+                    
                     state.editingPlannedWorkoutId = null;
                     state.selectedPlannedWorkoutId = null;
                     state.returnToViewAfterPlanner = "dashboard";
                     state.returnToLaunchModeAfterPlanner = null;
+                    
                     navigateTo("workoutPlanner");
                 } else {
                     if (!matchingWorkout.isFinalized) {

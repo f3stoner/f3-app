@@ -20,11 +20,50 @@ import { hasPermission, PERMISSIONS, managesAo } from "../utils/permissions.js";
 import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
+import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
 
 
 let qSlotRealtimeChannel = null;
 let qSlotRealtimeRegionId = null;
 let qSlotRefreshTimerId = null;
+
+function createBlankWorkout({
+    date = getTodayDate(),
+    aoId = null,
+    aoName = "",
+    siteId = null,
+    qSlotId = null,
+} = {}) {
+    return {
+        id: crypto.randomUUID(),
+        date,
+        aoId,
+        aoName,
+        siteId,
+        title: "",
+        introduction: "",
+        warmorama: "",
+        thangs: "",
+        thangSections: [
+            {
+                id: crypto.randomUUID(),
+                title: "Thang 1",
+                content: "",
+            },
+        ],
+        finisher: "",
+        notes: "",
+        sourceWorkoutId: null,
+        sourceSessionId: null,
+        sourceQSlotId: qSlotId,
+        createdAt: Date.now(),
+        lastModifiedAt: null,
+        createdByUserId: state.currentUserId,
+        isShared: false,
+        isFinalized: false,
+        timers: [],
+    };
+}
 
 export function cleanupQSlotRealtime() {
     if (qSlotRefreshTimerId) {
@@ -936,36 +975,18 @@ export function renderQSignupView() {
                         state.plannedWorkoutLaunchMode = null;
                         navigateTo("plannedWorkoutDetail");
                     } else {
-                        state.draftPlannedWorkout = {
-                            id: crypto.randomUUID(),
+                        const newWorkout = createBlankWorkout({
                             date: slot.date,
                             aoId: ao?.id || slot.aoId || null,
                             aoName: ao?.name || "",
                             siteId: slot.siteId || null,
-                            title: "",
-                            introduction: "",
-                            warmorama: "",
-                            thangs: "",
-                            thangSections: [
-                                {
-                                    id: crypto.randomUUID(),
-                                    title: "Thang 1",
-                                    content: "",
-                                },
-                            ],
-                            finisher: "",
-                            notes: "",
-                            sourceWorkoutId: null,
-                            sourceSessionId: null,
-                            sourceQSlotId: slot.id,
-                            createdAt: Date.now(),
-                            lastModifiedAt: null,
-                            createdByUserId: state.currentUserId,
-                            isShared: false,
-                            isFinalized: false,
-                            timers: [],
-                        };
-
+                            qSlotId: slot.id,
+                        });
+                        
+                        savePlannerDraft(
+                            createNewPlannerDraft(newWorkout)
+                        );
+                        
                         state.editingPlannedWorkoutId = null;
                         navigateTo("workoutPlanner");
                     }
