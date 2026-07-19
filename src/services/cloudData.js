@@ -2641,7 +2641,7 @@ export async function loadAttendanceReviewSessions(regionId) {
     return (data || []).map(mapSessionFromDb);
 }
 
-export async function AttendanceReviewStatus(regionId, sessionId, status, notes = null) {
+export async function updateSessionAttendanceReviewStatus(regionId, sessionId, status, notes = null) {
     const { data, error } = await supabase
         .from("sessions")
         .update({
