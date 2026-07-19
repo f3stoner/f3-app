@@ -22,7 +22,7 @@ import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
 import {
     getEffectiveWorkoutAnnouncementText,
 } from "../utils/announcements.js";
-import { getPlannerDraft, savePlannerDraft, clearPlannerDraft } from "../services/plannerDraftRepository.js";
+import { getPlannerDraft, savePlannerDraft, clearPlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 
 let persistDraftTimeout = null;
 
@@ -108,7 +108,9 @@ export function renderWorkoutPlanner() {
         const existingWorkout = state.plannedWorkouts.find(workout => workout.id === state.editingPlannedWorkoutId);
         draftWorkout = { ...existingWorkout };
 
-        plannerDraft = savePlannerDraft({ ...draftWorkout });
+        plannerDraft = savePlannerDraft(
+            createExistingPlannerDraft(draftWorkout)
+        );
 
     } else {
         const plannerDate = state.pendingPlannerDate || getTodayDate();
@@ -127,7 +129,9 @@ export function renderWorkoutPlanner() {
         state.pendingPlannerAoId = null;
         state.pendingPlannerQSlotId = null;
 
-        plannerDraft = savePlannerDraft({ ...draftWorkout });
+        plannerDraft = savePlannerDraft(
+            createNewPlannerDraft(draftWorkout)
+        );
     }
 
     if (!isEditing && draftWorkout?.id) {
@@ -533,16 +537,9 @@ export function renderWorkoutPlanner() {
             section: thangIdMap.get(timer.section) || timer.section,
         }));
     
-        savePlannerDraft({
-            origin: {
-                kind: "new",
-                workoutId: null,
-            },
-            content: copiedWorkout,
-            sync: {
-                status: "editing",
-            },
-        });
+        plannerDraft = savePlannerDraft(
+            createNewPlannerDraft(copiedWorkout)
+        );
     
         state.workoutBrowseModalOpen = false;
         state.selectedWorkoutPreviewId = null;

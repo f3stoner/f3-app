@@ -50,18 +50,12 @@ function normalizePlannerDraft(value) {
             value.id === editingWorkoutId
         );
 
-    return {
-        origin: {
-            kind: isExistingWorkout ? "existing" : "new",
-            workoutId: isExistingWorkout
-                ? editingWorkoutId
-                : null,
-        },
-        content: value,
-        sync: {
-            status: "editing",
-        },
-    };
+    return isExistingWorkout
+        ? createExistingPlannerDraft({
+            ...value,
+            id: editingWorkoutId,
+        })
+        : createNewPlannerDraft(value);
 }
 
 export function getPlannerDraft() {
@@ -111,4 +105,40 @@ export function clearPlannerDraft() {
     state.draftPlannedWorkout = null;
 
     localStorage.removeItem(DRAFT_KEY);
+}
+
+export function createNewPlannerDraft(workout) {
+    return {
+        origin: {
+            kind: "new",
+            workoutId: null,
+        },
+        content: {
+            ...workout,
+        },
+        sync: {
+            status: "editing",
+        },
+    };
+}
+
+export function createExistingPlannerDraft(workout) {
+    if (!workout?.id) {
+        throw new Error(
+            "Existing PlannerDraft requires a workout id."
+        );
+    }
+
+    return {
+        origin: {
+            kind: "existing",
+            workoutId: workout.id,
+        },
+        content: {
+            ...workout,
+        },
+        sync: {
+            status: "editing",
+        },
+    };
 }
