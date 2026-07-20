@@ -19,7 +19,6 @@ export function saveNavState(state) {
     localStorage.setItem(NAV_STATE_KEY, JSON.stringify({
         currentView: state.currentView,
         selectedPlannedWorkoutId: state.selectedPlannedWorkoutId,
-        editingPlannedWorkoutId: state.editingPlannedWorkoutId,
         plannedWorkoutLaunchMode: state.plannedWorkoutLaunchMode,
         selectedSessionId: state.selectedSessionId,
         editingSessionId: state.editingSessionId,

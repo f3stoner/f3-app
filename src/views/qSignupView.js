@@ -970,7 +970,6 @@ export function renderQSignupView() {
                                 createExistingPlannerDraft(matchingWorkout)
                             );
                     
-                            state.editingPlannedWorkoutId = matchingWorkout.id;
                             state.selectedPlannedWorkoutId = null;
                     
                             navigateTo("workoutPlanner");
@@ -993,7 +992,6 @@ export function renderQSignupView() {
                             createNewPlannerDraft(newWorkout)
                         );
                         
-                        state.editingPlannedWorkoutId = null;
                         navigateTo("workoutPlanner");
                     }
                 });

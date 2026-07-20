@@ -570,7 +570,6 @@ export function renderSessionDetail() {
             createNewPlannerDraft(newWorkout)
         );
         
-        state.editingPlannedWorkoutId = null;
         state.selectedPlannedWorkoutId = null;
         state.pendingPlannerDate = null;
         state.pendingPlannerAoName = null;

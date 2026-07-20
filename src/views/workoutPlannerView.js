@@ -89,9 +89,6 @@ export function renderWorkoutPlanner() {
 
     const plannerOrigin = plannerDraft?.origin ?? null;
 
-    const legacyEditingWorkoutId =
-        state.editingPlannedWorkoutId;
-
     let isEditing =
         plannerOrigin?.kind === "existing";
 
@@ -104,7 +101,6 @@ export function renderWorkoutPlanner() {
 
         state.returnToViewAfterPlanner = null;
         state.returnToLaunchModeAfterPlanner = null;
-        state.editingPlannedWorkoutId = null;
         state.plannedWorkoutLaunchMode = returnLaunchMode || null;
         state.currentView = returnView;
         cancelPendingDraftWrite();
@@ -114,18 +110,6 @@ export function renderWorkoutPlanner() {
 
     if (plannerDraft) {
         draftWorkout = { ...plannerDraft.content };
-    } else if (legacyEditingWorkoutId) {
-        const existingWorkout = state.plannedWorkouts.find(workout => workout.id === legacyEditingWorkoutId);
-        draftWorkout = { ...existingWorkout };
-
-        plannerDraft = savePlannerDraft(
-            createExistingPlannerDraft(draftWorkout)
-        );
-
-        // bring planner into canonical mode
-        isEditing = true;
-        editingWorkoutId = legacyEditingWorkoutId;
-
     } else {
         const plannerDate = state.pendingPlannerDate || getTodayDate();
         const plannerAoName = state.pendingPlannerAoName || "";
@@ -547,8 +531,6 @@ export function renderWorkoutPlanner() {
         state.workoutBrowseModalOpen = false;
         state.selectedWorkoutPreviewId = null;
         state.workoutBrowseMode = "list";
-        state.editingPlannedWorkoutId = null;
-        
 
         showToast("Copied to Planner", "success");
         renderApp();
@@ -1217,7 +1199,6 @@ export function renderWorkoutPlanner() {
         finalizeButton.textContent = finalized ? "Finalizing..." : "Mark BD Ready";
 
         console.log("isEditing:", isEditing);
-        console.log("editingPLannedWorkoutId:", state.editingPlannedWorkoutId);
         console.log("draftWorkout before save:", draftWorkout);
     
         try {
@@ -1244,15 +1225,10 @@ export function renderWorkoutPlanner() {
 
                 isEditing = true;
                 editingWorkoutId = draftWorkout.id;
-
-                // compatibility
-                state.editingPlannedWorkoutId = draftWorkout.id;
             }
     
             if (!finalized) {
                 showToast("Draft saved.", "success");
-            
-                state.editingPlannedWorkoutId = draftWorkout.id;
 
                 plannerDraft = savePlannerDraft(
                     buildCurrentPlannerDraft()
@@ -1267,7 +1243,6 @@ export function renderWorkoutPlanner() {
             cancelPendingDraftWrite();
             
             clearPlannerDraft();
-            state.editingPlannedWorkoutId = null;
             
             state.returnToViewAfterPlanner = null;
             state.returnToLaunchModeAfterPlanner = null;
@@ -1282,7 +1257,6 @@ export function renderWorkoutPlanner() {
             showToast("Failed to save workout.", "error");
     
             logSaveFailure("workoutPlannerView.savePlannedWorkout", error, {
-                editingPlannedWorkoutId: state.editingPlannedWorkoutId || null,
                 selectedPlannedWorkoutId: state.selectedPlannedWorkoutId || null,
                 draftWorkoutId: draftWorkout?.id || null,
                 plannedWorkoutDate: draftWorkout?.date || null,

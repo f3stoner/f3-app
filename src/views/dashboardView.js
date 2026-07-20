@@ -149,7 +149,6 @@ export function renderDashboard() {
             replacePersistedData(cloudData);
 
             clearPlannerDraft();
-            state.editingPlannedWorkoutId = null;
             state.selectedPlannedWorkoutId = null;
             state.draftSession = null;
             state.editingSessionId = null;
@@ -787,7 +786,6 @@ export function renderDashboard() {
                     createNewPlannerDraft(newWorkout)
                 );
                 
-                state.editingPlannedWorkoutId = null;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
@@ -805,7 +803,6 @@ export function renderDashboard() {
                     createExistingPlannerDraft(matchingWorkout)
                 );
                 
-                state.editingPlannedWorkoutId = matchingWorkout.id;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
@@ -910,7 +907,6 @@ export function renderDashboard() {
                     createNewPlannerDraft(newWorkout)
                 );
                 
-                state.editingPlannedWorkoutId = null;
                 state.selectedPlannedWorkoutId = null;
                 state.returnToViewAfterPlanner = "dashboard";
                 state.returnToLaunchModeAfterPlanner = null;
@@ -1244,7 +1240,6 @@ export function renderDashboard() {
                         createNewPlannerDraft(newWorkout)
                     );
                     
-                    state.editingPlannedWorkoutId = null;
                     state.selectedPlannedWorkoutId = null;
                     state.returnToViewAfterPlanner = "dashboard";
                     state.returnToLaunchModeAfterPlanner = null;
@@ -1257,7 +1252,6 @@ export function renderDashboard() {
                             createExistingPlannerDraft(matchingWorkout)
                         );
                     
-                        state.editingPlannedWorkoutId = matchingWorkout.id;
                         state.selectedPlannedWorkoutId = null;
                         state.returnToViewAfterPlanner = "dashboard";
                         state.returnToLaunchModeAfterPlanner = null;

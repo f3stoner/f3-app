@@ -5,7 +5,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
-import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 
 function createBlankWorkout({
     date = getTodayDate(),
@@ -38,6 +38,7 @@ function createBlankWorkout({
         lastModifiedAt: null,
         createdByUserId: state.currentUserId,
         isShared: false,
+        isFinalized: false,
         timers: [],
     };
 }
@@ -72,7 +73,6 @@ export function renderMyPlanner() {
             createNewPlannerDraft(newWorkout)
         );
     
-        state.editingPlannedWorkoutId = null;
         navigateTo("workoutPlanner");
     });
 
@@ -114,6 +114,9 @@ export function renderMyPlanner() {
                 state.aos || []
             );
 
+            const isWorkoutFinalized =
+                matchingWorkout?.isFinalized === true;
+
             const card = document.createElement("div");
             card.classList.add("member-card", "planner-card");
 
@@ -126,23 +129,36 @@ export function renderMyPlanner() {
 
             const statusLine = document.createElement("div");
             statusLine.classList.add("stats-line", "planner-title-line");
-            statusLine.textContent = matchingWorkout
-                ? "BD Ready"
-                : "No workout planned";
+            statusLine.textContent = !matchingWorkout
+                ? "No workout planned"
+                : isWorkoutFinalized
+                    ? "BD Ready"
+                    : "Draft in Progress";
 
             const actionLine = document.createElement("div");
             actionLine.classList.add("detail-label", "planner-status-line");
-            actionLine.textContent = matchingWorkout
-                ? "Tap to view workout"
-                : "Tap to plan workout";
+            actionLine.textContent = !matchingWorkout
+                ? "Tap to plan workout"
+                : isWorkoutFinalized
+                    ? "Tap to view workout"
+                    : "Tap to continue planning";
 
             cardContent.append(topLine, statusLine, actionLine);
             card.append(cardContent);
 
             card.addEventListener("click", () => {
                 if (matchingWorkout) {
-                    state.selectedPlannedWorkoutId = matchingWorkout.id;
-                    navigateTo("plannedWorkoutDetail");
+                    if (isWorkoutFinalized) {
+                        state.selectedPlannedWorkoutId = matchingWorkout.id;
+                        navigateTo("plannedWorkoutDetail");
+                        return;
+                    }
+                
+                    savePlannerDraft(
+                        createExistingPlannerDraft(matchingWorkout)
+                    );
+                
+                    navigateTo("workoutPlanner");
                     return;
                 }
 
@@ -157,7 +173,6 @@ export function renderMyPlanner() {
                     createNewPlannerDraft(newWorkout)
                 );
                 
-                state.editingPlannedWorkoutId = null;
                 navigateTo("workoutPlanner");
             });
 
@@ -243,8 +258,17 @@ export function renderMyPlanner() {
             card.append(cardContent);
 
             card.addEventListener("click", () => {
-                state.selectedPlannedWorkoutId = workout.id;
-                navigateTo("plannedWorkoutDetail");
+                if (workout.isFinalized === true) {
+                    state.selectedPlannedWorkoutId = workout.id;
+                    navigateTo("plannedWorkoutDetail");
+                    return;
+                }
+            
+                savePlannerDraft(
+                    createExistingPlannerDraft(workout)
+                );
+            
+                navigateTo("workoutPlanner");
             });
 
             listContainer.appendChild(card);

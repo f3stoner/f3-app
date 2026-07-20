@@ -303,7 +303,6 @@ export function createMainMenu() {
     
             state.editingMemberId = null;
             state.editingSessionId = null;
-            state.editingPlannedWorkoutId = null;
     
             state.draftSession = null;
     

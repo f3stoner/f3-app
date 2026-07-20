@@ -40,7 +40,6 @@ export function persistAppData() {
         selectedPlannedWorkoutId: state.selectedPlannedWorkoutId,
         editingMemberId: state.editingMemberId,
         editingSessionId: state.editingSessionId,
-        editingPlannedWorkoutId: state.editingPlannedWorkoutId,
         sessionSearchTerm: state.sessionSearchTerm,
         sessionHistorySearchTerm: state.sessionHistorySearchTerm,
         rosterSearchTerm: state.rosterSearchTerm,

@@ -41,23 +41,6 @@ function normalizePlannerDraft(value) {
         };
     }
 
-    const editingWorkoutId =
-        state.editingPlannedWorkoutId || null;
-
-    const hasCompatibleEditingWorkoutId =
-        Boolean(editingWorkoutId) &&
-        (
-            !value.id ||
-            value.id === editingWorkoutId
-        );
-
-    if (hasCompatibleEditingWorkoutId) {
-        return createExistingPlannerDraft({
-            ...value,
-            id: editingWorkoutId,
-        });
-    }
-
     const matchesExistingWorkout =
         Boolean(value.id) &&
         state.plannedWorkouts.some(

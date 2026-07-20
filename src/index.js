@@ -160,8 +160,7 @@ function restoreNavState(nav) {
     state.plannedWorkoutLaunchMode = nav.plannedWorkoutLaunchMode || null;
     state.selectedSessionId = nav.selectedSessionId || null;
     state.selectedPreblastWorkoutId = nav.selectedPreblastWorkoutId || null;
-
-    state.editingPlannedWorkoutId = null;
+    
     state.editingSessionId = null;
 }
 

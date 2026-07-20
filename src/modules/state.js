@@ -23,7 +23,6 @@ export const state = {
     plannedWorkouts: savedState?.plannedWorkouts || [],
     showMyPlannedWorkoutsOnly: false,
     selectedPlannedWorkoutId: null,
-    editingPlannedWorkoutId: null,
     draftPlannedWorkout: null,
     rosterSearchTerm: "",
     draftSession: null,

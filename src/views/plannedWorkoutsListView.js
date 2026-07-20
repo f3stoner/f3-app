@@ -79,7 +79,6 @@ export function renderPlannedWorkoutsList () {
             createNewPlannerDraft(newWorkout)
         );
     
-        state.editingPlannedWorkoutId = null;
         navigateTo("workoutPlanner");
     });
 

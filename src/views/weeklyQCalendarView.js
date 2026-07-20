@@ -450,7 +450,6 @@ export function renderWeeklyQCalendarView() {
                             createNewPlannerDraft(newWorkout)
                         );
                         
-                        state.editingPlannedWorkoutId = null;
                         navigateTo("workoutPlanner");
                     });
 

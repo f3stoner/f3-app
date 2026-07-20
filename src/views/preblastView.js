@@ -53,7 +53,6 @@ export function renderPreblastView() {
 
     console.log("selectedPreblastWorkoutId:", state.selectedPreblastWorkoutId);
     console.log("selectedPlannedWorkoutId:", state.selectedPlannedWorkoutId);
-    console.log("editingPlannedWorkoutId:", state.editingPlannedWorkoutId);
 
     const app = document.getElementById("app");
     app.textContent = "";
@@ -284,9 +283,8 @@ export function renderPreblastView() {
 
     function getPreblastWorkout() {
         const workoutId =
-        state.selectedPreblastWorkoutId ||
-        state.selectedPlannedWorkoutId ||
-        state.editingPlannedWorkoutId;
+            state.selectedPreblastWorkoutId ||
+            state.selectedPlannedWorkoutId;
 
         return state.plannedWorkouts.find(
             workout => workout.id === workoutId

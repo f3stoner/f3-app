@@ -1217,8 +1217,6 @@ export function renderPlannedWorkoutDetail() {
             createExistingPlannerDraft(workout)
         );
 
-        state.editingPlannedWorkoutId = workout.id;
-
         navigateTo("workoutPlanner");
     });
 
@@ -1390,7 +1388,6 @@ export function renderPlannedWorkoutDetail() {
             createNewPlannerDraft(newWorkout)
         );
         
-        state.editingPlannedWorkoutId = null;
         navigateTo("workoutPlanner");
     })
 
@@ -1429,7 +1426,6 @@ export function renderPlannedWorkoutDetail() {
                 endWorkoutExecution();
 
                 state.selectedPlannedWorkoutId = null;
-                state.editingPlannedWorkoutId = null;
                 navigateTo("plannedWorkoutList");
 
             } catch (error) {
