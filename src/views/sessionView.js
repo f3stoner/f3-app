@@ -1506,6 +1506,25 @@ try {
             createdByUserId: state.currentUserId,
         };
         savedSession = await addSession(sessionToCreate);
+
+        if (savedSession?.status === "queued") {
+            showToast(
+                "Session saved on this device. It will upload automatically when you're back online.",
+                "success"
+            );
+
+            state.editingSessionId = null;
+            state.selectedPlannedWorkoutId = null;
+            state.sessionSearchTerm = "";
+            state.sessionShowAllOthers = false;
+            state.sessionShowAllRecent = false;
+            state.sessionSelectedExpanded = false;
+            state.sessionQExpanded = false;
+            state.draftSession = null;
+
+            navigateTo("dashboard");
+            return;
+        }
         }
 
         const affectedMemberIds = [

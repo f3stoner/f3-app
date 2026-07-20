@@ -53,11 +53,38 @@ import { renderPaxProfileView } from "./views/paxProfileView.js";
 import { renderSessionAuditView } from "./views/sessionAuditView.js";
 import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
+import(
+    "./services/pendingSessionSyncService.js"
+);
+
 
 if (process.env.NODE_ENV === "development") {
     window.state = state;
     window.renderApp = renderApp;
     window.logAppEvent = logAppEvent;
+
+    window.processPendingSessions = async () => {
+        const module = await import(
+            "./services/pendingSessionSyncService.js"
+        );
+    
+        return module.processPendingSessionCommands({
+            ownerUserId: state.currentUserId,
+            regionId: state.currentRegionId,
+        });
+    };
+
+    const loadPendingSessionSyncTools = () =>
+    
+    window.retryNextPendingSession = async () => {
+        const module =
+            await loadPendingSessionSyncTools();
+    
+        return module.retryNextPendingSessionCommand({
+            ownerUserId: state.currentUserId,
+            regionId: state.currentRegionId,
+        });
+    };
 
     const loadAggielandTools = () =>
         import(

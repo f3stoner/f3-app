@@ -27,6 +27,7 @@ import {
     getAffectedMemberIdsFromSession
 } from "./cloudData.js";
 import { prepareSessionSaveCommand, buildSessionSaveRpcCommand } from "../utils/sessionSaveCommand.js";
+import { submitSessionSaveCommand } from "./sessionSubmissionService.js";
 
 
 export function persistAppData() {
@@ -404,10 +405,25 @@ export async function addSession(session) {
             visitors: command.visitors,
         });
 
-    const result =
-        await executeSessionSaveCommand(
-            rpcCommand
-        );
+    const submission =
+        await submitSessionSaveCommand({
+            command: rpcCommand,
+            ownerUserId:
+                state.currentUserId,
+            ownerMemberId:
+                state.currentUserMemberId ||
+                null,
+        });
+
+    if (submission.status === "queued") {
+        return {
+            status: "queued",
+            sessionId:
+                rpcCommand.p_session.id,
+        };
+    }
+    
+    const result = submission.result;
 
     const savedSession = result.session;
 
