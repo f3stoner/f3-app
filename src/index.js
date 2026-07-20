@@ -63,12 +63,12 @@ if (process.env.NODE_ENV === "development") {
     window.renderApp = renderApp;
     window.logAppEvent = logAppEvent;
 
-    window.processPendingSessions = async () => {
+    window.synchronizePendingSessions = async () => {
         const module = await import(
             "./services/pendingSessionSyncService.js"
         );
     
-        return module.processPendingSessionCommands({
+        return module.synchronizePendingSessions({
             ownerUserId: state.currentUserId,
             regionId: state.currentRegionId,
         });
@@ -693,6 +693,52 @@ function getSharedWorkoutIdFromUrl() {
     return searchParams.get("workoutId") || hashParams.get("workoutId");
 }
 
+async function synchronizePendingSessionsForCurrentContext() {
+    if (!state.currentUserId || !state.currentRegionId) {
+        return {
+            status: "skipped",
+            reason: "missing_context",
+        };
+    }
+
+    try {
+        const {
+            synchronizePendingSessions,
+        } = await import(
+            "./services/pendingSessionSyncService.js"
+        );
+
+        const result =
+            await synchronizePendingSessions({
+                ownerUserId: state.currentUserId,
+                regionId: state.currentRegionId,
+            });
+
+        if (result?.processedCount > 0) {
+            const regionLoaded =
+                await loadActiveRegionData(
+                    state.currentRegionId
+                );
+
+            if (regionLoaded) {
+                renderApp();
+            }
+        }
+
+        return result;
+    } catch (error) {
+        console.warn(
+            "Pending session synchronization failed:",
+            error
+        );
+
+        return {
+            status: "failed",
+            error,
+        };
+    }
+}
+
 async function bootApp() {
     const bootStartedAt = performance.now();
     const bootPhases = {};
@@ -846,6 +892,20 @@ async function bootApp() {
         const renderStartedAt = performance.now();
 
         renderApp();
+
+        let hasRegisteredPendingSessionOnlineListener = false;
+
+        // Attempt a sync once after boot.
+        void synchronizePendingSessionsForCurrentContext();
+
+        // Retry automatically whenever connectivity returns.
+        if (!hasRegisteredPendingSessionOnlineListener) {
+            hasRegisteredPendingSessionOnlineListener = true;
+        
+            window.addEventListener("online", () => {
+                void synchronizePendingSessionsForCurrentContext();
+            });
+        }
 
         const usableAt = performance.now();
         const renderDurationMs = usableAt - renderStartedAt;

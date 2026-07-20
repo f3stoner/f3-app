@@ -7,6 +7,8 @@ import {
     deletePendingSessionCommand,
 } from "./pendingSessionRepository.js";
 
+let pendingSessionSyncPromise = null;
+
 export async function retryNextPendingSessionCommand({
     ownerUserId,
     regionId,
@@ -152,4 +154,37 @@ export async function processPendingSessionCommands({
         remainingCount: 0,
         results,
     };
+}
+
+export async function synchronizePendingSessions({
+    ownerUserId,
+    regionId,
+}) {
+    if (!ownerUserId) {
+        throw new Error(
+            "Owner user id is required."
+        );
+    }
+
+    if (!regionId) {
+        throw new Error(
+            "Region id is required."
+        );
+    }
+
+    if (pendingSessionSyncPromise) {
+        return pendingSessionSyncPromise;
+    }
+
+    pendingSessionSyncPromise =
+        processPendingSessionCommands({
+            ownerUserId,
+            regionId,
+        });
+
+    try {
+        return await pendingSessionSyncPromise;
+    } finally {
+        pendingSessionSyncPromise = null;
+    }
 }
