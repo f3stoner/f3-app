@@ -3,6 +3,7 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import CopyPlugin from "copy-webpack-plugin";
 import webpack from "webpack";
+import { InjectManifest } from "workbox-webpack-plugin";
 
 export default (env, argv) => {
     const isProd = argv.mode === "production";
@@ -37,6 +38,12 @@ export default (env, argv) => {
             }),
             new CopyPlugin({
                 patterns: [{ from: "public", to: "" }],
+            }),
+            new InjectManifest({
+                swSrc: "./src/sw.js",
+                swDest: "sw.js",
+                exclude: [/\.LICENSE\.txt$/],
+                maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
             }),
             new Dotenv(),
         ],
