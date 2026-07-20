@@ -21,6 +21,14 @@ import { loadPlannerAnnouncements } from "../services/cloudData.js";
 import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
 import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
+import {
+    ensureWorkoutSnapshotCached,
+    ensureWorkoutFallbackLoaded,
+    getCachedWorkoutFallback,
+    getWorkoutFallbackResult,
+    getWorkoutOfflineStatus,
+    isWorkoutFallbackLoading,
+} from "../services/workoutExecutionCacheService.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -306,11 +314,33 @@ export function renderPlannedWorkoutDetail() {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    const workout = state.plannedWorkoutLaunchMode === "preview"
-        ? state.previewWorkout
-        : state.plannedWorkouts.find(
-            w => w.id === state.selectedPlannedWorkoutId
-        );
+    const liveWorkout =
+        state.plannedWorkoutLaunchMode ===
+            "preview"
+            ? state.previewWorkout
+            : state.plannedWorkouts.find(
+                candidate =>
+                    candidate.id ===
+                    state.selectedPlannedWorkoutId
+            ) || null;
+
+    const offlineWorkout =
+        !liveWorkout &&
+        state.plannedWorkoutLaunchMode !==
+            "preview"
+            ? getCachedWorkoutFallback({
+                ownerUserId:
+                    state.currentUserId,
+                regionId:
+                    state.currentRegionId,
+                plannedWorkoutId:
+                    state.selectedPlannedWorkoutId,
+            })
+            : null;
+
+    const workout =
+        liveWorkout ||
+        offlineWorkout;
 
     const currentMember = state.members.find(
         member => member.id === state.currentUserMemberId
@@ -333,8 +363,153 @@ export function renderPlannedWorkoutDetail() {
     }
 
     if (!workout) {
-        console.warn("Missing workout. Redirecting to safe view.");
-        navigateTo("plannedWorkoutList");
+        const plannedWorkoutId =
+            state.selectedPlannedWorkoutId;
+    
+        const fallbackArgs = {
+            ownerUserId:
+                state.currentUserId,
+    
+            regionId:
+                state.currentRegionId,
+    
+            plannedWorkoutId,
+        };
+    
+        const fallbackResult =
+            getWorkoutFallbackResult(
+                fallbackArgs
+            );
+    
+        const fallbackIsLoading =
+            isWorkoutFallbackLoading(
+                fallbackArgs
+            );
+    
+        if (
+            plannedWorkoutId &&
+            !fallbackResult &&
+            !fallbackIsLoading
+        ) {
+            ensureWorkoutFallbackLoaded(
+                fallbackArgs
+            ).finally(() => {
+                if (
+                    state.currentView ===
+                        "plannedWorkoutDetail" &&
+                    state.selectedPlannedWorkoutId ===
+                        plannedWorkoutId
+                ) {
+                    renderApp();
+                }
+            });
+        }
+    
+        const container =
+            document.createElement("main");
+    
+        container.classList.add(
+            "route-load-state"
+        );
+    
+        const message =
+            document.createElement("p");
+    
+        message.classList.add(
+            "route-load-message"
+        );
+    
+        if (!fallbackResult) {
+            container.setAttribute(
+                "aria-live",
+                "polite"
+            );
+    
+            message.textContent =
+                "Loading saved workout…";
+    
+            container.appendChild(
+                message
+            );
+    
+            app.appendChild(
+                container
+            );
+    
+            return;
+        }
+    
+        container.classList.add(
+            "route-load-state-error"
+        );
+    
+        container.setAttribute(
+            "role",
+            "alert"
+        );
+    
+        const heading =
+            document.createElement("h2");
+    
+        heading.classList.add(
+            "route-load-heading"
+        );
+    
+        heading.textContent =
+            "Workout unavailable";
+    
+        message.textContent =
+            fallbackResult.reason ===
+            "invalid"
+                ? "The saved offline copy could not be verified."
+                : "This workout is not available in live data or offline storage.";
+    
+        const actions =
+            document.createElement("div");
+    
+        actions.classList.add(
+            "route-load-actions"
+        );
+    
+        const backButton =
+            document.createElement("button");
+    
+        backButton.type =
+            "button";
+    
+        backButton.classList.add(
+            "secondary-button"
+        );
+    
+        backButton.textContent =
+            "Back to Workouts";
+    
+        backButton.addEventListener(
+            "click",
+            () => {
+                state.selectedPlannedWorkoutId =
+                    null;
+    
+                navigateTo(
+                    "plannedWorkoutList"
+                );
+            }
+        );
+    
+        actions.appendChild(
+            backButton
+        );
+    
+        container.append(
+            heading,
+            message,
+            actions
+        );
+    
+        app.appendChild(
+            container
+        );
+    
         return;
     }
 
@@ -364,6 +539,74 @@ export function renderPlannedWorkoutDetail() {
         getEffectiveWorkoutThirdF({
             workout,
             thirdFItems: state.plannerThirdFDiscussions || [],
+        });
+
+    const snapshotQSlot =
+    findMatchingQSlotForWorkout(workout);
+    
+    const snapshotAo =
+        state.aos.find(
+            ao =>
+                ao.id ===
+                (
+                    workout.aoId ||
+                    snapshotQSlot?.aoId
+                )
+        ) || null;
+    
+        ensureWorkoutSnapshotCached({
+            workout,
+        
+            ownerUserId:
+                state.currentUserId,
+        
+            ownerMemberId:
+                state.currentUserMemberId,
+        
+            regionId:
+                state.currentRegionId,
+        
+            ao:
+                snapshotAo,
+        
+            qSlot:
+                snapshotQSlot,
+        
+            resolvedIntroduction,
+        
+            resolvedAnnouncementText:
+                effectiveAnnouncements.text ||
+                "",
+        
+            resolvedThirdFText:
+                effectiveThirdF.text ||
+                "",
+        
+            workoutFieldLabels:
+                state.workoutFieldLabels ||
+                {},
+        
+            announcementsReady:
+                workout.announcementMode !==
+                    "auto" ||
+                state.hasLoadedPlannerAnnouncements,
+        
+            thirdFReady:
+                workout.thirdFMode !==
+                    "auto" ||
+                state.hasLoadedPlannerThirdFDiscussions,
+        
+            isPreviewMode,
+        }).then(result => {
+            if (
+                result.changed &&
+                state.currentView ===
+                    "plannedWorkoutDetail" &&
+                state.selectedPlannedWorkoutId ===
+                    workout.id
+            ) {
+                renderApp();
+            }
         });
 
     const backButton = document.createElement("button");
@@ -415,7 +658,50 @@ export function renderPlannedWorkoutDetail() {
         executionBanner.textContent = isPreviewMode
             ? `Previewing workout at ${workout.aoName || "AO"}`
             : `Running workout at ${workout.aoName || "AO"}`; 
+    }
+
+    let offlineStatusBanner = null;
+
+    if (!isPreviewMode) {
+        const offlineStatus =
+            getWorkoutOfflineStatus({
+                ownerUserId:
+                    state.currentUserId,
+
+                regionId:
+                    state.currentRegionId,
+
+                plannedWorkoutId:
+                    workout.id,
+            });
+
+        if (offlineStatus) {
+            offlineStatusBanner =
+                document.createElement("div");
+
+            offlineStatusBanner.classList.add(
+                "loaded-workout-banner"
+            );
+
+            if (offlineStatus.status === "waiting") {
+                offlineStatusBanner.textContent =
+                    "Preparing offline copy…";
+            } else if (
+                offlineStatus.status === "saving"
+            ) {
+                offlineStatusBanner.textContent =
+                    "Saving offline copy…";
+            } else if (
+                offlineStatus.status === "ready"
+            ) {
+                offlineStatusBanner.textContent =
+                    "Available offline on this device";
+            } else {
+                offlineStatusBanner.textContent =
+                    "Offline copy unavailable";
+            }
         }
+    }
 
     function createExecutionTextSizeControls() {
         if (!isExecutionMode) return null;
@@ -1254,15 +1540,15 @@ export function renderPlannedWorkoutDetail() {
         session.attendeeIds = currentMemberId ? [currentMemberId] : [];
         
         session.workout = {
-            title: workout.title,
+            ...workout,
+        
             introduction: resolvedIntroduction,
-            warmorama: workout.warmorama,
-            thangs: workout.thangs,
+        
             thangSections: normalizeThangSections(workout),
-            finisher: workout.finisher,
-            notes: workout.notes,
+        
+            announcementText: effectiveAnnouncements.text,
+        
             thirdFText: effectiveThirdF.text,
-            announcementText: "",
         };
         
         session.sourcePlannedWorkoutId = workout.id;
@@ -1586,6 +1872,7 @@ export function renderPlannedWorkoutDetail() {
     app.append(
         header,
         ...(executionBanner ? [executionBanner] : []),
+        ...(offlineStatusBanner ? [offlineStatusBanner] : []),
         ...(executionTextSizeControls ? [executionTextSizeControls] : []),
         ...(dateSection ? [dateSection] : []),
         ...(aoSection ? [aoSection] : []),

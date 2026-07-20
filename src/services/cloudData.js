@@ -962,112 +962,39 @@ export async function setMemberInviters(
     }));
 }
 
-export async function saveSessionCommand(
-    regionId,
-    session,
-    {
-        mode = "create",
-        fngs = [],
-        visitors = [],
-    } = {}
+export async function executeSessionSaveCommand(
+    command
 ) {
-    if (!regionId) {
+    if (!command?.p_region_id) {
         throw new Error("Region id is required");
     }
 
-    if (!session?.id) {
+    if (!command?.p_session?.id) {
         throw new Error("Session id is required");
     }
 
-    if (mode !== "create" && mode !== "update") {
+    if (
+        command.p_mode !== "create" &&
+        command.p_mode !== "update"
+    ) {
         throw new Error(
-            `Invalid session save mode: ${mode}`
+            `Invalid session save mode: ${command.p_mode}`
         );
     }
 
-    const commandFngs = (fngs || []).map(fng => ({
-        memberId: fng.memberId || null,
-        realName: fng.realName || "",
-        paxName: fng.paxName || null,
-        inviterIds: Array.isArray(fng.inviterIds)
-            ? [...new Set(fng.inviterIds.filter(Boolean))]
-            : [],
-        invitedById:
-            fng.invitedById ||
-            fng.inviterIds?.[0] ||
-            null,
-        isNew: Boolean(fng.isNew),
-    }));
-
-    const commandVisitors = (visitors || [])
-        .filter(visitor =>
-            String(visitor.f3Name || "").trim()
-        )
-        .map(visitor => ({
-            id: visitor.id || null,
-            f3Name: String(visitor.f3Name || "").trim(),
-            homeRegion:
-                String(visitor.homeRegion || "").trim(),
-            realName:
-                String(visitor.realName || "").trim(),
-        }));
-
-    const sessionPayload = {
-        id: session.id,
-        date: session.date,
-        aoId: session.aoId || null,
-        siteId: session.siteId || null,
-        aoName: session.aoName || "",
-        qIds: session.qIds || [],
-        attendeeIds: session.attendeeIds || [],
-        notes: session.notes || "",
-        workout: session.workout || null,
-        announcementText:
-            typeof session.announcementText === "string"
-                ? session.announcementText
-                : null,
-        announcementSnapshot:
-            session.announcementSnapshot || null,
-        sourcePlannedWorkoutId:
-            session.sourcePlannedWorkoutId || null,
-        sourceQSlotId:
-            session.sourceQSlotId || null,
-        createdAt: session.createdAt || Date.now(),
-        backblastText: session.backblastText || "",
-        backblastStatus:
-            session.backblastStatus || null,
-        backblastPostedAt:
-            session.backblastPostedAt || null,
-        unresolvedPax:
-            session.unresolvedPax || [],
-        weatherSnapshot:
-            session.weatherSnapshot || null,
-        startTime: session.startTime || null,
-        attendanceReviewStatus:
-            session.attendanceReviewStatus ||
-            "not_required",
-        attendanceReviewNotes:
-            session.attendanceReviewNotes || null,
-    };
-
     const { data, error } = await supabase.rpc(
         "save_session_command",
-        {
-            p_mode: mode,
-            p_region_id: regionId,
-            p_session: sessionPayload,
-            p_fngs: commandFngs,
-            p_visitors: commandVisitors,
-        }
+        command
     );
 
     if (error) {
         console.error(
-            "saveSessionCommand failed:",
+            "executeSessionSaveCommand failed:",
             {
-                mode,
-                regionId,
-                sessionId: session.id,
+                mode: command.p_mode,
+                regionId: command.p_region_id,
+                sessionId:
+                    command.p_session.id,
                 error,
             }
         );
@@ -1084,14 +1011,18 @@ export async function saveSessionCommand(
     return {
         session: {
             ...mapSessionFromDb(data.session),
+
             visitors: (data.visitors || []).map(
                 visitor => ({
                     id: visitor.id,
-                    sessionId: visitor.session_id,
-                    f3Name: visitor.f3_name,
+                    sessionId:
+                        visitor.session_id,
+                    f3Name:
+                        visitor.f3_name,
                     homeRegion:
                         visitor.home_region || "",
-                    realName: visitor.real_name || "",
+                    realName:
+                        visitor.real_name || "",
                     createdByUserId:
                         visitor.created_by_user_id ||
                         null,
@@ -1100,6 +1031,7 @@ export async function saveSessionCommand(
                 })
             ),
         },
+
         fngs: data.fngs || [],
         visitors: data.visitors || [],
     };

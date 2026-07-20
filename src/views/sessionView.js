@@ -1295,7 +1295,7 @@ function collectFngsFromUi() {
 
         const invitedById = inviterIds[0] || null;
 
-        if (!realName) return;
+        if (!realName && !paxName) return;
 
         fngs.push({
             realName,

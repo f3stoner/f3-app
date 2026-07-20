@@ -21,12 +21,12 @@ import {
     updateSavedPlannerSectionInCloud,
     updateSessionInCloud,
     loadAdminFlags,
-    saveSessionCommand,
+    executeSessionSaveCommand,
     loadMembersByIds,
     rebuildMemberStatsForMembers,
     getAffectedMemberIdsFromSession
 } from "./cloudData.js";
-import { prepareSessionSaveCommand } from "../utils/sessionSaveCommand.js";
+import { prepareSessionSaveCommand, buildSessionSaveRpcCommand } from "../utils/sessionSaveCommand.js";
 
 
 export function persistAppData() {
@@ -164,83 +164,170 @@ async function prepareSessionForInsert(
     session,
     activeRegionId
 ) {
+    const hasMaterializedAnnouncement =
+        typeof session.workout?.announcementText ===
+        "string";
+
+    const hasMaterializedThirdF =
+        typeof session.workout?.thirdFText ===
+        "string";
+
+    /*
+     * Sessions created from workout execution already contain
+     * resolved announcement and Third F content. Preserve that
+     * snapshot instead of requiring fresh network lookups.
+     */
+    if (
+        hasMaterializedAnnouncement &&
+        hasMaterializedThirdF
+    ) {
+        return {
+            ...session,
+
+            announcementText:
+                session.workout.announcementText,
+
+            announcementSnapshot:
+                session.announcementSnapshot || {
+                    text:
+                        session.workout
+                            .announcementText,
+                    materializedAt:
+                        new Date().toISOString(),
+                    source:
+                        "workout_execution",
+                },
+
+            workout: {
+                ...session.workout,
+
+                announcementText:
+                    session.workout
+                        .announcementText,
+
+                thirdFText:
+                    session.workout
+                        .thirdFText,
+            },
+        };
+    }
+
+    /*
+     * Manual session logging and older session drafts may not
+     * contain materialized workout content. Preserve the existing
+     * online resolution path for those cases.
+     */
     const announcementCandidates =
-        await loadPlannerAnnouncements(activeRegionId);
+        await loadPlannerAnnouncements(
+            activeRegionId
+        );
 
     const thirdFCandidates =
-        await loadThirdFDiscussions(activeRegionId);
+        await loadThirdFDiscussions(
+            activeRegionId
+        );
 
     const sourcePlannedWorkout =
         session.sourcePlannedWorkoutId
-            ? (state.plannedWorkouts || []).find(
+            ? (
+                state.plannedWorkouts || []
+            ).find(
                 workout =>
                     workout.id ===
                     session.sourcePlannedWorkoutId
             ) || null
             : null;
 
-    /*
-     * Prefer the authoritative planned-workout record because it
-     * contains announcementMode and any persisted custom text.
-     *
-     * Dashboard paths may attach a full planned workout directly to
-     * session.workout, so use that next.
-     *
-     * Manual and Q-slot sessions receive a synthetic auto workout
-     * resolved from the final session date and AO.
-     */
     const snapshotWorkout = {
         ...(sourcePlannedWorkout || {}),
         ...(session.workout || {}),
+
         id:
             session.sourcePlannedWorkoutId ||
             session.workout?.id ||
             null,
-        regionId: activeRegionId,
-        date: session.date,
-        aoId: session.aoId || null,
-        aoName: session.aoName || "",
+
+        regionId:
+            activeRegionId,
+
+        date:
+            session.date,
+
+        aoId:
+            session.aoId || null,
+
+        aoName:
+            session.aoName || "",
+
         announcementMode:
-            session.workout?.announcementMode === "custom" ||
-            sourcePlannedWorkout?.announcementMode === "custom"
+            session.workout
+                ?.announcementMode ===
+                "custom" ||
+            sourcePlannedWorkout
+                ?.announcementMode ===
+                "custom"
                 ? "custom"
                 : "auto",
+
         announcementText:
-            session.workout?.announcementMode === "custom"
-                ? session.workout?.announcementText || ""
-                : sourcePlannedWorkout?.announcementMode === "custom"
-                    ? sourcePlannedWorkout.announcementText || ""
+            session.workout
+                ?.announcementMode ===
+                "custom"
+                ? session.workout
+                    ?.announcementText || ""
+                : sourcePlannedWorkout
+                    ?.announcementMode ===
+                    "custom"
+                    ? sourcePlannedWorkout
+                        .announcementText || ""
                     : "",
     };
 
     const sessionAnnouncements =
         buildSessionAnnouncementSnapshot({
-            workout: snapshotWorkout,
-            announcements: announcementCandidates,
-            regionId: activeRegionId,
+            workout:
+                snapshotWorkout,
+
+            announcements:
+                announcementCandidates,
+
+            regionId:
+                activeRegionId,
         });
 
     const effectiveThirdF =
         getEffectiveWorkoutThirdF({
-            workout: snapshotWorkout,
-            thirdFItems: thirdFCandidates,
-            targetDate: session.date,
+            workout:
+                snapshotWorkout,
+
+            thirdFItems:
+                thirdFCandidates,
+
+            targetDate:
+                session.date,
         });
 
     return {
         ...session,
-        announcementText: sessionAnnouncements.text,
+
+        announcementText:
+            sessionAnnouncements.text,
+
         announcementSnapshot:
             sessionAnnouncements.snapshot,
-        workout: session.workout
-            ? {
-                ...session.workout,
-                announcementText:
-                    sessionAnnouncements.text,
-                thirdFText:
-                    effectiveThirdF.text,
-            }
-            : null,
+
+        workout:
+            session.workout
+                ? {
+                    ...session.workout,
+
+                    announcementText:
+                        sessionAnnouncements.text,
+
+                    thirdFText:
+                        effectiveThirdF.text,
+                }
+                : null,
     };
 }
 
@@ -308,15 +395,19 @@ export async function addSession(session) {
 
     console.groupEnd();
 
-    const result = await saveSessionCommand(
-        activeRegionId,
-        preparedSession,
-        {
+    const rpcCommand =
+        buildSessionSaveRpcCommand({
             mode: "create",
+            regionId: activeRegionId,
+            session: preparedSession,
             fngs: command.fngs,
             visitors: command.visitors,
-        }
-    );
+        });
+
+    const result =
+        await executeSessionSaveCommand(
+            rpcCommand
+        );
 
     const savedSession = result.session;
 
@@ -332,20 +423,34 @@ export async function addSession(session) {
         );
     }
     
-    const affectedMemberIds = command.fngs
-        .map(fng => fng.memberId)
-        .filter(Boolean);
+    try {
+        const affectedMemberIds = command.fngs
+            .map(fng => fng.memberId)
+            .filter(Boolean);
     
-    const refreshedMembers =
-        await loadMembersByIds(
-            activeRegionId,
-            affectedMemberIds
+        const refreshedMembers =
+            await loadMembersByIds(
+                activeRegionId,
+                affectedMemberIds
+            );
+    
+        mergeMembersIntoState(refreshedMembers);
+    } catch (error) {
+        console.warn(
+            "Session saved, but affected members could not be refreshed:",
+            error
         );
+    }
     
-    mergeMembersIntoState(refreshedMembers);
-    
-    state.sessions.push(savedSession);
-    persistAppData();
+    try {
+        state.sessions.push(savedSession);
+        persistAppData();
+    } catch (error) {
+        console.warn(
+            "Session saved, but local session state could not be updated:",
+            error
+        );
+    }
     
     return savedSession;
 }
@@ -383,15 +488,19 @@ export async function updateSession(
             activeRegionId
         );
 
-    const result = await saveSessionCommand(
-        activeRegionId,
-        preparedSession,
-        {
+    const rpcCommand =
+        buildSessionSaveRpcCommand({
             mode: "update",
+            regionId: activeRegionId,
+            session: preparedSession,
             fngs: command.fngs,
             visitors: command.visitors,
-        }
-    );
+        });
+    
+    const result =
+        await executeSessionSaveCommand(
+            rpcCommand
+        );
 
     const savedSession = result.session;
 
@@ -405,7 +514,7 @@ export async function updateSession(
             ),
         ]),
     ];
-
+    
     try {
         await rebuildMemberStatsForMembers(
             activeRegionId,
@@ -417,29 +526,49 @@ export async function updateSession(
             error
         );
     }
-
-    const affectedFngMemberIds = command.fngs
-        .map(fng => fng.memberId)
-        .filter(Boolean);
-
-    const refreshedMembers =
-        await loadMembersByIds(
-            activeRegionId,
-            affectedFngMemberIds
+    
+    try {
+        const affectedFngMemberIds = command.fngs
+            .map(fng => fng.memberId)
+            .filter(Boolean);
+    
+        const refreshedMembers =
+            await loadMembersByIds(
+                activeRegionId,
+                affectedFngMemberIds
+            );
+    
+        mergeMembersIntoState(refreshedMembers);
+    } catch (error) {
+        console.warn(
+            "Session saved, but affected members could not be refreshed:",
+            error
         );
-
-    mergeMembersIntoState(refreshedMembers);
-
-    const index = state.sessions.findIndex(
-        session => session.id === sessionId
-    );
-
-    if (index === -1) return false;
-
-    state.sessions[index] = savedSession;
-
-    persistAppData();
-
+    }
+    
+    try {
+        const index = state.sessions.findIndex(
+            session => session.id === sessionId
+        );
+    
+        if (index !== -1) {
+            state.sessions[index] = savedSession;
+            persistAppData();
+        } else {
+            console.warn(
+                "Session saved, but the local session entry was not found for replacement:",
+                {
+                    sessionId,
+                }
+            );
+        }
+    } catch (error) {
+        console.warn(
+            "Session saved, but local session state could not be updated:",
+            error
+        );
+    }
+    
     return true;
 }
 
