@@ -743,6 +743,9 @@ async function bootApp() {
     const bootStartedAt = performance.now();
     const bootPhases = {};
 
+    console.log("=== bootApp started ===");
+    console.log("Initial online status:", navigator.onLine);
+
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
     const sharedWorkoutId = getSharedWorkoutIdFromUrl();
@@ -756,8 +759,14 @@ async function bootApp() {
 
     try {
         let phaseStartedAt = performance.now();
-    
+
+        console.log("bootApp: requesting current session");
+
         let session = await getCurrentSession();
+
+        console.log("bootApp: getCurrentSession completed");
+        console.log("bootApp: session present:", Boolean(session));
+        console.log("bootApp: session user id:", session?.user?.id || null);
     
         bootPhases.getCurrentSessionMs = Math.round(
             performance.now() - phaseStartedAt
@@ -791,10 +800,18 @@ async function bootApp() {
 
         phaseStartedAt = performance.now();
 
+        console.log("bootApp: online before profile lookup:", navigator.onLine);
+        console.log("bootApp: requesting profile");
+
         const profile = await ensureMyProfile(
             session.user.id,
             session
         );
+
+        console.log("bootApp: profile lookup completed");
+        console.log("bootApp: profile present:", Boolean(profile));
+        console.log("bootApp: profile id:", profile?.id || null);
+        console.log("bootApp: profile region id:", profile?.region_id || null);
 
         bootPhases.ensureMyProfileMs = Math.round(
             performance.now() - phaseStartedAt
@@ -986,13 +1003,18 @@ async function bootApp() {
             .catch(error => {
                 console.error("Failed to load notification settings:", error);
             });
+        
         console.log(
             `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
         );
 
         hideBootSplash();
     } catch (error) {
-
+        console.error("bootApp caught an error:", error);
+        console.error("bootApp error name:", error?.name || null);
+        console.error("bootApp error message:", error?.message || null);
+        console.error("bootApp error stack:", error?.stack || null);
+        console.error("bootApp online at failure:", navigator.onLine);
         console.log(
             `bootApp FAILED: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
         );
