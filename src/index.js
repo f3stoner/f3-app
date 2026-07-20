@@ -739,9 +739,33 @@ async function synchronizePendingSessionsForCurrentContext() {
     }
 }
 
+function recordBootDiagnostic(step, details = {}) {
+    const entry = {
+        timestamp: new Date().toISOString(),
+        step,
+        online: navigator.onLine,
+        ...details,
+    };
+
+    const existing = JSON.parse(
+        localStorage.getItem("bootDiagnostics") || "[]"
+    );
+
+    existing.push(entry);
+
+    localStorage.setItem(
+        "bootDiagnostics",
+        JSON.stringify(existing.slice(-50))
+    );
+
+    console.warn("BOOT DIAGNOSTIC:", entry);
+}
+
 async function bootApp() {
     const bootStartedAt = performance.now();
     const bootPhases = {};
+
+    recordBootDiagnostic("boot_started");
 
     console.log("=== bootApp started ===");
     console.log("Initial online status:", navigator.onLine);
@@ -760,9 +784,16 @@ async function bootApp() {
     try {
         let phaseStartedAt = performance.now();
 
+        recordBootDiagnostic("before_get_current_session");
+
         console.log("bootApp: requesting current session");
 
         let session = await getCurrentSession();
+
+        recordBootDiagnostic("after_get_current_session", {
+            hasSession: Boolean(session),
+            userId: session?.user?.id || null,
+        });
 
         console.log("bootApp: getCurrentSession completed");
         console.log("bootApp: session present:", Boolean(session));
@@ -800,6 +831,8 @@ async function bootApp() {
 
         phaseStartedAt = performance.now();
 
+        recordBootDiagnostic("before_ensure_profile");
+
         console.log("bootApp: online before profile lookup:", navigator.onLine);
         console.log("bootApp: requesting profile");
 
@@ -807,6 +840,12 @@ async function bootApp() {
             session.user.id,
             session
         );
+
+        recordBootDiagnostic("after_ensure_profile", {
+            hasProfile: Boolean(profile),
+            profileId: profile?.id || null,
+            regionId: profile?.region_id || null,
+        });
 
         console.log("bootApp: profile lookup completed");
         console.log("bootApp: profile present:", Boolean(profile));
@@ -1010,6 +1049,11 @@ async function bootApp() {
 
         hideBootSplash();
     } catch (error) {
+        recordBootDiagnostic("boot_failed", {
+            errorName: error?.name || null,
+            errorMessage: error?.message || String(error),
+        });
+
         console.error("bootApp caught an error:", error);
         console.error("bootApp error name:", error?.name || null);
         console.error("bootApp error message:", error?.message || null);
@@ -1027,6 +1071,8 @@ async function bootApp() {
             currentRegionId: state.currentRegionId || null,
             profileRegionId: state.profileRegionId || null,
         });
+
+        recordBootDiagnostic("rendering_auth_no_session");
 
         renderAuthView();
         hideBootSplash();
