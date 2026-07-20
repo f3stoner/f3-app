@@ -148,17 +148,6 @@ export function renderWorkoutPlanner() {
         );
     }
 
-    if (!isEditing && draftWorkout?.id) {
-        const existingWorkout = state.plannedWorkouts.find(
-            workout => workout.id === draftWorkout.id
-        );
-    
-        if (existingWorkout) {
-            isEditing = true;
-            editingWorkoutId = draftWorkout.id;
-        }
-    }
-
     function buildCurrentPlannerDraft() {
         return {
             ...plannerDraft,

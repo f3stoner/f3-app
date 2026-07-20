@@ -41,21 +41,34 @@ function normalizePlannerDraft(value) {
         };
     }
 
-    const editingWorkoutId = state.editingPlannedWorkoutId || null;
+    const editingWorkoutId =
+        state.editingPlannedWorkoutId || null;
 
-    const isExistingWorkout =
+    const hasCompatibleEditingWorkoutId =
         Boolean(editingWorkoutId) &&
         (
             !value.id ||
             value.id === editingWorkoutId
         );
 
-    return isExistingWorkout
-        ? createExistingPlannerDraft({
+    if (hasCompatibleEditingWorkoutId) {
+        return createExistingPlannerDraft({
             ...value,
             id: editingWorkoutId,
-        })
-        : createNewPlannerDraft(value);
+        });
+    }
+
+    const matchesExistingWorkout =
+        Boolean(value.id) &&
+        state.plannedWorkouts.some(
+            workout => workout.id === value.id
+        );
+
+    if (matchesExistingWorkout) {
+        return createExistingPlannerDraft(value);
+    }
+
+    return createNewPlannerDraft(value);
 }
 
 export function getPlannerDraft() {
