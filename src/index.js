@@ -32,7 +32,7 @@ import { checkRegionAccess } from "./services/cloudData.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
-import { saveNavState, getRestoredNavState } from "./utils/storage.js";
+import { saveNavState, getRestoredNavState, saveOfflineBootSnapshot, loadOfflineBootSnapshot } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 import { logActionFailure, logAppEvent } from "./services/appEvents.js";
@@ -602,6 +602,124 @@ function hydrateHistoricalBackblastLinks(regionId) {
         });
 }
 
+function hydrateOfflineBootSnapshot(snapshot) {
+    const {
+        profile,
+        availableRegions,
+        profileAoPermissions,
+        profileRegionPositions,
+        regionData,
+    } = snapshot;
+
+    state.currentUserId =
+        snapshot.userId;
+
+    state.currentUserRole =
+        profile.role || "pax";
+
+    state.currentUserDisplayName =
+        profile.displayName || "User";
+
+    state.currentUserProfileId =
+        profile.id;
+
+    state.profileRegionId =
+        profile.regionId;
+
+    state.currentRegionId =
+        profile.regionId;
+
+    state.regionOverrideId =
+        null;
+
+    state.currentUserMemberId =
+        profile.memberId || null;
+
+    state.customTemplates =
+        profile.customTemplates ||
+        state.customTemplates;
+
+    state.availableRegions =
+        availableRegions || [];
+
+    state.profileAoPermissions =
+        profileAoPermissions || [];
+
+    state.profileRegionPositions =
+        profileRegionPositions || [];
+
+    state.hasInitializedQSignupFilter =
+        false;
+
+    replacePersistedData(regionData);
+}
+
+function bootFromOfflineSnapshot({
+    session,
+    sharedWorkoutId,
+}) {
+    const snapshot =
+        loadOfflineBootSnapshot(
+            session.user.id
+        );
+
+    if (!snapshot) {
+        return false;
+    }
+
+    hydrateOfflineBootSnapshot(snapshot);
+
+    if (sharedWorkoutId) {
+        const sharedWorkoutExists =
+            state.plannedWorkouts.some(
+                workout =>
+                    workout.id ===
+                    sharedWorkoutId
+            );
+
+        if (sharedWorkoutExists) {
+            state.selectedPlannedWorkoutId =
+                sharedWorkoutId;
+
+            state.sharedWorkoutViewMode = true;
+            state.currentView =
+                "plannedWorkoutDetail";
+        } else {
+            state.currentView = "dashboard";
+        }
+    } else if (!state.currentUserMemberId) {
+        /*
+         * Claiming a member requires the network.
+         * Do not send an offline user into that flow.
+         */
+        state.currentView = "dashboard";
+    } else {
+        const restoredNav =
+            getRestoredNavState();
+
+        if (restoredNav) {
+            restoreNavState(restoredNav);
+        } else {
+            state.currentView = "dashboard";
+        }
+    }
+
+    renderApp();
+    hideBootSplash();
+
+    console.log(
+        "The Q booted from its offline snapshot.",
+        {
+            snapshotSavedAt:
+                snapshot.savedAt,
+            regionId:
+                state.currentRegionId,
+        }
+    );
+
+    return true;
+}
+
 async function loadActiveRegionData(
     profileRegionId,
     bootPhases = null
@@ -836,6 +954,34 @@ async function bootApp() {
         console.log("bootApp: online before profile lookup:", navigator.onLine);
         console.log("bootApp: requesting profile");
 
+        if (!navigator.onLine) {
+            const offlineBooted =
+                bootFromOfflineSnapshot({
+                    session,
+                    sharedWorkoutId,
+                });
+        
+            recordBootDiagnostic(
+                offlineBooted
+                    ? "offline_boot_succeeded"
+                    : "offline_boot_snapshot_missing"
+            );
+        
+            if (offlineBooted) {
+                return;
+            }
+        
+            /*
+             * There is no valid local application snapshot.
+             * Do not attempt cloud bootstrap while explicitly
+             * offline.
+             */
+            state.currentView = "auth";
+            renderAuthView();
+            hideBootSplash();
+            return;
+        }
+
         const profile = await ensureMyProfile(
             session.user.id,
             session
@@ -928,6 +1074,76 @@ async function bootApp() {
 
         state.profileAoPermissions = profileAoPermissions || [];
         state.profileRegionPositions = profileRegionPositions || [];
+
+        try {
+            saveOfflineBootSnapshot({
+                userId:
+                    session.user.id,
+        
+                profile,
+        
+                availableRegions:
+                    state.availableRegions,
+        
+                profileAoPermissions:
+                    state.profileAoPermissions,
+        
+                profileRegionPositions:
+                    state.profileRegionPositions,
+        
+                regionData: {
+                    regionName:
+                        state.regionName,
+        
+                    members:
+                        state.members,
+        
+                    sessions:
+                        state.sessions,
+        
+                    plannedWorkouts:
+                        state.plannedWorkouts,
+        
+                    aos:
+                        state.aos,
+        
+                    sites:
+                        state.sites,
+        
+                    qSlots:
+                        state.qSlots,
+        
+                    savedPlannerSections:
+                        state.savedPlannerSections,
+        
+                    workoutFieldLabels:
+                        state.workoutFieldLabels,
+        
+                    announcements:
+                        state.announcements,
+        
+                    qSources:
+                        state.qSources,
+        
+                    memberStats:
+                        state.memberStats,
+        
+                    memberStatsByMemberId:
+                        state.memberStatsByMemberId,
+        
+                    fngNamingPostNumber:
+                        state.fngNamingPostNumber,
+        
+                    aoLeadershipContacts:
+                        state.aoLeadershipContacts,
+                },
+            });
+        } catch (error) {
+            console.warn(
+                "Online boot succeeded, but the offline snapshot could not be saved:",
+                error
+            );
+        }
 
         if (sharedWorkoutId) {
             state.selectedPlannedWorkoutId = sharedWorkoutId;

@@ -2,6 +2,8 @@ const STORAGE_KEY = "f3AppState";
 const NAV_STATE_KEY = "theQNavState";
 const NAV_RESTORE_TTL_MS = 15 * 60 * 1000;
 const EXECUTION_RESTORE_TTL_MS = 4 * 60 * 60 * 1000;
+const OFFLINE_BOOT_KEY = "theQOfflineBoot";
+const OFFLINE_BOOT_VERSION = 1;
 
 export function saveState(state) {
     const data = JSON.stringify({
@@ -88,4 +90,152 @@ export function getRestoredNavState() {
     }
 
     return null;
+}
+
+export function saveOfflineBootSnapshot({
+    userId,
+    profile,
+    availableRegions,
+    profileAoPermissions,
+    profileRegionPositions,
+    regionData,
+}) {
+    if (!userId || !profile?.id || !profile?.region_id) {
+        throw new Error(
+            "Offline boot snapshot requires a user and profile."
+        );
+    }
+
+    const snapshot = {
+        version: OFFLINE_BOOT_VERSION,
+        savedAt: new Date().toISOString(),
+
+        userId,
+
+        profile: {
+            id: profile.id,
+            displayName:
+                profile.display_name || "User",
+            role:
+                profile.role || "pax",
+            regionId:
+                profile.region_id,
+            memberId:
+                profile.member_id || null,
+            customTemplates:
+                profile.custom_templates || null,
+        },
+
+        availableRegions:
+            Array.isArray(availableRegions)
+                ? availableRegions
+                : [],
+
+        profileAoPermissions:
+            Array.isArray(profileAoPermissions)
+                ? profileAoPermissions
+                : [],
+
+        profileRegionPositions:
+            Array.isArray(profileRegionPositions)
+                ? profileRegionPositions
+                : [],
+
+        regionData: {
+            regionName:
+                regionData.regionName || "",
+
+            members:
+                regionData.members || [],
+
+            sessions:
+                regionData.sessions || [],
+
+            plannedWorkouts:
+                regionData.plannedWorkouts || [],
+
+            aos:
+                regionData.aos || [],
+
+            sites:
+                regionData.sites || [],
+
+            qSlots:
+                regionData.qSlots || [],
+
+            savedPlannerSections:
+                regionData.savedPlannerSections || [],
+
+            workoutFieldLabels:
+                regionData.workoutFieldLabels || {},
+
+            announcements:
+                regionData.announcements || [],
+
+            qSources:
+                regionData.qSources || [],
+
+            memberStats:
+                regionData.memberStats || [],
+
+            memberStatsByMemberId:
+                regionData.memberStatsByMemberId || {},
+
+            fngNamingPostNumber:
+                regionData.fngNamingPostNumber || 1,
+
+            aoLeadershipContacts:
+                regionData.aoLeadershipContacts || [],
+        },
+    };
+
+    localStorage.setItem(
+        OFFLINE_BOOT_KEY,
+        JSON.stringify(snapshot)
+    );
+}
+
+export function loadOfflineBootSnapshot(userId) {
+    if (!userId) return null;
+
+    try {
+        const raw =
+            localStorage.getItem(OFFLINE_BOOT_KEY);
+
+        if (!raw) return null;
+
+        const snapshot = JSON.parse(raw);
+
+        if (
+            snapshot?.version !==
+            OFFLINE_BOOT_VERSION
+        ) {
+            return null;
+        }
+
+        if (snapshot.userId !== userId) {
+            return null;
+        }
+
+        if (
+            !snapshot.profile?.id ||
+            !snapshot.profile?.regionId ||
+            !snapshot.regionData
+        ) {
+            return null;
+        }
+
+        return snapshot;
+    } catch (error) {
+        console.error(
+            "Failed to load offline boot snapshot:",
+            error
+        );
+
+        return null;
+    }
+}
+
+export function clearOfflineBootSnapshot() {
+    localStorage.removeItem(OFFLINE_BOOT_KEY);
 }
