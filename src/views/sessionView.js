@@ -1465,143 +1465,367 @@ saveButton.addEventListener("click", async () => {
     isSavingSession = true;
     updateSaveButtonState();
 
-try {
-    let savedSession;
-    const oldSession = isEditing
-        ? state.sessions.find(session => session.id === sessionId) || null
-        : null;
-
-    if (isEditing) {
-        const canSaveEdit =
-            hasPermission(PERMISSIONS.MANAGE_SESSIONS) ||
-            canEditAoSession(oldSession?.aoId) ||
-            oldSession?.createdByUserId === state.currentUserId;
+    try {
+        let saveOutcome = null;
+        let savedSession = null;
     
-            if (!canSaveEdit) {
-                throw new Error("Unauthorized session edit.");
+        const oldSession = isEditing
+            ? state.sessions.find(
+                session => session.id === sessionId
+            ) || null
+            : null;
+    
+        /*
+         * Phase 1: authoritative save.
+         *
+         * Only errors in this phase may be reported as
+         * "Failed to save session."
+         */
+        try {
+            if (isEditing) {
+                const canSaveEdit =
+                    hasPermission(
+                        PERMISSIONS.MANAGE_SESSIONS
+                    ) ||
+                    canEditAoSession(
+                        oldSession?.aoId
+                    ) ||
+                    oldSession?.createdByUserId ===
+                        state.currentUserId;
+    
+                if (!canSaveEdit) {
+                    throw new Error(
+                        "Unauthorized session edit."
+                    );
+                }
             }
-    }
-
-    if (isEditing) {
-        const sessionToUpdate = {
-            ...draftSession,
-            announcementText:
-                originalSession?.announcementText ??
-                draftSession.announcementText ??
-                "",
-            announcementSnapshot:
-                originalSession?.announcementSnapshot ??
-                draftSession.announcementSnapshot ??
-                null,
-        };
     
-        await updateSession(sessionId, sessionToUpdate);
+            if (isEditing) {
+                const sessionToUpdate = {
+                    ...draftSession,
     
-        savedSession = state.sessions.find(
-            session => session.id === sessionId
-        );
-    } else {
-        const sessionToCreate = {
-            ...draftSession,
-            createdByUserId: state.currentUserId,
-        };
-        savedSession = await addSession(sessionToCreate);
-
-        if (savedSession?.status === "queued") {
-            showToast(
-                "Session saved on this device. It will upload automatically when you're back online.",
-                "success"
+                    announcementText:
+                        originalSession
+                            ?.announcementText ??
+                        draftSession
+                            .announcementText ??
+                        "",
+    
+                    announcementSnapshot:
+                        originalSession
+                            ?.announcementSnapshot ??
+                        draftSession
+                            .announcementSnapshot ??
+                        null,
+                };
+    
+                saveOutcome = await updateSession(
+                    sessionId,
+                    sessionToUpdate
+                );
+            } else {
+                const sessionToCreate = {
+                    ...draftSession,
+                    createdByUserId:
+                        state.currentUserId,
+                };
+    
+                saveOutcome = await addSession(
+                    sessionToCreate
+                );
+            }
+    
+            if (
+                saveOutcome.status !== "queued"
+            ) {
+                savedSession =
+                    saveOutcome.savedSession;
+    
+                if (!savedSession) {
+                    throw new Error(
+                        "Session save completed without returning a saved session."
+                    );
+                }
+            }
+        } catch (error) {
+            console.error(
+                "Failed to save session:",
+                error
             );
-
+    
+            showToast(
+                "Failed to save session.",
+                "error"
+            );
+    
+            logSaveFailure(
+                "sessionView.saveSession",
+                error,
+                {
+                    editingSessionId:
+                        state.editingSessionId ||
+                        null,
+    
+                    selectedSessionId:
+                        state.selectedSessionId ||
+                        null,
+    
+                    draftSessionId:
+                        draftSession?.id ||
+                        null,
+    
+                    sessionDate:
+                        draftSession?.date ||
+                        null,
+    
+                    sessionAoName:
+                        draftSession?.aoName ||
+                        null,
+    
+                    attendeeCount:
+                        draftSession
+                            ?.attendeeIds
+                            ?.length || 0,
+    
+                    qCount:
+                        draftSession
+                            ?.qIds
+                            ?.length || 0,
+    
+                    fngCount:
+                        draftSession
+                            ?.fngs
+                            ?.length || 0,
+    
+                    sourcePlannedWorkoutId:
+                        draftSession
+                            ?.sourcePlannedWorkoutId ||
+                        null,
+                }
+            );
+    
+            return;
+        }
+    
+        /*
+         * Phase 2: post-save UI completion.
+         *
+         * At this point the session has either:
+         *  - committed to the cloud, or
+         *  - been durably queued on the device.
+         *
+         * Nothing in this phase may be reported as a
+         * complete save failure.
+         */
+        try {
+            if (
+                saveOutcome.status === "queued"
+            ) {
+                showToast(
+                    saveOutcome.path ===
+                        "transport_fallback_queue"
+                        ? "Connection was lost. Session saved on this device and will upload automatically."
+                        : "Session saved on this device. It will upload automatically when you're back online.",
+                    "success"
+                );
+    
+                state.editingSessionId = null;
+                state.selectedPlannedWorkoutId =
+                    null;
+                state.sessionSearchTerm = "";
+                state.sessionShowAllOthers = false;
+                state.sessionShowAllRecent = false;
+                state.sessionSelectedExpanded =
+                    false;
+                state.sessionQExpanded = false;
+                state.draftSession = null;
+    
+                navigateTo("dashboard");
+                return;
+            }
+    
+            /*
+             * Cache invalidation is helpful, but it is not
+             * part of authoritative persistence.
+             */
+            try {
+                const affectedMemberIds = [
+                    ...new Set([
+                        ...getAffectedMemberIdsFromSession(
+                            oldSession
+                        ),
+    
+                        ...getAffectedMemberIdsFromSession(
+                            savedSession
+                        ),
+    
+                        ...(
+                            savedSession?.fngs ||
+                            []
+                        )
+                            .map(
+                                fng =>
+                                    fng.memberId
+                            )
+                            .filter(Boolean),
+                    ]),
+                ];
+    
+                invalidateMemberStatsCache(
+                    affectedMemberIds
+                );
+    
+                invalidateRecentMemberActivityCache(
+                    affectedMemberIds
+                );
+            } catch (error) {
+                console.warn(
+                    "Session saved, but member caches could not be invalidated:",
+                    error
+                );
+            }
+    
+            const hasPostSaveDegradation =
+                saveOutcome.status ===
+                "partial";
+    
+            /*
+             * Both flag construction and persistence are
+             * ancillary. Neither may turn the committed
+             * session into a save failure.
+             */
+            let flags = [];
+            let adminFlagsSaved = true;
+    
+            try {
+                flags =
+                    createDuplicateFngNameFlags(
+                        savedSession,
+                        state.members,
+                        state.currentUserId
+                    );
+    
+                if (flags.length > 0) {
+                    await addAdminFlags(flags);
+                }
+            } catch (error) {
+                adminFlagsSaved = false;
+    
+                console.warn(
+                    "Session saved, but duplicate-name flags could not be created:",
+                    error
+                );
+            }
+    
+            if (hasPostSaveDegradation) {
+                showToast(
+                    "Session saved, but some local data may need to refresh.",
+                    "info"
+                );
+            } else if (!adminFlagsSaved) {
+                showToast(
+                    "Session saved, but admin review could not be flagged.",
+                    "info"
+                );
+            } else if (flags.length > 0) {
+                showToast(
+                    "Session saved • Duplicate name flagged for admin review",
+                    "info"
+                );
+            } else {
+                showToast(
+                    "Session saved",
+                    "success"
+                );
+            }
+    
+            state.selectedSessionId =
+                savedSession.id;
+    
             state.editingSessionId = null;
-            state.selectedPlannedWorkoutId = null;
+            state.selectedPlannedWorkoutId =
+                null;
             state.sessionSearchTerm = "";
             state.sessionShowAllOthers = false;
             state.sessionShowAllRecent = false;
-            state.sessionSelectedExpanded = false;
+            state.sessionSelectedExpanded =
+                false;
             state.sessionQExpanded = false;
             state.draftSession = null;
-
-            navigateTo("dashboard");
-            return;
-        }
-        }
-
-        const affectedMemberIds = [
-            ...new Set([
-                ...getAffectedMemberIdsFromSession(oldSession),
-                ...getAffectedMemberIdsFromSession(savedSession),
-                ...(savedSession?.fngs || []).map(fng => fng.memberId).filter(Boolean),
-            ]),
-        ];
-        
-        invalidateMemberStatsCache(affectedMemberIds);
-        invalidateRecentMemberActivityCache(affectedMemberIds);
-
-    const flags = createDuplicateFngNameFlags(
-        savedSession,
-        state.members,
-        state.currentUserId
-    );
-
-    if (flags.length > 0) {
-        await addAdminFlags(flags);
-        showToast("Session saved • Duplicate name flagged for admin review", "info");
-    } else {
-        showToast("Session saved", "success");
-    }
-
-    state.selectedSessionId = savedSession?.id || draftSession.id;
-    state.editingSessionId = null;
-    state.selectedPlannedWorkoutId = null;
-    state.sessionSearchTerm = "";
-    state.sessionShowAllOthers = false;
-    state.sessionShowAllRecent = false;
-    state.sessionSelectedExpanded = false;
-    state.sessionQExpanded = false;
-    state.draftSession = null;
-
-    if (isEditing) {
-        state.viewHistory = (state.viewHistory || []).filter(
-            view => view !== "session"
-        );
     
-        state.currentView = "sessionDetail";
-        renderApp();
-    } else {
-        const sessionForBackblast = savedSession || draftSession;
-
-        const shouldPreserveBackblast =
-            sessionForBackblast.backblastStatus === "shared" ||
-            sessionForBackblast.backblastStatus === "posted" ||
-            sessionForBackblast.backblastStatus === "posted_elsewhere";
-
-        state.draftBackblastText = shouldPreserveBackblast
-            ? sessionForBackblast.backblastText || ""
-            : generateBackblast(sessionForBackblast, state.members);
-
-        state.draftBackblastMediaFiles = [];
-        state.hasAddedBackblastWeather = false;
-        navigateTo("backblast");
-    }
-} catch (error) {
-    console.error("Failed to save session:", error);
-    showToast("Failed to save session.", "error");
-
-    logSaveFailure("sessionView.saveSession", error, {
-        editingSessionId: state.editingSessionId || null,
-        selectedSessionId: state.selectedSessionId || null,
-        draftSessionId: draftSession?.id || null,
-        sessionDate: draftSession?.date || null,
-        sessionAoName: draftSession?.aoName || null,
-        attendeeCount: draftSession?.attendeeIds?.length || 0,
-        qCount: draftSession?.qIds?.length || 0,
-        fngCount: draftSession?.fngs?.length || 0,
-        sourcePlannedWorkoutId: draftSession?.sourcePlannedWorkoutId || null,
-    });
-} finally {
-    isSavingSession = false;
-    updateSaveButtonState();
+            if (isEditing) {
+                state.viewHistory = (
+                    state.viewHistory ||
+                    []
+                ).filter(
+                    view => view !== "session"
+                );
+    
+                state.currentView =
+                    "sessionDetail";
+    
+                renderApp();
+            } else {
+                const shouldPreserveBackblast =
+                    savedSession
+                        .backblastStatus ===
+                        "shared" ||
+                    savedSession
+                        .backblastStatus ===
+                        "posted" ||
+                    savedSession
+                        .backblastStatus ===
+                        "posted_elsewhere";
+    
+                state.draftBackblastText =
+                    shouldPreserveBackblast
+                        ? savedSession
+                            .backblastText ||
+                          ""
+                        : generateBackblast(
+                            savedSession,
+                            state.members
+                        );
+    
+                state.draftBackblastMediaFiles =
+                    [];
+    
+                state.hasAddedBackblastWeather =
+                    false;
+    
+                navigateTo("backblast");
+            }
+        } catch (error) {
+            console.error(
+                "Session saved, but post-save UI completion failed:",
+                {
+                    saveStatus:
+                        saveOutcome?.status ||
+                        null,
+    
+                    savePath:
+                        saveOutcome?.path ||
+                        null,
+    
+                    sessionId:
+                        savedSession?.id ||
+                        draftSession?.id ||
+                        null,
+    
+                    error,
+                }
+            );
+    
+            showToast(
+                saveOutcome?.status === "queued"
+                    ? "Session saved on this device, but the dashboard could not be opened."
+                    : "Session saved, but the next screen could not be opened.",
+                "error"
+            );
+        }
+    } finally {
+        isSavingSession = false;
+        updateSaveButtonState();
     }
 });
 

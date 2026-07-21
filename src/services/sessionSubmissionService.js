@@ -33,12 +33,18 @@ export async function submitSessionSaveCommand({
     if (command.p_mode !== "create") {
         return {
             status: "saved",
+            path: "online",
+            databaseCommitted: true,
+            queuedLocally: false,
+            transportFallbackUsed: false,
             result:
                 await executeSessionSaveCommand(
                     command
                 ),
         };
     }
+
+    let transportFallbackUsed = false;
 
     /*
      * Try the normal cloud save first unless the browser
@@ -48,6 +54,10 @@ export async function submitSessionSaveCommand({
         try {
             return {
                 status: "saved",
+                path: "online",
+                databaseCommitted: true,
+                queuedLocally: false,
+                transportFallbackUsed: false,
                 result:
                     await executeSessionSaveCommand(
                         command
@@ -60,7 +70,7 @@ export async function submitSessionSaveCommand({
                 error ||
                 ""
             );
-            
+
             const isTransportFailure =
                 /failed to fetch/i.test(errorMessage) ||
                 /network request failed/i.test(errorMessage) ||
@@ -69,6 +79,8 @@ export async function submitSessionSaveCommand({
             if (!isTransportFailure) {
                 throw error;
             }
+
+            transportFallbackUsed = true;
 
             console.warn(
                 "Session transport failed; saving command locally.",
@@ -95,11 +107,17 @@ export async function submitSessionSaveCommand({
             new Error(
                 "Failed to save the session on this device."
             )
-        ); 
+        );
     }
 
     return {
         status: "queued",
+        path: transportFallbackUsed
+            ? "transport_fallback_queue"
+            : "offline_queue",
+        databaseCommitted: false,
+        queuedLocally: true,
+        transportFallbackUsed,
         result: null,
         pendingRecord: saveResult.record,
     };

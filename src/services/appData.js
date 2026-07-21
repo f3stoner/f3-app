@@ -411,57 +411,95 @@ export async function addSession(session) {
     if (submission.status === "queued") {
         return {
             status: "queued",
-            sessionId:
-                rpcCommand.p_session.id,
+            path: submission.path,
+            databaseCommitted: false,
+            queuedLocally: true,
+            transportFallbackUsed:
+                submission.transportFallbackUsed,
+            savedSession: null,
+            postSave: null,
         };
     }
     
     const result = submission.result;
-
     const savedSession = result.session;
 
+    const postSave = {
+        statsRefreshSucceeded: true,
+        memberRefreshSucceeded: true,
+        localStateRefreshSucceeded: true,
+    };
+
     try {
-        await rebuildMemberStatsForMembers(
-            activeRegionId,
-            getAffectedMemberIdsFromSession(savedSession)
-        );
+        const statsResult =
+            await rebuildMemberStatsForMembers(
+                activeRegionId,
+                getAffectedMemberIdsFromSession(
+                    savedSession
+                )
+            );
+
+        postSave.statsRefreshSucceeded =
+            statsResult.succeeded;
     } catch (error) {
+        postSave.statsRefreshSucceeded = false;
+
         console.warn(
             "Session saved, but member stats rebuild failed:",
             error
         );
     }
-    
+
     try {
         const affectedMemberIds = command.fngs
             .map(fng => fng.memberId)
             .filter(Boolean);
-    
+
         const refreshedMembers =
             await loadMembersByIds(
                 activeRegionId,
                 affectedMemberIds
             );
-    
+
         mergeMembersIntoState(refreshedMembers);
     } catch (error) {
+        postSave.memberRefreshSucceeded = false;
+
         console.warn(
             "Session saved, but affected members could not be refreshed:",
             error
         );
     }
-    
+
     try {
         state.sessions.push(savedSession);
         persistAppData();
     } catch (error) {
+        postSave.localStateRefreshSucceeded = false;
+
         console.warn(
             "Session saved, but local session state could not be updated:",
             error
         );
     }
-    
-    return savedSession;
+
+    const hasPostSaveFailure =
+        !postSave.statsRefreshSucceeded ||
+        !postSave.memberRefreshSucceeded ||
+        !postSave.localStateRefreshSucceeded;
+
+    return {
+        status: hasPostSaveFailure
+            ? "partial"
+            : "saved",
+        path: submission.path,
+        databaseCommitted: true,
+        queuedLocally: false,
+        transportFallbackUsed:
+            submission.transportFallbackUsed,
+        savedSession,
+        postSave,
+    };
 }
 
 export async function updateSession(
@@ -513,6 +551,12 @@ export async function updateSession(
 
     const savedSession = result.session;
 
+    const postSave = {
+        statsRefreshSucceeded: true,
+        memberRefreshSucceeded: true,
+        localStateRefreshSucceeded: true,
+    };
+
     const affectedStatsMemberIds = [
         ...new Set([
             ...getAffectedMemberIdsFromSession(
@@ -525,11 +569,17 @@ export async function updateSession(
     ];
     
     try {
-        await rebuildMemberStatsForMembers(
-            activeRegionId,
-            affectedStatsMemberIds
-        );
+        const statsResult =
+            await rebuildMemberStatsForMembers(
+                activeRegionId,
+                affectedStatsMemberIds
+            );
+    
+        postSave.statsRefreshSucceeded =
+            statsResult.succeeded;
     } catch (error) {
+        postSave.statsRefreshSucceeded = false;
+    
         console.warn(
             "Session saved, but member stats rebuild failed:",
             error
@@ -549,6 +599,8 @@ export async function updateSession(
     
         mergeMembersIntoState(refreshedMembers);
     } catch (error) {
+        postSave.memberRefreshSucceeded = false;
+    
         console.warn(
             "Session saved, but affected members could not be refreshed:",
             error
@@ -562,23 +614,43 @@ export async function updateSession(
     
         if (index !== -1) {
             state.sessions[index] = savedSession;
-            persistAppData();
         } else {
             console.warn(
-                "Session saved, but the local session entry was not found for replacement:",
+                "Session saved, but the local session entry was not found. Restoring it from the server response.",
                 {
                     sessionId,
                 }
             );
+    
+            state.sessions.push(savedSession);
         }
+    
+        persistAppData();
     } catch (error) {
+        postSave.localStateRefreshSucceeded = false;
+    
         console.warn(
             "Session saved, but local session state could not be updated:",
             error
         );
     }
     
-    return true;
+    const hasPostSaveFailure =
+        !postSave.statsRefreshSucceeded ||
+        !postSave.memberRefreshSucceeded ||
+        !postSave.localStateRefreshSucceeded;
+
+    return {
+        status: hasPostSaveFailure
+            ? "partial"
+            : "saved",
+        path: "online",
+        databaseCommitted: true,
+        queuedLocally: false,
+        transportFallbackUsed: false,
+        savedSession,
+        postSave,
+    };
 }
 
 export async function deleteSession(sessionId) {

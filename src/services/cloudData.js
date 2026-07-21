@@ -2058,27 +2058,55 @@ export function getAffectedMemberIdsFromSession(
     return [...ids];
 }
 
-export async function rebuildMemberStatsForMembers(regionId, memberIds = []) {
-    const uniqueIds = [...new Set(memberIds)].filter(Boolean);
+export async function rebuildMemberStatsForMembers(
+    regionId,
+    memberIds = []
+) {
+    const uniqueIds = [
+        ...new Set(memberIds),
+    ].filter(Boolean);
 
-    if (!regionId || uniqueIds.length === 0) return;
+    if (!regionId || uniqueIds.length === 0) {
+        return {
+            attemptedCount: 0,
+            succeededCount: 0,
+            failedCount: 0,
+            succeeded: true,
+        };
+    }
 
     const results = await Promise.allSettled(
         uniqueIds.map(memberId =>
-            supabase.rpc("rebuild_member_stats_for_member", {
-                target_region_id: regionId,
-                target_member_id: memberId,
-            })
+            supabase.rpc(
+                "rebuild_member_stats_for_member",
+                {
+                    target_region_id: regionId,
+                    target_member_id: memberId,
+                }
+            )
         )
     );
 
     const failed = results.filter(
-        result => result.status === "rejected" || result.value?.error
+        result =>
+            result.status === "rejected" ||
+            result.value?.error
     );
 
     if (failed.length > 0) {
-        console.warn("Some member stats rebuilds failed:", failed);
+        console.warn(
+            "Some member stats rebuilds failed:",
+            failed
+        );
     }
+
+    return {
+        attemptedCount: uniqueIds.length,
+        succeededCount:
+            uniqueIds.length - failed.length,
+        failedCount: failed.length,
+        succeeded: failed.length === 0,
+    };
 }
 
 export async function rebuildMemberStatsForRegion(regionId) {
