@@ -26,5 +26,8 @@ export const APP_EVENTS = {
     SAVE_FAILURE: "save_failure",
     ACTION_FAILURE: "action_failure",
 
+    JAVASCRIPT_ERROR: "javascript_error",
+    UNHANDLED_REJECTION: "unhandled_rejection",
+
     EMERGENCY_CONTACT_LOOKUP_OPENED: "emergency_contact_lookup_opened",
 };

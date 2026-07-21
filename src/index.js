@@ -53,6 +53,10 @@ import { renderPaxProfileView } from "./views/paxProfileView.js";
 import { renderSessionAuditView } from "./views/sessionAuditView.js";
 import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
+import { initializeGlobalErrorTelemetry } from "./services/globalErrorTelemetry.js";
+
+initializeGlobalErrorTelemetry();
+
 import(
     "./services/pendingSessionSyncService.js"
 );
