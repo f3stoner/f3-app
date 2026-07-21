@@ -29,6 +29,9 @@ import {
 import { prepareSessionSaveCommand, buildSessionSaveRpcCommand } from "../utils/sessionSaveCommand.js";
 import { submitSessionSaveCommand } from "./sessionSubmissionService.js";
 
+const isDevelopment =
+    process.env.NODE_ENV === "development";
+
 
 export function persistAppData() {
     saveState({
@@ -346,55 +349,45 @@ export async function addSession(session) {
         activeRegionId
     );
 
-    const attendeeIds =
-        preparedSession.attendeeIds || [];
-
-    const qIds =
-        preparedSession.qIds ||
-        (preparedSession.qId
-            ? [preparedSession.qId]
-            : []);
-
-    const fngMemberIds = (command.fngs || [])
-        .map(fng => fng.memberId)
-        .filter(Boolean);
-
-    console.group("SESSION COMMAND ATTENDEE DEBUG");
-
-    console.log({
-        activeRegionId,
-        sessionId: preparedSession.id,
-        sourcePlannedWorkoutId:
-            preparedSession.sourcePlannedWorkoutId,
-        qSlotId: preparedSession.qSlotId,
-        attendeeIds,
-        qIds,
-        fngMemberIds,
-    });
-
-    console.table(
-        attendeeIds.map(id => {
-            const member = state.members.find(
-                candidate => candidate.id === id
-            );
-
-            return {
-                id,
-                foundInState: Boolean(member),
-                paxName: member?.paxName || "",
-                realName: member?.realName || "",
-                memberRegionId:
-                    member?.regionId ||
-                    member?.region_id ||
-                    "",
-                activeRegionId,
-                isQ: qIds.includes(id),
-                isFng: fngMemberIds.includes(id),
-            };
-        })
-    );
-
-    console.groupEnd();
+    if (isDevelopment) {
+        console.debug(
+            "SESSION COMMAND DEBUG",
+            {
+                sessionId:
+                    preparedSession.id ||
+                    null,
+                regionId:
+                    activeRegionId,
+                sourcePlannedWorkoutId:
+                    preparedSession
+                        .sourcePlannedWorkoutId ||
+                    null,
+                sourceQSlotId:
+                    preparedSession
+                        .sourceQSlotId ||
+                    null,
+                attendanceCount:
+                    preparedSession
+                        .attendeeIds
+                        ?.length || 0,
+                qCount:
+                    preparedSession
+                        .qIds
+                        ?.length ||
+                    (
+                        preparedSession.qId
+                            ? 1
+                            : 0
+                    ),
+                fngCount:
+                    command.fngs
+                        ?.length || 0,
+                visitorCount:
+                    command.visitors
+                        ?.length || 0,
+            }
+        );
+    }
 
     const rpcCommand =
         buildSessionSaveRpcCommand({
