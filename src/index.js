@@ -947,202 +947,210 @@ async function bootApp() {
             return;
         }
 
-        phaseStartedAt = performance.now();
+        try {
+            phaseStartedAt = performance.now();
 
-        recordBootDiagnostic("before_ensure_profile");
+            recordBootDiagnostic("before_ensure_profile");
 
-        console.log("bootApp: online before profile lookup:", navigator.onLine);
-        console.log("bootApp: requesting profile");
+            console.log("bootApp: online before profile lookup:", navigator.onLine);
+            console.log("bootApp: requesting profile");
 
-        if (!navigator.onLine) {
+            const profile = await ensureMyProfile(
+                session.user.id,
+                session
+            );
+
+            recordBootDiagnostic("after_ensure_profile", {
+                hasProfile: Boolean(profile),
+                profileId: profile?.id || null,
+                regionId: profile?.region_id || null,
+            });
+
+            console.log("bootApp: profile lookup completed");
+            console.log("bootApp: profile present:", Boolean(profile));
+            console.log("bootApp: profile id:", profile?.id || null);
+            console.log("bootApp: profile region id:", profile?.region_id || null);
+
+            bootPhases.ensureMyProfileMs = Math.round(
+                performance.now() - phaseStartedAt
+            );
+
+            state.currentUserId = session.user.id;
+            state.currentUserRole = profile.role || "pax";
+            state.currentUserDisplayName = profile.display_name || "User";
+            state.currentUserProfileId = profile.id;
+            state.profileRegionId = profile.region_id;
+            state.regionOverrideId = null;
+            state.currentUserMemberId = profile.member_id || null;
+            state.customTemplates = profile.custom_templates || state.customTemplates;
+            state.hasInitializedQSignupFilter = false;
+
+            phaseStartedAt = performance.now();
+
+            const regions = await loadAllRegions();
+
+            bootPhases.loadAllRegionsMs = Math.round(
+                performance.now() - phaseStartedAt
+            );
+
+            state.availableRegions = regions || [];
+            
+            phaseStartedAt = performance.now();
+
+            const timeRegionalPhase = async (phaseName, operation) => {
+                const startedAt = performance.now();
+
+                try {
+                    return await operation();
+                } finally {
+                    bootPhases[phaseName] = Math.round(
+                        performance.now() - startedAt
+                    );
+                }
+            };
+
+            const [
+                regionLoaded,
+                profileAoPermissions,
+                profileRegionPositions,
+            ] = await Promise.all([
+                timeRegionalPhase(
+                    "activeRegionDataMs",
+                    () =>
+                        loadActiveRegionData(
+                            profile.region_id,
+                            bootPhases
+                        )
+                ),
+                timeRegionalPhase(
+                    "profileAoPermissionsMs",
+                    () => loadProfileAoPermissions(profile.region_id)
+                ),
+                timeRegionalPhase(
+                    "profileRegionPositionsMs",
+                    () => loadProfileRegionPositions(profile.region_id)
+                ),
+            ]);
+
+            bootPhases.regionBootstrapMs = Math.round(
+                performance.now() - phaseStartedAt
+            );
+
+            if (!regionLoaded) {
+                console.log(
+                    `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
+                );
+
+                hideBootSplash();
+                return;
+            }
+
+            state.profileAoPermissions = profileAoPermissions || [];
+            state.profileRegionPositions = profileRegionPositions || [];
+
+            try {
+                saveOfflineBootSnapshot({
+                    userId:
+                        session.user.id,
+            
+                    profile,
+            
+                    availableRegions:
+                        state.availableRegions,
+            
+                    profileAoPermissions:
+                        state.profileAoPermissions,
+            
+                    profileRegionPositions:
+                        state.profileRegionPositions,
+            
+                    regionData: {
+                        regionName:
+                            state.regionName,
+            
+                        members:
+                            state.members,
+            
+                        sessions:
+                            state.sessions,
+            
+                        plannedWorkouts:
+                            state.plannedWorkouts,
+            
+                        aos:
+                            state.aos,
+            
+                        sites:
+                            state.sites,
+            
+                        qSlots:
+                            state.qSlots,
+            
+                        savedPlannerSections:
+                            state.savedPlannerSections,
+            
+                        workoutFieldLabels:
+                            state.workoutFieldLabels,
+            
+                        announcements:
+                            state.announcements,
+            
+                        qSources:
+                            state.qSources,
+            
+                        memberStats:
+                            state.memberStats,
+            
+                        memberStatsByMemberId:
+                            state.memberStatsByMemberId,
+            
+                        fngNamingPostNumber:
+                            state.fngNamingPostNumber,
+            
+                        aoLeadershipContacts:
+                            state.aoLeadershipContacts,
+                    },
+                });
+            } catch (error) {
+                console.warn(
+                    "Online boot succeeded, but the offline snapshot could not be saved:",
+                    error
+                );
+            }
+            recordBootDiagnostic("cloud_boot_succeeded");
+        } catch (cloudBootError) {
+            recordBootDiagnostic("cloud_boot_failed", {
+                errorName:
+                    cloudBootError?.name || null,
+                errorMessage:
+                    cloudBootError?.message ||
+                    String(cloudBootError),
+                navigatorOnline:
+                    navigator.onLine,
+            });
+    
+            console.warn(
+                "Cloud bootstrap failed. Attempting offline snapshot:",
+                cloudBootError
+            );
+    
             const offlineBooted =
                 bootFromOfflineSnapshot({
                     session,
                     sharedWorkoutId,
                 });
-        
+    
             recordBootDiagnostic(
                 offlineBooted
                     ? "offline_boot_succeeded"
                     : "offline_boot_snapshot_missing"
             );
-        
+    
             if (offlineBooted) {
                 return;
             }
-        
-            /*
-             * There is no valid local application snapshot.
-             * Do not attempt cloud bootstrap while explicitly
-             * offline.
-             */
-            state.currentView = "auth";
-            renderAuthView();
-            hideBootSplash();
-            return;
-        }
-
-        const profile = await ensureMyProfile(
-            session.user.id,
-            session
-        );
-
-        recordBootDiagnostic("after_ensure_profile", {
-            hasProfile: Boolean(profile),
-            profileId: profile?.id || null,
-            regionId: profile?.region_id || null,
-        });
-
-        console.log("bootApp: profile lookup completed");
-        console.log("bootApp: profile present:", Boolean(profile));
-        console.log("bootApp: profile id:", profile?.id || null);
-        console.log("bootApp: profile region id:", profile?.region_id || null);
-
-        bootPhases.ensureMyProfileMs = Math.round(
-            performance.now() - phaseStartedAt
-        );
-
-        state.currentUserId = session.user.id;
-        state.currentUserRole = profile.role || "pax";
-        state.currentUserDisplayName = profile.display_name || "User";
-        state.currentUserProfileId = profile.id;
-        state.profileRegionId = profile.region_id;
-        state.regionOverrideId = null;
-        state.currentUserMemberId = profile.member_id || null;
-        state.customTemplates = profile.custom_templates || state.customTemplates;
-        state.hasInitializedQSignupFilter = false;
-
-        phaseStartedAt = performance.now();
-
-        const regions = await loadAllRegions();
-
-        bootPhases.loadAllRegionsMs = Math.round(
-            performance.now() - phaseStartedAt
-        );
-
-        state.availableRegions = regions || [];
-        
-        phaseStartedAt = performance.now();
-
-        const timeRegionalPhase = async (phaseName, operation) => {
-            const startedAt = performance.now();
-
-            try {
-                return await operation();
-            } finally {
-                bootPhases[phaseName] = Math.round(
-                    performance.now() - startedAt
-                );
-            }
-        };
-
-        const [
-            regionLoaded,
-            profileAoPermissions,
-            profileRegionPositions,
-        ] = await Promise.all([
-            timeRegionalPhase(
-                "activeRegionDataMs",
-                () =>
-                    loadActiveRegionData(
-                        profile.region_id,
-                        bootPhases
-                    )
-            ),
-            timeRegionalPhase(
-                "profileAoPermissionsMs",
-                () => loadProfileAoPermissions(profile.region_id)
-            ),
-            timeRegionalPhase(
-                "profileRegionPositionsMs",
-                () => loadProfileRegionPositions(profile.region_id)
-            ),
-        ]);
-
-        bootPhases.regionBootstrapMs = Math.round(
-            performance.now() - phaseStartedAt
-        );
-
-        if (!regionLoaded) {
-            console.log(
-                `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
-            );
-
-            hideBootSplash();
-            return;
-        }
-
-        state.profileAoPermissions = profileAoPermissions || [];
-        state.profileRegionPositions = profileRegionPositions || [];
-
-        try {
-            saveOfflineBootSnapshot({
-                userId:
-                    session.user.id,
-        
-                profile,
-        
-                availableRegions:
-                    state.availableRegions,
-        
-                profileAoPermissions:
-                    state.profileAoPermissions,
-        
-                profileRegionPositions:
-                    state.profileRegionPositions,
-        
-                regionData: {
-                    regionName:
-                        state.regionName,
-        
-                    members:
-                        state.members,
-        
-                    sessions:
-                        state.sessions,
-        
-                    plannedWorkouts:
-                        state.plannedWorkouts,
-        
-                    aos:
-                        state.aos,
-        
-                    sites:
-                        state.sites,
-        
-                    qSlots:
-                        state.qSlots,
-        
-                    savedPlannerSections:
-                        state.savedPlannerSections,
-        
-                    workoutFieldLabels:
-                        state.workoutFieldLabels,
-        
-                    announcements:
-                        state.announcements,
-        
-                    qSources:
-                        state.qSources,
-        
-                    memberStats:
-                        state.memberStats,
-        
-                    memberStatsByMemberId:
-                        state.memberStatsByMemberId,
-        
-                    fngNamingPostNumber:
-                        state.fngNamingPostNumber,
-        
-                    aoLeadershipContacts:
-                        state.aoLeadershipContacts,
-                },
-            });
-        } catch (error) {
-            console.warn(
-                "Online boot succeeded, but the offline snapshot could not be saved:",
-                error
-            );
+    
+            throw cloudBootError;
         }
 
         if (sharedWorkoutId) {
@@ -1288,8 +1296,11 @@ async function bootApp() {
             profileRegionId: state.profileRegionId || null,
         });
 
-        recordBootDiagnostic("rendering_auth_no_session");
-
+        recordBootDiagnostic(
+            "rendering_auth_after_boot_failure"
+        );
+        
+        state.currentView = "auth";
         renderAuthView();
         hideBootSplash();
     }
