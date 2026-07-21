@@ -244,25 +244,36 @@ export function renderPlannedWorkoutDetail() {
                     state.currentRegionId;
     
                 state.hasLoadedPlannerThirdFDiscussions = true;
-            })
-            .catch(error => {
-                console.error(
-                    "Failed to load workout Third F discussions:",
-                    error
-                );
-            })
-            .finally(() => {
-                state.isLoadingPlannerThirdFDiscussions = false;
     
                 if (
                     state.currentView ===
                     "plannedWorkoutDetail"
                 ) {
+                    state.preserveExecutionScroll = true;
                     renderApp();
                 }
+            })
+            .catch(error => {
+                console.warn(
+                    "Failed to load workout Third F discussions:",
+                    error
+                );
+    
+                /*
+                 * Prevent an offline failure from creating an
+                 * immediate render/retry loop. Existing snapshot
+                 * values remain available.
+                 */
+                state.plannerThirdFDiscussionsRegionId =
+                    state.currentRegionId;
+    
+                state.hasLoadedPlannerThirdFDiscussions = true;
+            })
+            .finally(() => {
+                state.isLoadingPlannerThirdFDiscussions = false;
             });
     }
-
+    
     if (
         state.plannerAnnouncementsRegionId !==
         state.currentRegionId
@@ -271,35 +282,49 @@ export function renderPlannedWorkoutDetail() {
         state.plannerAnnouncementsRegionId = null;
         state.hasLoadedPlannerAnnouncements = false;
     }
-
+    
     if (
         !state.hasLoadedPlannerAnnouncements &&
         !state.isLoadingPlannerAnnouncements
     ) {
         state.isLoadingPlannerAnnouncements = true;
-
+    
         loadPlannerAnnouncements(state.currentRegionId)
             .then(announcements => {
-                state.plannerAnnouncements = announcements;
+                state.plannerAnnouncements =
+                    announcements || [];
+    
                 state.plannerAnnouncementsRegionId =
                     state.currentRegionId;
+    
                 state.hasLoadedPlannerAnnouncements = true;
-            })
-            .catch(error => {
-                console.error(
-                    "Failed to load workout announcements:",
-                    error
-                );
-            })
-            .finally(() => {
-                state.isLoadingPlannerAnnouncements = false;
-
+    
                 if (
                     state.currentView ===
                     "plannedWorkoutDetail"
                 ) {
+                    state.preserveExecutionScroll = true;
                     renderApp();
                 }
+            })
+            .catch(error => {
+                console.warn(
+                    "Failed to load workout announcements:",
+                    error
+                );
+    
+                /*
+                 * Prevent an offline failure from creating an
+                 * immediate render/retry loop. Existing snapshot
+                 * values remain available.
+                 */
+                state.plannerAnnouncementsRegionId =
+                    state.currentRegionId;
+    
+                state.hasLoadedPlannerAnnouncements = true;
+            })
+            .finally(() => {
+                state.isLoadingPlannerAnnouncements = false;
             });
     }
 
