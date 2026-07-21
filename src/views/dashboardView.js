@@ -404,28 +404,6 @@ export function renderDashboard() {
         ].join("-");
     }
 
-    function findMostRecentUnpostedQSession() {
-        if (!state.currentUserMemberId) return null;
-    
-        const today = getTodayDate();
-        const cutoff = getRecentDateCutoff(7);
-    
-        return [...state.sessions]
-            .filter(session => {
-                const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
-                const isCurrentUserQ = effectiveQIds.includes(state.currentUserMemberId);
-                const isRecent = session.date >= cutoff && session.date <= today;
-                const isNotPosted =
-                    !session.backblastPostedAt &&
-                    session.backblastStatus !== "posted" &&
-                    session.backblastStatus !== "shared" &&
-                    session.backblastStatus !== "posted_elsewhere";    
-
-                return isCurrentUserQ && isRecent && isNotPosted;
-            })
-            .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
-    }
-
     function isTodayQPastWorkoutTime(slot) {
         if (slot.date !== getTodayDate()) return false;
     
@@ -628,16 +606,13 @@ export function renderDashboard() {
     const today = getTodayDate();
     const myUpcomingQSlots = getMyUpcomingQSlots();
     const nextQSlot = myUpcomingQSlots[0] || null;
-    const unpostedQSession = findMostRecentUnpostedQSession();
-    
+
     const activeExecution = getActiveWorkoutExecution();
     const resumeWorkoutSection = renderResumeWorkoutSection(activeExecution);
 
-    let dashboardCtaSection = unpostedQSession
-        ? renderPostBackblastCtaSection(unpostedQSession)
-        : renderNoUpcomingQSection();
+    let dashboardCtaSection = renderNoUpcomingQSection();
 
-    if (nextQSlot && !unpostedQSession) {
+    if (nextQSlot) {
         const ao = state.aos.find(a => a.id === nextQSlot.aoId);
         const displayTime = getSlotDisplayTime(nextQSlot, ao);
         const weatherCacheKey = getWeatherCacheKey(nextQSlot, ao);
@@ -1011,92 +986,6 @@ export function renderDashboard() {
     
         content.append(title, subtitle);
         actions.append(claimButton, scheduleButton);
-        card.append(content, actions);
-        section.append(heading, card);
-    
-        return section;
-    }
-
-    function renderPostBackblastCtaSection(session) {
-        const section = document.createElement("div");
-        section.classList.add("section");
-    
-        const heading = document.createElement("div");
-        heading.classList.add("detail-label");
-        heading.textContent = "Next Action";
-    
-        const card = document.createElement("div");
-        card.classList.add("member-card", "dashboard-next-q-card");
-    
-        const content = document.createElement("div");
-    
-        const title = document.createElement("div");
-        title.classList.add("member-name");
-        title.textContent = "Post Your Backblast";
-    
-        const subtitle = document.createElement("div");
-        subtitle.classList.add("stats-line");
-        subtitle.textContent = `${formatDate(session.date)} • ${session.aoName || "Unknown AO"}`;
-    
-        const preview = document.createElement("div");
-        preview.classList.add("stats-line");
-        preview.textContent = "Session logged. Finish the loop with a backblast.";
-    
-        const actions = document.createElement("div");
-        actions.classList.add("q-slot-actions");
-    
-        const backblastButton = document.createElement("button");
-        backblastButton.classList.add("primary-button");
-        backblastButton.textContent = "Post Backblast";
-    
-        backblastButton.addEventListener("click", event => {
-            event.stopPropagation();
-            state.selectedSessionId = session.id;
-            navigateTo("backblast");
-        });
-    
-        const viewSessionButton = document.createElement("button");
-        viewSessionButton.classList.add("secondary-button");
-        viewSessionButton.textContent = "View Session";
-    
-        viewSessionButton.addEventListener("click", event => {
-            event.stopPropagation();
-            state.selectedSessionId = session.id;
-            navigateTo("sessionDetail");
-        });
-
-        const alreadyPostedButton = document.createElement("button");
-        alreadyPostedButton.classList.add("secondary-button");
-        alreadyPostedButton.textContent = "Already Posted";
-
-        alreadyPostedButton.addEventListener("click", async event => {
-            event.stopPropagation();
-
-            const updatedSession = {
-                ...session,
-                backblastStatus: "posted_elsewhere",
-                backblastPostedAt: new Date().toISOString(),
-            };
-
-            try {
-                await updateSession(session.id, updatedSession);
-                Object.assign(session, updatedSession);
-
-                showToast("Backblast marked as posted.", "success");
-                renderApp();
-            } catch (error) {
-                console.error("Failed to mark backblast as posted:", error);
-                showToast("Failed to update backblast status.", "error");
-            }
-        });
-    
-        card.addEventListener("click", () => {
-            state.selectedSessionId = session.id;
-            navigateTo("backblast");
-        });
-    
-        content.append(title, subtitle, preview);
-        actions.append(backblastButton, viewSessionButton, alreadyPostedButton);
         card.append(content, actions);
         section.append(heading, card);
     
