@@ -29,5 +29,7 @@ export const APP_EVENTS = {
     JAVASCRIPT_ERROR: "javascript_error",
     UNHANDLED_REJECTION: "unhandled_rejection",
 
+    SESSION_SAVE_OUTCOME: "session_save_outcome",
+
     EMERGENCY_CONTACT_LOOKUP_OPENED: "emergency_contact_lookup_opened",
 };

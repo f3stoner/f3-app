@@ -679,6 +679,138 @@ export function logSaveFailure(
     });
 }
 
+export function logSessionSaveOutcome({
+    operation,
+    outcome = null,
+    error = null,
+    durationMs = null,
+    sessionId = null,
+    aoId = null,
+} = {}) {
+    const status =
+        outcome?.status ||
+        "failed";
+
+    const postSave =
+        outcome?.postSave ||
+        null;
+
+    const degradedStages = [];
+
+    if (
+        postSave?.statsRefreshSucceeded ===
+        false
+    ) {
+        degradedStages.push(
+            "stats_refresh"
+        );
+    }
+
+    if (
+        postSave?.memberRefreshSucceeded ===
+        false
+    ) {
+        degradedStages.push(
+            "member_refresh"
+        );
+    }
+
+    if (
+        postSave
+            ?.localStateRefreshSucceeded ===
+        false
+    ) {
+        degradedStages.push(
+            "local_state_refresh"
+        );
+    }
+
+    return logAppEvent({
+        type:
+            APP_EVENTS
+                .SESSION_SAVE_OUTCOME,
+
+        severity:
+            status === "failed"
+                ? "error"
+                : status === "partial"
+                    ? "warning"
+                    : "info",
+
+        message:
+            `Session save ${status}`,
+
+        metadata: {
+            operation:
+                operation || null,
+
+            status,
+
+            path:
+                outcome?.path ||
+                null,
+
+            durationMs:
+                Number.isFinite(durationMs)
+                    ? Math.max(
+                        0,
+                        Math.round(durationMs)
+                    )
+                    : null,
+
+            sessionId:
+                outcome
+                    ?.savedSession
+                    ?.id ||
+                sessionId ||
+                null,
+
+            aoId:
+                outcome
+                    ?.savedSession
+                    ?.aoId ||
+                aoId ||
+                null,
+
+            databaseCommitted:
+                typeof outcome
+                    ?.databaseCommitted ===
+                "boolean"
+                    ? outcome
+                        .databaseCommitted
+                    : null,
+
+            queuedLocally:
+                typeof outcome
+                    ?.queuedLocally ===
+                "boolean"
+                    ? outcome
+                        .queuedLocally
+                    : null,
+
+            transportFallbackUsed:
+                typeof outcome
+                    ?.transportFallbackUsed ===
+                "boolean"
+                    ? outcome
+                        .transportFallbackUsed
+                    : null,
+
+            degradedStages,
+
+            postSave,
+
+            errorName:
+                error?.name ||
+                null,
+
+            errorMessage:
+                error?.message ||
+                null,
+        },
+    });
+}
+
 export function logActionFailure(
     source,
     error,
