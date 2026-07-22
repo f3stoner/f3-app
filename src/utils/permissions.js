@@ -169,6 +169,47 @@ export function canEditAoSession(aoId) {
     return managesAo(aoId, AO_SESSION_EDIT_POSITIONS);
 }
 
+export function isCurrentUserSessionQ(session) {
+    if (!session || !state.currentUserMemberId) {
+        return false;
+    }
+
+    const qIds = Array.isArray(session.qIds)
+        ? session.qIds
+        : Array.isArray(session.q_ids)
+            ? session.q_ids
+            : [];
+
+    if (qIds.length > 0) {
+        return qIds.includes(state.currentUserMemberId);
+    }
+
+    const legacyQId = session.qId || session.q_id || null;
+
+    return legacyQId === state.currentUserMemberId;
+}
+
+export function canManageSession(session) {
+    if (!session) {
+        return false;
+    }
+
+    const createdByUserId =
+        session.createdByUserId
+        || session.created_by_user_id
+        || null;
+
+    const aoId =
+        session.aoId
+        || session.ao_id
+        || null;
+
+    return createdByUserId === state.currentUserId
+        || isCurrentUserSessionQ(session)
+        || isRegionalAdmin()
+        || canEditAoSession(aoId);
+}
+
 export function canViewAnyAoInsights() {
     return hasPermission(PERMISSIONS.VIEW_AO_INSIGHTS)
         || getManagedAoIds(AO_INSIGHTS_POSITIONS).length > 0;

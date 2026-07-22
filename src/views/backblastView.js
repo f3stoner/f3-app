@@ -546,8 +546,17 @@ export function renderBackblastView () {
                             backblastPostedAt: new Date().toISOString(),
                         };
 
-                        await updateSession(session.id, updatedSession);
-                        Object.assign(session, updatedSession);
+                        try {
+                            await updateSession(session.id, updatedSession);
+                            Object.assign(session, updatedSession);
+                        } catch (error) {
+                            console.error("Failed to persist backblast status:", error);
+                        
+                            showToast(
+                                "Backblast shared, but The Q couldn't save its shared status.",
+                                "warning"
+                            );
+                        }
                         
                         returnToDashboardAfterShare();
                     })

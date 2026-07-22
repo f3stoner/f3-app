@@ -18,7 +18,7 @@ import {
     invalidateMemberStatsCache,
     invalidateRecentMemberActivityCache,
 } from "../utils/memberStatsCache.js";
-import { hasPermission, PERMISSIONS, canEditAoSession, canManageAoMembers } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, canManageSession, canManageAoMembers } from "../utils/permissions.js";
 import { getRegularPaxIds, getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 import { getSessionAnnouncementText } from "../utils/announcements.js";
@@ -56,11 +56,7 @@ export function renderSessionDetail() {
 
     const canEditSession =
         session &&
-        (
-            canManageSessions ||
-            canEditAoSession(session.aoId) ||
-            session.createdByUserId === state.currentUserId
-        );
+        canManageSession(session);
 
         if (!session) {
             app.append(header);
