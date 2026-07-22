@@ -832,3 +832,89 @@ export function logActionFailure(
         },
     });
 }
+
+export function logPendingSessionSyncOutcome({
+    outcome,
+    record,
+    durationMs,
+} = {}) {
+    return logAppEvent({
+        type:
+            APP_EVENTS
+                .PENDING_SESSION_SYNC_OUTCOME,
+
+        severity:
+            outcome?.status ===
+            "cleanup_failed"
+                ? "warning"
+                : outcome?.status ===
+                  "upload_failed"
+                    ? "error"
+                    : "info",
+
+        message:
+            `Pending session sync ${outcome?.status ?? "unknown"}`,
+
+        metadata: {
+            status:
+                outcome?.status ?? null,
+
+            durationMs:
+                Number.isFinite(durationMs)
+                    ? Math.max(
+                        0,
+                        Math.round(durationMs)
+                    )
+                    : null,
+
+            pendingRecordId:
+                record?.recordKey ??
+                null,
+
+            commandId:
+                record?.commandId ??
+                null,
+
+            sessionId:
+                record?.sessionId ??
+                null,
+
+            aoId:
+                record?.command
+                    ?.p_session
+                    ?.ao_id ??
+                null,
+
+            attemptCount:
+                outcome?.record
+                    ?.attemptCount ??
+                null,
+
+            databaseCommitted:
+                outcome
+                    ?.databaseCommitted ??
+                null,
+
+            pendingRecordRemoved:
+                outcome
+                    ?.pendingRecordRemoved ??
+                null,
+
+            statePersistenceFailed:
+                Boolean(
+                    outcome
+                        ?.statePersistenceError
+                ),
+
+            errorName:
+                outcome?.error
+                    ?.name ??
+                null,
+
+            errorMessage:
+                outcome?.error
+                    ?.message ??
+                null,
+        },
+    });
+}

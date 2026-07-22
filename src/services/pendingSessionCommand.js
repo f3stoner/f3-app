@@ -17,6 +17,38 @@ function cloneSerializable(value) {
     return JSON.parse(JSON.stringify(value));
 }
 
+export function sanitizePendingSessionError(
+    error,
+    fallbackMessage =
+        "Pending session synchronization failed."
+) {
+    if (!error) {
+        return {
+            name: null,
+            code: null,
+            message: fallbackMessage,
+        };
+    }
+
+    return {
+        name:
+            typeof error.name === "string"
+                ? error.name
+                : null,
+
+        code:
+            typeof error.code === "string"
+                ? error.code
+                : null,
+
+        message:
+            typeof error.message === "string" &&
+            error.message.trim()
+                ? error.message
+                : fallbackMessage,
+    };
+}
+
 export function createPendingSessionKey({
     ownerUserId,
     regionId,

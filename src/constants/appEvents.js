@@ -30,6 +30,7 @@ export const APP_EVENTS = {
     UNHANDLED_REJECTION: "unhandled_rejection",
 
     SESSION_SAVE_OUTCOME: "session_save_outcome",
+    PENDING_SESSION_SYNC_OUTCOME: "pending_session_sync_outcome",
 
     EMERGENCY_CONTACT_LOOKUP_OPENED: "emergency_contact_lookup_opened",
 };
