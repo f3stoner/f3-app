@@ -188,7 +188,6 @@ export async function importOld300AttendanceCsv(csvText, options = {}) {
     }
 
     let membersInserted = 0;
-    let membersUpdated = 0;
 
     for (const member of localMembers) {
         const key = normalizeName(member.paxName);
@@ -206,21 +205,8 @@ export async function importOld300AttendanceCsv(csvText, options = {}) {
             continue;
         }
 
-        const merged = {
-            ...existing,
-            realName: member.realName || existing.realName,
-            homeAo: member.homeAo || existing.homeAo,
-            firstPostDate: member.firstPostDate || existing.firstPostDate,
-            status: "active",
-        };
-
-        savedMemberMap[key] = merged;
-
-        if (!dryRun) {
-            await updateMemberInCloud(regionId, merged);
-        }
-
-        membersUpdated += 1;
+        savedMemberMap[key] = existing;
+        continue;
     }
 
     let invitedByUpdates = 0;
@@ -369,7 +355,6 @@ export async function importOld300AttendanceCsv(csvText, options = {}) {
             newSessions,
             duplicateSessions,
             membersInserted,
-            membersUpdated,
             invitedByUpdates,
             skippedFutureDateCells,
             unmatchedSessionMembers,
@@ -386,7 +371,6 @@ export async function importOld300AttendanceCsv(csvText, options = {}) {
             totalNewSessions: 0,
             inserted: 0,
             membersInserted,
-            membersUpdated,
             invitedByUpdates,
             skippedFutureDateCells,
             unmatchedSessionMembers,
@@ -404,7 +388,6 @@ export async function importOld300AttendanceCsv(csvText, options = {}) {
         totalNewSessions: newSessions.length,
         inserted: newSessions.length,
         membersInserted,
-        membersUpdated,
         invitedByUpdates,
         skippedFutureDateCells,
         unmatchedSessionMembers,
