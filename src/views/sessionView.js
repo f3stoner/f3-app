@@ -19,7 +19,7 @@ import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from 
 import { doesSearchMatch } from "../utils/search.js";
 import { getTotalAttendanceCount, memberAttendedSession } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
-import { hasPermission, PERMISSIONS, canEditAoSession } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, canEditAoSession, canManageSession } from "../utils/permissions.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -182,9 +182,7 @@ const originalSession = isEditing
 
 const canEditExistingSession =
     !isEditing ||
-    hasPermission(PERMISSIONS.MANAGE_SESSIONS) ||
-    canEditAoSession(originalSession?.aoId) ||
-    originalSession?.createdByUserId === state.currentUserId;
+    canManageSession(originalSession);
 
 if (!canEditExistingSession) {
     app.textContent = "You do not have permission to edit this session.";
@@ -1484,14 +1482,7 @@ saveButton.addEventListener("click", async () => {
         try {
             if (isEditing) {
                 const canSaveEdit =
-                    hasPermission(
-                        PERMISSIONS.MANAGE_SESSIONS
-                    ) ||
-                    canEditAoSession(
-                        oldSession?.aoId
-                    ) ||
-                    oldSession?.createdByUserId ===
-                        state.currentUserId;
+                    canManageSession(oldSession);
     
                 if (!canSaveEdit) {
                     throw new Error(
