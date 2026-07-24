@@ -2,6 +2,13 @@ import { loadState } from "../utils/storage.js";
 import { seedMembers } from "../data/seedMembers.js";
 import { insertSessionsBatch } from "../services/cloudData.js";
 
+// Home region never changes because of navigation.
+//
+// Active region determines the regional workspace.
+//
+// Accessible regions determine which workspaces
+// may become active.
+
 const savedState = loadState();
 
 export const state = {
@@ -29,7 +36,7 @@ export const state = {
     currentUserId: null,
     currentUserRole: null,
     currentUserDisplayName: null,
-    currentRegionId: null,
+    
     profileAoPermissions: [],
     profileRegionPositions: [],
     _historicImport: null,
@@ -42,9 +49,19 @@ export const state = {
     qSlots: savedState?.qSlots || [],
     homeAoId: savedState?.homeAoId || null,
     favoriteAoIds: savedState?.favoriteAoIds || null,
-    regionOverrideId: savedState?.regionOverrideId || null,
-    availableRegions: [],
+
+    // Legacy region state (temporary during workspace refactor)
+    currentRegionId: null,
     profileRegionId: savedState?.profileRegionId || null,
+    regionOverrideId: savedState?.regionOverrideId || null,
+    
+    // New workspace model
+    homeRegionId: savedState?.homeRegionId || null,
+    activeRegionId: savedState?.activeRegionId || null,
+    accessibleRegionIds: savedState?.accessibleRegionIds || [],
+
+    availableRegions: [],
+
     selectedAoId: null,
     editingAoId: null,
     qSignupAoFilter: savedState?.qSignupAoFilter || "",

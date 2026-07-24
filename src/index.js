@@ -614,14 +614,16 @@ function hydrateOfflineBootSnapshot(snapshot) {
     state.currentUserProfileId =
         profile.id;
 
-    state.profileRegionId =
-        profile.regionId;
+    state.profileRegionId = profile.regionId;
 
-    state.currentRegionId =
-        profile.regionId;
-
-    state.regionOverrideId =
-        null;
+    // New workspace model
+    state.homeRegionId = profile.regionId;
+    state.activeRegionId = profile.regionId;
+    state.accessibleRegionIds = [profile.regionId];
+    
+    state.currentRegionId = profile.regionId;
+    
+    state.regionOverrideId = null;
 
     state.currentUserMemberId =
         profile.memberId || null;
@@ -716,6 +718,7 @@ async function loadActiveRegionData(
     bootPhases = null
 ) {
     const activeRegionId = profileRegionId;
+    state.activeRegionId = activeRegionId;
 
     let phaseStartedAt = performance.now();
 
@@ -972,6 +975,12 @@ async function bootApp() {
             state.currentUserProfileId = profile.id;
             state.profileRegionId = profile.region_id;
             state.regionOverrideId = null;
+
+            // New workspace model
+            state.homeRegionId = profile.region_id;
+            state.activeRegionId = profile.region_id;
+            state.accessibleRegionIds = [profile.region_id];
+
             state.currentUserMemberId = profile.member_id || null;
             state.customTemplates = profile.custom_templates || state.customTemplates;
             state.hasInitializedQSignupFilter = false;
