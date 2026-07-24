@@ -937,7 +937,7 @@ function bootFromOfflineSnapshot({
     hideBootSplash();
 
     console.log(
-        "The Q booted from its offline snapshot.",
+        "The Q booted from its offline snapshot..",
         {
             snapshotSavedAt:
                 snapshot.savedAt,
