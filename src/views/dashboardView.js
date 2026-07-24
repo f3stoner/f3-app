@@ -3,14 +3,12 @@ import { renderApp } from "../index.js";
 import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { 
-    checkRegionAccess,
     loadMemberDashboardStats, 
     loadMemberSessionByDate, 
     loadMemberSessions, 
-    loadRegionData,
     loadRecentMemberActivity,
  } from "../services/cloudData.js";
-import { replacePersistedData, updateSession } from "../services/appData.js";
+ import { updateSession } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
 import { showToast } from "../utils/toast.js";
@@ -21,7 +19,6 @@ import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { logAppEvent } from "../services/appEvents.js";
-import { unsubscribeAllManagedChannels } from "../services/realtime.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { releaseWakeLock } from "../utils/wakelock.js";
 import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
@@ -29,6 +26,7 @@ import { getDashboardLeadershipBadge } from "../utils/leadership.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
+import { switchWorkspace } from "../services/workspaceService.js";
 
 function createBlankWorkout({
     date = getTodayDate(),
@@ -124,31 +122,35 @@ export function renderDashboard() {
 
         regionSwitcher.value = state.regionOverrideId || "";
 
-        regionSwitcher.addEventListener("change", async (event) => {
-            
-            const selected = event.target.value;
-
-            state.regionOverrideId = selected || null;
-
-            const activeRegionId = state.regionOverrideId || state.profileRegionId;
-            state.currentRegionId = activeRegionId;
-
-            const access = await checkRegionAccess(state.currentUserId, activeRegionId);
-
-            if (!access) {
-                const region = state.availableRegions.find(r => r.id === activeRegionId);
-                state.regionName = region?.name || state.regionName;
-                state.currentView = "regionGate";
-                renderApp();
+        regionSwitcher.addEventListener("change", async event => {
+            const selectedRegionId =
+                event.target.value || null;
+        
+            state.regionOverrideId =
+                selectedRegionId;
+        
+            const activeRegionId =
+                selectedRegionId ||
+                state.profileRegionId;
+        
+            const loaded = await switchWorkspace(
+                activeRegionId,
+                {
+                    onAccessDenied: () => {
+                        state.currentView =
+                            "regionGate";
+        
+                        renderApp();
+                    },
+                }
+            );
+        
+            if (!loaded) {
                 return;
             }
-
-            unsubscribeAllManagedChannels();
-
-            const cloudData = await loadRegionData(activeRegionId);
-            replacePersistedData(cloudData);
-
+        
             clearPlannerDraft();
+        
             state.selectedPlannedWorkoutId = null;
             state.draftSession = null;
             state.editingSessionId = null;
@@ -156,7 +158,7 @@ export function renderDashboard() {
             state.plannedWorkoutLaunchMode = null;
             state.qSignupAoFilter = null;
             state.hasInitializedQSignupFilter = false;
-            
+        
             renderApp();
         });
 }

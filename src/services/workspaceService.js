@@ -1,25 +1,53 @@
 // services/workspaceService.js
 
 import { state } from "../modules/state.js";
-import { checkRegionAccess } from "./cloudData.js";
-import { renderApp } from "../index.js";
-import { loadRegionData } from "./cloudData.js";
 import { replacePersistedData } from "./appData.js";
-import { loadLibraryAutocompleteItems } from "./libraryData.js";
-import { loadLibraryFilterOptions } from "./libraryData.js";
-import { loadExercises } from "./cloudData.js";
+import {
+    checkRegionAccess,
+    loadExercises,
+    loadRegionData,
+} from "./cloudData.js";
+import {
+    loadLibraryAutocompleteItems,
+    loadLibraryFilterOptions,
+} from "./libraryData.js";
+import { unsubscribeAllManagedChannels } from "./realtime.js";
 
-export async function switchWorkspace(regionId, options = {}) {
-    throw new Error("switchWorkspace not implemented.");
+export async function switchWorkspace(
+    activeRegionId,
+    options = {}
+) {
+    const {
+        bootPhases = null,
+        onAccessDenied = null,
+    } = options;
+
+    if (!activeRegionId) {
+        throw new Error(
+            "switchWorkspace requires an active region id."
+        );
+    }
+
+    await unloadWorkspace();
+
+    state.activeRegionId = activeRegionId;
+
+    const loaded = await loadWorkspace(
+        activeRegionId,
+        bootPhases
+    );
+
+    if (!loaded && typeof onAccessDenied === "function") {
+        onAccessDenied(activeRegionId);
+    }
+
+    return loaded;
 }
 
 export async function loadWorkspace(
-    profileRegionId,
+    activeRegionId,
     bootPhases = null
 ) {
-    const activeRegionId = profileRegionId;
-    state.activeRegionId = activeRegionId;
-
     let phaseStartedAt = performance.now();
 
     const access = await checkRegionAccess(
@@ -35,10 +63,13 @@ export async function loadWorkspace(
 
     if (!access) {
         state.currentRegionId = activeRegionId;
-        const region = state.availableRegions.find(r => r.id === activeRegionId);
+
+        const region = state.availableRegions.find(
+            candidate => candidate.id === activeRegionId
+        );
+
         state.regionName = region?.name || "";
-        state.currentView = "regionGate";
-        renderApp();
+
         return false;
     }
 
@@ -77,28 +108,43 @@ export async function loadWorkspace(
         loadLibraryFilterOptions(),
     ])
         .then(([items, filterOptions]) => {
+            /*
+             * Ignore late responses from a workspace
+             * that is no longer active.
+             */
+            if (state.activeRegionId !== activeRegionId) {
+                return;
+            }
+
             state.libraryItems = items;
             state.libraryFilterOptions = filterOptions;
             state.hasLoadedLibraryItems = true;
         })
         .catch(error => {
-            console.warn("Failed to load library data:", error);
+            console.warn(
+                "Failed to load library data:",
+                error
+            );
         });
 
     loadExercises()
         .then(exercises => {
+            if (state.activeRegionId !== activeRegionId) {
+                return;
+            }
+
             state.exercises = exercises;
         })
         .catch(error => {
-            console.error("Failed to load exercises:", error);
+            console.error(
+                "Failed to load exercises:",
+                error
+            );
         });
 
     return true;
 }
 
 export async function unloadWorkspace() {
-    // Placeholder for future:
-    // - realtime cleanup
-    // - timers
-    // - caches
+    unsubscribeAllManagedChannels();
 }

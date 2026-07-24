@@ -54,7 +54,7 @@ import { renderSessionAuditView } from "./views/sessionAuditView.js";
 import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
 import { initializeGlobalErrorTelemetry } from "./services/globalErrorTelemetry.js";
-import { loadWorkspace } from "./services/workspaceService.js";
+import { switchWorkspace } from "./services/workspaceService.js";
 
 initializeGlobalErrorTelemetry();
 
@@ -950,13 +950,6 @@ function bootFromOfflineSnapshot({
     return true;
 }
 
-async function loadActiveRegionData(
-    activeRegionId,
-    bootPhases = null
-) {
-    return loadWorkspace(activeRegionId, bootPhases);
-}
-
 function getSharedWorkoutIdFromUrl() {
     const hash = window.location.hash;
     const hashQueryString = hash.includes("?") ? hash.split("?")[1] : "";
@@ -989,7 +982,8 @@ async function synchronizePendingSessionsForCurrentContext() {
 
         if (result?.processedCount > 0) {
             const regionLoaded =
-                await loadActiveRegionData(
+                await switchWorkspace(
+                    state.activeRegionId ||
                     state.currentRegionId
                 );
 
@@ -1178,9 +1172,15 @@ async function bootApp() {
                 timeRegionalPhase(
                     "activeRegionDataMs",
                     () =>
-                        loadActiveRegionData(
+                        switchWorkspace(
                             profile.region_id,
-                            bootPhases
+                            {
+                                bootPhases,
+                                onAccessDenied: () => {
+                                    state.currentView = "regionGate";
+                                    renderApp();
+                                },
+                            }
                         )
                 ),
                 timeRegionalPhase(
