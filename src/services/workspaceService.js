@@ -30,30 +30,44 @@ export async function switchWorkspace(
 
     await unloadWorkspace();
 
+    const generation = ++state.workspaceGeneration;
+
     state.activeRegionId = activeRegionId;
 
-    const loaded = await loadWorkspace(
+    const result = await loadWorkspace(
         activeRegionId,
+        generation,
         bootPhases
     );
-
-    if (!loaded && typeof onAccessDenied === "function") {
+    
+    if (
+        result === "access-denied" &&
+        typeof onAccessDenied === "function"
+    ) {
         onAccessDenied(activeRegionId);
     }
-
-    return loaded;
+    
+    return result;
 }
 
 export async function loadWorkspace(
     activeRegionId,
+    generation,
     bootPhases = null
 ) {
+    const isCurrentWorkspace = () =>
+        generation === state.workspaceGeneration;
+
     let phaseStartedAt = performance.now();
 
     const access = await checkRegionAccess(
         state.currentUserId,
         activeRegionId
     );
+
+    if (!isCurrentWorkspace()) {
+        return "stale";
+    }
 
     if (bootPhases) {
         bootPhases.checkRegionAccessMs = Math.round(
@@ -70,7 +84,7 @@ export async function loadWorkspace(
 
         state.regionName = region?.name || "";
 
-        return false;
+        return "access-denied";
     }
 
     phaseStartedAt = performance.now();
@@ -82,6 +96,10 @@ export async function loadWorkspace(
         loadRegionDataQueries
     );
 
+    if (!isCurrentWorkspace()) {
+        return "stale";
+    }
+
     if (bootPhases) {
         bootPhases.loadRegionDataMs = Math.round(
             performance.now() - phaseStartedAt
@@ -92,6 +110,10 @@ export async function loadWorkspace(
     }
 
     phaseStartedAt = performance.now();
+
+    if (!isCurrentWorkspace()) {
+        return "stale";
+    }
 
     replacePersistedData(cloudData);
 
@@ -112,7 +134,7 @@ export async function loadWorkspace(
              * Ignore late responses from a workspace
              * that is no longer active.
              */
-            if (state.activeRegionId !== activeRegionId) {
+            if (!isCurrentWorkspace()) {
                 return;
             }
 
@@ -129,7 +151,7 @@ export async function loadWorkspace(
 
     loadExercises()
         .then(exercises => {
-            if (state.activeRegionId !== activeRegionId) {
+            if (!isCurrentWorkspace()) {
                 return;
             }
 
@@ -142,7 +164,7 @@ export async function loadWorkspace(
             );
         });
 
-    return true;
+    return "loaded";
 }
 
 export async function unloadWorkspace() {

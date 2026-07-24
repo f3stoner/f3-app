@@ -992,13 +992,13 @@ async function synchronizePendingSessionsForCurrentContext() {
             });
 
         if (result?.processedCount > 0) {
-            const regionLoaded =
+            const workspaceResult =
                 await switchWorkspace(
                     state.activeRegionId ||
                     state.currentRegionId
                 );
-
-            if (regionLoaded) {
+        
+            if (workspaceResult === "loaded") {
                 renderApp();
             }
         }
@@ -1195,7 +1195,7 @@ async function bootApp() {
             };
 
             const [
-                regionLoaded,
+                workspaceResult,
                 profileAoPermissions,
                 profileRegionPositions,
             ] = await Promise.all([
@@ -1227,11 +1227,11 @@ async function bootApp() {
                 performance.now() - phaseStartedAt
             );
 
-            if (!regionLoaded) {
+            if (workspaceResult !== "loaded") {
                 console.log(
                     `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
                 );
-
+            
                 hideBootSplash();
                 return;
             }

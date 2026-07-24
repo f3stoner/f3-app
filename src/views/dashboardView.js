@@ -90,7 +90,7 @@ export function renderDashboard() {
             return;
         }
     
-        const loaded = await switchWorkspace(
+        const workspaceResult = await switchWorkspace(
             regionId,
             {
                 onAccessDenied: () => {
@@ -100,10 +100,16 @@ export function renderDashboard() {
                 },
             }
         );
-    
-        if (!loaded) {
+        
+        if (workspaceResult !== "loaded") {
             return;
         }
+        /*
+        * Protect any remaining async work from a
+        * subsequent workspace switch.
+        */
+        const workspaceGeneration =
+        state.workspaceGeneration;
     
         const [
             profileAoPermissions,
@@ -112,6 +118,13 @@ export function renderDashboard() {
             loadProfileAoPermissions(regionId),
             loadProfileRegionPositions(regionId),
         ]);
+
+        if (
+            workspaceGeneration !==
+            state.workspaceGeneration
+        ) {
+            return;
+        }
     
         state.profileAoPermissions =
             profileAoPermissions || [];
@@ -607,6 +620,9 @@ export function renderDashboard() {
     }
 
     async function loadNextQWeather(slot, ao) {
+        const workspaceGeneration =
+            state.workspaceGeneration;
+
         const targetDateTime = getNextQTargetDateTime(slot, ao);
         const cacheKey = getWeatherCacheKey(slot, ao);
 
@@ -628,8 +644,22 @@ export function renderDashboard() {
         try {
             const weather = await getAoWeather(ao.id, targetDateTime);
 
+            if (
+                workspaceGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+
             state.weatherByAoDate[cacheKey] = weather;
         } catch (error) {
+            if (
+                workspaceGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+
             console.error("Failed to load next Q weather:", error);
 
             state.weatherByAoDate[cacheKey] = {
@@ -637,7 +667,11 @@ export function renderDashboard() {
             };
         }
 
-        if (state.currentView === "dashboard") {
+        if (
+            workspaceGeneration ===
+                state.workspaceGeneration &&
+            state.currentView === "dashboard"
+        ) {
             patchNextQWeather(cacheKey);
         }
     }
@@ -1389,8 +1423,21 @@ export function renderDashboard() {
         const stats = state.memberDashboardStatsByMemberId?.[memberStatsKey] || null;
         
         if (!stats) {
-            loadMemberDashboardStats(state.currentRegionId, memberId)
+            const workspaceGeneration =
+                state.workspaceGeneration;
+
+            loadMemberDashboardStats(
+                state.currentRegionId,
+                memberId
+            )
                 .then(loadedStats => {
+                    if (
+                        workspaceGeneration !==
+                        state.workspaceGeneration
+                    ) {
+                        return;
+                    }
+
                     state.memberDashboardStatsByMemberId = {
                         ...(state.memberDashboardStatsByMemberId || {}),
                         [memberStatsKey]: loadedStats
@@ -1664,20 +1711,39 @@ export function renderDashboard() {
         state.recentMemberActivityByMemberId?.[recentActivityKey] || null;
     
     if (!recentActivity && state.currentUserMemberId) {
+        const workspaceGeneration =
+            state.workspaceGeneration;
+    
         loadRecentMemberActivity(
             state.currentRegionId,
             state.currentUserMemberId,
             2
         )
             .then(sessions => {
+                if (
+                    workspaceGeneration !==
+                    state.workspaceGeneration
+                ) {
+                    return;
+                }
+    
                 state.recentMemberActivityByMemberId = {
                     ...(state.recentMemberActivityByMemberId || {}),
                     [recentActivityKey]: sessions,
                 };
     
-                const existingIds = new Set(state.sessions.map(session => session.id));
-                const newSessions = sessions.filter(session => !existingIds.has(session.id));
-                state.sessions = [...state.sessions, ...newSessions];
+                const existingIds = new Set(
+                    state.sessions.map(session => session.id)
+                );
+    
+                const newSessions = sessions.filter(
+                    session => !existingIds.has(session.id)
+                );
+    
+                state.sessions = [
+                    ...state.sessions,
+                    ...newSessions
+                ];
     
                 if (state.currentView === "dashboard") {
                     renderApp();
