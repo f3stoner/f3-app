@@ -2175,70 +2175,365 @@ export async function loadAllAnnouncements(regionId) {
     return (data || []).map(mapAnnouncementFromDb);
 }
 
-export async function insertAnnouncement(regionId, announcement) {
-    const payload = {
-        id: announcement.id,
-        region_id: regionId,
-        scope: announcement.scope || "region",
-        ao_id: announcement.aoId || null,
-        title: announcement.title || "",
-        body: announcement.body || "",
-        starts_on: announcement.startsOn || null,
-        ends_on: announcement.endsOn || null,
-        is_active: announcement.isActive ?? true,
-        created_by_user_id: announcement.createdByUserId || null,
-        include_in_backblast: announcement.includeInBackblast ?? false,
-        display_order: announcement.displayOrder ?? Date.now(),
-        link_url: announcement.linkUrl || null,
-        link_label: announcement.linkLabel || null,
-    };
-
-    const { error } = await supabase
-        .from("announcements")
-        .insert(payload);
-
-    if (error) throw error;
-
-    return mapAnnouncementFromDb(payload);
-}
-
-export async function updateAnnouncementInCloud(regionId, announcement) {
-    const { data, error } = await supabase
-        .from("announcements")
-        .update({
-            region_id: regionId,
-            scope: announcement.scope || "region",
-            ao_id: announcement.aoId || null,
-            title: announcement.title || "",
-            body: announcement.body || "",
-            link_url: announcement.linkUrl || null,
-            link_label: announcement.linkLabel || null,
-            starts_on: announcement.startsOn || null,
-            ends_on: announcement.endsOn || null,
-            is_active: announcement.isActive ?? true,
-            updated_at: new Date().toISOString(),
-            include_in_backblast: announcement.includeInBackblast ?? false,
-            display_order: announcement.displayOrder ?? 0,
-        })
-        .eq("id", announcement.id)
-        .select();
-
-    if (error) throw error;
-
-    if (!data?.length) {
-        throw new Error(`Announcement update failed: no row found for id ${announcement.id}`);
+export async function insertAnnouncement(
+    regionId,
+    announcement
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to create an announcement."
+        );
     }
 
-    return mapAnnouncementFromDb(data[0]);
+    if (!announcement?.id) {
+        throw new Error(
+            "Announcement id is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "save_announcement_command",
+        {
+            p_action: "create",
+            p_region_id: regionId,
+            p_announcement_id: announcement.id,
+            p_title: announcement.title || "",
+            p_body: announcement.body || "",
+            p_scope: "region",
+            p_ao_id: null,
+            p_starts_on:
+                announcement.startsOn || null,
+            p_ends_on:
+                announcement.endsOn || null,
+            p_is_active:
+                announcement.isActive ?? true,
+            p_include_in_backblast:
+                announcement.includeInBackblast ??
+                false,
+            p_link_url:
+                announcement.linkUrl || null,
+            p_link_label:
+                announcement.linkLabel || null,
+            p_reorder_items: null,
+            p_update_fields: null,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to create announcement:",
+            {
+                regionId,
+                announcementId: announcement.id,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.announcement) {
+        throw new Error(
+            "Announcement command returned no announcement."
+        );
+    }
+
+    return mapAnnouncementFromDb(
+        data.announcement
+    );
 }
 
-export async function deleteAnnouncementFromCloud(regionId, announcementId) {
-    const { error } = await supabase
-        .from("announcements")
-        .delete()
-        .eq("id", announcementId)
+export async function updateAnnouncementInCloud(
+    regionId,
+    announcement
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to update an announcement."
+        );
+    }
 
-    if (error) throw error;
+    if (!announcement?.id) {
+        throw new Error(
+            "Announcement id is required."
+        );
+    }
+
+    const updateFields = [
+        "title",
+        "body",
+        "starts_on",
+        "ends_on",
+        "is_active",
+        "include_in_backblast",
+        "link_url",
+        "link_label",
+    ];
+
+    const { data, error } = await supabase.rpc(
+        "save_announcement_command",
+        {
+            p_action: "update",
+            p_region_id: regionId,
+            p_announcement_id: announcement.id,
+            p_title: announcement.title || "",
+            p_body: announcement.body || "",
+            p_scope: "region",
+            p_ao_id: null,
+            p_starts_on:
+                announcement.startsOn || null,
+            p_ends_on:
+                announcement.endsOn || null,
+            p_is_active:
+                announcement.isActive ?? true,
+            p_include_in_backblast:
+                announcement.includeInBackblast ??
+                false,
+            p_link_url:
+                announcement.linkUrl || null,
+            p_link_label:
+                announcement.linkLabel || null,
+            p_reorder_items: null,
+            p_update_fields: updateFields,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to update announcement:",
+            {
+                regionId,
+                announcementId: announcement.id,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.announcement) {
+        throw new Error(
+            "Announcement command returned no announcement."
+        );
+    }
+
+    return mapAnnouncementFromDb(
+        data.announcement
+    );
+}
+
+export async function setAnnouncementActiveInCloud(
+    regionId,
+    announcementId,
+    isActive
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to change announcement status."
+        );
+    }
+
+    if (!announcementId) {
+        throw new Error(
+            "Announcement id is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "save_announcement_command",
+        {
+            p_action: "update",
+            p_region_id: regionId,
+            p_announcement_id: announcementId,
+            p_title: null,
+            p_body: null,
+            p_scope: null,
+            p_ao_id: null,
+            p_starts_on: null,
+            p_ends_on: null,
+            p_is_active: Boolean(isActive),
+            p_include_in_backblast: null,
+            p_link_url: null,
+            p_link_label: null,
+            p_reorder_items: null,
+            p_update_fields: ["is_active"],
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to change announcement status:",
+            {
+                regionId,
+                announcementId,
+                isActive,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.announcement) {
+        throw new Error(
+            "Announcement command returned no announcement."
+        );
+    }
+
+    return mapAnnouncementFromDb(
+        data.announcement
+    );
+}
+
+export async function deleteAnnouncementFromCloud(
+    regionId,
+    announcementId
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to delete an announcement."
+        );
+    }
+
+    if (!announcementId) {
+        throw new Error(
+            "Announcement id is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "save_announcement_command",
+        {
+            p_action: "delete",
+            p_region_id: regionId,
+            p_announcement_id: announcementId,
+            p_title: null,
+            p_body: null,
+            p_scope: null,
+            p_ao_id: null,
+            p_starts_on: null,
+            p_ends_on: null,
+            p_is_active: null,
+            p_include_in_backblast: null,
+            p_link_url: null,
+            p_link_label: null,
+            p_reorder_items: null,
+            p_update_fields: null,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to delete announcement:",
+            {
+                regionId,
+                announcementId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (data?.deletedId !== announcementId) {
+        throw new Error(
+            "Announcement command did not confirm the delete."
+        );
+    }
+
+    return announcementId;
+}
+
+export async function reorderAnnouncementsInCloud(
+    regionId,
+    announcements
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to reorder announcements."
+        );
+    }
+
+    if (
+        !Array.isArray(announcements) ||
+        announcements.length === 0
+    ) {
+        throw new Error(
+            "At least one announcement is required to reorder."
+        );
+    }
+
+    const reorderItems = announcements.map(
+        (announcement, index) => {
+            const announcementId =
+                typeof announcement === "string"
+                    ? announcement
+                    : announcement?.id;
+
+            const displayOrder =
+                typeof announcement === "object" &&
+                Number.isInteger(
+                    announcement?.displayOrder
+                )
+                    ? announcement.displayOrder
+                    : index;
+
+            if (!announcementId) {
+                throw new Error(
+                    "Every reordered announcement must have an id."
+                );
+            }
+
+            return {
+                id: announcementId,
+                displayOrder,
+            };
+        }
+    );
+
+    const { data, error } = await supabase.rpc(
+        "save_announcement_command",
+        {
+            p_action: "reorder",
+            p_region_id: regionId,
+            p_announcement_id: null,
+            p_title: null,
+            p_body: null,
+            p_scope: null,
+            p_ao_id: null,
+            p_starts_on: null,
+            p_ends_on: null,
+            p_is_active: null,
+            p_include_in_backblast: null,
+            p_link_url: null,
+            p_link_label: null,
+            p_reorder_items: reorderItems,
+            p_update_fields: null,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to reorder announcements:",
+            {
+                regionId,
+                reorderItems,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!Array.isArray(data?.announcements)) {
+        throw new Error(
+            "Announcement reorder command returned no announcements."
+        );
+    }
+
+    return data.announcements.map(
+        mapAnnouncementFromDb
+    );
 }
 
 function mapAnnouncementFromDb(row) {
@@ -2252,24 +2547,17 @@ function mapAnnouncementFromDb(row) {
         startsOn: row.starts_on,
         endsOn: row.ends_on,
         isActive: row.is_active,
-        createdByUserId: row.created_by_user_id,
+        createdByUserId:
+            row.created_by_user_id,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-        includeInBackblast: row.include_in_backblast ?? false,
-        displayOrder: row.display_order ?? 999,
+        includeInBackblast:
+            row.include_in_backblast ?? false,
+        displayOrder:
+            row.display_order ?? 999,
         linkUrl: row.link_url || "",
         linkLabel: row.link_label || "",
     };
-}
-
-export async function updateAnnouncementDisplayOrder(regionId, announcementId, displayOrder) {
-    const { error } = await supabase.rpc("reorder_announcement", {
-        target_region_id: regionId,
-        announcement_id: announcementId,
-        new_display_order: displayOrder,
-    });
-
-    if (error) throw error;
 }
 
 export async function loadRegionMemberStats(regionId) {

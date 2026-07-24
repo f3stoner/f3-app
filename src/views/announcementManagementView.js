@@ -6,11 +6,12 @@ import {
     updateAnnouncementInCloud,
     deleteAnnouncementFromCloud,
     loadAnnouncements,
+    reorderAnnouncementsInCloud,
+    setAnnouncementActiveInCloud,
 } from "../services/cloudData.js";
 import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateAnnouncementDisplayOrder } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { filterDateAwareContent } from "../utils/dateAwareContent.js";
@@ -271,18 +272,26 @@ async function moveAnnouncement(announcementId, direction) {
     const targetOrder = target.displayOrder ?? nextIndex;
     
     try {
-        await Promise.all([
-            updateAnnouncementDisplayOrder(
-                state.currentRegionId,
-                current.id,
-                nextIndex
-            ),
-            updateAnnouncementDisplayOrder(
-                state.currentRegionId,
-                target.id,
-                currentIndex
-            ),
-        ]);
+        const reordered = [...announcements];
+
+        [
+            reordered[currentIndex],
+            reordered[nextIndex],
+        ] = [
+            reordered[nextIndex],
+            reordered[currentIndex],
+        ];
+
+        const reorderedWithDisplayOrder =
+            reordered.map((announcement, index) => ({
+                ...announcement,
+                displayOrder: index,
+            }));
+
+        await reorderAnnouncementsInCloud(
+            state.currentRegionId,
+            reorderedWithDisplayOrder
+        );
 
         console.log("reorder update complete");
 
@@ -387,12 +396,10 @@ function renderAnnouncementList(container, controls) {
 
         toggleButton.addEventListener("click", async () => {
             try {
-                await updateAnnouncementInCloud(
+                await setAnnouncementActiveInCloud(
                     state.currentRegionId,
-                    {
-                        ...announcement,
-                        isActive: !announcement.isActive,
-                    }
+                    announcement.id,
+                    !announcement.isActive
                 );
 
                 state.announcements =
