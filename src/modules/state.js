@@ -59,6 +59,7 @@ export const state = {
     homeRegionId: savedState?.homeRegionId || null,
     activeRegionId: savedState?.activeRegionId || null,
     accessibleRegionIds: savedState?.accessibleRegionIds || [],
+    accessibleRegions: [],
 
     availableRegions: [],
 
@@ -135,6 +136,7 @@ export const state = {
     rosterFilter: null,
     exercises: [],
     isMainMenuOpen: false,
+    isWorkspaceMenuOpen: false,
     announcements: [],
     allAnnouncements: [],
     memberStats: [],

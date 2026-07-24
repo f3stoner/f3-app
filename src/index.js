@@ -13,9 +13,8 @@ import { renderPlannedWorkoutDetail } from "./views/plannedWorkoutDetailView.js"
 import { replacePersistedData } from "./services/appData.js";
 import {
     loadAllRegions,
-    loadRegionData,
+    loadAccessibleRegions,
     getNotificationSettings,
-    loadExercises,
     loadProfileAoPermissions,
     loadProfileRegionPositions,
 } from "./services/cloudData.js";
@@ -28,7 +27,6 @@ import { renderAoManagementView } from "./views/aoManagementView.js";
 import { renderAoEditView } from "./views/aoEditView.js";
 import { renderPreblastView } from "./views/preblastView.js";
 import { renderRegionGateView } from "./views/regionGateView.js";
-import { checkRegionAccess } from "./services/cloudData.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
@@ -45,7 +43,6 @@ import { hasPermission, PERMISSIONS, isRegionalAdmin, getManagedAoIds, managesAo
 import { renderAnnouncementManagementView } from "./views/announcementManagementView.js";
 import { renderQReadinessView } from "./views/qReadinessView.js";
 import { renderQSourceManagementView } from "./views/qSourceManagementView.js";
-import { loadLibraryAutocompleteItems, loadLibraryFilterOptions } from "./services/libraryData.js";
 import { renderThirdFManagementView } from "./views/thirdFManagementView.js";
 import { renderThirdFView } from "./views/thirdFView.js";
 import { renderAoInsightDetailView } from "./views/aoInsightsDetailView.js";
@@ -834,6 +831,7 @@ function hydrateOfflineBootSnapshot(snapshot) {
     const {
         profile,
         availableRegions,
+        accessibleRegions,
         profileAoPermissions,
         profileRegionPositions,
         regionData,
@@ -856,8 +854,21 @@ function hydrateOfflineBootSnapshot(snapshot) {
     // New workspace model
     state.homeRegionId = profile.regionId;
     state.activeRegionId = profile.regionId;
-    state.accessibleRegionIds = [profile.regionId];
-    
+    state.accessibleRegions =
+        accessibleRegions?.length
+            ? accessibleRegions
+            : availableRegions?.filter(
+                region =>
+                    region.id === profile.regionId
+            ) || [];
+
+    state.accessibleRegionIds =
+        state.accessibleRegions.length
+            ? state.accessibleRegions.map(
+                region => region.id
+            )
+            : [profile.regionId];
+        
     state.currentRegionId = profile.regionId;
     
     state.regionOverrideId = null;
@@ -1134,7 +1145,6 @@ async function bootApp() {
             // New workspace model
             state.homeRegionId = profile.region_id;
             state.activeRegionId = profile.region_id;
-            state.accessibleRegionIds = [profile.region_id];
 
             state.currentUserMemberId = profile.member_id || null;
             state.customTemplates = profile.custom_templates || state.customTemplates;
@@ -1142,13 +1152,33 @@ async function bootApp() {
 
             phaseStartedAt = performance.now();
 
-            const regions = await loadAllRegions();
-
+            const [
+                availableRegions,
+                accessibleRegions,
+            ] = await Promise.all([
+                loadAllRegions(),
+                loadAccessibleRegions(state.currentUserId),
+            ]);
+            
             bootPhases.loadAllRegionsMs = Math.round(
                 performance.now() - phaseStartedAt
             );
+            
+            state.availableRegions =
+                availableRegions || [];
 
-            state.availableRegions = regions || [];
+            state.accessibleRegions =
+                accessibleRegions || [];
+
+            state.accessibleRegionIds =
+                state.accessibleRegions.map(
+                    region => region.id
+                );
+
+            console.log(
+                "Accessible regions:",
+                state.accessibleRegionIds
+            );
             
             phaseStartedAt = performance.now();
 
@@ -1218,6 +1248,9 @@ async function bootApp() {
             
                     availableRegions:
                         state.availableRegions,
+
+                    accessibleRegions:
+                        state.accessibleRegions,
             
                     profileAoPermissions:
                         state.profileAoPermissions,

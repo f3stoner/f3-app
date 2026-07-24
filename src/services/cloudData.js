@@ -1612,6 +1612,28 @@ export async function checkRegionAccess(userId, regionId) {
     return data;
 }
 
+export async function loadAccessibleRegions(userId) {
+    const { data, error } = await supabase
+        .from("region_access")
+        .select(`
+            region_id,
+            regions (
+                id,
+                name,
+                workout_field_labels,
+                fng_naming_post_number
+            )
+        `)
+        .eq("user_id", userId); 
+
+    if (error) throw error;
+
+    return (data || [])
+        .map(row => row.regions)
+        .filter(Boolean)
+        .map(mapRegionFromDb);
+}
+
 export async function getNotificationSettings(userId) {
     const { data, error } = await supabase
         .from("notification_settings")

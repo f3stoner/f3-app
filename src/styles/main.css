@@ -6586,3 +6586,100 @@ button.leadership-action-card:disabled {
         justify-content: flex-end;
     }
 }
+
+.workspace-title-container {
+    position: relative;
+    min-width: 0;
+}
+
+.workspace-title-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.workspace-title-button h1 {
+    margin: 0;
+}
+
+.workspace-title-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--text-primary, #f5f5f5);
+}
+
+.workspace-menu {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 0;
+    z-index: 50;
+    width: min(22rem, calc(100vw - 3rem));
+    padding: 0.75rem 0;
+    border: 1px solid
+        var(--border-color, #555);
+    border-radius: 1rem;
+    background:
+        var(--surface-color, #111516);
+    box-shadow:
+        0 1rem 2.5rem rgba(0, 0, 0, 0.45);
+}
+
+.workspace-menu-label {
+    padding: 0.35rem 1rem 0.65rem;
+}
+
+.workspace-menu-option {
+    display: grid;
+    grid-template-columns:
+        1.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.workspace-menu-option:hover,
+.workspace-menu-option:focus-visible {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.workspace-menu-option.active {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.workspace-menu-check {
+    font-weight: 700;
+    text-align: center;
+}
+
+.workspace-menu-name {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-home-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary, #aaa);
+    font-size: 0.75rem;
+    font-weight: 700;
+}

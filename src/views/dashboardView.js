@@ -2,12 +2,14 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { 
-    loadMemberDashboardStats, 
-    loadMemberSessionByDate, 
-    loadMemberSessions, 
+import {
+    loadMemberDashboardStats,
+    loadMemberSessionByDate,
+    loadMemberSessions,
     loadRecentMemberActivity,
- } from "../services/cloudData.js";
+    loadProfileAoPermissions,
+    loadProfileRegionPositions,
+} from "../services/cloudData.js";
  import { updateSession } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
@@ -78,90 +80,248 @@ export function renderDashboard() {
 
     document.querySelectorAll(".main-menu-overlay").forEach(menu => menu.remove());
 
-    const dashboardHeader = document.createElement("div");
+    async function activateWorkspace(regionId) {
+        if (
+            !regionId ||
+            regionId === state.activeRegionId
+        ) {
+            state.isWorkspaceMenuOpen = false;
+            renderApp();
+            return;
+        }
+    
+        const loaded = await switchWorkspace(
+            regionId,
+            {
+                onAccessDenied: () => {
+                    state.isWorkspaceMenuOpen = false;
+                    state.currentView = "regionGate";
+                    renderApp();
+                },
+            }
+        );
+    
+        if (!loaded) {
+            return;
+        }
+    
+        const [
+            profileAoPermissions,
+            profileRegionPositions,
+        ] = await Promise.all([
+            loadProfileAoPermissions(regionId),
+            loadProfileRegionPositions(regionId),
+        ]);
+    
+        state.profileAoPermissions =
+            profileAoPermissions || [];
+    
+        state.profileRegionPositions =
+            profileRegionPositions || [];
+    
+        clearPlannerDraft();
+    
+        state.selectedPlannedWorkoutId = null;
+        state.draftSession = null;
+        state.editingSessionId = null;
+        state.selectedSessionId = null;
+        state.plannedWorkoutLaunchMode = null;
+        state.qSignupAoFilter = null;
+        state.hasInitializedQSignupFilter = false;
+        state.isWorkspaceMenuOpen = false;
+    
+        renderApp();
+    }
+    
+    function createWorkspaceMenu() {
+        const menu = document.createElement("div");
+        menu.classList.add("workspace-menu");
+    
+        const label = document.createElement("div");
+        label.classList.add(
+            "detail-label",
+            "workspace-menu-label"
+        );
+        label.textContent = "My Regions";
+    
+        menu.appendChild(label);
+    
+        state.accessibleRegions.forEach(region => {
+            const isActive =
+                region.id === state.activeRegionId;
+    
+            const isHome =
+                region.id === state.homeRegionId;
+    
+            const option = document.createElement("button");
+            option.type = "button";
+            option.classList.add("workspace-menu-option");
+    
+            if (isActive) {
+                option.classList.add("active");
+            }
+    
+            const check = document.createElement("span");
+            check.classList.add("workspace-menu-check");
+            check.setAttribute("aria-hidden", "true");
+            check.textContent = isActive ? "✓" : "";
+    
+            const name = document.createElement("span");
+            name.classList.add("workspace-menu-name");
+            name.textContent = region.name;
+    
+            option.append(check, name);
+    
+            if (isHome) {
+                const homeBadge =
+                    document.createElement("span");
+    
+                homeBadge.classList.add(
+                    "workspace-home-badge"
+                );
+    
+                homeBadge.textContent = "Home";
+    
+                option.appendChild(homeBadge);
+            }
+    
+            option.setAttribute(
+                "aria-current",
+                isActive ? "true" : "false"
+            );
+    
+            option.addEventListener("click", async event => {
+                event.stopPropagation();
+    
+                await activateWorkspace(region.id);
+            });
+    
+            menu.appendChild(option);
+        });
+    
+        return menu;
+    }
+    
+    const dashboardHeader =
+        document.createElement("div");
+    
     dashboardHeader.classList.add("dashboard-header");
-
-    const title = document.createElement("h1");
-    title.textContent = state.regionName || "F3 App";
-
-    const menuButton = document.createElement("button");
+    
+    const workspaceTitleContainer =
+        document.createElement("div");
+    
+    workspaceTitleContainer.classList.add(
+        "workspace-title-container"
+    );
+    
+    const hasMultipleWorkspaces =
+        state.accessibleRegions?.length > 1;
+    
+    if (hasMultipleWorkspaces) {
+        const workspaceButton =
+            document.createElement("button");
+    
+        workspaceButton.type = "button";
+    
+        workspaceButton.classList.add(
+            "workspace-title-button"
+        );
+    
+        workspaceButton.setAttribute(
+            "aria-expanded",
+            String(Boolean(state.isWorkspaceMenuOpen))
+        );
+    
+        workspaceButton.setAttribute(
+            "aria-label",
+            "Switch region"
+        );
+    
+        const title =
+            document.createElement("h1");
+    
+        title.textContent =
+            state.regionName || "F3 App";
+    
+        const chevron =
+            document.createElement("span");
+    
+        chevron.classList.add(
+            "workspace-title-chevron"
+        );
+    
+        chevron.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    
+        chevron.textContent =
+            state.isWorkspaceMenuOpen
+                ? "⌃"
+                : "⌄";
+    
+        workspaceButton.append(
+            title,
+            chevron
+        );
+    
+        workspaceButton.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+    
+                state.isWorkspaceMenuOpen =
+                    !state.isWorkspaceMenuOpen;
+    
+                renderApp();
+            }
+        );
+    
+        workspaceTitleContainer.appendChild(
+            workspaceButton
+        );
+    
+        if (state.isWorkspaceMenuOpen) {
+            workspaceTitleContainer.appendChild(
+                createWorkspaceMenu()
+            );
+        }
+    } else {
+        const title =
+            document.createElement("h1");
+    
+        title.textContent =
+            state.regionName || "F3 App";
+    
+        workspaceTitleContainer.appendChild(title);
+    }
+    
+    const menuButton =
+        document.createElement("button");
+    
     menuButton.type = "button";
     menuButton.classList.add("hamburger-button");
-    menuButton.setAttribute("aria-label", "Open menu");
+    menuButton.setAttribute(
+        "aria-label",
+        "Open menu"
+    );
     menuButton.textContent = "☰";
-
+    
     menuButton.addEventListener("click", () => {
+        state.isWorkspaceMenuOpen = false;
         state.isMainMenuOpen = true;
-        document.body.classList.add("menu-open");
+    
+        document.body.classList.add(
+            "menu-open"
+        );
+    
         renderApp();
     });
-
-    dashboardHeader.append(title, menuButton);
-
-    let regionSwitcher = null;
-    let regionSwitcherLabel = null;
-
-    if (hasPermission(PERMISSIONS.ACCESS_DEBUG_TOOLS) && state.availableRegions?.length) {
-        regionSwitcherLabel = document.createElement("div");
-        regionSwitcherLabel.classList.add("detail-label");
-        regionSwitcherLabel.textContent = "Debug Region";
-        
-        regionSwitcher = document.createElement("select");
-
-        const profileOption = document.createElement("option");
-        profileOption.value = "";
-        profileOption.textContent = "Use Profile Region";
-        regionSwitcher.appendChild(profileOption);
-
-        state.availableRegions.forEach(region => {
-            const option = document.createElement("option");
-            option.value = region.id;
-            option.textContent = region.name;
-            regionSwitcher.appendChild(option);
-        });
-
-        regionSwitcher.value = state.regionOverrideId || "";
-
-        regionSwitcher.addEventListener("change", async event => {
-            const selectedRegionId =
-                event.target.value || null;
-        
-            state.regionOverrideId =
-                selectedRegionId;
-        
-            const activeRegionId =
-                selectedRegionId ||
-                state.profileRegionId;
-        
-            const loaded = await switchWorkspace(
-                activeRegionId,
-                {
-                    onAccessDenied: () => {
-                        state.currentView =
-                            "regionGate";
-        
-                        renderApp();
-                    },
-                }
-            );
-        
-            if (!loaded) {
-                return;
-            }
-        
-            clearPlannerDraft();
-        
-            state.selectedPlannedWorkoutId = null;
-            state.draftSession = null;
-            state.editingSessionId = null;
-            state.selectedSessionId = null;
-            state.plannedWorkoutLaunchMode = null;
-            state.qSignupAoFilter = null;
-            state.hasInitializedQSignupFilter = false;
-        
-            renderApp();
-        });
-}
+    
+    dashboardHeader.append(
+        workspaceTitleContainer,
+        menuButton
+    );
 
     const userRow = document.createElement("div");
     userRow.classList.add("user-row");
@@ -1615,9 +1775,7 @@ export function renderDashboard() {
     const primaryActionsRow = createPrimaryActionsRow();
 
     app.append(
-        dashboardHeader, 
-        ...(regionSwitcherLabel ? [regionSwitcherLabel] : []),
-        ...(regionSwitcher ? [regionSwitcher] : []),
+        dashboardHeader,
         userRow,
         ...(resumeWorkoutSection ? [resumeWorkoutSection] : []),
         dashboardCtaSection,
