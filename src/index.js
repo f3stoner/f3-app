@@ -150,15 +150,250 @@ if (process.env.NODE_ENV === "development") {
     };
 }
 
-if ("serviceWorker" in navigator) {
+let serviceWorkerUpdateRegistration = null;
+let serviceWorkerUpdateRequested = false;
+let serviceWorkerReloadStarted = false;
+let lastServiceWorkerUpdateCheckAt = 0;
+
+const SERVICE_WORKER_UPDATE_CHECK_INTERVAL_MS =
+    5 * 60 * 1000;
+
+function removeServiceWorkerUpdatePrompt() {
+    document
+        .getElementById("app-update-prompt")
+        ?.remove();
+}
+
+function showServiceWorkerUpdatePrompt(registration) {
+    if (
+        !registration?.waiting ||
+        document.getElementById("app-update-prompt")
+    ) {
+        return;
+    }
+
+    serviceWorkerUpdateRegistration = registration;
+
+    const prompt = document.createElement("aside");
+    prompt.id = "app-update-prompt";
+    prompt.className = "app-update-prompt";
+    prompt.setAttribute("role", "status");
+    prompt.setAttribute("aria-live", "polite");
+
+    const content = document.createElement("div");
+    content.className = "app-update-prompt-content";
+
+    const textContainer = document.createElement("div");
+    textContainer.className = "app-update-prompt-text";
+
+    const heading = document.createElement("strong");
+    heading.textContent = "Update available";
+
+    const message = document.createElement("span");
+    message.textContent =
+        "A new version of The Q is ready.";
+
+    textContainer.append(heading, message);
+
+    const actions = document.createElement("div");
+    actions.className = "app-update-prompt-actions";
+
+    const laterButton = document.createElement("button");
+    laterButton.type = "button";
+    laterButton.className =
+        "app-update-prompt-button app-update-prompt-button-secondary";
+    laterButton.textContent = "Later";
+
+    laterButton.addEventListener("click", () => {
+        removeServiceWorkerUpdatePrompt();
+    });
+
+    const updateButton = document.createElement("button");
+    updateButton.type = "button";
+    updateButton.className = "app-update-prompt-button";
+    updateButton.textContent = "Update now";
+
+    updateButton.addEventListener("click", () => {
+        const waitingWorker =
+            serviceWorkerUpdateRegistration?.waiting;
+
+        if (!waitingWorker) {
+            removeServiceWorkerUpdatePrompt();
+            return;
+        }
+
+        serviceWorkerUpdateRequested = true;
+        updateButton.disabled = true;
+        laterButton.disabled = true;
+        updateButton.textContent = "Updating…";
+
+        waitingWorker.postMessage({
+            type: "SKIP_WAITING",
+        });
+    });
+
+    actions.append(laterButton, updateButton);
+    content.append(textContainer, actions);
+    prompt.append(content);
+    document.body.append(prompt);
+}
+
+function watchInstallingServiceWorker(
+    registration,
+    installingWorker
+) {
+    if (!installingWorker) {
+        return;
+    }
+
+    installingWorker.addEventListener("statechange", () => {
+        if (
+            installingWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+        ) {
+            showServiceWorkerUpdatePrompt(registration);
+        }
+    });
+}
+
+async function checkForServiceWorkerUpdate(
+    registration,
+    { force = false } = {}
+) {
+    const now = Date.now();
+
+    if (
+        !force &&
+        now - lastServiceWorkerUpdateCheckAt <
+            SERVICE_WORKER_UPDATE_CHECK_INTERVAL_MS
+    ) {
+        return;
+    }
+
+    lastServiceWorkerUpdateCheckAt = now;
+
+    try {
+        await registration.update();
+
+        if (registration.waiting) {
+            showServiceWorkerUpdatePrompt(registration);
+        }
+    } catch (error) {
+        /*
+         * An update check can fail while offline or during a
+         * temporary network interruption. The currently installed
+         * app should continue operating normally.
+         */
+        console.warn(
+            "Service worker update check failed:",
+            error
+        );
+    }
+}
+
+async function registerServiceWorker() {
+    if (!("serviceWorker" in navigator)) {
+        return;
+    }
+
     const swPath =
         process.env.NODE_ENV === "production"
             ? "/f3-app/sw.js"
             : "/sw.js";
-    navigator.serviceWorker.register(swPath)
-        .then(() => console.log("SW registered"))
-        .catch(err => console.error("SW registration failed:", err));
+
+    try {
+        const registration =
+            await navigator.serviceWorker.register(
+                swPath,
+                {
+                    updateViaCache: "none",
+                }
+            );
+
+        console.log("SW registered");
+
+        serviceWorkerUpdateRegistration =
+            registration;
+
+        /*
+         * A worker may already be waiting when this page opens.
+         */
+        if (registration.waiting) {
+            showServiceWorkerUpdatePrompt(registration);
+        }
+
+        registration.addEventListener(
+            "updatefound",
+            () => {
+                watchInstallingServiceWorker(
+                    registration,
+                    registration.installing
+                );
+            }
+        );
+
+        /*
+         * Explicitly check on launch instead of relying only on
+         * the browser's normal update-check timing.
+         */
+        void checkForServiceWorkerUpdate(
+            registration,
+            { force: true }
+        );
+
+        /*
+         * Installed PWAs can remain suspended for long periods.
+         * Check again when the app returns to the foreground.
+         */
+        document.addEventListener(
+            "visibilitychange",
+            () => {
+                if (
+                    document.visibilityState === "visible" &&
+                    navigator.onLine
+                ) {
+                    void checkForServiceWorkerUpdate(
+                        registration
+                    );
+                }
+            }
+        );
+
+        window.addEventListener("online", () => {
+            void checkForServiceWorkerUpdate(
+                registration,
+                { force: true }
+            );
+        });
+    } catch (error) {
+        console.error(
+            "SW registration failed:",
+            error
+        );
+    }
 }
+
+navigator.serviceWorker?.addEventListener(
+    "controllerchange",
+    () => {
+        /*
+         * Only reload when this page intentionally requested
+         * activation. This prevents unexpected reloads caused by
+         * service-worker activity in another tab.
+         */
+        if (
+            !serviceWorkerUpdateRequested ||
+            serviceWorkerReloadStarted
+        ) {
+            return;
+        }
+
+        serviceWorkerReloadStarted = true;
+        window.location.reload();
+    }
+);
+
+void registerServiceWorker();
 
 const RESTORABLE_VIEWS = new Set([
     "dashboard",

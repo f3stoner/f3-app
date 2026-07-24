@@ -6510,3 +6510,79 @@ button.leadership-action-card:disabled {
         gap: 0.5rem;
     }
 }
+
+.app-update-prompt {
+    position: fixed;
+    right: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    left: 1rem;
+    z-index: 10000;
+    max-width: 34rem;
+    margin: 0 auto;
+    padding: 0.9rem;
+    color: #ffffff;
+    background: #1f2937;
+    border-radius: 0.75rem;
+    box-shadow:
+        0 10px 25px rgb(0 0 0 / 20%),
+        0 4px 10px rgb(0 0 0 / 15%);
+}
+
+.app-update-prompt-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.app-update-prompt-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.app-update-prompt-text span {
+    font-size: 0.875rem;
+    opacity: 0.85;
+}
+
+.app-update-prompt-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+}
+
+.app-update-prompt-button {
+    min-height: 2.5rem;
+    padding: 0.55rem 0.8rem;
+    color: #111827;
+    font: inherit;
+    font-weight: 700;
+    background: #ffffff;
+    border: 0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.app-update-prompt-button-secondary {
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 45%);
+}
+
+.app-update-prompt-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+@media (max-width: 520px) {
+    .app-update-prompt-content {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .app-update-prompt-actions {
+        justify-content: flex-end;
+    }
+}
