@@ -5,16 +5,20 @@ import { replacePersistedData } from "./appData.js";
 import {
     checkRegionAccess,
     loadExercises,
+    loadProfileAoPermissions,
+    loadProfileRegionPositions,
     loadRegionData,
 } from "./cloudData.js";
 import {
     loadLibraryAutocompleteItems,
     loadLibraryFilterOptions,
 } from "./libraryData.js";
-import { unsubscribeAllManagedChannels } from "./realtime.js";
+import {
+    unsubscribeAllManagedChannels,
+} from "./realtime.js";
 
 export async function switchWorkspace(
-    activeRegionId,
+    targetRegionId,
     options = {}
 ) {
     const {
@@ -22,126 +26,220 @@ export async function switchWorkspace(
         onAccessDenied = null,
     } = options;
 
-    if (!activeRegionId) {
+    if (!targetRegionId) {
         throw new Error(
-            "switchWorkspace requires an active region id."
+            "switchWorkspace requires a target region id."
         );
     }
+
+    /*
+     * Invalidate callbacks from the departing workspace
+     * synchronously, before awaiting cleanup.
+     */
+    const generation =
+        ++state.workspaceGeneration;
+
+    state.pendingRegionId =
+        targetRegionId;
 
     await unloadWorkspace();
 
-    const generation = ++state.workspaceGeneration;
+    try {
+        const result = await loadWorkspace(
+            targetRegionId,
+            generation,
+            bootPhases
+        );
 
-    state.activeRegionId = activeRegionId;
+        if (result === "stale") {
+            return result;
+        }
 
-    const result = await loadWorkspace(
-        activeRegionId,
-        generation,
-        bootPhases
-    );
-    
-    if (
-        result === "access-denied" &&
-        typeof onAccessDenied === "function"
-    ) {
-        onAccessDenied(activeRegionId);
+        if (result === "access-denied") {
+            if (
+                typeof onAccessDenied ===
+                "function"
+            ) {
+                onAccessDenied(targetRegionId);
+            }
+
+            return result;
+        }
+
+        return result;
+    } catch (error) {
+        /*
+         * Only the still-current request may clear its
+         * own pending workspace marker.
+         */
+        if (
+            generation ===
+            state.workspaceGeneration
+        ) {
+            state.pendingRegionId = null;
+        }
+
+        throw error;
     }
-    
-    return result;
 }
 
 export async function loadWorkspace(
-    activeRegionId,
+    targetRegionId,
     generation,
     bootPhases = null
 ) {
-    const isCurrentWorkspace = () =>
-        generation === state.workspaceGeneration;
+    const isCurrentWorkspaceRequest = () =>
+        generation ===
+        state.workspaceGeneration;
 
-    let phaseStartedAt = performance.now();
+    let phaseStartedAt =
+        performance.now();
 
-    const access = await checkRegionAccess(
-        state.currentUserId,
-        activeRegionId
-    );
+    const access =
+        await checkRegionAccess(
+            state.currentUserId,
+            targetRegionId
+        );
 
-    if (!isCurrentWorkspace()) {
+    if (!isCurrentWorkspaceRequest()) {
         return "stale";
     }
 
     if (bootPhases) {
-        bootPhases.checkRegionAccessMs = Math.round(
-            performance.now() - phaseStartedAt
-        );
+        bootPhases.checkRegionAccessMs =
+            Math.round(
+                performance.now() -
+                    phaseStartedAt
+            );
     }
 
     if (!access) {
-        state.currentRegionId = activeRegionId;
-
-        const region = state.availableRegions.find(
-            candidate => candidate.id === activeRegionId
-        );
-
-        state.regionName = region?.name || "";
-
+        /*
+         * Do not mutate committed workspace identity or
+         * committed regional data here. The requested
+         * target remains in pendingRegionId for Region Gate.
+         */
         return "access-denied";
     }
 
-    phaseStartedAt = performance.now();
-
     const loadRegionDataQueries = {};
 
-    const cloudData = await loadRegionData(
-        activeRegionId,
-        loadRegionDataQueries
-    );
+    const timeWorkspacePhase = async (
+        phaseName,
+        operation
+    ) => {
+        const startedAt =
+            performance.now();
 
-    if (!isCurrentWorkspace()) {
+        try {
+            return await operation();
+        } finally {
+            if (bootPhases) {
+                bootPhases[phaseName] =
+                    Math.round(
+                        performance.now() -
+                            startedAt
+                    );
+            }
+        }
+    };
+
+    const [
+        cloudData,
+        profileAoPermissions,
+        profileRegionPositions,
+    ] = await Promise.all([
+        timeWorkspacePhase(
+            "loadRegionDataMs",
+            () =>
+                loadRegionData(
+                    targetRegionId,
+                    loadRegionDataQueries
+                )
+        ),
+
+        timeWorkspacePhase(
+            "profileAoPermissionsMs",
+            () =>
+                loadProfileAoPermissions(
+                    targetRegionId
+                )
+        ),
+
+        timeWorkspacePhase(
+            "profileRegionPositionsMs",
+            () =>
+                loadProfileRegionPositions(
+                    targetRegionId
+                )
+        ),
+    ]);
+
+    if (!isCurrentWorkspaceRequest()) {
         return "stale";
     }
 
     if (bootPhases) {
-        bootPhases.loadRegionDataMs = Math.round(
-            performance.now() - phaseStartedAt
-        );
-
         bootPhases.loadRegionDataQueries =
             loadRegionDataQueries;
     }
 
-    phaseStartedAt = performance.now();
+    phaseStartedAt =
+        performance.now();
 
-    if (!isCurrentWorkspace()) {
-        return "stale";
-    }
-
+    /*
+     * Atomic workspace commit:
+     *
+     * Until this point, the previous workspace remains
+     * fully committed. Regional data, permissions, and
+     * identity are installed together only after every
+     * required request succeeds.
+     */
     replacePersistedData(cloudData);
 
-    if (bootPhases) {
-        bootPhases.replacePersistedDataMs = Math.round(
-            performance.now() - phaseStartedAt
-        );
-    }
+    state.profileAoPermissions =
+        profileAoPermissions || [];
 
-    state.currentRegionId = activeRegionId;
+    state.profileRegionPositions =
+        profileRegionPositions || [];
+
+    state.currentRegionId =
+        targetRegionId;
+
+    state.activeRegionId =
+        targetRegionId;
+
+    state.pendingRegionId = null;
+
+    if (bootPhases) {
+        bootPhases.replacePersistedDataMs =
+            Math.round(
+                performance.now() -
+                    phaseStartedAt
+            );
+    }
 
     Promise.all([
         loadLibraryAutocompleteItems(),
         loadLibraryFilterOptions(),
     ])
-        .then(([items, filterOptions]) => {
-            /*
-             * Ignore late responses from a workspace
-             * that is no longer active.
-             */
-            if (!isCurrentWorkspace()) {
-                return;
-            }
+        .then(
+            ([items, filterOptions]) => {
+                if (
+                    !isCurrentWorkspaceRequest()
+                ) {
+                    return;
+                }
 
-            state.libraryItems = items;
-            state.libraryFilterOptions = filterOptions;
-            state.hasLoadedLibraryItems = true;
-        })
+                state.libraryItems = items;
+
+                state.libraryFilterOptions =
+                    filterOptions;
+
+                state.hasLoadedLibraryItems =
+                    true;
+            }
+        )
         .catch(error => {
             console.warn(
                 "Failed to load library data:",
@@ -151,7 +249,9 @@ export async function loadWorkspace(
 
     loadExercises()
         .then(exercises => {
-            if (!isCurrentWorkspace()) {
+            if (
+                !isCurrentWorkspaceRequest()
+            ) {
                 return;
             }
 
@@ -168,5 +268,5 @@ export async function loadWorkspace(
 }
 
 export async function unloadWorkspace() {
-    unsubscribeAllManagedChannels();
+    await unsubscribeAllManagedChannels();
 }

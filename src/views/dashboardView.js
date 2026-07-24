@@ -1,5 +1,5 @@
 import { state } from "../modules/state.js";
-import { renderApp } from "../index.js";
+import { renderApp, saveCurrentOfflineBootSnapshot } from "../index.js";
 import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import {
@@ -7,8 +7,6 @@ import {
     loadMemberSessionByDate,
     loadMemberSessions,
     loadRecentMemberActivity,
-    loadProfileAoPermissions,
-    loadProfileRegionPositions,
 } from "../services/cloudData.js";
  import { updateSession } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
@@ -81,69 +79,92 @@ export function renderDashboard() {
     document.querySelectorAll(".main-menu-overlay").forEach(menu => menu.remove());
 
     async function activateWorkspace(regionId) {
-        if (
-            !regionId ||
-            regionId === state.activeRegionId
-        ) {
+        const isAlreadyCommitted =
+            regionId ===
+                state.activeRegionId &&
+            !state.pendingRegionId;
+    
+        if (!regionId || isAlreadyCommitted) {
             state.isWorkspaceMenuOpen = false;
             renderApp();
             return;
         }
     
-        const workspaceResult = await switchWorkspace(
-            regionId,
-            {
-                onAccessDenied: () => {
-                    state.isWorkspaceMenuOpen = false;
-                    state.currentView = "regionGate";
-                    renderApp();
-                },
-            }
-        );
-        
-        if (workspaceResult !== "loaded") {
-            return;
-        }
-        /*
-        * Protect any remaining async work from a
-        * subsequent workspace switch.
-        */
-        const workspaceGeneration =
-        state.workspaceGeneration;
-    
-        const [
-            profileAoPermissions,
-            profileRegionPositions,
-        ] = await Promise.all([
-            loadProfileAoPermissions(regionId),
-            loadProfileRegionPositions(regionId),
-        ]);
-
-        if (
-            workspaceGeneration !==
-            state.workspaceGeneration
-        ) {
-            return;
-        }
-    
-        state.profileAoPermissions =
-            profileAoPermissions || [];
-    
-        state.profileRegionPositions =
-            profileRegionPositions || [];
-    
-        clearPlannerDraft();
-    
-        state.selectedPlannedWorkoutId = null;
-        state.draftSession = null;
-        state.editingSessionId = null;
-        state.selectedSessionId = null;
-        state.plannedWorkoutLaunchMode = null;
-        state.qSignupAoFilter = null;
-        state.hasInitializedQSignupFilter = false;
         state.isWorkspaceMenuOpen = false;
     
-        renderApp();
+        try {
+            const workspaceResult =
+                await switchWorkspace(
+                    regionId,
+                    {
+                        onAccessDenied:
+                            deniedRegionId => {
+                                state.pendingRegionId =
+                                    deniedRegionId;
+    
+                                state.currentView =
+                                    "regionGate";
+    
+                                renderApp();
+                            },
+                    }
+                );
+    
+            if (
+                workspaceResult !== "loaded"
+            ) {
+                return;
+            }
+    
+            clearPlannerDraft();
+    
+            state.selectedPlannedWorkoutId =
+                null;
+    
+            state.draftSession = null;
+            state.editingSessionId = null;
+            state.selectedSessionId = null;
+    
+            state.plannedWorkoutLaunchMode =
+                null;
+    
+            state.qSignupAoFilter = null;
+    
+            state.hasInitializedQSignupFilter =
+                false;
+
+            try {
+                saveCurrentOfflineBootSnapshot();
+            } catch (error) {
+                console.warn(
+                    "Workspace switched, but the offline snapshot could not be updated:",
+                    error
+                );
+            }
+
+            renderApp();
+        } catch (error) {
+            console.error(
+                "Failed to switch workspace:",
+                error
+            );
+    
+            showToast(
+                "Unable to switch regions. Your previous region is still active.",
+                "error"
+            );
+    
+            /*
+             * Re-render the still-committed workspace so the
+             * selector and title cannot remain visually stale.
+             */
+            if (
+                state.currentView ===
+                "dashboard"
+            ) {
+                renderApp();
+            }
+        }
     }
     
     function createWorkspaceMenu() {
@@ -1515,38 +1536,144 @@ export function renderDashboard() {
         ];
 
         async function hydrateMemberSessions(mode) {
-            const cacheKey = `${state.currentRegionId}__${memberId}__${mode}`;
-            state.memberSessionsLoadedByMode = state.memberSessionsLoadedByMode || {};
+            const requestRegionId =
+                state.currentRegionId;
         
-            if (state.memberSessionsLoadedByMode[cacheKey]) {
+            const requestGeneration =
+                state.workspaceGeneration;
+        
+            const cacheKey =
+                `${requestRegionId}__${memberId}__${mode}`;
+        
+            state.memberSessionsLoadedByMode =
+                state.memberSessionsLoadedByMode ||
+                {};
+        
+            const isRequestCurrent = () =>
+                requestGeneration ===
+                    state.workspaceGeneration &&
+                requestRegionId ===
+                    state.currentRegionId;
+        
+            if (
+                state.memberSessionsLoadedByMode[
+                    cacheKey
+                ]
+            ) {
                 return {
-                    sessions: state.sessions.filter(session => {
-                        const isQ = session.qIds?.includes(memberId);
-                        const attended = session.attendeeIds?.includes(memberId);
+                    status: "loaded",
+                    sessions:
+                        state.sessions.filter(
+                            session => {
+                                const isQ =
+                                    session.qIds?.includes(
+                                        memberId
+                                    );
         
-                        if (mode === "q") return isQ;
-                        if (mode === "attended") return attended;
-                        return attended || isQ;
-                    }),
+                                const attended =
+                                    session.attendeeIds?.includes(
+                                        memberId
+                                    );
+        
+                                if (mode === "q") {
+                                    return isQ;
+                                }
+        
+                                if (
+                                    mode ===
+                                    "attended"
+                                ) {
+                                    return attended;
+                                }
+        
+                                return attended || isQ;
+                            }
+                        ),
+        
                     loadedFromNetwork: false,
                 };
             }
         
-            const sessions = await loadMemberSessions(
-                state.currentRegionId,
-                memberId,
-                mode
-            );
+            const sessions =
+                await loadMemberSessions(
+                    requestRegionId,
+                    memberId,
+                    mode
+                );
         
-            const existingIds = new Set(state.sessions.map(session => session.id));
-            const newSessions = sessions.filter(session => !existingIds.has(session.id));
+            if (!isRequestCurrent()) {
+                return {
+                    status: "stale",
+                    sessions: [],
+                    loadedFromNetwork: true,
+                };
+            }
         
-            state.sessions = [...state.sessions, ...newSessions];
-            state.memberSessionsLoadedByMode[cacheKey] = true;
+            const existingIds =
+                new Set(
+                    state.sessions.map(
+                        session => session.id
+                    )
+                );
+        
+            const newSessions =
+                sessions.filter(
+                    session =>
+                        !existingIds.has(
+                            session.id
+                        )
+                );
+        
+            state.sessions = [
+                ...state.sessions,
+                ...newSessions,
+            ];
+        
+            state.memberSessionsLoadedByMode[
+                cacheKey
+            ] = true;
         
             return {
+                status: "loaded",
                 sessions,
                 loadedFromNetwork: true,
+            };
+        }
+
+        async function loadDashboardSessionByDate(
+            date,
+            mode
+        ) {
+            const requestRegionId =
+                state.currentRegionId;
+        
+            const requestGeneration =
+                state.workspaceGeneration;
+        
+            const session =
+                await loadMemberSessionByDate(
+                    requestRegionId,
+                    memberId,
+                    date,
+                    mode
+                );
+        
+            const isRequestCurrent =
+                requestGeneration ===
+                    state.workspaceGeneration &&
+                requestRegionId ===
+                    state.currentRegionId;
+        
+            if (!isRequestCurrent) {
+                return {
+                    status: "stale",
+                    session: null,
+                };
+            }
+        
+            return {
+                status: "loaded",
+                session,
             };
         }
 
@@ -1592,11 +1719,21 @@ export function renderDashboard() {
                         showToast("Loading full history...", "info");
                     }
                 
-                    await hydrateMemberSessions("attended");
-                
-                    state.sessionHistoryFilterType = "attended";
+                    const result =
+                        await hydrateMemberSessions(
+                            "attended"
+                        );
+
+                    if (result.status !== "loaded") {
+                        return;
+                    }
+
+                    state.sessionHistoryFilterType =
+                        "attended";
+
                     state.sessionHistoryAoFilter = "";
                     state.sessionHistorySearchTerm = "";
+
                     navigateTo("sessionHistory");
                 });
             }
@@ -1611,11 +1748,17 @@ export function renderDashboard() {
                         showToast("Loading full history...", "info");
                     }
                 
-                    await hydrateMemberSessions("q");
-                
+                    const result =
+                        await hydrateMemberSessions("q");
+
+                    if (result.status !== "loaded") {
+                        return;
+                    }
+
                     state.sessionHistoryFilterType = "q";
                     state.sessionHistoryAoFilter = "";
                     state.sessionHistorySearchTerm = "";
+
                     navigateTo("sessionHistory");
                 });
             }
@@ -1624,14 +1767,20 @@ export function renderDashboard() {
                 tile.classList.add("clickable-stat-tile");
 
                 tile.addEventListener("click", async () => {
-                    const session = await loadMemberSessionByDate(
-                        state.currentRegionId,
-                        memberId,
-                        stats?.lastPostDate,
-                        "attended"
-                    );
-                
-                    if (!session) return;
+                    const result =
+                        await loadDashboardSessionByDate(
+                            stats?.lastPostDate,
+                            "attended"
+                        );
+
+                    if (
+                        result.status !== "loaded" ||
+                        !result.session
+                    ) {
+                        return;
+                    }
+
+                    const session = result.session;
                 
                     const existingIds = new Set(state.sessions.map(session => session.id));
                     if (!existingIds.has(session.id)) {
@@ -1647,14 +1796,20 @@ export function renderDashboard() {
                 tile.classList.add("clickable-stat-tile");
             
                 tile.addEventListener("click", async () => {
-                    const session = await loadMemberSessionByDate(
-                        state.currentRegionId,
-                        memberId,
-                        stats?.lastQDate,
-                        "q"
-                    );
-            
-                    if (!session) return;
+                    const result =
+                        await loadDashboardSessionByDate(
+                            stats?.lastQDate,
+                            "q"
+                        );
+
+                    if (
+                        result.status !== "loaded" ||
+                        !result.session
+                    ) {
+                        return;
+                    }
+
+                    const session = result.session;
             
                     const existingIds = new Set(state.sessions.map(session => session.id));
                     if (!existingIds.has(session.id)) {
@@ -1670,14 +1825,20 @@ export function renderDashboard() {
                 tile.classList.add("clickable-stat-tile");
 
                 tile.addEventListener("click", async () => {
-                    const session = await loadMemberSessionByDate(
-                        state.currentRegionId,
-                        memberId,
-                        stats?.firstPostDate,
-                        "attended"
-                    );
-                
-                    if (!session) return;
+                    const result =
+                        await loadDashboardSessionByDate(
+                            stats?.firstPostDate,
+                            "attended"
+                        );
+
+                    if (
+                        result.status !== "loaded" ||
+                        !result.session
+                    ) {
+                        return;
+                    }
+
+                    const session = result.session;
                 
                     const existingIds = new Set(state.sessions.map(session => session.id));
                     if (!existingIds.has(session.id)) {

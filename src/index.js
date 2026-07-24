@@ -15,8 +15,6 @@ import {
     loadAllRegions,
     loadAccessibleRegions,
     getNotificationSettings,
-    loadProfileAoPermissions,
-    loadProfileRegionPositions,
 } from "./services/cloudData.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
@@ -827,11 +825,110 @@ function hydrateHistoricalBackblastLinks(regionId) {
         });
 }
 
+export function saveCurrentOfflineBootSnapshot() {
+    if (
+        !state.currentUserId ||
+        !state.currentUserProfileId ||
+        !state.homeRegionId ||
+        !state.activeRegionId
+    ) {
+        return;
+    }
+
+    saveOfflineBootSnapshot({
+        userId:
+            state.currentUserId,
+
+        profile: {
+            id:
+                state.currentUserProfileId,
+
+            displayName:
+                state.currentUserDisplayName,
+
+            role:
+                state.currentUserRole,
+
+            regionId:
+                state.homeRegionId,
+
+            memberId:
+                state.currentUserMemberId,
+
+            customTemplates:
+                state.customTemplates,
+        },
+
+        availableRegions:
+            state.availableRegions,
+
+        accessibleRegions:
+            state.accessibleRegions,
+
+        activeRegionId:
+            state.activeRegionId,
+
+        profileAoPermissions:
+            state.profileAoPermissions,
+
+        profileRegionPositions:
+            state.profileRegionPositions,
+
+        regionData: {
+            regionName:
+                state.regionName,
+
+            members:
+                state.members,
+
+            sessions:
+                state.sessions,
+
+            plannedWorkouts:
+                state.plannedWorkouts,
+
+            aos:
+                state.aos,
+
+            sites:
+                state.sites,
+
+            qSlots:
+                state.qSlots,
+
+            savedPlannerSections:
+                state.savedPlannerSections,
+
+            workoutFieldLabels:
+                state.workoutFieldLabels,
+
+            announcements:
+                state.announcements,
+
+            qSources:
+                state.qSources,
+
+            memberStats:
+                state.memberStats,
+
+            memberStatsByMemberId:
+                state.memberStatsByMemberId,
+
+            fngNamingPostNumber:
+                state.fngNamingPostNumber,
+
+            aoLeadershipContacts:
+                state.aoLeadershipContacts,
+        },
+    });
+}
+
 function hydrateOfflineBootSnapshot(snapshot) {
     const {
         profile,
         availableRegions,
         accessibleRegions,
+        activeRegionId,
         profileAoPermissions,
         profileRegionPositions,
         regionData,
@@ -851,15 +948,25 @@ function hydrateOfflineBootSnapshot(snapshot) {
 
     state.profileRegionId = profile.regionId;
 
-    // New workspace model
-    state.homeRegionId = profile.regionId;
-    state.activeRegionId = profile.regionId;
+    // Workspace identity restored from the snapshot.
+    state.homeRegionId =
+        profile.regionId;
+
+    state.activeRegionId =
+        activeRegionId;
+
+    state.currentRegionId =
+        activeRegionId;
+
+    state.pendingRegionId = null;
+
     state.accessibleRegions =
         accessibleRegions?.length
             ? accessibleRegions
             : availableRegions?.filter(
                 region =>
-                    region.id === profile.regionId
+                    region.id ===
+                    activeRegionId
             ) || [];
 
     state.accessibleRegionIds =
@@ -867,10 +974,8 @@ function hydrateOfflineBootSnapshot(snapshot) {
             ? state.accessibleRegions.map(
                 region => region.id
             )
-            : [profile.regionId];
-        
-    state.currentRegionId = profile.regionId;
-    
+            : [activeRegionId];
+
     state.regionOverrideId = null;
 
     state.currentUserMemberId =
@@ -971,7 +1076,16 @@ function getSharedWorkoutIdFromUrl() {
 }
 
 async function synchronizePendingSessionsForCurrentContext() {
-    if (!state.currentUserId || !state.currentRegionId) {
+    const ownerUserId =
+        state.currentUserId;
+
+    const regionId =
+        state.currentRegionId;
+
+    const workspaceGeneration =
+        state.workspaceGeneration;
+
+    if (!ownerUserId || !regionId) {
         return {
             status: "skipped",
             reason: "missing_context",
@@ -987,18 +1101,38 @@ async function synchronizePendingSessionsForCurrentContext() {
 
         const result =
             await synchronizePendingSessions({
-                ownerUserId: state.currentUserId,
-                regionId: state.currentRegionId,
+                ownerUserId,
+                regionId,
             });
 
-        if (result?.processedCount > 0) {
+        const originatingWorkspaceIsCurrent =
+            workspaceGeneration ===
+                state.workspaceGeneration &&
+            regionId ===
+                state.currentRegionId;
+
+        if (
+            result?.processedCount > 0 &&
+            originatingWorkspaceIsCurrent
+        ) {
             const workspaceResult =
                 await switchWorkspace(
-                    state.activeRegionId ||
-                    state.currentRegionId
+                    regionId
                 );
-        
-            if (workspaceResult === "loaded") {
+
+            if (
+                workspaceResult ===
+                "loaded"
+            ) {
+                try {
+                    saveCurrentOfflineBootSnapshot();
+                } catch (error) {
+                    console.warn(
+                        "Pending sessions synced, but the offline snapshot could not be updated:",
+                        error
+                    );
+                }
+
                 renderApp();
             }
         }
@@ -1179,6 +1313,22 @@ async function bootApp() {
                 "Accessible regions:",
                 state.accessibleRegionIds
             );
+
+            const savedWorkspaceSnapshot =
+                loadOfflineBootSnapshot(
+                    session.user.id
+                );
+
+            const savedActiveRegionId =
+                savedWorkspaceSnapshot?.activeRegionId;
+
+            const initialRegionId =
+                savedActiveRegionId &&
+                state.accessibleRegionIds.includes(
+                    savedActiveRegionId
+                )
+                    ? savedActiveRegionId
+                    : profile.region_id;
             
             phaseStartedAt = performance.now();
 
@@ -1194,16 +1344,12 @@ async function bootApp() {
                 }
             };
 
-            const [
-                workspaceResult,
-                profileAoPermissions,
-                profileRegionPositions,
-            ] = await Promise.all([
-                timeRegionalPhase(
+            const workspaceResult =
+                await timeRegionalPhase(
                     "activeRegionDataMs",
                     () =>
                         switchWorkspace(
-                            profile.region_id,
+                            initialRegionId,
                             {
                                 bootPhases,
                                 onAccessDenied: () => {
@@ -1212,16 +1358,7 @@ async function bootApp() {
                                 },
                             }
                         )
-                ),
-                timeRegionalPhase(
-                    "profileAoPermissionsMs",
-                    () => loadProfileAoPermissions(profile.region_id)
-                ),
-                timeRegionalPhase(
-                    "profileRegionPositionsMs",
-                    () => loadProfileRegionPositions(profile.region_id)
-                ),
-            ]);
+                );
 
             bootPhases.regionBootstrapMs = Math.round(
                 performance.now() - phaseStartedAt
@@ -1236,75 +1373,8 @@ async function bootApp() {
                 return;
             }
 
-            state.profileAoPermissions = profileAoPermissions || [];
-            state.profileRegionPositions = profileRegionPositions || [];
-
             try {
-                saveOfflineBootSnapshot({
-                    userId:
-                        session.user.id,
-            
-                    profile,
-            
-                    availableRegions:
-                        state.availableRegions,
-
-                    accessibleRegions:
-                        state.accessibleRegions,
-            
-                    profileAoPermissions:
-                        state.profileAoPermissions,
-            
-                    profileRegionPositions:
-                        state.profileRegionPositions,
-            
-                    regionData: {
-                        regionName:
-                            state.regionName,
-            
-                        members:
-                            state.members,
-            
-                        sessions:
-                            state.sessions,
-            
-                        plannedWorkouts:
-                            state.plannedWorkouts,
-            
-                        aos:
-                            state.aos,
-            
-                        sites:
-                            state.sites,
-            
-                        qSlots:
-                            state.qSlots,
-            
-                        savedPlannerSections:
-                            state.savedPlannerSections,
-            
-                        workoutFieldLabels:
-                            state.workoutFieldLabels,
-            
-                        announcements:
-                            state.announcements,
-            
-                        qSources:
-                            state.qSources,
-            
-                        memberStats:
-                            state.memberStats,
-            
-                        memberStatsByMemberId:
-                            state.memberStatsByMemberId,
-            
-                        fngNamingPostNumber:
-                            state.fngNamingPostNumber,
-            
-                        aoLeadershipContacts:
-                            state.aoLeadershipContacts,
-                    },
-                });
+                saveCurrentOfflineBootSnapshot();
             } catch (error) {
                 console.warn(
                     "Online boot succeeded, but the offline snapshot could not be saved:",

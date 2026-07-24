@@ -439,7 +439,6 @@ export async function loadRegionData(
         qSourceResult,
         memberStatsResult,
         aoLeadershipContactResult,
-        profileRegionPositionResult,
         memberInviterResult,
     ] = await Promise.all([
         timed(
@@ -552,13 +551,6 @@ export async function loadRegionData(
             timings,
             "aoLeadershipContactsMs"
         ),
-
-        timed(
-            "loadRegionData:profileRegionPositions",
-            loadProfileRegionPositions(regionId),
-            timings,
-            "profileRegionPositionsMs"
-        ),
         
         timed(
             "loadRegionData:memberInviters",
@@ -650,7 +642,6 @@ export async function loadRegionData(
             memberStatsResult.map(stats => [stats.memberId, stats])
         ),
         aoLeadershipContacts: aoLeadershipContactResult,
-        profileRegionPositions: profileRegionPositionResult,
     };
 }
 

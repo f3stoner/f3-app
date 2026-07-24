@@ -58,6 +58,7 @@ export const state = {
     // New workspace model
     homeRegionId: savedState?.homeRegionId || null,
     activeRegionId: savedState?.activeRegionId || null,
+    pendingRegionId: null,
     workspaceGeneration: 0,
     accessibleRegionIds: savedState?.accessibleRegionIds || [],
     accessibleRegions: [],

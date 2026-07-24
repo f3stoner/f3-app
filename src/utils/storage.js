@@ -3,7 +3,7 @@ const NAV_STATE_KEY = "theQNavState";
 const NAV_RESTORE_TTL_MS = 15 * 60 * 1000;
 const EXECUTION_RESTORE_TTL_MS = 4 * 60 * 60 * 1000;
 const OFFLINE_BOOT_KEY = "theQOfflineBoot";
-const OFFLINE_BOOT_VERSION = 1;
+const OFFLINE_BOOT_VERSION = 2;
 
 export function saveState(state) {
     const data = JSON.stringify({
@@ -96,13 +96,29 @@ export function saveOfflineBootSnapshot({
     userId,
     profile,
     availableRegions,
+    accessibleRegions,
+    activeRegionId,
     profileAoPermissions,
     profileRegionPositions,
     regionData,
 }) {
-    if (!userId || !profile?.id || !profile?.region_id) {
+    const profileRegionId =
+        profile?.regionId ??
+        profile?.region_id;
+
+    if (
+        !userId ||
+        !profile?.id ||
+        !profileRegionId
+    ) {
         throw new Error(
             "Offline boot snapshot requires a user and profile."
+        );
+    }
+
+    if (!activeRegionId) {
+        throw new Error(
+            "Offline boot snapshot requires an active region."
         );
     }
 
@@ -113,17 +129,30 @@ export function saveOfflineBootSnapshot({
         userId,
 
         profile: {
-            id: profile.id,
+            id:
+                profile.id,
+        
             displayName:
-                profile.display_name || "User",
+                profile.displayName ??
+                profile.display_name ??
+                "User",
+        
             role:
                 profile.role || "pax",
+        
             regionId:
+                profile.regionId ??
                 profile.region_id,
+        
             memberId:
-                profile.member_id || null,
+                profile.memberId ??
+                profile.member_id ??
+                null,
+        
             customTemplates:
-                profile.custom_templates || null,
+                profile.customTemplates ??
+                profile.custom_templates ??
+                null,
         },
 
         availableRegions:
@@ -131,6 +160,13 @@ export function saveOfflineBootSnapshot({
                 ? availableRegions
                 : [],
 
+        accessibleRegions:
+            Array.isArray(accessibleRegions)
+                ? accessibleRegions
+                : [],
+            
+        activeRegionId,
+        
         profileAoPermissions:
             Array.isArray(profileAoPermissions)
                 ? profileAoPermissions
@@ -220,8 +256,29 @@ export function loadOfflineBootSnapshot(userId) {
         if (
             !snapshot.profile?.id ||
             !snapshot.profile?.regionId ||
+            !snapshot.activeRegionId ||
             !snapshot.regionData
         ) {
+            return null;
+        }
+        
+        const accessibleRegionIds =
+            Array.isArray(snapshot.accessibleRegions)
+                ? snapshot.accessibleRegions
+                    .map(region => region?.id)
+                    .filter(Boolean)
+                : [];
+        
+        if (
+            accessibleRegionIds.length > 0 &&
+            !accessibleRegionIds.includes(
+                snapshot.activeRegionId
+            )
+        ) {
+            console.warn(
+                "Offline boot snapshot has inconsistent workspace metadata."
+            );
+        
             return null;
         }
 
