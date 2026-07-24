@@ -1283,25 +1283,64 @@ function initializeReconnectLifecycle() {
 }
 
 function recordBootDiagnostic(step, details = {}) {
-    const entry = {
-        timestamp: new Date().toISOString(),
-        step,
-        online: navigator.onLine,
-        ...details,
-    };
+    try {
+        const entry = {
+            timestamp: new Date().toISOString(),
+            step,
+            online: navigator.onLine,
+            ...details,
+        };
 
-    const existing = JSON.parse(
-        localStorage.getItem("bootDiagnostics") || "[]"
-    );
+        let existing = [];
 
-    existing.push(entry);
+        try {
+            const raw =
+                localStorage.getItem(
+                    "bootDiagnostics"
+                );
 
-    localStorage.setItem(
-        "bootDiagnostics",
-        JSON.stringify(existing.slice(-50))
-    );
+            if (raw) {
+                const parsed = JSON.parse(raw);
 
-    console.warn("BOOT DIAGNOSTIC:", entry);
+                if (Array.isArray(parsed)) {
+                    existing = parsed;
+                }
+            }
+        } catch {
+            /*
+             * Diagnostics are best-effort only.
+             * Malformed or unavailable stored data must not
+             * interfere with application boot.
+             */
+            existing = [];
+        }
+
+        existing.push(entry);
+
+        try {
+            localStorage.setItem(
+                "bootDiagnostics",
+                JSON.stringify(
+                    existing.slice(-50)
+                )
+            );
+        } catch {
+            /*
+             * Ignore quota, privacy-mode, and storage-access
+             * failures. Diagnostics must never break boot.
+             */
+        }
+
+        console.warn(
+            "BOOT DIAGNOSTIC:",
+            entry
+        );
+    } catch {
+        /*
+         * Telemetry and diagnostics must never affect
+         * application control flow.
+         */
+    }
 }
 
 async function bootApp() {
