@@ -149,6 +149,21 @@ export function renderAuthView() {
         }
     });
 
+    function handleAuthEnter(event) {
+        if (event.key !== "Enter") return;
+    
+        event.preventDefault();
+    
+        if (isLoading) return;
+    
+        signInButton.click();
+    }
+    
+    emailInput.addEventListener("keydown", handleAuthEnter);
+    passwordInput.addEventListener("keydown", handleAuthEnter);
+    confirmPasswordInput.addEventListener("keydown", handleAuthEnter);
+    regionSelect.addEventListener("keydown", handleAuthEnter);
+
     const toggleModeButton = document.createElement("button");
     toggleModeButton.textContent = "Create Account Instead";
 
@@ -216,5 +231,7 @@ export function renderAuthView() {
     );
     wrapper.appendChild(card);
     app.appendChild(wrapper);
+
+    emailInput.focus();
 }
 

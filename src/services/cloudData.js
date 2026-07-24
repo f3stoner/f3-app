@@ -3768,3 +3768,45 @@ export async function loadMembersByIds(
         };
     });
 }
+
+export async function joinRegion(regionId, password) {
+    if (!regionId) {
+        throw new Error("Region ID is required.");
+    }
+
+    if (!password?.trim()) {
+        throw new Error("Region password is required.");
+    }
+
+    const { data, error } = await supabase.rpc("join_region", {
+        p_region_id: regionId,
+        p_password: password,
+    });
+
+    if (error) {
+        if (
+            error.message?.includes("invalid_region_credentials") ||
+            error.details?.includes("invalid_region_credentials")
+        ) {
+            throw new Error("Incorrect region password.");
+        }
+
+        if (
+            error.message?.includes("authentication_required") ||
+            error.details?.includes("authentication_required")
+        ) {
+            throw new Error("You must be signed in to join a region.");
+        }
+
+        console.error("Failed to join region:", error);
+        throw new Error("Unable to join the region. Please try again.");
+    }
+
+    const result = Array.isArray(data) ? data[0] : data;
+
+    if (!result?.region_id) {
+        throw new Error("Region enrollment did not return a valid result.");
+    }
+
+    return result;
+}

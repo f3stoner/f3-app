@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { replacePersistedData } from "../services/appData.js";
-import { loadRegionData, verifyRegionPassword, grantRegionAccess } from "../services/cloudData.js";
+import { loadRegionData, joinRegion } from "../services/cloudData.js";
 
 export function renderRegionGateView() {
     const app = document.getElementById("app");
@@ -23,29 +23,44 @@ export function renderRegionGateView() {
 
     button.addEventListener("click", async () => {
         const entered = input.value.trim();
-
+    
+        if (!entered) {
+            alert("Enter the region password.");
+            input.focus();
+            return;
+        }
+    
+        button.disabled = true;
+        button.textContent = "Checking...";
+    
         try {
-            const isValidPassword = await verifyRegionPassword(
-                state.currentRegionId,
-                entered
-            );
-            
-            if (!isValidPassword) {
-                alert("Incorrect Password");
-                return;
-            }
-
-            await grantRegionAccess(state.currentUserId, state.currentRegionId);
+            await joinRegion(state.currentRegionId, entered);
+    
             const cloudData = await loadRegionData(state.currentRegionId);
             replacePersistedData(cloudData);
+    
             console.log("regionGate members loaded:", cloudData.members.length);
             console.log("state members after replace:", state.members.length);
-
-            state.currentView = state.currentUserMemberId ? "dashboard" : "claimMember";
+    
+            state.currentView = state.currentUserMemberId
+                ? "dashboard"
+                : "claimMember";
+    
             renderApp();
         } catch (error) {
             console.error(error);
-            alert("Failed to verify access");
+            alert(error.message || "Failed to verify access");
+            input.focus();
+            input.select();
+        } finally {
+            button.disabled = false;
+            button.textContent = "Enter";
+        }
+    });
+
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            button.click();
         }
     });
 
@@ -59,4 +74,6 @@ export function renderRegionGateView() {
     });
 
     app.append(backButton, title, subtitle, input, button);
+
+    input.focus();
 }
