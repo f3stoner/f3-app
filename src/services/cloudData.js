@@ -1571,17 +1571,6 @@ export async function loadAllRegions() {
     return (data || []).map(mapRegionFromDb);
 }
 
-export async function verifyRegionPassword(regionId, password) {
-    const { data, error } = await supabase.rpc("verify_region_password", {
-        p_region_id: regionId,
-        p_password: password,
-    });
-
-    if (error) throw error;
-
-    return data === true;
-}
-
 export async function loadClaimedMemberIds(regionId) {
     const { data, error } = await supabase.rpc("load_claimed_member_ids", {
         p_region_id: regionId,
@@ -1621,17 +1610,6 @@ export async function checkRegionAccess(userId, regionId) {
 
     if (error) throw error;
     return data;
-}
-
-export async function grantRegionAccess(userId, regionId) {
-    const { error } = await supabase
-        .from("region_access")
-        .insert({
-            user_id: userId,
-            region_id: regionId
-        });
-
-    if (error && error.code !== "23505") throw error;
 }
 
 export async function getNotificationSettings(userId) {
