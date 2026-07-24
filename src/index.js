@@ -175,7 +175,6 @@ const RESTORABLE_VIEWS = new Set([
     "regionInsights",
     "importRuns",
     "announcementManagement",
-    "backblastReview",
     "settings",
     "operationsCenter",
 ]);
@@ -204,12 +203,6 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-import-runs" */
             "./views/importRunsView.js"
         ).then(module => module.renderImportRunsView),
-
-    backblastReview: () =>
-        import(
-            /* webpackChunkName: "route-backblast-review" */
-            "./views/backblastReviewView.js"
-        ).then(module => module.renderBackblastReview),
 
     thangReview: () =>
         import(
@@ -247,7 +240,6 @@ const lazyRoutePromises = new Map();
 function getLazyRouteLabel(viewName) {
     const labels = {
         importRuns: "Import Runs",
-        backblastReview: "Backblast Review",
         thangReview: "Thang Review",
         adminManagement: "Admin Management",
         operationsCenter: "Operations Center",
@@ -497,11 +489,6 @@ function renderApp() {
         );
     } else if (state.currentView === "announcementManagement") {
         renderAnnouncementManagementView();
-    } else if (state.currentView === "backblastReview") {
-        renderLazyRoute(
-            "backblastReview",
-            currentRenderSequence
-        );
     } else if (state.currentView === "thangReview") {
         renderLazyRoute(
             "thangReview",

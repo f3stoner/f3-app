@@ -204,11 +204,6 @@ export function createMainMenu() {
                     isVisible: canViewAnyAoInsights,
                 },
                 {
-                    label: "Backblast Review",
-                    view: "backblastReview",
-                    permission: PERMISSIONS.VIEW_REGION_INSIGHTS,
-                },
-                {
                     label: "Q Readiness",
                     view: "qReadiness",
                     isVisible: canViewAnyQReadiness,
