@@ -3,11 +3,12 @@ const NAV_STATE_KEY = "theQNavState";
 const NAV_RESTORE_TTL_MS = 15 * 60 * 1000;
 const EXECUTION_RESTORE_TTL_MS = 4 * 60 * 60 * 1000;
 const OFFLINE_BOOT_KEY = "theQOfflineBoot";
-const OFFLINE_BOOT_VERSION = 2;
+const OFFLINE_BOOT_VERSION = 3;
 
 const OFFLINE_DB_NAME = "theQOfflineData";
 const OFFLINE_DB_VERSION = 1;
 const OFFLINE_REGION_STORE = "regionSnapshots";
+export const OFFLINE_REGION_SCHEMA_VERSION = 1;
 
 export function saveState(state) {
     const data = JSON.stringify({
@@ -96,6 +97,20 @@ export function getRestoredNavState() {
     return null;
 }
 
+function createOfflineSnapshotRevision() {
+    if (
+        typeof crypto !== "undefined" &&
+        typeof crypto.randomUUID === "function"
+    ) {
+        return crypto.randomUUID();
+    }
+
+    return [
+        Date.now(),
+        Math.random().toString(36).slice(2),
+    ].join("-");
+}
+
 export async function saveOfflineBootSnapshot({
     userId,
     profile,
@@ -126,16 +141,21 @@ export async function saveOfflineBootSnapshot({
         );
     }
 
+    const revision =
+        createOfflineSnapshotRevision();
+
     await saveOfflineRegionSnapshot({
         userId,
         regionId: activeRegionId,
         regionData,
+        revision,
     });
 
     const snapshot = {
         version: OFFLINE_BOOT_VERSION,
+        revision,
         savedAt: new Date().toISOString(),
-
+    
         userId,
 
         profile: {
@@ -217,6 +237,7 @@ export function loadOfflineBootSnapshot(userId) {
         }
 
         if (
+            !snapshot.revision ||
             !snapshot.profile?.id ||
             !snapshot.profile?.regionId ||
             !snapshot.activeRegionId
@@ -257,6 +278,18 @@ export function loadOfflineBootSnapshot(userId) {
 
 function openOfflineDatabase() {
     return new Promise((resolve, reject) => {
+        if (
+            typeof indexedDB === "undefined"
+        ) {
+            reject(
+                new Error(
+                    "IndexedDB is unavailable."
+                )
+            );
+
+            return;
+        }
+
         const request = indexedDB.open(
             OFFLINE_DB_NAME,
             OFFLINE_DB_VERSION
@@ -313,10 +346,11 @@ export async function saveOfflineRegionSnapshot({
     userId,
     regionId,
     regionData,
+    revision,
 }) {
-    if (!userId || !regionId) {
+    if (!userId || !regionId || !revision) {
         throw new Error(
-            "Offline region snapshot requires a user and region."
+            "Offline region snapshot requires a user, region, and revision."
         );
     }
 
@@ -351,10 +385,14 @@ export async function saveOfflineRegionSnapshot({
 
                 userId,
                 regionId,
-
+                revision,
+                
+                schemaVersion:
+                    OFFLINE_REGION_SCHEMA_VERSION,
+                
                 savedAt:
                     new Date().toISOString(),
-
+                
                 regionData,
             });
 

@@ -34,6 +34,7 @@ import {
     saveOfflineBootSnapshot,
     loadOfflineBootSnapshot,
     loadOfflineRegionSnapshot,
+    OFFLINE_REGION_SCHEMA_VERSION,
 } from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
@@ -1015,19 +1016,102 @@ async function bootFromOfflineSnapshot({
         );
 
     if (!snapshot) {
+        recordBootDiagnostic(
+            "offline_boot_metadata_missing"
+        );
+
         return false;
     }
 
-    const regionSnapshot =
-        await loadOfflineRegionSnapshot({
-            userId:
-                session.user.id,
+    let regionSnapshot;
 
-            regionId:
-                snapshot.activeRegionId,
-        });
+    try {
+        regionSnapshot =
+            await loadOfflineRegionSnapshot({
+                userId:
+                    session.user.id,
 
-    if (!regionSnapshot?.regionData) {
+                regionId:
+                    snapshot.activeRegionId,
+            });
+    } catch (error) {
+        recordBootDiagnostic(
+            "offline_boot_region_storage_failed",
+            {
+                errorName:
+                    error?.name || null,
+
+                errorMessage:
+                    error?.message ||
+                    String(error),
+
+                regionId:
+                    snapshot.activeRegionId,
+            }
+        );
+
+        console.warn(
+            "Offline region snapshot could not be loaded:",
+            error
+        );
+
+        return false;
+    }
+
+    if (!regionSnapshot) {
+        recordBootDiagnostic(
+            "offline_boot_region_snapshot_missing",
+            {
+                regionId:
+                    snapshot.activeRegionId,
+            }
+        );
+
+        return false;
+    }
+
+    const regionSnapshotIsValid =
+        regionSnapshot.userId ===
+            session.user.id &&
+        regionSnapshot.regionId ===
+            snapshot.activeRegionId &&
+        regionSnapshot.revision ===
+            snapshot.revision &&
+        regionSnapshot.schemaVersion ===
+            OFFLINE_REGION_SCHEMA_VERSION &&
+        Boolean(regionSnapshot.regionData);
+
+    if (!regionSnapshotIsValid) {
+        recordBootDiagnostic(
+            "offline_boot_region_snapshot_invalid",
+            {
+                expectedRegionId:
+                    snapshot.activeRegionId,
+
+                actualRegionId:
+                    regionSnapshot.regionId ||
+                    null,
+
+                expectedRevision:
+                    snapshot.revision,
+
+                actualRevision:
+                    regionSnapshot.revision ||
+                    null,
+
+                expectedSchemaVersion:
+                    OFFLINE_REGION_SCHEMA_VERSION,
+
+                actualSchemaVersion:
+                    regionSnapshot.schemaVersion ??
+                    null,
+            }
+        );
+
+        console.warn(
+            "Offline metadata and regional snapshot do not match."
+        );
+
         return false;
     }
 
@@ -1170,6 +1254,32 @@ async function synchronizePendingSessionsForCurrentContext() {
             error,
         };
     }
+}
+
+let hasRegisteredPendingSessionOnlineListener =
+    false;
+
+function initializeReconnectLifecycle() {
+    /*
+     * Attempt synchronization immediately when online.
+     * An offline launch will wait for the online event.
+     */
+    if (navigator.onLine) {
+        void synchronizePendingSessionsForCurrentContext();
+    }
+
+    if (
+        hasRegisteredPendingSessionOnlineListener
+    ) {
+        return;
+    }
+
+    hasRegisteredPendingSessionOnlineListener =
+        true;
+
+    window.addEventListener("online", () => {
+        void synchronizePendingSessionsForCurrentContext();
+    });
 }
 
 function recordBootDiagnostic(step, details = {}) {
@@ -1432,6 +1542,7 @@ async function bootApp() {
             );
     
             if (offlineBooted) {
+                initializeReconnectLifecycle();
                 return;
             }
     
@@ -1458,19 +1569,7 @@ async function bootApp() {
 
         renderApp();
 
-        let hasRegisteredPendingSessionOnlineListener = false;
-
-        // Attempt a sync once after boot.
-        void synchronizePendingSessionsForCurrentContext();
-
-        // Retry automatically whenever connectivity returns.
-        if (!hasRegisteredPendingSessionOnlineListener) {
-            hasRegisteredPendingSessionOnlineListener = true;
-        
-            window.addEventListener("online", () => {
-                void synchronizePendingSessionsForCurrentContext();
-            });
-        }
+        initializeReconnectLifecycle();
 
         const usableAt = performance.now();
         const renderDurationMs = usableAt - renderStartedAt;
