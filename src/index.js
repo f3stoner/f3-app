@@ -28,7 +28,13 @@ import { renderRegionGateView } from "./views/regionGateView.js";
 import { renderClaimMemberView } from "./views/claimMemberView.js";
 import { renderBackblastView } from "./views/backblastView.js";
 import { renderResetPasswordView } from "./views/resetPasswordView.js";
-import { saveNavState, getRestoredNavState, saveOfflineBootSnapshot, loadOfflineBootSnapshot } from "./utils/storage.js";
+import {
+    saveNavState,
+    getRestoredNavState,
+    saveOfflineBootSnapshot,
+    loadOfflineBootSnapshot,
+    loadOfflineRegionSnapshot,
+} from "./utils/storage.js";
 import { renderAdminFlagsView } from "./views/adminFlagsView.js"
 import { renderAdminSettingsView } from "./views/adminSettingsView.js";
 import { logActionFailure, logAppEvent } from "./services/appEvents.js";
@@ -825,7 +831,7 @@ function hydrateHistoricalBackblastLinks(regionId) {
         });
 }
 
-export function saveCurrentOfflineBootSnapshot() {
+export async function saveCurrentOfflineBootSnapshot() {
     if (
         !state.currentUserId ||
         !state.currentUserProfileId ||
@@ -835,7 +841,7 @@ export function saveCurrentOfflineBootSnapshot() {
         return;
     }
 
-    saveOfflineBootSnapshot({
+    await saveOfflineBootSnapshot({
         userId:
             state.currentUserId,
 
@@ -923,7 +929,7 @@ export function saveCurrentOfflineBootSnapshot() {
     });
 }
 
-function hydrateOfflineBootSnapshot(snapshot) {
+function hydrateOfflineBootSnapshot(snapshot, regionData) {
     const {
         profile,
         availableRegions,
@@ -931,7 +937,6 @@ function hydrateOfflineBootSnapshot(snapshot) {
         activeRegionId,
         profileAoPermissions,
         profileRegionPositions,
-        regionData,
     } = snapshot;
 
     state.currentUserId =
@@ -1000,7 +1005,7 @@ function hydrateOfflineBootSnapshot(snapshot) {
     replacePersistedData(regionData);
 }
 
-function bootFromOfflineSnapshot({
+async function bootFromOfflineSnapshot({
     session,
     sharedWorkoutId,
 }) {
@@ -1013,7 +1018,23 @@ function bootFromOfflineSnapshot({
         return false;
     }
 
-    hydrateOfflineBootSnapshot(snapshot);
+    const regionSnapshot =
+        await loadOfflineRegionSnapshot({
+            userId:
+                session.user.id,
+
+            regionId:
+                snapshot.activeRegionId,
+        });
+
+    if (!regionSnapshot?.regionData) {
+        return false;
+    }
+
+    hydrateOfflineBootSnapshot(
+        snapshot,
+        regionSnapshot.regionData
+    );
 
     if (sharedWorkoutId) {
         const sharedWorkoutExists =
@@ -1125,7 +1146,7 @@ async function synchronizePendingSessionsForCurrentContext() {
                 "loaded"
             ) {
                 try {
-                    saveCurrentOfflineBootSnapshot();
+                    await saveCurrentOfflineBootSnapshot();
                 } catch (error) {
                     console.warn(
                         "Pending sessions synced, but the offline snapshot could not be updated:",
@@ -1374,7 +1395,7 @@ async function bootApp() {
             }
 
             try {
-                saveCurrentOfflineBootSnapshot();
+                await saveCurrentOfflineBootSnapshot();
             } catch (error) {
                 console.warn(
                     "Online boot succeeded, but the offline snapshot could not be saved:",
@@ -1399,7 +1420,7 @@ async function bootApp() {
             );
     
             const offlineBooted =
-                bootFromOfflineSnapshot({
+                await bootFromOfflineSnapshot({
                     session,
                     sharedWorkoutId,
                 });

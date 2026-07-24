@@ -134,7 +134,7 @@ export function renderDashboard() {
                 false;
 
             try {
-                saveCurrentOfflineBootSnapshot();
+                await saveCurrentOfflineBootSnapshot();
             } catch (error) {
                 console.warn(
                     "Workspace switched, but the offline snapshot could not be updated:",

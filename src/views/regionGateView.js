@@ -167,7 +167,7 @@ export function renderRegionGateView() {
                 }
 
                 try {
-                    saveCurrentOfflineBootSnapshot();
+                    await saveCurrentOfflineBootSnapshot();
                 } catch (error) {
                     console.warn(
                         "Region joined, but the offline snapshot could not be updated:",

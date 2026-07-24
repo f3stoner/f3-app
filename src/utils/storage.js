@@ -5,6 +5,10 @@ const EXECUTION_RESTORE_TTL_MS = 4 * 60 * 60 * 1000;
 const OFFLINE_BOOT_KEY = "theQOfflineBoot";
 const OFFLINE_BOOT_VERSION = 2;
 
+const OFFLINE_DB_NAME = "theQOfflineData";
+const OFFLINE_DB_VERSION = 1;
+const OFFLINE_REGION_STORE = "regionSnapshots";
+
 export function saveState(state) {
     const data = JSON.stringify({
         regionName: state.regionName,
@@ -92,7 +96,7 @@ export function getRestoredNavState() {
     return null;
 }
 
-export function saveOfflineBootSnapshot({
+export async function saveOfflineBootSnapshot({
     userId,
     profile,
     availableRegions,
@@ -121,6 +125,12 @@ export function saveOfflineBootSnapshot({
             "Offline boot snapshot requires an active region."
         );
     }
+
+    await saveOfflineRegionSnapshot({
+        userId,
+        regionId: activeRegionId,
+        regionData,
+    });
 
     const snapshot = {
         version: OFFLINE_BOOT_VERSION,
@@ -176,53 +186,6 @@ export function saveOfflineBootSnapshot({
             Array.isArray(profileRegionPositions)
                 ? profileRegionPositions
                 : [],
-
-        regionData: {
-            regionName:
-                regionData.regionName || "",
-
-            members:
-                regionData.members || [],
-
-            sessions:
-                regionData.sessions || [],
-
-            plannedWorkouts:
-                regionData.plannedWorkouts || [],
-
-            aos:
-                regionData.aos || [],
-
-            sites:
-                regionData.sites || [],
-
-            qSlots:
-                regionData.qSlots || [],
-
-            savedPlannerSections:
-                regionData.savedPlannerSections || [],
-
-            workoutFieldLabels:
-                regionData.workoutFieldLabels || {},
-
-            announcements:
-                regionData.announcements || [],
-
-            qSources:
-                regionData.qSources || [],
-
-            memberStats:
-                regionData.memberStats || [],
-
-            memberStatsByMemberId:
-                regionData.memberStatsByMemberId || {},
-
-            fngNamingPostNumber:
-                regionData.fngNamingPostNumber || 1,
-
-            aoLeadershipContacts:
-                regionData.aoLeadershipContacts || [],
-        },
     };
 
     localStorage.setItem(
@@ -256,8 +219,7 @@ export function loadOfflineBootSnapshot(userId) {
         if (
             !snapshot.profile?.id ||
             !snapshot.profile?.regionId ||
-            !snapshot.activeRegionId ||
-            !snapshot.regionData
+            !snapshot.activeRegionId
         ) {
             return null;
         }
@@ -290,6 +252,265 @@ export function loadOfflineBootSnapshot(userId) {
         );
 
         return null;
+    }
+}
+
+function openOfflineDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(
+            OFFLINE_DB_NAME,
+            OFFLINE_DB_VERSION
+        );
+
+        request.onupgradeneeded = () => {
+            const database = request.result;
+
+            if (
+                !database.objectStoreNames.contains(
+                    OFFLINE_REGION_STORE
+                )
+            ) {
+                database.createObjectStore(
+                    OFFLINE_REGION_STORE,
+                    {
+                        keyPath: "key",
+                    }
+                );
+            }
+        };
+
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            reject(
+                request.error ??
+                new Error(
+                    "Failed to open the offline database."
+                )
+            );
+        };
+
+        request.onblocked = () => {
+            reject(
+                new Error(
+                    "Offline database upgrade was blocked."
+                )
+            );
+        };
+    });
+}
+
+function createOfflineRegionSnapshotKey(
+    userId,
+    regionId
+) {
+    return `${userId}:${regionId}`;
+}
+
+export async function saveOfflineRegionSnapshot({
+    userId,
+    regionId,
+    regionData,
+}) {
+    if (!userId || !regionId) {
+        throw new Error(
+            "Offline region snapshot requires a user and region."
+        );
+    }
+
+    if (!regionData) {
+        throw new Error(
+            "Offline region snapshot requires region data."
+        );
+    }
+
+    const database =
+        await openOfflineDatabase();
+
+    try {
+        await new Promise((resolve, reject) => {
+            const transaction =
+                database.transaction(
+                    OFFLINE_REGION_STORE,
+                    "readwrite"
+                );
+
+            const store =
+                transaction.objectStore(
+                    OFFLINE_REGION_STORE
+                );
+
+            store.put({
+                key:
+                    createOfflineRegionSnapshotKey(
+                        userId,
+                        regionId
+                    ),
+
+                userId,
+                regionId,
+
+                savedAt:
+                    new Date().toISOString(),
+
+                regionData,
+            });
+
+            transaction.oncomplete = () => {
+                resolve();
+            };
+
+            transaction.onerror = () => {
+                reject(
+                    transaction.error ??
+                    new Error(
+                        "Failed to save the offline region snapshot."
+                    )
+                );
+            };
+
+            transaction.onabort = () => {
+                reject(
+                    transaction.error ??
+                    new Error(
+                        "Offline region snapshot save was aborted."
+                    )
+                );
+            };
+        });
+    } finally {
+        database.close();
+    }
+}
+
+export async function loadOfflineRegionSnapshot({
+    userId,
+    regionId,
+}) {
+    if (!userId || !regionId) {
+        return null;
+    }
+
+    const database =
+        await openOfflineDatabase();
+
+    try {
+        return await new Promise(
+            (resolve, reject) => {
+                const transaction =
+                    database.transaction(
+                        OFFLINE_REGION_STORE,
+                        "readonly"
+                    );
+
+                const store =
+                    transaction.objectStore(
+                        OFFLINE_REGION_STORE
+                    );
+
+                const request =
+                    store.get(
+                        createOfflineRegionSnapshotKey(
+                            userId,
+                            regionId
+                        )
+                    );
+
+                request.onsuccess = () => {
+                    resolve(
+                        request.result ?? null
+                    );
+                };
+
+                request.onerror = () => {
+                    reject(
+                        request.error ??
+                        new Error(
+                            "Failed to load the offline region snapshot."
+                        )
+                    );
+                };
+            }
+        );
+    } finally {
+        database.close();
+    }
+}
+
+export async function clearOfflineRegionSnapshots(
+    userId = null
+) {
+    const database =
+        await openOfflineDatabase();
+
+    try {
+        await new Promise((resolve, reject) => {
+            const transaction =
+                database.transaction(
+                    OFFLINE_REGION_STORE,
+                    "readwrite"
+                );
+
+            const store =
+                transaction.objectStore(
+                    OFFLINE_REGION_STORE
+                );
+
+            if (!userId) {
+                store.clear();
+            } else {
+                const request =
+                    store.openCursor();
+
+                request.onsuccess = () => {
+                    const cursor =
+                        request.result;
+
+                    if (!cursor) {
+                        return;
+                    }
+
+                    if (
+                        cursor.value?.userId ===
+                        userId
+                    ) {
+                        cursor.delete();
+                    }
+
+                    cursor.continue();
+                };
+
+                request.onerror = () => {
+                    transaction.abort();
+                };
+            }
+
+            transaction.oncomplete = () => {
+                resolve();
+            };
+
+            transaction.onerror = () => {
+                reject(
+                    transaction.error ??
+                    new Error(
+                        "Failed to clear offline region snapshots."
+                    )
+                );
+            };
+
+            transaction.onabort = () => {
+                reject(
+                    transaction.error ??
+                    new Error(
+                        "Clearing offline region snapshots was aborted."
+                    )
+                );
+            };
+        });
+    } finally {
+        database.close();
     }
 }
 
