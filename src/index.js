@@ -310,7 +310,7 @@ async function registerServiceWorker() {
                 }
             );
 
-        console.log("SW registered - Build C");
+        console.log("SW registered - Build D");
 
         serviceWorkerUpdateRegistration =
             registration;
