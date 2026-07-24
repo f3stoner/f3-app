@@ -353,7 +353,8 @@ async function registerServiceWorker() {
                     navigator.onLine
                 ) {
                     void checkForServiceWorkerUpdate(
-                        registration
+                        registration,
+                        { force: true }
                     );
                 }
             }
