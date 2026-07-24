@@ -1,6 +1,13 @@
 // services/workspaceService.js
 
 import { state } from "../modules/state.js";
+import { checkRegionAccess } from "./cloudData.js";
+import { renderApp } from "../index.js";
+import { loadRegionData } from "./cloudData.js";
+import { replacePersistedData } from "./appData.js";
+import { loadLibraryAutocompleteItems } from "./libraryData.js";
+import { loadLibraryFilterOptions } from "./libraryData.js";
+import { loadExercises } from "./cloudData.js";
 
 export async function switchWorkspace(regionId, options = {}) {
     throw new Error("switchWorkspace not implemented.");
