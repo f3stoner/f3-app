@@ -22,6 +22,9 @@ import {
 const DEFAULT_AUDIT_DAYS = 14;
 let showIgnoredSessions = false;
 
+let expandedDuplicateKey = null;
+let sessionAuditScrollY = 0;
+
 export async function renderSessionAuditView() {
     cleanupMainMenu();
 
@@ -59,6 +62,13 @@ export async function renderSessionAuditView() {
     summarySection.classList.add("section");
     summarySection.textContent = "Loading summary...";
 
+    const duplicateSection =
+        document.createElement("div");
+
+    duplicateSection.classList.add("section");
+    duplicateSection.textContent =
+        "Loading potential duplicates...";
+
     const listSection = document.createElement("div");
     listSection.classList.add("section");
     listSection.textContent = "Loading sessions...";
@@ -68,11 +78,15 @@ export async function renderSessionAuditView() {
         title,
         description,
         summarySection,
+        duplicateSection,
         listSection
     );
 
     try {
-        const rows = await loadSessionAudit(
+        const {
+            rows,
+            duplicateGroups,
+        } = await loadSessionAudit(
             state.currentRegionId,
             startDate,
             endDate
@@ -82,6 +96,12 @@ export async function renderSessionAuditView() {
             .filter(row => canViewSessionAudit(row.aoId))
             .sort(compareAuditRows);
 
+        const permittedDuplicateGroups =
+            (duplicateGroups || [])
+                .filter(group =>
+                    canViewSessionAudit(group.aoId)
+                );
+
         const summaryRows = permittedRows.filter(
             row =>
                 row.status !== "ignored" &&
@@ -89,12 +109,20 @@ export async function renderSessionAuditView() {
         );
         
         renderSummary(summarySection, summaryRows);
+
+        renderPotentialSessionDuplicates(
+            duplicateSection,
+            permittedDuplicateGroups
+        );
+
         renderAuditRows(listSection, permittedRows);
+        restoreSessionAuditPosition();
     } catch (error) {
         console.error("Failed to load session audit", error);
         showToast("Failed to load session audit.", "error");
 
         summarySection.textContent = "";
+        duplicateSection.textContent = "";
         listSection.textContent = "";
 
         const errorState = document.createElement("div");
@@ -120,9 +148,15 @@ export async function renderSessionAuditView() {
 function renderSummary(container, rows) {
     container.textContent = "";
 
-    const summaryTitle = document.createElement("div");
-    summaryTitle.classList.add("detail-label");
-    summaryTitle.textContent = `Past ${DEFAULT_AUDIT_DAYS} Days`;
+    const summaryTitle =
+        document.createElement("div");
+
+    summaryTitle.classList.add(
+        "detail-label",
+        "session-audit-section-title"
+    );
+
+    summaryTitle.textContent = "Audit Summary";
 
     const counts = rows.reduce(
         (summary, row) => {
@@ -140,25 +174,354 @@ function renderSummary(container, rows) {
     );
 
     const total = rows.length;
+
     const completionRate = total
-        ? Math.round((counts.logged / total) * 100)
+        ? Math.round(
+            (counts.logged / total) * 100
+        )
         : 0;
 
-    const summaryValues = document.createElement("div");
+    const summaryGrid =
+        document.createElement("div");
+
+    summaryGrid.classList.add(
+        "session-audit-summary-grid"
+    );
 
     [
-        `Missing: ${counts.missing}`,
-        `Unclaimed: ${counts.unclaimed}`,
-        `Logged: ${counts.logged}`,
-        `Completion: ${completionRate}%`,
-    ].forEach(text => {
-        const value = document.createElement("p");
-        value.classList.add("detail-value");
-        value.textContent = text;
-        summaryValues.appendChild(value);
+        {
+            label: "Logged",
+            value: counts.logged,
+        },
+        {
+            label: "Missing",
+            value: counts.missing,
+        },
+        {
+            label: "Unclaimed",
+            value: counts.unclaimed,
+        },
+        {
+            label: "Completion",
+            value: `${completionRate}%`,
+        },
+    ].forEach(item => {
+        const metric =
+            document.createElement("div");
+
+        metric.classList.add(
+            "session-audit-summary-metric"
+        );
+
+        const label =
+            document.createElement("span");
+
+        label.classList.add(
+            "session-audit-summary-label"
+        );
+
+        label.textContent = item.label;
+
+        const value =
+            document.createElement("strong");
+
+        value.classList.add(
+            "session-audit-summary-value"
+        );
+
+        value.textContent = item.value;
+
+        metric.append(label, value);
+        summaryGrid.appendChild(metric);
     });
 
-    container.append(summaryTitle, summaryValues);
+    container.append(
+        summaryTitle,
+        summaryGrid
+    );
+}
+
+function renderPotentialSessionDuplicates(
+    container,
+    groups
+) {
+    container.textContent = "";
+
+    const title = document.createElement("div");
+    title.classList.add(
+        "detail-label",
+        "session-audit-section-title"
+    );
+    title.textContent =
+        `Potential Duplicates (${groups.length})`;
+
+    container.appendChild(title);
+
+    if (!groups.length) {
+        const emptyState =
+            document.createElement("div");
+
+        emptyState.classList.add("empty-state");
+
+        const emptyTitle =
+            document.createElement("p");
+
+        emptyTitle.textContent =
+            "No potential duplicate sessions found.";
+
+        const emptyDetail =
+            document.createElement("p");
+
+        emptyDetail.classList.add("detail-value");
+        emptyDetail.textContent =
+            "Sessions are flagged when the same user logs multiple sessions for the same AO, date, and time.";
+
+        emptyState.append(
+            emptyTitle,
+            emptyDetail
+        );
+
+        container.appendChild(emptyState);
+        return;
+    }
+
+    groups.forEach(group => {
+        container.appendChild(
+            createPotentialDuplicateGroup(group)
+        );
+    });
+}
+
+function createPotentialDuplicateGroup(group) {
+    const duplicateKey =
+        createDuplicateGroupKey(group);
+
+    const groupElement =
+        document.createElement("div");
+
+    groupElement.classList.add(
+        "session-audit-duplicate-card"
+    );
+
+    groupElement.dataset.duplicateKey =
+        duplicateKey;
+
+    const headingRow =
+        document.createElement("div");
+
+    headingRow.classList.add(
+        "session-audit-duplicate-heading"
+    );
+
+    const headingText =
+        document.createElement("div");
+
+    const heading =
+        document.createElement("div");
+
+    heading.classList.add(
+        "session-audit-duplicate-ao"
+    );
+
+    heading.textContent =
+        group.aoName || "Unknown AO";
+
+    const meta =
+        document.createElement("p");
+
+    meta.classList.add(
+        "session-audit-duplicate-meta"
+    );
+
+    meta.textContent = [
+        formatDate(group.date),
+        formatAuditTime(group.startTime),
+    ].join(" · ");
+
+    headingText.append(
+        heading,
+        meta
+    );
+
+    const warningBadge =
+        document.createElement("span");
+
+    warningBadge.classList.add(
+        "session-audit-warning-badge"
+    );
+
+    warningBadge.textContent =
+        `${group.sessions.length} sessions`;
+
+    headingRow.append(
+        headingText,
+        warningBadge
+    );
+
+    const status =
+        document.createElement("p");
+
+    status.classList.add(
+        "session-audit-duplicate-status"
+    );
+
+    status.textContent =
+        "These sessions were logged by the same user for the same AO, date, and time.";
+
+    const details =
+        document.createElement("details");
+
+    details.classList.add(
+        "session-audit-duplicate-details"
+    );
+
+    details.dataset.duplicateKey =
+        duplicateKey;
+
+    details.addEventListener("toggle", () => {
+        if (details.open) {
+            expandedDuplicateKey =
+                duplicateKey;
+        } else if (
+            expandedDuplicateKey ===
+            duplicateKey
+        ) {
+            expandedDuplicateKey = null;
+        }
+    });
+
+    const summary =
+        document.createElement("summary");
+
+    summary.textContent = "Review Sessions";
+
+    const sessionList =
+        document.createElement("div");
+
+    sessionList.classList.add(
+        "session-audit-duplicate-list"
+    );
+
+    group.sessions.forEach(
+        (session, index) => {
+            sessionList.appendChild(
+                createPotentialDuplicateSessionRow(
+                    session,
+                    index,
+                    duplicateKey
+                )
+            );
+        }
+    );
+
+    details.append(
+        summary,
+        sessionList
+    );
+
+    groupElement.append(
+        headingRow,
+        status,
+        details
+    );
+
+    return groupElement;
+}
+
+function createPotentialDuplicateSessionRow(
+    session,
+    index,
+    duplicateKey
+) {
+    const row =
+        document.createElement("div");
+
+    row.classList.add(
+        "session-audit-duplicate-session"
+    );
+
+    const content =
+        document.createElement("div");
+
+    content.classList.add(
+        "session-audit-duplicate-session-content"
+    );
+
+    const label =
+        document.createElement("div");
+
+    label.classList.add(
+        "session-audit-duplicate-session-label"
+    );
+
+    label.textContent =
+        `Session ${index + 1}`;
+
+    const created =
+        document.createElement("p");
+
+    created.classList.add(
+        "session-audit-duplicate-session-created"
+    );
+
+    created.textContent =
+        formatAuditCreatedAt(
+            session.createdAt
+        );
+
+    const metrics =
+        document.createElement("p");
+
+    metrics.classList.add(
+        "session-audit-duplicate-session-metrics"
+    );
+
+    metrics.textContent =
+        `${session.attendanceCount} attending · ${session.fngCount} FNG${session.fngCount === 1 ? "" : "s"}`;
+
+    content.append(
+        label,
+        created,
+        metrics
+    );
+
+    const viewButton =
+        document.createElement("button");
+
+    viewButton.type = "button";
+    viewButton.classList.add(
+        "secondary-button",
+        "session-audit-duplicate-open"
+    );
+
+    viewButton.textContent =
+        "Open";
+
+    viewButton.addEventListener(
+        "click",
+        () => {
+            expandedDuplicateKey =
+                duplicateKey;
+
+            sessionAuditScrollY =
+                window.scrollY;
+
+            state.selectedSessionId =
+                session.sessionId;
+
+            state.editingSessionId = null;
+            state.draftSession = null;
+
+            navigateTo("sessionDetail");
+        }
+    );
+
+    row.append(
+        content,
+        viewButton
+    );
+
+    return row;
 }
 
 function renderAuditRows(container, rows) {
@@ -496,6 +859,96 @@ function compareAuditRows(a, b) {
     return String(a.aoName || "").localeCompare(
         String(b.aoName || "")
     );
+}
+
+function formatAuditTime(value) {
+    if (!value) {
+        return "Unknown";
+    }
+
+    const match = String(value).match(
+        /^(\d{1,2}):(\d{2})/
+    );
+
+    if (!match) {
+        return String(value);
+    }
+
+    const hour = Number(match[1]);
+    const minute = match[2];
+
+    if (!Number.isFinite(hour)) {
+        return String(value);
+    }
+
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+
+    return `${displayHour}:${minute} ${suffix}`;
+}
+
+function formatAuditCreatedAt(value) {
+    if (!value) {
+        return "Unknown";
+    }
+
+    const numericValue = Number(value);
+
+    const date = Number.isFinite(numericValue)
+        ? new Date(numericValue)
+        : new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Unknown";
+    }
+
+    return date.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
+}
+
+function restoreSessionAuditPosition() {
+    if (
+        !expandedDuplicateKey &&
+        !sessionAuditScrollY
+    ) {
+        return;
+    }
+
+    requestAnimationFrame(() => {
+        if (expandedDuplicateKey) {
+            const details =
+                document.querySelector(
+                    `details[data-duplicate-key="${CSS.escape(expandedDuplicateKey)}"]`
+                );
+
+            if (details) {
+                details.open = true;
+            }
+        }
+
+        window.scrollTo({
+            top: sessionAuditScrollY,
+            left: 0,
+            behavior: "instant",
+        });
+    });
+}
+
+function createDuplicateGroupKey(group) {
+    return [
+        group.aoId || "",
+        group.date || "",
+        group.startTime || "",
+        group.createdByUserId || "",
+    ]
+        .map(value =>
+            encodeURIComponent(String(value))
+        )
+        .join("|");
 }
 
 function addDays(dateString, days) {

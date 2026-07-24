@@ -3064,8 +3064,6 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
 
     if (slotsError) throw slotsError;
 
-    if (!slots?.length) return [];
-
     const { data: sessions, error: sessionsError } = await supabase
         .from("sessions")
         .select(`
@@ -3073,10 +3071,14 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
             date,
             ao_id,
             ao_name,
+            start_time,
+            attendee_ids,
+            fngs,
             q_ids,
             q_id,
             source_q_slot_id,
-            created_at
+            created_at,
+            created_by_user_id
         `)
         .eq("region_id", regionId)
         .gte("date", startDate)
@@ -3085,6 +3087,10 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
         .order("created_at", { ascending: false });
 
     if (sessionsError) throw sessionsError;
+
+    const duplicateGroups = createPotentialSessionDuplicateGroups(
+        sessions || []
+    );
 
     const sessionBySlotId = new Map();
     const legacySessionByAoDate = new Map();
@@ -3110,22 +3116,22 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
         }
     });
 
-    return slots.map(slot => {
+    const rows = (slots || []).map(slot => {
         const aoName = slot.aos?.name || "Unknown AO";
-
+    
         const legacyKey = createSessionAuditLegacyKey({
             date: slot.date,
             aoId: slot.ao_id,
             aoName,
         });
-
+    
         const session =
             sessionBySlotId.get(slot.id) ||
             legacySessionByAoDate.get(legacyKey) ||
             null;
-
+    
         let status = "unclaimed";
-
+    
         if (session) {
             status = "logged";
         } else if (slot.session_audit_ignored_at) {
@@ -3135,7 +3141,7 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
         } else if (slot.q_user_id) {
             status = "missing";
         }
-
+    
         return {
             slotId: slot.id,
             date: slot.date,
@@ -3165,6 +3171,117 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
             status,
         };
     });
+    
+    return {
+        rows,
+        duplicateGroups,
+    };
+}
+
+function createPotentialSessionDuplicateGroups(
+    sessions = []
+) {
+    const groupsByKey = new Map();
+
+    sessions.forEach(session => {
+        if (
+            !session.id ||
+            !session.ao_id ||
+            !session.date ||
+            !session.created_by_user_id
+        ) {
+            return;
+        }
+
+        const normalizedStartTime =
+            normalizeSessionAuditStartTime(
+                session.start_time
+            );
+
+        const key = [
+            session.ao_id,
+            session.date,
+            normalizedStartTime,
+            session.created_by_user_id,
+        ].join("|");
+
+        const existing = groupsByKey.get(key) || {
+            aoId: session.ao_id,
+            aoName:
+                session.ao_name ||
+                "Unknown AO",
+            date: session.date,
+            startTime:
+                session.start_time ||
+                null,
+            createdByUserId:
+                session.created_by_user_id,
+            sessions: [],
+        };
+
+        existing.sessions.push({
+            sessionId: session.id,
+            createdAt:
+                session.created_at ||
+                null,
+            attendanceCount:
+                Array.isArray(session.attendee_ids)
+                    ? session.attendee_ids.length
+                    : 0,
+            fngCount:
+                Array.isArray(session.fngs)
+                    ? session.fngs.length
+                    : 0,
+        });
+
+        groupsByKey.set(key, existing);
+    });
+
+    return [...groupsByKey.values()]
+        .filter(group => group.sessions.length > 1)
+        .map(group => ({
+            ...group,
+            sessions: group.sessions.sort(
+                compareDuplicateSessions
+            ),
+        }))
+        .sort(compareDuplicateGroups);
+}
+
+function normalizeSessionAuditStartTime(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase();
+}
+
+function compareDuplicateSessions(a, b) {
+    return String(a.createdAt || "").localeCompare(
+        String(b.createdAt || "")
+    );
+}
+
+function compareDuplicateGroups(a, b) {
+    const dateDifference =
+        String(b.date || "").localeCompare(
+            String(a.date || "")
+        );
+
+    if (dateDifference !== 0) {
+        return dateDifference;
+    }
+
+    const aoDifference =
+        String(a.aoName || "").localeCompare(
+            String(b.aoName || "")
+        );
+
+    if (aoDifference !== 0) {
+        return aoDifference;
+    }
+
+    return String(a.startTime || "").localeCompare(
+        String(b.startTime || "")
+    );
 }
 
 function createSessionAuditLegacyKey({ date, aoId, aoName }) {
