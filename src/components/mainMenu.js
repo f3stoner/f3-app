@@ -202,6 +202,10 @@ export function createMainMenu() {
             icon: "leadership",
             items: [
                 {
+                    label: "Leadership Directory",
+                    view: "leadership",
+                },
+                {
                     label: "Announcements",
                     view: "announcementManagement",
                     permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS,

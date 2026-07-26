@@ -69,7 +69,10 @@ function createRegionLeadershipSummary(profileId) {
     if (positions.length === 0) return null;
 
     const summary = document.createElement("div");
-    summary.classList.add("stats-line");
+    summary.classList.add(
+        "stats-line",
+        "admin-assignment-summary"
+    );
     summary.textContent = positions
         .map(position => getRegionPositionLabel(position.position))
         .join(" · ");
@@ -115,6 +118,37 @@ export async function renderAdminManagementView() {
 
     let profiles = [];
     let aoPermissions = [];
+
+    async function reloadAdminManagementData() {
+        const [
+            refreshedProfiles,
+            refreshedAoPermissions,
+            refreshedRegionPositions,
+        ] = await Promise.all([
+            loadRegionProfiles(
+                state.currentRegionId
+            ),
+            loadProfileAoPermissions(
+                state.currentRegionId
+            ),
+            loadProfileRegionPositions(
+                state.currentRegionId
+            ),
+        ]);
+    
+        profiles = refreshedProfiles;
+        aoPermissions =
+            refreshedAoPermissions;
+    
+        state.adminProfiles =
+            refreshedProfiles;
+    
+        state.profileAoPermissions =
+            refreshedAoPermissions;
+    
+        state.profileRegionPositions =
+            refreshedRegionPositions;
+    }
 
     try {
         const results = await Promise.all([
@@ -165,7 +199,10 @@ export async function renderAdminManagementView() {
         if (permissions.length === 0) return null;
     
         const summary = document.createElement("div");
-        summary.classList.add("stats-line");
+        summary.classList.add(
+            "stats-line",
+            "admin-assignment-summary"
+        );
         summary.textContent = permissions
             .map(permission =>
                 `${getAoName(permission.aoId)} ${getAoPositionLabel(permission.position)}`
@@ -183,19 +220,35 @@ export async function renderAdminManagementView() {
         heading.classList.add("detail-label");
         heading.textContent = `AO Leadership · ${getProfileName(profile)}`;
     
-        let draftAssignments = getProfileAoPermissions(profile.id).map(permission => ({
-            aoId: permission.aoId,
-            position: permission.position || "aoq",
-        }));
-    
-        if (draftAssignments.length === 0) {
-            draftAssignments = [{ aoId: "", position: "aoq" }];
-        }
+        let draftAssignments =
+            getProfileAoPermissions(profile.id)
+                .map(permission => ({
+                    aoId: permission.aoId,
+                    position:
+                        permission.position ||
+                        "aoq",
+                }));
     
         const assignmentList = document.createElement("div");
     
         function renderAssignmentList() {
             assignmentList.textContent = "";
+
+            if (draftAssignments.length === 0) {
+                const empty =
+                    document.createElement("div");
+            
+                empty.classList.add(
+                    "stats-line",
+                    "admin-assignment-empty"
+                );
+            
+                empty.textContent =
+                    "No AO leadership assignments.";
+            
+                assignmentList.appendChild(empty);
+                return;
+            }
     
             draftAssignments.forEach((assignment, index) => {
                 const row = document.createElement("div");
@@ -229,9 +282,15 @@ export async function renderAdminManagementView() {
                         aoSelect.appendChild(option);
                     });
     
-                aoSelect.addEventListener("change", event => {
-                    draftAssignments[index].aoId = event.target.value;
-                });
+                    aoSelect.addEventListener(
+                        "change",
+                        event => {
+                            draftAssignments[index].aoId =
+                                event.target.value;
+                    
+                            renderAssignmentList();
+                        }
+                    );
     
                 const positionSelect = document.createElement("select");
     
@@ -243,9 +302,15 @@ export async function renderAdminManagementView() {
                     positionSelect.appendChild(option);
                 });
     
-                positionSelect.addEventListener("change", event => {
-                    draftAssignments[index].position = event.target.value;
-                });
+                positionSelect.addEventListener(
+                    "change",
+                    event => {
+                        draftAssignments[index].position =
+                            event.target.value;
+                
+                        renderAssignmentList();
+                    }
+                );
     
                 const removeButton = document.createElement("button");
                 removeButton.type = "button";
@@ -256,10 +321,6 @@ export async function renderAdminManagementView() {
                     draftAssignments = draftAssignments.filter((_, assignmentIndex) =>
                         assignmentIndex !== index
                     );
-    
-                    if (draftAssignments.length === 0) {
-                        draftAssignments = [{ aoId: "", position: "aoq" }];
-                    }
     
                     renderAssignmentList();
                 });
@@ -305,23 +366,22 @@ export async function renderAdminManagementView() {
             saveButton.textContent = "Saving...";
     
             try {
-                const updatedPermissions = await setProfileAoPermissions(
+                await setProfileAoPermissions(
                     profile.id,
                     state.currentRegionId,
                     cleanAssignments
                 );
-    
-                state.profileAoPermissions = [
-                    ...state.profileAoPermissions.filter(permission =>
-                        permission.profileId !== profile.id
-                    ),
-                    ...updatedPermissions,
-                ];
-    
-                aoPermissions = state.profileAoPermissions;
-    
-                showToast("AO leadership updated.", "success");
-                state.editingAoLeadershipProfileId = null;
+            
+                await reloadAdminManagementData();
+            
+                showToast(
+                    "AO leadership updated.",
+                    "success"
+                );
+            
+                state.editingAoLeadershipProfileId =
+                    null;
+            
                 renderGroups();
             } catch (error) {
                 console.error("Failed to save AO leadership:", error);
@@ -362,14 +422,24 @@ export async function renderAdminManagementView() {
         let draftPositions = getProfileRegionPositions(profile.id)
             .map(position => position.position);
     
-        if (draftPositions.length === 0) {
-            draftPositions = ["first_f"];
-        }
-    
         const positionList = document.createElement("div");
     
         function renderPositionList() {
             positionList.textContent = "";
+
+            if (draftPositions.length === 0) {
+                const empty = document.createElement("div");
+                empty.classList.add(
+                    "stats-line",
+                    "admin-assignment-empty"
+                );
+            
+                empty.textContent =
+                    "No regional leadership positions assigned.";
+            
+                positionList.appendChild(empty);
+                return;
+            }
     
             draftPositions.forEach((position, index) => {
                 const row = document.createElement("div");
@@ -394,9 +464,15 @@ export async function renderAdminManagementView() {
                     positionSelect.appendChild(optionElement);
                 });
     
-                positionSelect.addEventListener("change", event => {
-                    draftPositions[index] = event.target.value;
-                });
+                positionSelect.addEventListener(
+                    "change",
+                    event => {
+                        draftPositions[index] =
+                            event.target.value;
+                
+                        renderPositionList();
+                    }
+                );
     
                 const removeButton = document.createElement("button");
                 removeButton.type = "button";
@@ -404,12 +480,10 @@ export async function renderAdminManagementView() {
                 removeButton.textContent = "Remove";
     
                 removeButton.addEventListener("click", () => {
-                    draftPositions = draftPositions.filter((_, i) => i !== index);
-    
-                    if (draftPositions.length === 0) {
-                        draftPositions = ["first_f"];
-                    }
-    
+                    draftPositions = draftPositions.filter(
+                        (_, i) => i !== index
+                    );
+                
                     renderPositionList();
                 });
     
@@ -424,7 +498,26 @@ export async function renderAdminManagementView() {
         addButton.textContent = "+ Add Position";
     
         addButton.addEventListener("click", () => {
-            draftPositions.push("first_f");
+            const availablePosition =
+                REGION_LEADERSHIP_POSITIONS.find(
+                    option =>
+                        !draftPositions.includes(
+                            option.value
+                        )
+                );
+        
+            if (!availablePosition) {
+                showToast(
+                    "All regional leadership positions are already assigned to this user.",
+                    "info"
+                );
+                return;
+            }
+        
+            draftPositions.push(
+                availablePosition.value
+            );
+        
             renderPositionList();
         });
     
@@ -443,22 +536,22 @@ export async function renderAdminManagementView() {
             saveButton.textContent = "Saving...";
     
             try {
-                const updatedPositions = await setProfileRegionPositions(
+                await setProfileRegionPositions(
                     profile.id,
                     state.currentRegionId,
                     draftPositions
                 );
-    
-                state.profileRegionPositions = [
-                    ...state.profileRegionPositions.filter(position =>
-                        position.profileId !== profile.id
-                    ),
-                    ...updatedPositions,
-                ];
-    
-                showToast("Regional leadership updated.", "success");
-    
-                state.editingRegionLeadershipProfileId = null;
+            
+                await reloadAdminManagementData();
+            
+                showToast(
+                    "Regional leadership updated.",
+                    "success"
+                );
+            
+                state.editingRegionLeadershipProfileId =
+                    null;
+            
                 renderGroups();
             } catch (error) {
                 console.error("Failed to save regional leadership:", error);
@@ -496,7 +589,10 @@ export async function renderAdminManagementView() {
 
     function renderGroups() {
         groupsWrap.textContent = "";
-
+    
+        const normalizedSearchTerm =
+            searchTerm.trim().toLowerCase();
+    
         const visibleProfiles = profiles.filter(profile => {
             const haystack = [
                 profile.display_name,
@@ -506,182 +602,364 @@ export async function renderAdminManagementView() {
                 .filter(Boolean)
                 .join(" ")
                 .toLowerCase();
-
-            return haystack.includes(searchTerm.trim().toLowerCase());
-        });
-
-        ROLE_OPTIONS.forEach(role => {
-            const roleProfiles = visibleProfiles.filter(profile =>
-                (profile.role || "pax") === role
+    
+            return haystack.includes(
+                normalizedSearchTerm
             );
-
-            const section = document.createElement("div");
-            section.classList.add("section", "admin-role-section");
-
-            const heading = document.createElement("div");
-            heading.classList.add("planner-section-header-row");
-
-            const label = document.createElement("div");
+        });
+    
+        ROLE_OPTIONS.forEach(role => {
+            const roleProfiles =
+                visibleProfiles.filter(profile =>
+                    (profile.role || "pax") === role
+                );
+    
+            const section =
+                document.createElement("div");
+    
+            section.classList.add(
+                "section",
+                "admin-role-section"
+            );
+    
+            const heading =
+                document.createElement("div");
+    
+            heading.classList.add(
+                "planner-section-header-row"
+            );
+    
+            const label =
+                document.createElement("div");
+    
             label.classList.add("detail-label");
-            label.textContent = `${ROLE_LABELS[role]} (${roleProfiles.length})`;
-
-            const isCollapsed = collapsedRoles.has(role);
-
-            const toggleButton = document.createElement("button");
+            label.textContent =
+                `${ROLE_LABELS[role]} (${roleProfiles.length})`;
+    
+            const isCollapsed =
+                collapsedRoles.has(role);
+    
+            const toggleButton =
+                document.createElement("button");
+    
             toggleButton.type = "button";
-            toggleButton.classList.add("secondary-button");
-            toggleButton.textContent = isCollapsed ? "Show" : "Hide";
-
-            toggleButton.addEventListener("click", () => {
-                if (collapsedRoles.has(role)) {
-                    collapsedRoles.delete(role);
-                } else {
-                    collapsedRoles.add(role);
+            toggleButton.classList.add(
+                "secondary-button"
+            );
+    
+            toggleButton.textContent =
+                isCollapsed ? "Show" : "Hide";
+    
+            toggleButton.addEventListener(
+                "click",
+                () => {
+                    if (collapsedRoles.has(role)) {
+                        collapsedRoles.delete(role);
+                    } else {
+                        collapsedRoles.add(role);
+                    }
+    
+                    renderGroups();
                 }
-
-                renderGroups();
-            });
-
+            );
+    
             heading.append(label, toggleButton);
             section.appendChild(heading);
-
+    
             if (isCollapsed) {
-                const collapsedNote = document.createElement("div");
-                collapsedNote.classList.add("stats-line");
-                collapsedNote.textContent = `${roleProfiles.length} users hidden.`;
-                section.appendChild(collapsedNote);
+                const collapsedNote =
+                    document.createElement("div");
+    
+                collapsedNote.classList.add(
+                    "stats-line"
+                );
+    
+                collapsedNote.textContent =
+                    `${roleProfiles.length} users hidden.`;
+    
+                section.appendChild(
+                    collapsedNote
+                );
+    
                 groupsWrap.appendChild(section);
                 return;
             }
-
-            if (!roleProfiles.length) {
-                const empty = document.createElement("div");
+    
+            if (roleProfiles.length === 0) {
+                const empty =
+                    document.createElement("div");
+    
                 empty.classList.add("stats-line");
-                empty.textContent = "No users assigned.";
+                empty.textContent =
+                    "No users assigned.";
+    
                 section.appendChild(empty);
             }
-
-            roleProfiles.forEach(profile => {
-                const row = document.createElement("div");
-                row.classList.add("admin-profile-row");
-
-                const info = document.createElement("div");
-
-                const name = document.createElement("div");
-                name.classList.add("member-name");
-                name.textContent = getProfileName(profile);
-
-                info.append(name);
-
-                const aoSummary = createAoLeadershipSummary(profile.id);
-
-                if (aoSummary) {
-                    info.appendChild(aoSummary);
-                }
-
-                const regionSummary = createRegionLeadershipSummary(profile.id);
-
-                if (regionSummary) {
-                    info.appendChild(regionSummary);
-                }
-
-                const select = document.createElement("select");
-                ROLE_OPTIONS.forEach(optionRole => {
-                    const option = document.createElement("option");
-                    option.value = optionRole;
-                    option.textContent = ROLE_LABELS[optionRole];
-                    option.selected = optionRole === (profile.role || "pax");
-                    select.appendChild(option);
-                });
-
-                const saveButton = document.createElement("button");
-                saveButton.type = "button";
-                saveButton.classList.add("secondary-button");
-                saveButton.textContent = "Save";
-                saveButton.disabled = true;
-
-                select.addEventListener("change", () => {
-                    saveButton.disabled = select.value === profile.role;
-                });
-
-                saveButton.addEventListener("click", async () => {
-                    const previousRole = profile.role || "pax";
-                    const nextRole = select.value;
-                
-                    saveButton.disabled = true;
-                    saveButton.textContent = "Saving...";
-                
-                    try {
-                        const updatedProfile = await updateProfileRole(profile.id, nextRole);
-                
-                        profiles = profiles.map(item =>
-                            item.id === profile.id
-                                ? updatedProfile
-                                : item
+    
+            roleProfiles
+                .sort((a, b) =>
+                    getProfileName(a).localeCompare(
+                        getProfileName(b)
+                    )
+                )
+                .forEach(profile => {
+                    const row =
+                        document.createElement("div");
+    
+                    row.classList.add(
+                        "admin-profile-row",
+                        "admin-profile-card"
+                    );
+    
+                    const info =
+                        document.createElement("div");
+    
+                    info.classList.add(
+                        "admin-profile-info"
+                    );
+    
+                    const name =
+                        document.createElement("div");
+    
+                    name.classList.add(
+                        "member-name",
+                        "admin-profile-name"
+                    );
+    
+                    name.textContent =
+                        getProfileName(profile);
+    
+                    info.appendChild(name);
+    
+                    const regionSummary =
+                        createRegionLeadershipSummary(
+                            profile.id
                         );
-                
-                        showToast("Role updated.", "success");
-                        renderGroups();
-                    } catch (error) {
-                        console.error("Failed to update role:", error);
-                        showToast("Failed to update role.", "error");
-                        saveButton.disabled = false;
-                        saveButton.textContent = "Save";
+    
+                    if (regionSummary) {
+                        info.appendChild(
+                            regionSummary
+                        );
+                    }
+    
+                    const aoSummary =
+                        createAoLeadershipSummary(
+                            profile.id
+                        );
+    
+                    if (aoSummary) {
+                        info.appendChild(aoSummary);
+                    }
+    
+                    const select =
+                        document.createElement("select");
+    
+                    ROLE_OPTIONS.forEach(
+                        optionRole => {
+                            const option =
+                                document.createElement(
+                                    "option"
+                                );
+    
+                            option.value = optionRole;
+                            option.textContent =
+                                ROLE_LABELS[optionRole];
+    
+                            option.selected =
+                                optionRole ===
+                                (profile.role || "pax");
+    
+                            select.appendChild(option);
+                        }
+                    );
+    
+                    const saveButton =
+                        document.createElement("button");
+    
+                    saveButton.type = "button";
+                    saveButton.classList.add(
+                        "secondary-button"
+                    );
+    
+                    saveButton.textContent = "Save";
+                    saveButton.disabled = true;
+    
+                    select.addEventListener(
+                        "change",
+                        () => {
+                            saveButton.disabled =
+                                select.value ===
+                                (profile.role || "pax");
+                        }
+                    );
+    
+                    saveButton.addEventListener(
+                        "click",
+                        async () => {
+                            const nextRole =
+                                select.value;
+    
+                            saveButton.disabled = true;
+                            saveButton.textContent =
+                                "Saving...";
+    
+                            try {
+                                const updatedProfile =
+                                    await updateProfileRole(
+                                        profile.id,
+                                        nextRole
+                                    );
+    
+                                profiles =
+                                    profiles.map(item =>
+                                        item.id ===
+                                        profile.id
+                                            ? updatedProfile
+                                            : item
+                                    );
+    
+                                showToast(
+                                    "Role updated.",
+                                    "success"
+                                );
+    
+                                renderGroups();
+                            } catch (error) {
+                                console.error(
+                                    "Failed to update role:",
+                                    error
+                                );
+    
+                                showToast(
+                                    "Failed to update role.",
+                                    "error"
+                                );
+    
+                                saveButton.disabled =
+                                    false;
+    
+                                saveButton.textContent =
+                                    "Save";
+                            }
+                        }
+                    );
+    
+                    const actions =
+                        document.createElement("div");
+    
+                    actions.classList.add(
+                        "admin-profile-actions"
+                    );
+    
+                    actions.append(
+                        select,
+                        saveButton
+                    );
+    
+                    if (
+                        (profile.role || "pax") !==
+                        "pax"
+                    ) {
+                        const manageAoButton =
+                            document.createElement(
+                                "button"
+                            );
+    
+                        manageAoButton.type =
+                            "button";
+    
+                        manageAoButton.classList.add(
+                            "secondary-button"
+                        );
+    
+                        manageAoButton.textContent =
+                            "AO Assignments";
+    
+                        manageAoButton.addEventListener(
+                            "click",
+                            () => {
+                                const isAlreadyOpen =
+                                    state.editingAoLeadershipProfileId ===
+                                    profile.id;
+    
+                                state.editingAoLeadershipProfileId =
+                                    isAlreadyOpen
+                                        ? null
+                                        : profile.id;
+    
+                                state.editingRegionLeadershipProfileId =
+                                    null;
+    
+                                renderGroups();
+                            }
+                        );
+    
+                        const manageRegionButton =
+                            document.createElement(
+                                "button"
+                            );
+    
+                        manageRegionButton.type =
+                            "button";
+    
+                        manageRegionButton.classList.add(
+                            "secondary-button"
+                        );
+    
+                        manageRegionButton.textContent =
+                            "Regional Positions";
+    
+                        manageRegionButton.addEventListener(
+                            "click",
+                            () => {
+                                const isAlreadyOpen =
+                                    state.editingRegionLeadershipProfileId ===
+                                    profile.id;
+    
+                                state.editingRegionLeadershipProfileId =
+                                    isAlreadyOpen
+                                        ? null
+                                        : profile.id;
+    
+                                state.editingAoLeadershipProfileId =
+                                    null;
+    
+                                renderGroups();
+                            }
+                        );
+    
+                        actions.append(
+                            manageRegionButton,
+                            manageAoButton
+                        );
+                    }
+    
+                    row.append(info, actions);
+                    section.appendChild(row);
+    
+                    if (
+                        state.editingRegionLeadershipProfileId ===
+                        profile.id
+                    ) {
+                        section.appendChild(
+                            createRegionLeadershipEditor(
+                                profile
+                            )
+                        );
+                    }
+    
+                    if (
+                        state.editingAoLeadershipProfileId ===
+                        profile.id
+                    ) {
+                        section.appendChild(
+                            createAoLeadershipEditor(
+                                profile
+                            )
+                        );
                     }
                 });
-
-                const actions = document.createElement("div");
-                actions.classList.add("button-row", "admin-profile-actions");
-                actions.append(select, saveButton);
-
-                if ((profile.role || "pax") !== "pax") {
-                    const manageAoButton = document.createElement("button");
-                    manageAoButton.type = "button";
-                    manageAoButton.classList.add("secondary-button");
-                    manageAoButton.textContent = "Manage AO Leadership";
-                
-                    manageAoButton.addEventListener("click", () => {
-                        state.editingAoLeadershipProfileId =
-                            state.editingAoLeadershipProfileId === profile.id
-                                ? null
-                                : profile.id;
-                
-                        renderGroups();
-                    });
-                
-                    actions.appendChild(manageAoButton);
-                }
-
-                if ((profile.role || "pax") !== "pax") {
-                    const manageRegionButton = document.createElement("button");
-                    manageRegionButton.type = "button";
-                    manageRegionButton.classList.add("secondary-button");
-                    manageRegionButton.textContent = "Manage Regional Leadership";
-                
-                    manageRegionButton.addEventListener("click", () => {
-                        state.editingRegionLeadershipProfileId =
-                            state.editingRegionLeadershipProfileId === profile.id
-                                ? null
-                                : profile.id;
-                
-                        renderGroups();
-                    });
-                
-                    actions.appendChild(manageRegionButton);
-                }
-
-                row.append(info, actions);
-                section.appendChild(row);
-
-                if (state.editingAoLeadershipProfileId === profile.id) {
-                    section.appendChild(createAoLeadershipEditor(profile));
-                }
-
-                if (state.editingRegionLeadershipProfileId === profile.id) {
-                    section.appendChild(createRegionLeadershipEditor(profile));
-                }
-            });
-
+    
             groupsWrap.appendChild(section);
         });
     }

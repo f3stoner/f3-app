@@ -417,6 +417,7 @@ const RESTORABLE_VIEWS = new Set([
     "settings",
     "operationsCenter",
     "rosterManagement",
+    "leadership",
 ]);
 
 function restoreNavState(nav) {
@@ -482,6 +483,14 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-weekly-q-calendar" */
             "./views/weeklyQCalendarView.js"
         ).then(module => module.renderWeeklyQCalendarView),
+    leadership: () =>
+        import(
+            /* webpackChunkName: "route-leadership" */
+            "./views/leadershipView.js"
+        ).then(
+            module =>
+                module.renderLeadershipView
+        ),
 };
 
 const lazyRoutePromises = new Map();
@@ -495,6 +504,7 @@ function getLazyRouteLabel(viewName) {
         libraryWorkbench: "Library Workbench",
         rosterManagement: "Roster Management",
         weeklyQCalendar: "Weekly Q Calendar",
+        leadership: "Leadership",
     };
 
     return labels[viewName] || "Screen";
@@ -748,6 +758,11 @@ function renderApp() {
     } else if (state.currentView === "thangReview") {
         renderLazyRoute(
             "thangReview",
+            currentRenderSequence
+        );
+    } else if (state.currentView === "leadership") {
+        renderLazyRoute(
+            "leadership",
             currentRenderSequence
         );
     } else if (state.currentView === "qReadiness") {

@@ -4314,3 +4314,33 @@ export async function joinRegion(regionId, password) {
 
     return result;
 }
+
+export async function loadRegionLeadershipDirectory(regionId) {
+    if (!regionId) {
+        throw new Error("Region id is required to load leadership directory.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "load_region_leadership_directory",
+        {
+            p_region_id: regionId,
+        },
+    );
+
+    if (error) {
+        console.error("Failed to load leadership directory:", error);
+        throw error;
+    }
+
+    return (data ?? []).map((row) => ({
+        scope: row.scope,
+        regionId: row.region_id,
+        aoId: row.ao_id,
+        aoName: row.ao_name,
+        positionKey: row.position_key,
+        displayOrder: row.display_order,
+        profileId: row.profile_id,
+        memberId: row.member_id,
+        paxName: row.pax_name,
+    }));
+}
