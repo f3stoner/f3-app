@@ -5,7 +5,7 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { loadOlderSessionsPage, loadSessionsByIds, searchHistoricalBackblasts } from "../services/cloudData.js";
+import { loadOlderSessionsPage, loadSessionsByIds, loadMatchingSessions, searchHistoricalBackblasts } from "../services/cloudData.js";
 import { getSessionDisplayCounts, getRegularPaxIds, memberAttendedSession } from "../utils/sessionAttendance.js";
 
 state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
@@ -196,6 +196,29 @@ export function renderSessionHistory() {
         return card;
     }
 
+    function findMatchingMemberIds(searchTerm) {
+        const normalizedSearch = searchTerm
+            .trim()
+            .toLowerCase();
+    
+        if (!normalizedSearch) return [];
+    
+        return state.members
+            .filter(member => {
+                const searchableName = [
+                    member.paxName,
+                    member.realName,
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+    
+                return searchableName.includes(normalizedSearch);
+            })
+            .map(member => member.id)
+            .filter(Boolean);
+    }
+
     function getMemberNamesByIds(ids = []) {
         return ids
             .map(id => state.members.find(m => m.id === id))
@@ -258,11 +281,6 @@ function getSessionSearchText(session, mode = "all") {
 const resultsMeta = document.createElement("div");
 resultsMeta.classList.add("detail-value", "session-results-meta");
 
-if (state.hasLoadedAllOlderSessions) {
-    loadOlderButton.textContent = "All Older Sessions Loaded";
-    loadOlderButton.disabled = true;
-}
-
 function renderSessionList() {
 
     sessionList.textContent = "";
@@ -304,10 +322,17 @@ function renderSessionList() {
             state.sessionHistorySearchMode || "all"
         );
         
-        return (
-            sessionSearchText.includes(searchTerm) ||
-            historicalSearchSessionIds.has(session.id)
-        );
+        const localMatch = sessionSearchText.includes(searchTerm);
+
+        const searchMode = state.sessionHistorySearchMode || "all";
+        const usesHistoricalBackblastSearch =
+            searchMode === "all" || searchMode === "workout";
+
+        const historicalMatch =
+            usesHistoricalBackblastSearch &&
+            historicalSearchSessionIds.has(session.id);
+
+        return localMatch || historicalMatch;
     });
 
     const sortedSessions = [...filteredSessions].sort((a, b) => {
@@ -365,55 +390,202 @@ function renderSessionList() {
     }
     let searchTimeoutId = null;
 
+    async function runServerSearch(rawQuery) {
+        const trimmed = rawQuery.trim();
+        const searchMode =
+            state.sessionHistorySearchMode || "all";
+    
+        const requestId = ++historicalSearchRequestId;
+    
+        historicalSearchSessionIds = new Set();
+    
+        if (trimmed.length < 2) {
+            state.isSearchingHistoricalBackblasts = false;
+            renderSessionList();
+            return;
+        }
+    
+        const usesMemberSearch =
+            searchMode === "q" ||
+            searchMode === "attendee";
+
+        if (usesMemberSearch) {
+            state.isSearchingHistoricalBackblasts = true;
+            renderSessionList();
+
+            try {
+                const matchingMemberIds =
+                    findMatchingMemberIds(trimmed);
+
+                if (
+                    requestId !==
+                    historicalSearchRequestId
+                ) {
+                    return;
+                }
+
+                if (
+                    matchingMemberIds.length === 0
+                ) {
+                    state.isSearchingHistoricalBackblasts =
+                        false;
+
+                    renderSessionList();
+                    updateLoadOlderButton();
+                    return;
+                }
+
+                const matchingSessions =
+                    await loadMatchingSessions({
+                        regionId:
+                            state.currentRegionId,
+                        mode: searchMode,
+                        memberIds:
+                            matchingMemberIds,
+                    });
+
+                if (
+                    requestId !==
+                    historicalSearchRequestId
+                ) {
+                    return;
+                }
+
+                const existingIds = new Set(
+                    state.sessions.map(
+                        session => session.id
+                    )
+                );
+
+                const newSessions =
+                    matchingSessions.filter(
+                        session =>
+                            !existingIds.has(
+                                session.id
+                            )
+                    );
+
+                state.sessions = [
+                    ...state.sessions,
+                    ...newSessions,
+                ];
+
+                state.isSearchingHistoricalBackblasts =
+                    false;
+
+                renderSessionList();
+                updateLoadOlderButton();
+            } catch (error) {
+                if (
+                    requestId !==
+                    historicalSearchRequestId
+                ) {
+                    return;
+                }
+
+                state.isSearchingHistoricalBackblasts =
+                    false;
+
+                console.error(
+                    `Failed to search ${searchMode} sessions:`,
+                    error
+                );
+
+                renderSessionList();
+                updateLoadOlderButton();
+            }
+
+            return;
+        }
+    
+        /*
+         * All and Workout retain historical backblast search.
+         */
+        const usesHistoricalBackblastSearch =
+            searchMode === "all" ||
+            searchMode === "workout";
+    
+        if (!usesHistoricalBackblastSearch) {
+            state.isSearchingHistoricalBackblasts = false;
+            renderSessionList();
+            return;
+        }
+    
+        state.isSearchingHistoricalBackblasts = true;
+        renderSessionList();
+    
+        try {
+            const matchingIds =
+                await searchHistoricalBackblasts(trimmed);
+    
+            if (requestId !== historicalSearchRequestId) {
+                return;
+            }
+    
+            const loadedIds = new Set(
+                state.sessions.map(session => session.id)
+            );
+    
+            const missingIds = matchingIds.filter(
+                id => !loadedIds.has(id)
+            );
+    
+            let missingSessions = [];
+    
+            if (missingIds.length > 0) {
+                missingSessions =
+                    await loadSessionsByIds(missingIds);
+            }
+    
+            if (requestId !== historicalSearchRequestId) {
+                return;
+            }
+    
+            if (missingSessions.length > 0) {
+                const existingIds = new Set(
+                    state.sessions.map(session => session.id)
+                );
+    
+                const newSessions = missingSessions.filter(
+                    session => !existingIds.has(session.id)
+                );
+    
+                state.sessions = [
+                    ...state.sessions,
+                    ...newSessions,
+                ];
+            }
+    
+            historicalSearchSessionIds =
+                new Set(matchingIds);
+    
+            state.isSearchingHistoricalBackblasts = false;
+            renderSessionList();
+        } catch (error) {
+            if (requestId !== historicalSearchRequestId) {
+                return;
+            }
+    
+            state.isSearchingHistoricalBackblasts = false;
+    
+            console.error(
+                "Failed to search historical backblasts:",
+                error
+            );
+    
+            renderSessionList();
+        }
+    }
+
     searchInput.addEventListener("input", (event) => {
         const nextValue = event.target.value;
     
         clearTimeout(searchTimeoutId);
     
-        searchTimeoutId = setTimeout(async () => {
+        searchTimeoutId = setTimeout(() => {
             state.sessionHistorySearchTerm = nextValue;
-    
-            const trimmed = nextValue.trim();
-    
-            if (trimmed.length < 2) {
-                historicalSearchSessionIds = new Set();
-                state.isSearchingHistoricalBackblasts = false;
-                renderSessionList();
-                return;
-            }
-    
-            const requestId = ++historicalSearchRequestId;
-
-            state.isSearchingHistoricalBackblasts = true;
-            renderSessionList();
-    
-            try {
-                const matchingIds = await searchHistoricalBackblasts(trimmed);
-                const laodedIds = new Set(state.sessions.map(session => session.id));
-                const missingIds = matchingIds.filter(id => !laodedIds.has(id));
-
-                if (missingIds.length > 0) {
-                    const missingSessions = await loadSessionsByIds(missingIds);
-
-                    const existingIds = new Set(state.sessions.map(session => session.id));
-                    const newSessions = missingSessions.filter(session => !existingIds.has(session.id));
-
-                    state.sessions = [...state.sessions, ...newSessions];
-                }
-    
-                if (requestId !== historicalSearchRequestId) { 
-                    state.isSearchingHistoricalBackblasts = false;   
-                    return;
-                }
-    
-                historicalSearchSessionIds = new Set(matchingIds);
-                state.isSearchingHistoricalBackblasts = false;
-                renderSessionList();
-
-            } catch (error) {
-                state.isSearchingHistoricalBackblasts = false;
-                console.error("Failed to search historical backblasts:", error);
-            }
+            updateLoadOlderButton();
+            runServerSearch(nextValue);
         }, 300);
     });
 
@@ -437,12 +609,17 @@ function renderSessionList() {
 
         button.addEventListener("click", () => {
             state.sessionHistorySearchMode = value;
+            updateLoadOlderButton();
 
             searchModeRow.querySelectorAll("button").forEach(button => {
                 button.classList.toggle("active", button.dataset.mode === value);
-        });
+            });
 
-        renderSessionList();
+            clearTimeout(searchTimeoutId);
+
+            runServerSearch(
+                state.sessionHistorySearchTerm || ""
+            );
         });
 
         searchModeRow.appendChild(button);
@@ -450,10 +627,63 @@ function renderSessionList() {
 
     const loadOlderButton = document.createElement("button");
     loadOlderButton.classList.add("secondary-button");
-    loadOlderButton.textContent = "Load Older Sessions";
+
+    function updateLoadOlderButton() {
+        const searchTerm =
+            (state.sessionHistorySearchTerm || "").trim();
+    
+        const searchMode =
+            state.sessionHistorySearchMode || "all";
+    
+        const hasCompleteMemberSearch =
+            searchTerm.length >= 2 &&
+            (
+                searchMode === "q" ||
+                searchMode === "attendee"
+            );
+        
+        if (hasCompleteMemberSearch) {
+            loadOlderButton.textContent =
+                searchMode === "q"
+                    ? "All Matching Q Sessions Loaded"
+                    : "All Matching PAX Sessions Loaded";
+    
+            loadOlderButton.disabled = true;
+            return;
+        }
+    
+        loadOlderButton.textContent =
+            state.hasLoadedAllOlderSessions
+                ? "All Older Sessions Loaded"
+                : "Load Older Sessions";
+    
+        loadOlderButton.disabled = Boolean(
+            state.hasLoadedAllOlderSessions
+        );
+    }
+
+    updateLoadOlderButton();
 
     loadOlderButton.addEventListener("click", async () => {
         if (state.isloadingOlderSessions) return;
+
+        const searchTerm =
+            (state.sessionHistorySearchTerm || "").trim();
+
+        const searchMode =
+            state.sessionHistorySearchMode || "all";
+
+        const usesCompleteMemberSearch =
+            searchTerm.length >= 2 &&
+            (
+                searchMode === "q" ||
+                searchMode === "attendee"
+            );
+        
+        if (usesCompleteMemberSearch) {
+            await runServerSearch(searchTerm);
+            return;
+        }
 
         const oldestLoadedDate = state.sessions 
             .map(session => session.date)
@@ -487,7 +717,9 @@ function renderSessionList() {
             console.error("Failed to load older sessions:", error);
         } finally {
             state.isloadingOlderSessions = false;
-            loadOlderButton.disabled = false;
+            loadOlderButton.disabled = Boolean(
+                state.hasLoadedAllOlderSessions
+            );
             loadOlderButton.textContent = state.hasLoadedAllOlderSessions
                 ? "All Older Sessions Loaded"
                 : "Load Older Sessions";
@@ -502,7 +734,17 @@ function renderSessionList() {
 
     const nav = createGlobalNav();
 
-    renderSessionList();
+    const initialSearchTerm = state.sessionHistorySearchTerm || "";
+    const initialSearchMode = state.sessionHistorySearchMode || "all";
+
+    const shouldRunInitialServerSearch =
+        initialSearchTerm.trim().length >= 2;
+
+    if (shouldRunInitialServerSearch) {
+        runServerSearch(initialSearchTerm);
+    } else {
+        renderSessionList();
+    }
 
     app.append(
         header,

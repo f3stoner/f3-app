@@ -91,6 +91,154 @@ export async function loadRecentSessions(regionId, days = 180) {
     return data || [];
 }
 
+export async function loadMatchingSessions({
+    regionId,
+    mode,
+    memberIds = [],
+    limit = 250,
+}) {
+    const cleanMemberIds = [
+        ...new Set(memberIds),
+    ].filter(Boolean);
+
+    if (
+        !regionId ||
+        cleanMemberIds.length === 0
+    ) {
+        return [];
+    }
+
+    const sessionSelect = `
+        id,
+        region_id,
+        date,
+        ao_id,
+        ao_name,
+        attendee_ids,
+        q_ids,
+        q_id,
+        fngs,
+        notes,
+        workout,
+        source_planned_workout_id,
+        source_q_slot_id,
+        created_at,
+        created_by_user_id,
+        backblast_text,
+        backblast_status,
+        backblast_posted_at,
+        unresolved_pax,
+        weather_snapshot,
+        attendance_review_status,
+        attendance_review_notes,
+        announcement_text,
+        announcement_snapshot
+    `;
+
+    let rows = [];
+
+    if (mode === "q") {
+        const [
+            arrayResult,
+            legacyResult,
+        ] = await Promise.all([
+            supabase
+                .from("sessions")
+                .select(sessionSelect)
+                .eq("region_id", regionId)
+                .overlaps(
+                    "q_ids",
+                    cleanMemberIds
+                )
+                .order("date", {
+                    ascending: false,
+                })
+                .order("created_at", {
+                    ascending: false,
+                })
+                .limit(limit),
+
+            supabase
+                .from("sessions")
+                .select(sessionSelect)
+                .eq("region_id", regionId)
+                .in(
+                    "q_id",
+                    cleanMemberIds
+                )
+                .order("date", {
+                    ascending: false,
+                })
+                .order("created_at", {
+                    ascending: false,
+                })
+                .limit(limit),
+        ]);
+
+        if (arrayResult.error) {
+            throw arrayResult.error;
+        }
+
+        if (legacyResult.error) {
+            throw legacyResult.error;
+        }
+
+        rows = [
+            ...(arrayResult.data || []),
+            ...(legacyResult.data || []),
+        ];
+    } else if (mode === "attendee") {
+        const attendeeFilters = cleanMemberIds
+            .map(
+                memberId =>
+                    `attendee_ids.cs.["${memberId}"]`
+            )
+            .join(",");
+    
+        const { data, error } = await supabase
+            .from("sessions")
+            .select(sessionSelect)
+            .eq("region_id", regionId)
+            .or(attendeeFilters)
+            .order("date", {
+                ascending: false,
+            })
+            .order("created_at", {
+                ascending: false,
+            })
+            .limit(limit);
+    
+        if (error) throw error;
+    
+        rows = data || [];
+    } else {
+        return [];
+    }
+
+    const sessionsById = new Map();
+
+    rows.forEach(row => {
+        sessionsById.set(
+            row.id,
+            mapSessionFromDb(row)
+        );
+    });
+
+    return [...sessionsById.values()]
+        .sort((a, b) => {
+            if (a.date !== b.date) {
+                return b.date.localeCompare(
+                    a.date
+                );
+            }
+
+            return (
+                (b.createdAt || 0) -
+                (a.createdAt || 0)
+            );
+        });
+}
+
 export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
     if (!regionId || !beforeDate) return [];
 
