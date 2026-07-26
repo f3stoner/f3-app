@@ -1,6 +1,14 @@
 import { state } from "../modules/state.js";
 import { navigateTo } from "../utils/navigation.js";
-import { PERMISSIONS, hasPermission, canViewAnyAoInsights, canViewAnyQReadiness, canViewAoInsights, canViewAnySessionAudit } from "../utils/permissions.js";
+import {
+    PERMISSIONS,
+    hasPermission,
+    canViewAnyAoInsights,
+    canViewAnyQReadiness,
+    canViewAoInsights,
+    canViewAnySessionAudit,
+    canManageCurrentRoster,
+} from "../utils/permissions.js";
 import { bootApp, renderApp } from "../index.js";
 import { signOut } from "../services/auth.js";
 import { unsubscribeAllManagedChannels } from "../services/realtime.js";
@@ -258,6 +266,11 @@ export function createMainMenu() {
                     label: "Operations Center",
                     view: "operationsCenter",
                     permission: PERMISSIONS.ACCESS_OPERATIONS_CENTER,
+                },
+                {
+                    label: "Roster Management",
+                    view: "rosterManagement",
+                    isVisible: canManageCurrentRoster,
                 },
             ],
         },

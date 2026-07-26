@@ -14,6 +14,8 @@ import {
     insertSavedPlannerSection,
     loadPlannerAnnouncements,
     setMemberInviters,
+    setMemberRosterStatusInCloud,
+    renameMemberInCloud,
     updateAdminFlagInCloud,
     updateMemberInCloud,
     updatePlannedWorkoutInCloud,
@@ -821,6 +823,70 @@ export async function deletePlannedWorkout(workoutId) {
     );
 
     persistAppData();
+}
+
+function replaceMemberInState(savedMember) {
+    if (!savedMember?.id) {
+        throw new Error(
+            "Cannot replace a member without an id."
+        );
+    }
+
+    const index = state.members.findIndex(
+        member => member.id === savedMember.id
+    );
+
+    if (index === -1) {
+        throw new Error(
+            "Updated member was not found in the current roster."
+        );
+    }
+
+    state.members[index] = {
+        ...state.members[index],
+        ...savedMember,
+    };
+
+    persistAppData();
+
+    return state.members[index];
+}
+
+export async function setMemberRosterStatus(
+    memberId,
+    isActive
+) {
+    const savedMember =
+        await setMemberRosterStatusInCloud(
+            memberId,
+            isActive
+        );
+
+    return replaceMemberInState(savedMember);
+}
+
+export async function renameMember(
+    memberId,
+    paxName
+) {
+    const savedMember =
+        await renameMemberInCloud(
+            memberId,
+            paxName
+        );
+
+    const updatedMember =
+        replaceMemberInState(savedMember);
+
+    if (
+        memberId === state.currentUserMemberId
+    ) {
+        state.currentUserDisplayName =
+            updatedMember.paxName ||
+            state.currentUserDisplayName;
+    }
+
+    return updatedMember;
 }
 
 export async function addMember(

@@ -416,6 +416,7 @@ const RESTORABLE_VIEWS = new Set([
     "announcementManagement",
     "settings",
     "operationsCenter",
+    "rosterManagement",
 ]);
 
 function restoreNavState(nav) {
@@ -467,6 +468,15 @@ const lazyRouteLoaders = {
             "./views/libraryWorkbenchView.js"
         ).then(module => module.renderLibraryWorkbenchView),
 
+    rosterManagement: () =>
+        import(
+            /* webpackChunkName: "route-roster-management" */
+            "./views/rosterManagementView.js"
+        ).then(
+            module =>
+                module.renderRosterManagementView
+        ),
+
     weeklyQCalendar: () =>
         import(
             /* webpackChunkName: "route-weekly-q-calendar" */
@@ -483,6 +493,7 @@ function getLazyRouteLabel(viewName) {
         adminManagement: "Admin Management",
         operationsCenter: "Operations Center",
         libraryWorkbench: "Library Workbench",
+        rosterManagement: "Roster Management",
         weeklyQCalendar: "Weekly Q Calendar",
     };
 
@@ -710,6 +721,12 @@ function renderApp() {
         renderAdminFlagsView();
     } else if (state.currentView === "adminSettings") {
         renderAdminSettingsView();
+    } else if (
+        state.currentView === "rosterManagement") {
+        renderLazyRoute(
+            "rosterManagement",
+            currentRenderSequence
+        );
     } else if (state.currentView === "templateHub") {
         renderTemplateHubView();
     } else if (state.currentView === "weeklyQCalendar") {

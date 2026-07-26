@@ -6683,3 +6683,121 @@ button.leadership-action-card:disabled {
     font-size: 0.75rem;
     font-weight: 700;
 }
+
+.roster-management-filter-row {
+    margin-bottom: 0.5rem;
+}
+
+.roster-management-filter-row button {
+    flex: 1;
+}
+
+.roster-management-summary {
+    margin-bottom: 1rem;
+}
+
+.roster-management-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.roster-management-card {
+    align-items: center;
+    cursor: default;
+    margin-bottom: 0;
+}
+
+.roster-management-card:hover {
+    background: var(--surface);
+}
+
+.roster-management-member-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.roster-management-member-content .member-name {
+    margin-bottom: 0.2rem;
+}
+
+.roster-management-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+}
+
+.roster-management-actions button {
+    min-width: 104px;
+    margin: 0;
+}
+
+.roster-management-edit-button {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    opacity: 0.8;
+}
+
+.roster-status-active,
+.roster-status-inactive {
+    width: fit-content;
+    margin-top: 0.45rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    text-decoration: none;
+}
+
+.roster-status-active {
+    color: #7fd28f;
+    background: rgba(85, 168, 104, 0.16);
+    border: 1px solid rgba(85, 168, 104, 0.35);
+}
+
+.roster-status-inactive {
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+}
+
+.roster-management-current-name {
+    margin-bottom: 1rem;
+}
+
+.roster-management-error {
+    min-height: 1.25rem;
+    margin-top: -0.4rem;
+    margin-bottom: 0.75rem;
+    color: var(--danger);
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+.roster-management-empty {
+    padding: 1.5rem 0;
+    color: var(--muted);
+    text-align: center;
+}
+
+.roster-management-rename-modal {
+    max-width: 460px;
+}
+
+@media (max-width: 520px) {
+    .roster-management-card {
+        align-items: flex-start;
+    }
+
+    .roster-management-actions {
+        width: 108px;
+    }
+
+    .roster-management-actions button {
+        width: 100%;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+    }
+}

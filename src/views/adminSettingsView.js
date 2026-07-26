@@ -8,7 +8,7 @@ import { updateRegionWorkoutFieldLabels } from "../services/cloudData.js";
 import { createElement } from "lucide";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { hasPermission, PERMISSIONS, isSuperAdmin } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, isSuperAdmin, canManageCurrentRoster } from "../utils/permissions.js";
 
 export function renderAdminSettingsView() {
     const app = document.getElementById("app");
@@ -58,7 +58,19 @@ export function renderAdminSettingsView() {
     const adminHubGrid = document.createElement("div");
     adminHubGrid.classList.add("admin-hub-grid");
 
-    const adminCards = [
+    const adminCards = [];
+
+    if (canManageCurrentRoster()) {
+        adminCards.push(
+            createAdminCard(
+                "Roster Management",
+                "Search the home roster, manage active status, and maintain canonical member identity.",
+                "rosterManagement"
+            )
+        );
+    }
+
+    adminCards.push(
         createAdminCard(
             "Manage AOs",
             "Create, edit, and activate workout locations.",
@@ -78,8 +90,8 @@ export function renderAdminSettingsView() {
             "Import Runs",
             "Review nightly Aggieland dry-run results.",
             "importRuns"
-        ),
-    ];
+        )
+    );
     
     if (
         isSuperAdmin() &&

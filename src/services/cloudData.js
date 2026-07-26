@@ -1034,6 +1034,83 @@ export async function insertMember(regionId, member) {
     return mapMemberFromDb(data);
 }
 
+export async function setMemberRosterStatusInCloud(
+    memberId,
+    isActive
+) {
+    if (!memberId) {
+        throw new Error(
+            "Member id is required to update roster status."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_member_roster_status",
+        {
+            p_member_id: memberId,
+            p_is_active: Boolean(isActive),
+        }
+    );
+
+    if (error) throw error;
+
+    const row = Array.isArray(data)
+        ? data[0]
+        : data;
+
+    if (!row) {
+        throw new Error(
+            "Roster status command returned no member."
+        );
+    }
+
+    return mapMemberFromDb(row);
+}
+
+export async function renameMemberInCloud(
+    memberId,
+    paxName
+) {
+    if (!memberId) {
+        throw new Error(
+            "Member id is required to rename a member."
+        );
+    }
+
+    const normalizedName =
+        String(paxName || "")
+            .trim()
+            .replace(/\s+/g, " ");
+
+    if (!normalizedName) {
+        throw new Error(
+            "PAX name cannot be empty."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "rename_member",
+        {
+            p_member_id: memberId,
+            p_pax_name: normalizedName,
+        }
+    );
+
+    if (error) throw error;
+
+    const row = Array.isArray(data)
+        ? data[0]
+        : data;
+
+    if (!row) {
+        throw new Error(
+            "Rename command returned no member."
+        );
+    }
+
+    return mapMemberFromDb(row);
+}
+
 export async function updateMemberInCloud(regionId, member) {
     const { data, error } = await supabase
         .from("members")

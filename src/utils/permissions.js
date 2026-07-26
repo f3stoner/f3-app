@@ -263,3 +263,23 @@ export function shouldShowAuditLogFab() {
     return state.currentUserId === "1cb38626-0058-45de-8e07-52ac0d19fa71";
 }
 
+export function canManageCurrentRoster() {
+    if (isSuperAdmin()) {
+        return true;
+    }
+
+    if (!isDataQ() && !isRegionalSLT()) {
+        return false;
+    }
+
+    const homeRegionId =
+        state.homeRegionId ||
+        state.profileRegionId ||
+        null;
+
+    return Boolean(
+        homeRegionId &&
+        state.currentRegionId &&
+        homeRegionId === state.currentRegionId
+    );
+}
