@@ -74,7 +74,7 @@ const AO_INSIGHTS_POSITIONS = ["aoq", "ao_coq", "first_f", "second_f", "third_f"
 const AO_Q_READINESS_POSITIONS = ["aoq", "ao_coq", "first_f"];
 const AO_SESSION_EDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 const AO_MEMBER_MANAGEMENT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
-const AO_SESSION_AUDIT_POSITIONS = ["ao_data_q"];
+const AO_SESSION_AUDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 
 export function hasPermission(permission) {
     const role = state.currentUserRole || "pax";
@@ -228,7 +228,7 @@ export function canEditAnySessions() {
 export function canUseFloatingLogButton() {
     return isSuperAdmin()
         || isDataQ()
-        || getManagedAoIds(["ao_data_q"]).length > 0;
+        || getManagedAoIds(["aoq", "ao_coq", "ao_data_q"]).length > 0;
 }
 
 export function canManageAoMembers(aoId) {
