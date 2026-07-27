@@ -7218,3 +7218,289 @@ button.leadership-action-card:disabled {
         transition: none;
     }
 }
+
+.admin-structure-overview {
+    padding: 1rem;
+}
+
+.admin-structure-overview
+.planner-section-header-row {
+    margin: 0 0 0.75rem;
+}
+
+.admin-structure-row {
+    display: grid;
+    grid-template-columns:
+        minmax(125px, 175px)
+        minmax(0, 1fr);
+
+    align-items: start;
+    gap: 0.75rem;
+
+    padding: 0.7rem 0;
+
+    border-top: 1px solid var(--border);
+}
+
+.admin-structure-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.admin-structure-people {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.admin-structure-person {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.3rem 0.55rem;
+
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    background: var(--surface-raised);
+
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.admin-structure-empty {
+    margin: 0;
+    font-style: italic;
+}
+
+.admin-ao-overview-group {
+    margin-bottom: 0.75rem;
+    padding: 0;
+
+    overflow: hidden;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    background: var(--surface);
+}
+
+.admin-ao-overview-heading {
+    margin: 0;
+}
+
+.admin-ao-overview-group
+.admin-structure-row {
+    margin: 0 1rem;
+    padding: 0.85rem 0;
+
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+    .admin-structure-row {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+    }
+
+    .admin-ao-overview-group
+    .admin-structure-row {
+        margin: 0 1rem;
+        padding-left: 0;
+}
+}
+
+.admin-structure-person-button {
+    appearance: none;
+    margin: 0;
+
+    color: inherit;
+    font-family: inherit;
+
+    cursor: pointer;
+}
+
+.admin-structure-person-button:hover {
+    border-color: var(--border-strong);
+    background: var(--surface);
+}
+
+.admin-structure-person-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.admin-empty-assignment-button {
+    appearance: none;
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background: none;
+
+    color: inherit;
+    font: inherit;
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 0.2rem;
+
+    cursor: pointer;
+}
+
+.admin-empty-assignment-button:hover {
+    opacity: 0.75;
+}
+
+.admin-empty-assignment-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 0.2rem;
+}
+
+.admin-inline-assignment-editor {
+    display: grid;
+    gap: 0.65rem;
+
+    margin: 0 0 0.75rem;
+    padding: 0.85rem;
+
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+
+    background: var(--surface-raised);
+}
+
+.admin-inline-assignment-search {
+    margin: 0;
+}
+
+.admin-inline-assignment-select {
+    width: 100%;
+}
+
+.admin-ao-overview-toggle {
+    appearance: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    width: 100%;
+    min-height: 58px;
+    margin: 0;
+    padding: 0.9rem 1rem;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+    color: inherit;
+
+    font: inherit;
+    text-align: left;
+
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.admin-ao-overview-toggle:hover {
+    background: var(--surface-raised);
+    box-shadow: none;
+    opacity: 1;
+}
+
+.admin-ao-overview-toggle:active {
+    transform: none;
+}
+
+.admin-ao-overview-toggle:focus-visible {
+    outline: 2px solid var(--accent-bright);
+    outline-offset: -3px;
+}
+
+.admin-ao-overview-toggle:hover {
+    opacity: 0.8;
+}
+
+.admin-ao-overview-toggle:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+}
+
+.admin-ao-overview-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: 0 0 1.75rem;
+
+    color: var(--muted);
+
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.admin-ao-overview-group
+.admin-structure-label {
+    color: var(--muted);
+
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-profile-search-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.admin-profile-search-results {
+    display: flex;
+    flex-direction: column;
+    max-height: 16rem;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--surface);
+}
+
+.admin-profile-search-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.admin-profile-search-option:last-child {
+    border-bottom: 0;
+}
+
+.admin-profile-search-option:hover,
+.admin-profile-search-option.selected {
+    background: var(--surface-raised);
+}
+
+.admin-profile-search-hint,
+.admin-profile-search-empty {
+    padding: 0.75rem 0.8rem;
+}
