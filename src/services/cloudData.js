@@ -2944,6 +2944,34 @@ export async function loadRegionInsightSessions({
     }));
 }
 
+export async function loadRegionMilestoneCrossings({
+    regionId,
+    startDate,
+    endDate,
+    milestones,
+}) {
+    const { data, error } = await supabase.rpc(
+        "get_region_milestone_crossings",
+        {
+            p_region_id: regionId,
+            p_period_start: startDate,
+            p_period_end: endDate,
+            p_milestones: milestones,
+        }
+    );
+
+    if (error) throw error;
+
+    return (data || []).map(row => ({
+        memberId: row.member_id,
+        paxName: row.pax_name,
+        milestone: Number(row.milestone) || 0,
+        startingTotal: Number(row.starting_total) || 0,
+        endingTotal: Number(row.ending_total) || 0,
+        postsInPeriod: Number(row.posts_in_period) || 0,
+    }));
+}
+
 function mapThangCandidateFromDb(row) {
     return {
         id: row.id,

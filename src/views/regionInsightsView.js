@@ -7,7 +7,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { createHorizontalBarChartSection, createLineChartSection, createMultiLineChartSection, createHeatMapSection, createPipelineSection, } from "../components/regionInsights/charts.js";
-import { loadRegionInsightSessions } from "../services/cloudData.js";
+import { loadRegionInsightSessions, loadRegionMilestoneCrossings } from "../services/cloudData.js";
 
 const REGION_TREND_METRICS = [
     {
@@ -50,6 +50,22 @@ const REGION_TREND_METRICS = [
         getSubtitle: () =>
             "Unique PAX who Q'd during the month",
     },
+];
+
+const REGION_POST_MILESTONES = [
+    10,
+    25,
+    50,
+    75,
+    100,
+    150,
+    200,
+    250,
+    300,
+    400,
+    500,
+    750,
+    1000,
 ];
 
 function createAoTrendSelector({
@@ -229,6 +245,37 @@ function formatDateKey(date) {
     const day = String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+}
+
+function getLastCompletedAggielandWeekRange(
+    referenceDate = new Date()
+) {
+    const date = new Date(referenceDate);
+    date.setHours(0, 0, 0, 0);
+
+    /*
+     * Aggieland reporting week is Monday-Saturday.
+     *
+     * On Sunday, use the Monday-Saturday that just ended.
+     * On Monday-Saturday, use the previous completed week.
+     */
+    const daysBackToSaturday =
+        date.getDay() === 0
+            ? 1
+            : date.getDay() + 1;
+
+    const end = new Date(date);
+    end.setDate(
+        end.getDate() - daysBackToSaturday
+    );
+
+    const start = new Date(end);
+    start.setDate(start.getDate() - 5);
+
+    return {
+        startDate: formatDateKey(start),
+        endDate: formatDateKey(end),
+    };
 }
 
 function getMonthRange(monthKey) {
@@ -587,6 +634,80 @@ function createSimpleListSection(title, items, emptyMessage = "Nothing to show y
     return section;
 }
 
+function createMilestoneSection({
+    crossings,
+    startDate,
+    endDate,
+    onMemberClick,
+}) {
+    const items = [...crossings].sort((a, b) => {
+        if (b.milestone !== a.milestone) {
+            return b.milestone - a.milestone;
+        }
+
+        return a.paxName.localeCompare(b.paxName);
+    });
+
+    const startLabel = new Date(
+        `${startDate}T00:00:00`
+    ).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    });
+
+    const endLabel = new Date(
+        `${endDate}T00:00:00`
+    ).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    });
+
+    const title =
+        `Weekly Post Milestones • ` +
+        `${startLabel}–${endLabel}`;
+
+    if (!items.length) {
+        return createSimpleListSection(
+            title,
+            [],
+            "No post milestones were crossed during this week."
+        );
+    }
+
+    return createExpandableListSection({
+        title,
+        items,
+        initialCount: 8,
+
+        renderRow: crossing => {
+            const postLabel =
+                crossing.postsInPeriod === 1
+                    ? "post"
+                    : "posts";
+
+            return createInsightsRow({
+                title:
+                    `${crossing.paxName} reached ` +
+                    `${crossing.milestone} posts`,
+
+                subtitle:
+                    `${crossing.postsInPeriod} ${postLabel} ` +
+                    `during the week • ` +
+                    `${crossing.startingTotal} → ` +
+                    `${crossing.endingTotal}`,
+
+                value: crossing.milestone,
+
+                onClick: onMemberClick
+                    ? () => {
+                        onMemberClick(crossing);
+                    }
+                    : null,
+            });
+        },
+    });
+}
+
 export async function renderRegionInsightsView() {
     const app = document.getElementById("app");
     app.textContent = "";
@@ -636,6 +757,9 @@ export async function renderRegionInsightsView() {
             ? todayKey
             : endDate;
     
+    const milestoneWeek =
+        getLastCompletedAggielandWeekRange();
+
     const [selectedYear, selectedMonthNumber] =
         selectedMonth.split("-").map(Number);
 
@@ -664,13 +788,26 @@ export async function renderRegionInsightsView() {
     );
 
     let insightSessions;
+    let milestoneCrossings;
 
     try {
-        insightSessions = await loadRegionInsightSessions({
-            regionId: state.currentRegionId,
-            startDate: historyStartDate,
-            endDate,
-        });
+        [
+            insightSessions,
+            milestoneCrossings,
+        ] = await Promise.all([
+            loadRegionInsightSessions({
+                regionId: state.currentRegionId,
+                startDate: historyStartDate,
+                endDate,
+            }),
+
+            loadRegionMilestoneCrossings({
+                regionId: state.currentRegionId,
+                startDate: milestoneWeek.startDate,
+                endDate: milestoneWeek.endDate,
+                milestones: REGION_POST_MILESTONES,
+            }),
+        ]);
     } catch (error) {
         console.error("Failed to load Region Insights", error);
 
@@ -794,6 +931,17 @@ export async function renderRegionInsightsView() {
         snapshot.momentum,
         "No Key Insights yet."
     );
+
+    const milestoneSection = createMilestoneSection({
+        crossings: milestoneCrossings,
+        startDate: milestoneWeek.startDate,
+        endDate: milestoneWeek.endDate,
+    
+        onMemberClick: crossing => {
+            state.selectedMemberId = crossing.memberId;
+            navigateTo("memberDetail");
+        },
+    });
 
     if (!state.regionTrendMetric) {
         state.regionTrendMetric = "averageAttendance";
@@ -1340,6 +1488,7 @@ const aoAttendanceHeatMap =
 
     leadershipPanel.append(
         leadershipDate,
+        milestoneSection,
         accelerationSection,
         checkTheSixSection,
         readyToVqSection,
