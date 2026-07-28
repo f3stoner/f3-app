@@ -14,7 +14,12 @@ import { logSaveFailure } from "../services/appEvents.js";
 import { getAoWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { getAffectedMemberIdsFromSession, loadMemberDashboardStats, rebuildMemberStatsForMembers } from "../services/cloudData.js";
+import {
+    getAffectedMemberIdsFromSession,
+    loadMemberDashboardStats,
+    rebuildMemberStatsForMembers,
+    loadQSlotCommitments,
+} from "../services/cloudData.js";
 import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
 import { doesSearchMatch } from "../utils/search.js";
 import { getTotalAttendanceCount, memberAttendedSession } from "../utils/sessionAttendance.js";
@@ -169,6 +174,13 @@ draftSession.qIds = [...(draftSession.qIds || (draftSession.qId ? [draftSession.
 
 draftSession.fngs = draftSession.fngs || [];
 draftSession.visitors = draftSession.visitors || [];
+
+let qSlotCommitments = [];
+let qSlotCommitmentsLoading = Boolean(
+    !isEditing &&
+    draftSession?.sourceQSlotId
+);
+let qSlotCommitmentsFailed = false;
 
 draftSession.qIds.forEach(qId => {
     if (!draftSession.attendeeIds.includes(qId)) {
@@ -658,6 +670,24 @@ function normalizeId(id) {
     return String(id || "").trim();
 }
 
+function getCommitmentTypeForMember(memberId) {
+    const normalizedMemberId = normalizeId(memberId);
+
+    const commitment = qSlotCommitments.find(
+        item => normalizeId(item.memberId) === normalizedMemberId
+    );
+
+    return commitment?.commitmentType || null;
+}
+
+function getCommittedMemberIds() {
+    return new Set(
+        qSlotCommitments
+            .map(commitment => normalizeId(commitment.memberId))
+            .filter(Boolean)
+    );
+}
+
 function getKnownMemberIds() {
     return new Set(state.members.map(member => normalizeId(member.id)));
 }
@@ -729,13 +759,31 @@ async function maybePromptForFngName(member) {
     cachedDisplayNameByMemberId = null;
 }
 
-function createMemberCard(member) {
+function createMemberCard(member, options = {}) {
     const card = document.createElement("div");
     card.classList.add("member-card");
     card.dataset.memberId = member.id;
+
     const name = document.createElement("span");
     name.classList.add("member-name");
     name.textContent = getCachedMemberDisplayName(member);
+
+    const commitmentType =
+        options.commitmentType ||
+        getCommitmentTypeForMember(member.id);
+
+    let commitmentBadge = null;
+
+    if (commitmentType === "hc" || commitmentType === "sc") {
+        commitmentBadge = document.createElement("span");
+        commitmentBadge.classList.add(
+            "session-commitment-badge",
+            `session-commitment-badge-${commitmentType}`
+        );
+
+        commitmentBadge.textContent = commitmentType.toUpperCase();
+    }
+
     const qButton = document.createElement("button");
     qButton.classList.add("q-button");
     qButton.textContent = "Q";
@@ -767,29 +815,35 @@ function createMemberCard(member) {
     addIndicator.textContent = "+";
     addIndicator.setAttribute("aria-hidden", "true");
 
-    card.append(qButton, name, addIndicator);
+    card.append(qButton, name);
 
-
-card.addEventListener("click", async () => {
-    const isPresent = draftSession.attendeeIds.includes(member.id);
-    const isSelectedQ = (draftSession.qIds || []).includes(member.id);
-
-    if (!isPresent) {
-        draftSession.attendeeIds.push(member.id);
-        await maybePromptForFngName(member);
-    } else {
-        if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
-            return;
-        }
-
-        draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
-        draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
+    if (commitmentBadge) {
+        card.appendChild(commitmentBadge);
     }
-        clearSessionSearch();
-        renderMemberList();
-    });
-    return card;
-}
+
+    card.appendChild(addIndicator);
+
+
+    card.addEventListener("click", async () => {
+        const isPresent = draftSession.attendeeIds.includes(member.id);
+        const isSelectedQ = (draftSession.qIds || []).includes(member.id);
+
+        if (!isPresent) {
+            draftSession.attendeeIds.push(member.id);
+            await maybePromptForFngName(member);
+        } else {
+            if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
+                return;
+            }
+
+            draftSession.attendeeIds = draftSession.attendeeIds.filter(id => id !== member.id);
+            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
+        }
+            clearSessionSearch();
+            renderMemberList();
+        });
+        return card;
+    }
 
 function createMemberSection(titleText, members, options = {}) {
     const section = document.createElement("div");
@@ -810,7 +864,11 @@ function createMemberSection(titleText, members, options = {}) {
     }
 
     members.forEach(member => {
-        section.appendChild(createMemberCard(member));
+        section.appendChild(
+            createMemberCard(member, {
+                commitmentType: options.commitmentType || null,
+            })
+        );
     });
 
     return section;
@@ -970,83 +1028,230 @@ function renderMemberList() {
         draftSession.aoId,
         draftSession.aoName
     );
+
     const selectableMembers = getCachedSelectableMembers();
+    const committedMemberIds = getCommittedMemberIds();
 
     const qMembers = selectableMembers.filter(member =>
         getUniqueQIds().includes(normalizeId(member.id))
     );
-    
+
     const selectedMembers = selectableMembers.filter(member =>
         draftSession.attendeeIds.includes(member.id) &&
         !(draftSession.qIds || []).includes(member.id)
     );
-    
+
+    const hcMembers = selectableMembers.filter(member => {
+        if (draftSession.attendeeIds.includes(member.id)) {
+            return false;
+        }
+
+        return getCommitmentTypeForMember(member.id) === "hc";
+    });
+
+    const scMembers = selectableMembers.filter(member => {
+        if (draftSession.attendeeIds.includes(member.id)) {
+            return false;
+        }
+
+        return getCommitmentTypeForMember(member.id) === "sc";
+    });
+
     const recentMembers = selectableMembers.filter(member => {
-        if (draftSession.attendeeIds.includes(member.id)) return false;
-    
+        if (draftSession.attendeeIds.includes(member.id)) {
+            return false;
+        }
+
+        if (committedMemberIds.has(normalizeId(member.id))) {
+            return false;
+        }
+
         const lastAoPost = lastPostMap.get(member.id) || null;
+
         return isRecentDate(lastAoPost, 20);
     });
-    
+
     const visibleRecentMembers = state.sessionShowAllRecent
         ? recentMembers
         : recentMembers.slice(0, 12);
-    
+
     const otherMembers = selectableMembers.filter(member => {
-        if (draftSession.attendeeIds.includes(member.id)) return false;
-    
+        if (draftSession.attendeeIds.includes(member.id)) {
+            return false;
+        }
+
+        if (committedMemberIds.has(normalizeId(member.id))) {
+            return false;
+        }
+
         const lastAoPost = lastPostMap.get(member.id) || null;
+
         return !isRecentDate(lastAoPost, 20);
     });
 
-   const visibleOtherMembers = state.sessionShowAllOthers
+    const visibleOtherMembers = state.sessionShowAllOthers
         ? otherMembers
         : otherMembers.slice(0, 10);
-     
+
     selectedHeaderSlot.textContent = "";
-    selectedHeaderSlot.appendChild(createSelectedSection(qMembers, selectedMembers));
+    selectedHeaderSlot.appendChild(
+        createSelectedSection(qMembers, selectedMembers)
+    );
 
-        const recentSection = createMemberSection(`Recent at ${draftSession.aoName || "AO"}`, visibleRecentMembers, {
+    if (qSlotCommitmentsLoading) {
+        const loadingSection = document.createElement("div");
+        loadingSection.classList.add(
+            "section",
+            "session-commitments-loading"
+        );
+
+        const loadingText = document.createElement("div");
+        loadingText.classList.add("detail-value");
+        loadingText.textContent = "Loading HC/SC commitments...";
+
+        loadingSection.appendChild(loadingText);
+        memberList.appendChild(loadingSection);
+    }
+
+    if (qSlotCommitmentsFailed) {
+        const failedSection = document.createElement("div");
+        failedSection.classList.add(
+            "section",
+            "session-commitments-failed"
+        );
+
+        const failedText = document.createElement("div");
+        failedText.classList.add("detail-value");
+        failedText.textContent =
+            "HC/SC commitments could not be loaded.";
+
+        failedSection.appendChild(failedText);
+        memberList.appendChild(failedSection);
+    }
+
+    if (hcMembers.length > 0) {
+        memberList.appendChild(
+            createMemberSection(
+                `Hard Commits (${hcMembers.length})`,
+                hcMembers,
+                {
+                    commitmentType: "hc",
+                    emptyText: "No hard commits",
+                }
+            )
+        );
+    }
+
+    if (scMembers.length > 0) {
+        memberList.appendChild(
+            createMemberSection(
+                `Soft Commits (${scMembers.length})`,
+                scMembers,
+                {
+                    commitmentType: "sc",
+                    emptyText: "No soft commits",
+                }
+            )
+        );
+    }
+
+    const recentSection = createMemberSection(
+        `Recent at ${draftSession.aoName || "AO"}`,
+        visibleRecentMembers,
+        {
             emptyText: "No recent posters at this AO",
-        })
-
-        if (recentMembers.length > 12) {
-            const toggleButton = document.createElement("button");
-            toggleButton.textContent = state.sessionShowAllRecent ? "Show Less" : "Show More";
-
-            toggleButton.addEventListener("click", () => {
-                state.sessionShowAllRecent = !state.sessionShowAllRecent;
-                renderMemberList();
-            });
-
-
-            recentSection.appendChild(toggleButton);
         }
+    );
 
-        memberList.appendChild(recentSection);
+    if (recentMembers.length > 12) {
+        const toggleButton = document.createElement("button");
+        toggleButton.textContent = state.sessionShowAllRecent
+            ? "Show Less"
+            : "Show More";
 
-        const othersSection = createMemberSection("More PAX", visibleOtherMembers, {
-            emptyText: "No other active PAX",
+        toggleButton.addEventListener("click", () => {
+            state.sessionShowAllRecent =
+                !state.sessionShowAllRecent;
+
+            renderMemberList();
         });
 
-        if (otherMembers.length > 10) {
-            const toggleButton = document.createElement("button");
-            toggleButton.textContent = state.sessionShowAllOthers ? "Show Less" : "Show More";
+        recentSection.appendChild(toggleButton);
+    }
 
-            toggleButton.addEventListener("click", () => {
-                state.sessionShowAllOthers = !state.sessionShowAllOthers;
-                renderMemberList();
-            });
+    memberList.appendChild(recentSection);
 
-            othersSection.appendChild(toggleButton);
+    const othersSection = createMemberSection(
+        "More PAX",
+        visibleOtherMembers,
+        {
+            emptyText: "No other active PAX",
         }
+    );
 
-        memberList.appendChild(othersSection);
+    if (otherMembers.length > 10) {
+        const toggleButton = document.createElement("button");
+        toggleButton.textContent = state.sessionShowAllOthers
+            ? "Show Less"
+            : "Show More";
 
-        console.timeEnd("renderMemberList");
+        toggleButton.addEventListener("click", () => {
+            state.sessionShowAllOthers =
+                !state.sessionShowAllOthers;
+
+            renderMemberList();
+        });
+
+        othersSection.appendChild(toggleButton);
+    }
+
+    memberList.appendChild(othersSection);
+
+    console.timeEnd("renderMemberList");
+}
+
+async function loadDraftQSlotCommitments() {
+    const qSlotId = draftSession.sourceQSlotId;
+
+    if (!qSlotId || isEditing) {
+        qSlotCommitments = [];
+        qSlotCommitmentsLoading = false;
+        qSlotCommitmentsFailed = false;
+        return;
+    }
+
+    qSlotCommitmentsLoading = true;
+    qSlotCommitmentsFailed = false;
+
+    renderMemberList();
+
+    try {
+        const commitments = await loadQSlotCommitments(qSlotId);
+
+        qSlotCommitments = Array.isArray(commitments)
+            ? commitments
+            : [];
+
+        qSlotCommitmentsFailed = false;
+    } catch (error) {
+        console.error(
+            "Failed to load Q-slot commitments for session logging:",
+            {
+                qSlotId,
+                error,
+            }
+        );
+
+        qSlotCommitments = [];
+        qSlotCommitmentsFailed = true;
+    } finally {
+        qSlotCommitmentsLoading = false;
+        renderMemberList();
+    }
 }
 
 renderMemberList();
+loadDraftQSlotCommitments();
 
 const visitorHeading = document.createElement("div");
 visitorHeading.classList.add("fng-heading");

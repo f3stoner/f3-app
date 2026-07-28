@@ -7,8 +7,11 @@ import {
     loadMemberSessionByDate,
     loadMemberSessions,
     loadRecentMemberActivity,
+    loadQSlotCommitmentSummaries,
+    loadQSlotCommitments,
+    setQSlotCommitment,
 } from "../services/cloudData.js";
- import { updateSession } from "../services/appData.js";
+import { updateSession } from "../services/appData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { generatePreblast } from "../modules/generatePreblast.js";
 import { showToast } from "../utils/toast.js";
@@ -17,7 +20,11 @@ import { createIcon, createWeatherIcon } from "../utils/icons.js";
 import { getAoWeather } from "../services/weather.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
-import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
+import {
+    hasPermission,
+    managesQSlot,
+    PERMISSIONS,
+} from "../utils/permissions.js";
 import { logAppEvent } from "../services/appEvents.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { releaseWakeLock } from "../utils/wakelock.js";
@@ -358,51 +365,144 @@ export function renderDashboard() {
     );
 
     const userRow = document.createElement("div");
-    userRow.classList.add("user-row");
 
-    const roleBadge = document.createElement("span");
-    roleBadge.classList.add("role-badge");
-
-    const role = state.currentUserRole || "pax";
-
-    roleBadge.dataset.role = role;
-    roleBadge.textContent = getDashboardLeadershipBadge();
-
-    const linkedMember = state.members.find(
-        member => member.id === state.currentUserMemberId
+    userRow.classList.add(
+        "user-row",
+        "dashboard-welcome-row"
     );
 
-    const userName = document.createElement("button");
-    userName.type = "button";
-    userName.classList.add("user-name", "dashboard-profile-link");
+    const linkedMember = state.members.find(
+        member =>
+            member.id ===
+            state.currentUserMemberId
+    );
 
-    const userNameText = document.createElement("span");
-    userNameText.textContent =
+    const displayName =
         linkedMember?.paxName ||
         state.currentUserDisplayName ||
-        "User";
+        "PAX";
 
-    const profileChevron = document.createElement("span");
-    profileChevron.classList.add("dashboard-profile-chevron");
-    profileChevron.setAttribute("aria-hidden", "true");
+    const welcomeContent =
+        document.createElement("div");
+
+    welcomeContent.classList.add(
+        "dashboard-welcome-content"
+    );
+
+    const greeting =
+        document.createElement("div");
+
+    greeting.classList.add(
+        "dashboard-greeting"
+    );
+
+    const currentHour =
+        new Date().getHours();
+
+    const greetingText =
+        currentHour < 12
+            ? "Good morning"
+            : currentHour < 17
+                ? "Good afternoon"
+                : "Good evening";
+
+    const greetingPrefix =
+        document.createElement("span");
+
+    greetingPrefix.textContent =
+        `${greetingText}, `;
+
+    const profileLink =
+        document.createElement("button");
+
+    profileLink.type = "button";
+
+    profileLink.classList.add(
+        "dashboard-greeting-profile-link"
+    );
+
+    profileLink.setAttribute(
+        "aria-label",
+        "View my profile"
+    );
+
+    const profileName =
+        document.createElement("span");
+
+    profileName.textContent =
+        displayName;
+
+    const profileChevron =
+        document.createElement("span");
+
+    profileChevron.classList.add(
+        "dashboard-profile-chevron"
+    );
+
+    profileChevron.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
     profileChevron.textContent = "›";
 
-    userName.append(userNameText, profileChevron);
+    profileLink.append(
+        profileName,
+        profileChevron
+    );
 
-    userName.setAttribute("aria-label", "View my profile");
+    profileLink.addEventListener(
+        "click",
+        () => {
+            if (!linkedMember) return;
 
-    userName.addEventListener("click", () => {
-        if (!linkedMember) return;
+            state.selectedPaxId =
+                linkedMember.id;
 
-        state.selectedPaxId = linkedMember.id;
-        navigateTo("paxProfile");
-    });
+            navigateTo("paxProfile");
+        }
+    );
 
-    const userLeft = document.createElement("div");
-    userLeft.classList.add("user-left");
-    userLeft.append(roleBadge, userName);
+    greeting.append(
+        greetingPrefix,
+        profileLink
+    );
 
-    userRow.append(userLeft);
+    const welcomeSubtitle =
+        document.createElement("div");
+
+    welcomeSubtitle.classList.add(
+        "dashboard-welcome-subtitle"
+    );
+
+    welcomeSubtitle.textContent =
+        "Let’s get better.";
+
+    welcomeContent.append(
+        greeting,
+        welcomeSubtitle
+    );
+
+    const roleBadge =
+        document.createElement("span");
+
+    roleBadge.classList.add(
+        "role-badge",
+        "dashboard-role-badge"
+    );
+
+    const role =
+        state.currentUserRole || "pax";
+
+    roleBadge.dataset.role = role;
+
+    roleBadge.textContent =
+        getDashboardLeadershipBadge();
+
+    userRow.append(
+        welcomeContent,
+        roleBadge
+    );
 
     function getWorkoutReadinessLabel(workout) {
         if (!workout) return "No Workout Planned";
@@ -430,28 +530,158 @@ export function renderDashboard() {
     }
 
     function createPrimaryActionsRow() {
-        const row = document.createElement("div");
-        row.classList.add("dashboard-primary-actions");
+        const section =
+            document.createElement("section");
+    
+        section.classList.add(
+            "section",
+            "dashboard-quick-access-section"
+        );
+    
+        const header =
+            document.createElement("div");
+    
+        header.classList.add(
+            "dashboard-section-header"
+        );
+    
+        const heading =
+            document.createElement("div");
+    
+        heading.classList.add("detail-label");
+        heading.textContent = "Quick Access";
+    
+        header.appendChild(heading);
+    
+        const deck =
+            document.createElement("div");
+    
+        deck.classList.add(
+            "dashboard-card-deck",
+            "dashboard-quick-access-deck"
+        );
+    
+        const actions = [
+            {
+                icon: "qSignup",
+                title: "Q Signup",
+                subtitle: "Claim a future Q",
+                className: "dashboard-action-green",
+                destination: "qSignup",
+            },
+            {
+                icon: "weeklySchedule",
+                title: "Weekly Schedule",
+                subtitle: "View the full week",
+                className: "dashboard-action-blue",
+                destination: "weeklyQCalendar",
+            },
+            {
+                icon: "planner",
+                title: "Workout Planner",
+                subtitle: "Build your beatdown",
+                className: "dashboard-action-purple",
+                destination: "myPlanner",
+            },
+            {
+                icon: "history",
+                title: "History",
+                subtitle: "Review past BDs",
+                className: "dashboard-action-amber",
+                destination: "sessionHistory",
+            },
+        ];
+    
+        actions.forEach(action => {
+            const button =
+                document.createElement("button");
+    
+            button.type = "button";
+    
+            button.classList.add(
+                "dashboard-deck-card",
+                "dashboard-quick-access-card",
+                action.className
+            );
+    
+            const icon =
+                createIcon(
+                    action.icon,
+                    "dashboard-action-icon"
+                );
 
-        const qSignupButton = document.createElement("button");
-        qSignupButton.classList.add("primary-action-card");
-        qSignupButton.textContent = "Q Signup";
+            icon.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+    
+            const text =
+                document.createElement("span");
+    
+            text.classList.add(
+                "dashboard-action-text"
+            );
+    
+            const title =
+                document.createElement("span");
+    
+            title.classList.add(
+                "dashboard-action-title"
+            );
+    
+            title.textContent =
+                action.title;
+    
+            const subtitle =
+                document.createElement("span");
+    
+            subtitle.classList.add(
+                "dashboard-action-subtitle"
+            );
+    
+            subtitle.textContent =
+                action.subtitle;
+    
+            text.append(
+                title,
+                subtitle
+            );
+    
+            const arrow =
+                createIcon(
+                    "chevronRight",
+                    "dashboard-action-arrow"
+                );
 
-        qSignupButton.addEventListener("click", () => {
-            navigateTo("qSignup");
+            arrow.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+    
+            button.append(
+                icon,
+                text,
+                arrow
+            );
+    
+            button.addEventListener(
+                "click",
+                () => {
+                    navigateTo(
+                        action.destination
+                    );
+                }
+            );
+    
+            deck.appendChild(button);
         });
-
-        const weeklyQButton = document.createElement("button");
-        weeklyQButton.classList.add("primary-action-card");
-        weeklyQButton.textContent = "Weekly Q Schedule";
-
-        weeklyQButton.addEventListener("click", () => {
-            navigateTo("weeklyQCalendar");
-        });
-
-        row.append(qSignupButton, weeklyQButton);
-
-        return row;
+    
+        section.append(
+            header,
+            deck
+        );
+    
+        return section;
     }
 
     function getActiveWorkoutExecution() {
@@ -502,14 +732,22 @@ export function renderDashboard() {
         }
     
         const section = document.createElement("div");
-        section.classList.add("section");
+        section.classList.add(
+            "section",
+            "dashboard-hero-section",
+            "dashboard-resume-hero"
+        );
     
         const heading = document.createElement("div");
         heading.classList.add("detail-label");
         heading.textContent = "Workout In Progress";
     
         const card = document.createElement("div");
-        card.classList.add("member-card", "dashboard-next-q-card");
+        card.classList.add(
+            "member-card",
+            "dashboard-next-q-card",
+            "dashboard-hero-card"
+        );
     
         const content = document.createElement("div");
     
@@ -824,6 +1062,1228 @@ export function renderDashboard() {
     const myUpcomingQSlots = getMyUpcomingQSlots();
     const nextQSlot = myUpcomingQSlots[0] || null;
 
+    const tomorrowQSlots = state.qSlots
+    .filter(slot => {
+        return (
+            slot.date === tomorrow &&
+            Boolean(slot.qUserId)
+        );
+    })
+    .sort((a, b) => {
+        const aoA = state.aos.find(
+            ao => ao.id === a.aoId
+        );
+
+        const aoB = state.aos.find(
+            ao => ao.id === b.aoId
+        );
+
+        const timeA =
+            getSlotDisplayTime(a, aoA) || "";
+
+        const timeB =
+            getSlotDisplayTime(b, aoB) || "";
+
+        return (
+            timeA.localeCompare(timeB) ||
+            (aoA?.name || "").localeCompare(
+                aoB?.name || ""
+            )
+        );
+    });
+
+    function loadTomorrowCommitmentSummaries() {
+        const qSlotIds = tomorrowQSlots
+            .map(slot => slot.id)
+            .filter(Boolean);
+    
+        if (qSlotIds.length === 0) {
+            return;
+        }
+    
+        const requestKey = [
+            state.currentRegionId,
+            state.workspaceGeneration,
+            ...qSlotIds,
+        ].join("__");
+    
+        if (
+            state.qSlotCommitmentSummaryRequestKey ===
+            requestKey
+        ) {
+            return;
+        }
+    
+        state.qSlotCommitmentSummaryRequestKey =
+            requestKey;
+    
+        const requestGeneration =
+            state.workspaceGeneration;
+    
+        loadQSlotCommitmentSummaries(qSlotIds)
+            .then(summaries => {
+                if (
+                    requestGeneration !==
+                    state.workspaceGeneration
+                ) {
+                    return;
+                }
+    
+                const nextBySlotId = {};
+    
+                qSlotIds.forEach(qSlotId => {
+                    nextBySlotId[qSlotId] = {
+                        qSlotId,
+                        hcCount: 0,
+                        scCount: 0,
+                        myCommitment: null,
+                    };
+                });
+    
+                summaries.forEach(summary => {
+                    nextBySlotId[summary.qSlotId] =
+                        summary;
+                });
+    
+                state.qSlotCommitmentSummariesBySlotId =
+                    nextBySlotId;
+    
+                if (
+                    state.currentView ===
+                    "dashboard"
+                ) {
+                    renderApp();
+                }
+            })
+            .catch(error => {
+                console.error(
+                    "Failed to hydrate tomorrow commitments:",
+                    error
+                );
+    
+                if (
+                    requestGeneration ===
+                    state.workspaceGeneration
+                ) {
+                    state.qSlotCommitmentSummaryRequestKey =
+                        null;
+                }
+            });
+    }
+
+    async function loadCommitmentDetailsForSlot(qSlotId) {
+        if (!qSlotId) return;
+    
+        const alreadyLoaded =
+            Object.prototype.hasOwnProperty.call(
+                state.qSlotCommitmentsBySlotId || {},
+                qSlotId
+            );
+    
+        const isLoading =
+            Boolean(
+                state.qSlotCommitmentDetailsLoadingBySlotId?.[
+                    qSlotId
+                ]
+            );
+    
+        if (alreadyLoaded || isLoading) {
+            return;
+        }
+    
+        const requestGeneration =
+            state.workspaceGeneration;
+    
+        state.qSlotCommitmentDetailsLoadingBySlotId = {
+            ...(state.qSlotCommitmentDetailsLoadingBySlotId || {}),
+            [qSlotId]: true,
+        };
+    
+        state.qSlotCommitmentDetailsErrorBySlotId = {
+            ...(state.qSlotCommitmentDetailsErrorBySlotId || {}),
+            [qSlotId]: false,
+        };
+    
+        if (state.currentView === "dashboard") {
+            renderApp();
+        }
+    
+        try {
+            const commitments =
+                await loadQSlotCommitments(qSlotId);
+    
+            if (
+                requestGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+    
+            state.qSlotCommitmentsBySlotId = {
+                ...(state.qSlotCommitmentsBySlotId || {}),
+                [qSlotId]:
+                    Array.isArray(commitments)
+                        ? commitments
+                        : [],
+            };
+        } catch (error) {
+            if (
+                requestGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+    
+            console.error(
+                "Failed to load Q-slot commitment details:",
+                {
+                    qSlotId,
+                    error,
+                }
+            );
+    
+            state.qSlotCommitmentDetailsErrorBySlotId = {
+                ...(state.qSlotCommitmentDetailsErrorBySlotId || {}),
+                [qSlotId]: true,
+            };
+        } finally {
+            if (
+                requestGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+    
+            state.qSlotCommitmentDetailsLoadingBySlotId = {
+                ...(state.qSlotCommitmentDetailsLoadingBySlotId || {}),
+                [qSlotId]: false,
+            };
+    
+            if (state.currentView === "dashboard") {
+                renderApp();
+            }
+        }
+    }
+
+    function getCommitmentMemberName(commitment) {
+        const member = state.members.find(
+            candidate =>
+                candidate.id === commitment.memberId
+        );
+    
+        return (
+            member?.paxName ||
+            member?.realName ||
+            commitment.paxName ||
+            commitment.realName ||
+            commitment.memberName ||
+            "Unknown PAX"
+        );
+    }
+
+    function canManageCommitmentsForSlot(slot) {
+        if (!slot) return false;
+    
+        const isAssignedQ =
+            slot.qUserId === state.currentUserMemberId;
+    
+        return (
+            isAssignedQ ||
+            managesQSlot(slot)
+        );
+    }
+    
+    function getCommitmentParticipantDirectory() {
+        const participants =
+            Array.isArray(state.regionParticipants)
+                ? state.regionParticipants
+                : state.members;
+    
+        return Array.isArray(participants)
+            ? participants
+            : [];
+    }
+    
+    function getCommitmentEditorState() {
+        return (
+            state.dashboardCommitmentEditor || {
+                slotId: null,
+                memberId: null,
+                searchTerm: "",
+                selectedMemberId: null,
+            }
+        );
+    }
+    
+    function setCommitmentEditorState(nextState) {
+        state.dashboardCommitmentEditor = {
+            slotId: null,
+            memberId: null,
+            searchTerm: "",
+            selectedMemberId: null,
+            ...nextState,
+        };
+    }
+    
+    function clearCommitmentEditor() {
+        setCommitmentEditorState({});
+    }
+    
+    function createCommitmentNameGroup(
+        label,
+        commitments,
+        commitmentType,
+        slot
+    ) {
+        const group = document.createElement("div");
+    
+        group.classList.add(
+            "dashboard-commitment-name-group"
+        );
+    
+        const matchingCommitments = commitments
+            .filter(
+                commitment =>
+                    commitment.commitmentType ===
+                    commitmentType
+            )
+            .sort((a, b) =>
+                getCommitmentMemberName(a).localeCompare(
+                    getCommitmentMemberName(b)
+                )
+            );
+    
+        const heading = document.createElement("div");
+    
+        heading.classList.add(
+            "dashboard-commitment-name-heading"
+        );
+    
+        heading.textContent =
+            `${label} (${matchingCommitments.length})`;
+    
+        group.appendChild(heading);
+    
+        if (matchingCommitments.length === 0) {
+            const empty = document.createElement("div");
+    
+            empty.classList.add(
+                "stats-line",
+                "dashboard-commitment-name-empty"
+            );
+    
+            empty.textContent = "None";
+    
+            group.appendChild(empty);
+            return group;
+        }
+    
+        const canManage =
+            canManageCommitmentsForSlot(slot);
+    
+        const editorState =
+            getCommitmentEditorState();
+    
+        matchingCommitments.forEach(commitment => {
+            const row = document.createElement("div");
+    
+            row.classList.add(
+                "dashboard-commitment-name-row"
+            );
+    
+            const badge = document.createElement("span");
+    
+            badge.classList.add(
+                "session-commitment-badge",
+                `session-commitment-badge-${commitmentType}`
+            );
+    
+            badge.textContent =
+                commitmentType.toUpperCase();
+    
+            const name = document.createElement("span");
+    
+            name.classList.add(
+                "dashboard-commitment-member-name"
+            );
+    
+            name.textContent =
+                getCommitmentMemberName(commitment);
+    
+            row.append(badge, name);
+    
+            const isEditing =
+                canManage &&
+                editorState.slotId === slot.id &&
+                editorState.memberId ===
+                    commitment.memberId;
+    
+            if (canManage) {
+                const editButton =
+                    document.createElement("button");
+    
+                editButton.type = "button";
+    
+                editButton.classList.add(
+                    "secondary-button",
+                    "dashboard-commitment-member-edit"
+                );
+    
+                editButton.textContent =
+                    isEditing ? "Done" : "Edit";
+    
+                editButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+    
+                        if (isEditing) {
+                            clearCommitmentEditor();
+                        } else {
+                            setCommitmentEditorState({
+                                slotId: slot.id,
+                                memberId:
+                                    commitment.memberId,
+                            });
+                        }
+    
+                        renderApp();
+                    }
+                );
+    
+                row.appendChild(editButton);
+            }
+    
+            group.appendChild(row);
+    
+            if (isEditing) {
+                const actions =
+                    document.createElement("div");
+    
+                actions.classList.add(
+                    "dashboard-commitment-member-actions"
+                );
+    
+                const hcButton =
+                    document.createElement("button");
+    
+                hcButton.type = "button";
+                hcButton.textContent = "HC";
+    
+                hcButton.classList.add(
+                    "dashboard-commitment-editor-choice"
+                );
+    
+                if (
+                    commitment.commitmentType ===
+                    "hc"
+                ) {
+                    hcButton.classList.add("selected");
+                }
+    
+                const scButton =
+                    document.createElement("button");
+    
+                scButton.type = "button";
+                scButton.textContent = "SC";
+    
+                scButton.classList.add(
+                    "dashboard-commitment-editor-choice"
+                );
+    
+                if (
+                    commitment.commitmentType ===
+                    "sc"
+                ) {
+                    scButton.classList.add("selected");
+                }
+    
+                const removeButton =
+                    document.createElement("button");
+    
+                removeButton.type = "button";
+                removeButton.textContent = "Remove";
+    
+                removeButton.classList.add(
+                    "secondary-button",
+                    "dashboard-commitment-editor-remove"
+                );
+    
+                const isUpdating =
+                    Boolean(
+                        state
+                            .qSlotCommitmentLoadingBySlotId?.[
+                                slot.id
+                            ]
+                    );
+    
+                hcButton.disabled = isUpdating;
+                scButton.disabled = isUpdating;
+                removeButton.disabled = isUpdating;
+    
+                hcButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+    
+                        const succeeded =
+                            await updateQSlotCommitment({
+                                qSlotId: slot.id,
+                                memberId:
+                                    commitment.memberId,
+                                commitmentType: "hc",
+                            });
+    
+                        if (succeeded) {
+                            clearCommitmentEditor();
+                        
+                            if (state.currentView === "dashboard") {
+                                renderApp();
+                            }
+                        }
+                    }
+                );
+    
+                scButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+    
+                        const succeeded =
+                            await updateQSlotCommitment({
+                                qSlotId: slot.id,
+                                memberId:
+                                    commitment.memberId,
+                                commitmentType: "sc",
+                            });
+    
+                        if (succeeded) {
+                            clearCommitmentEditor();
+                        
+                            if (state.currentView === "dashboard") {
+                                renderApp();
+                            }
+                        }
+                    }
+                );
+    
+                removeButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+    
+                        const succeeded =
+                            await updateQSlotCommitment({
+                                qSlotId: slot.id,
+                                memberId:
+                                    commitment.memberId,
+                                commitmentType: null,
+                            });
+    
+                        if (succeeded) {
+                            clearCommitmentEditor();
+                        
+                            if (state.currentView === "dashboard") {
+                                renderApp();
+                            }
+                        }
+                    }
+                );
+    
+                actions.append(
+                    hcButton,
+                    scButton,
+                    removeButton
+                );
+    
+                group.appendChild(actions);
+            }
+        });
+    
+        return group;
+    }
+
+    function createManagedCommitmentAdder(
+        slot,
+        commitments
+    ) {
+        const container =
+            document.createElement("div");
+    
+        container.classList.add(
+            "dashboard-commitment-add"
+        );
+    
+        const editorState =
+            getCommitmentEditorState();
+    
+        const isAdding =
+            editorState.slotId === slot.id &&
+            editorState.memberId === null;
+    
+        if (!isAdding) {
+            const addButton =
+                document.createElement("button");
+    
+            addButton.type = "button";
+    
+            addButton.classList.add(
+                "secondary-button",
+                "dashboard-commitment-add-button"
+            );
+    
+            addButton.textContent = "+ Add PAX";
+    
+            addButton.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+    
+                    setCommitmentEditorState({
+                        slotId: slot.id,
+                        memberId: null,
+                        searchTerm: "",
+                        selectedMemberId: null,
+                    });
+    
+                    renderApp();
+                }
+            );
+    
+            container.appendChild(addButton);
+    
+            return container;
+        }
+    
+        const participantDirectory =
+            getCommitmentParticipantDirectory();
+    
+        const selectedMember =
+            participantDirectory.find(
+                member =>
+                    member.id ===
+                    editorState.selectedMemberId
+            );
+    
+        /*
+         * Once a member is selected, hide the search field and
+         * search results entirely. Show one compact selection row.
+         */
+        if (selectedMember) {
+            const selectedRow =
+                document.createElement("div");
+    
+            selectedRow.classList.add(
+                "dashboard-commitment-add-selected"
+            );
+    
+            const selectedName =
+                document.createElement("div");
+    
+            selectedName.classList.add(
+                "dashboard-commitment-selected-name"
+            );
+    
+            selectedName.textContent =
+                selectedMember.paxName ||
+                selectedMember.realName ||
+                "Selected PAX";
+    
+            const actions =
+                document.createElement("div");
+    
+            actions.classList.add(
+                "dashboard-commitment-add-actions"
+            );
+    
+            const hcButton =
+                document.createElement("button");
+    
+            hcButton.type = "button";
+            hcButton.textContent = "HC";
+    
+            hcButton.classList.add(
+                "dashboard-commitment-editor-choice"
+            );
+    
+            const scButton =
+                document.createElement("button");
+    
+            scButton.type = "button";
+            scButton.textContent = "SC";
+    
+            scButton.classList.add(
+                "dashboard-commitment-editor-choice"
+            );
+    
+            const isUpdating =
+                Boolean(
+                    state
+                        .qSlotCommitmentLoadingBySlotId?.[
+                            slot.id
+                        ]
+                );
+    
+            hcButton.disabled = isUpdating;
+            scButton.disabled = isUpdating;
+    
+            hcButton.addEventListener(
+                "click",
+                async event => {
+                    event.stopPropagation();
+    
+                    const succeeded =
+                        await updateQSlotCommitment({
+                            qSlotId: slot.id,
+                            memberId:
+                                selectedMember.id,
+                            commitmentType: "hc",
+                        });
+    
+                    if (succeeded) {
+                        clearCommitmentEditor();
+    
+                        if (
+                            state.currentView ===
+                            "dashboard"
+                        ) {
+                            renderApp();
+                        }
+                    }
+                }
+            );
+    
+            scButton.addEventListener(
+                "click",
+                async event => {
+                    event.stopPropagation();
+    
+                    const succeeded =
+                        await updateQSlotCommitment({
+                            qSlotId: slot.id,
+                            memberId:
+                                selectedMember.id,
+                            commitmentType: "sc",
+                        });
+    
+                    if (succeeded) {
+                        clearCommitmentEditor();
+    
+                        if (
+                            state.currentView ===
+                            "dashboard"
+                        ) {
+                            renderApp();
+                        }
+                    }
+                }
+            );
+    
+            actions.append(
+                hcButton,
+                scButton
+            );
+    
+            selectedRow.append(
+                selectedName,
+                actions
+            );
+    
+            const changeButton =
+                document.createElement("button");
+    
+            changeButton.type = "button";
+    
+            changeButton.classList.add(
+                "secondary-button",
+                "dashboard-commitment-change-selection"
+            );
+    
+            changeButton.textContent =
+                "Change selection";
+    
+            changeButton.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+    
+                    setCommitmentEditorState({
+                        slotId: slot.id,
+                        memberId: null,
+                        searchTerm: "",
+                        selectedMemberId: null,
+                    });
+    
+                    renderApp();
+                }
+            );
+    
+            const cancelButton =
+                document.createElement("button");
+    
+            cancelButton.type = "button";
+    
+            cancelButton.classList.add(
+                "secondary-button",
+                "dashboard-commitment-add-cancel"
+            );
+    
+            cancelButton.textContent = "Cancel";
+    
+            cancelButton.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+    
+                    clearCommitmentEditor();
+                    renderApp();
+                }
+            );
+    
+            container.append(
+                selectedRow,
+                changeButton,
+                cancelButton
+            );
+    
+            return container;
+        }
+    
+        /*
+         * Search mode
+         */
+    
+        const search =
+            document.createElement("input");
+    
+        search.type = "search";
+        search.placeholder = "Search PAX...";
+        search.autocomplete = "off";
+    
+        search.classList.add(
+            "dashboard-commitment-search"
+        );
+    
+        search.value =
+            editorState.searchTerm || "";
+    
+        const committedMemberIds =
+            new Set(
+                commitments.map(
+                    commitment =>
+                        commitment.memberId
+                )
+            );
+    
+        const normalizedSearch =
+            search.value
+                .trim()
+                .toLowerCase();
+    
+        const searchResults =
+            participantDirectory
+                .filter(member => {
+                    if (!member?.id) {
+                        return false;
+                    }
+    
+                    if (
+                        committedMemberIds.has(
+                            member.id
+                        )
+                    ) {
+                        return false;
+                    }
+    
+                    if (!normalizedSearch) {
+                        return false;
+                    }
+    
+                    const searchableText = [
+                        member.paxName,
+                        member.realName,
+                    ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase();
+    
+                    return searchableText.includes(
+                        normalizedSearch
+                    );
+                })
+                .sort((a, b) =>
+                    (
+                        a.paxName ||
+                        a.realName ||
+                        ""
+                    ).localeCompare(
+                        b.paxName ||
+                        b.realName ||
+                        ""
+                    )
+                )
+                .slice(0, 8);
+    
+        search.addEventListener(
+            "input",
+            event => {
+                setCommitmentEditorState({
+                    slotId: slot.id,
+                    memberId: null,
+                    searchTerm:
+                        event.target.value,
+                    selectedMemberId: null,
+                });
+    
+                renderApp();
+            }
+        );
+    
+        const results =
+            document.createElement("div");
+    
+        results.classList.add(
+            "dashboard-commitment-search-results"
+        );
+    
+        if (
+            normalizedSearch &&
+            searchResults.length === 0
+        ) {
+            const empty =
+                document.createElement("div");
+    
+            empty.classList.add(
+                "stats-line",
+                "dashboard-commitment-search-empty"
+            );
+    
+            empty.textContent =
+                "No matching PAX found.";
+    
+            results.appendChild(empty);
+        }
+    
+        searchResults.forEach(member => {
+            const resultButton =
+                document.createElement("button");
+    
+            resultButton.type = "button";
+    
+            resultButton.classList.add(
+                "dashboard-commitment-search-result"
+            );
+    
+            const memberName =
+                member.paxName ||
+                member.realName ||
+                "Unknown PAX";
+    
+            resultButton.textContent =
+                memberName;
+    
+            resultButton.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+    
+                    setCommitmentEditorState({
+                        slotId: slot.id,
+                        memberId: null,
+                        searchTerm: "",
+                        selectedMemberId:
+                            member.id,
+                    });
+    
+                    renderApp();
+                }
+            );
+    
+            results.appendChild(resultButton);
+        });
+    
+        const cancelButton =
+            document.createElement("button");
+    
+        cancelButton.type = "button";
+    
+        cancelButton.classList.add(
+            "secondary-button",
+            "dashboard-commitment-add-cancel"
+        );
+    
+        cancelButton.textContent = "Cancel";
+    
+        cancelButton.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+    
+                clearCommitmentEditor();
+                renderApp();
+            }
+        );
+    
+        container.append(
+            search,
+            results,
+            cancelButton
+        );
+    
+        queueMicrotask(() => {
+            const activeEditor =
+                getCommitmentEditorState();
+    
+            if (
+                activeEditor.slotId === slot.id &&
+                activeEditor.memberId === null &&
+                !activeEditor.selectedMemberId
+            ) {
+                search.focus();
+    
+                const valueLength =
+                    search.value.length;
+    
+                search.setSelectionRange(
+                    valueLength,
+                    valueLength
+                );
+            }
+        });
+    
+        return container;
+    }
+
+    async function updateQSlotCommitment({
+        qSlotId,
+        memberId,
+        commitmentType,
+        toggleCurrent = false,
+    }) {
+        if (!qSlotId || !memberId) {
+            showToast(
+                "A Q slot and PAX are required.",
+                "error"
+            );
+    
+            return false;
+        }
+
+        if (
+            state.qSlotCommitmentLoadingBySlotId?.[
+                qSlotId
+            ]
+        ) {
+            return false;
+        }
+    
+        const currentSummary =
+            state.qSlotCommitmentSummariesBySlotId?.[
+                qSlotId
+            ] || {
+                qSlotId,
+                hcCount: 0,
+                scCount: 0,
+                myCommitment: null,
+            };
+    
+        const loadedCommitments =
+            state.qSlotCommitmentsBySlotId?.[
+                qSlotId
+            ];
+    
+        const existingCommitment =
+            Array.isArray(loadedCommitments)
+                ? loadedCommitments.find(
+                    commitment =>
+                        commitment.memberId === memberId
+                )
+                : null;
+    
+        const previousCommitment =
+            memberId === state.currentUserMemberId
+                ? (
+                    existingCommitment
+                        ?.commitmentType ||
+                    currentSummary.myCommitment ||
+                    null
+                )
+                : (
+                    existingCommitment
+                        ?.commitmentType ||
+                    null
+                );
+    
+        const nextCommitment =
+            toggleCurrent &&
+            previousCommitment === commitmentType
+                ? null
+                : commitmentType;
+    
+        state.qSlotCommitmentLoadingBySlotId = {
+            ...(state.qSlotCommitmentLoadingBySlotId || {}),
+            [qSlotId]: true,
+        };
+        
+        if (
+            state.currentView ===
+            "dashboard"
+        ) {
+            renderApp();
+        }
+        
+        try {
+            await setQSlotCommitment({
+                qSlotId,
+                memberId,
+                commitmentType: nextCommitment,
+            });
+    
+            let hcCount =
+                Number(currentSummary.hcCount || 0);
+    
+            let scCount =
+                Number(currentSummary.scCount || 0);
+    
+            if (previousCommitment === "hc") {
+                hcCount = Math.max(0, hcCount - 1);
+            }
+    
+            if (previousCommitment === "sc") {
+                scCount = Math.max(0, scCount - 1);
+            }
+    
+            if (nextCommitment === "hc") {
+                hcCount += 1;
+            }
+    
+            if (nextCommitment === "sc") {
+                scCount += 1;
+            }
+    
+            const isCurrentUser =
+                memberId === state.currentUserMemberId;
+    
+            state.qSlotCommitmentSummariesBySlotId = {
+                ...(state.qSlotCommitmentSummariesBySlotId || {}),
+    
+                [qSlotId]: {
+                    ...currentSummary,
+                    qSlotId,
+                    hcCount,
+                    scCount,
+                    myCommitment:
+                        isCurrentUser
+                            ? nextCommitment
+                            : currentSummary.myCommitment,
+                },
+            };
+    
+            if (Array.isArray(loadedCommitments)) {
+                const commitmentsWithoutMember =
+                    loadedCommitments.filter(
+                        commitment =>
+                            commitment.memberId !== memberId
+                    );
+    
+                state.qSlotCommitmentsBySlotId = {
+                    ...(state.qSlotCommitmentsBySlotId || {}),
+    
+                    [qSlotId]:
+                        nextCommitment
+                            ? [
+                                ...commitmentsWithoutMember,
+                                {
+                                    qSlotId,
+                                    memberId,
+                                    commitmentType:
+                                        nextCommitment,
+                                    source:
+                                        isCurrentUser
+                                            ? "self"
+                                            : "leader",
+                                },
+                            ]
+                            : commitmentsWithoutMember,
+                };
+            }
+    
+            const member =
+                getCommitmentParticipantDirectory().find(
+                    candidate =>
+                        candidate.id === memberId
+                );
+    
+            const memberName =
+                member?.paxName ||
+                member?.realName ||
+                "PAX";
+    
+            showToast(
+                nextCommitment === "hc"
+                    ? `${memberName} added as a Hard Commit.`
+                    : nextCommitment === "sc"
+                        ? `${memberName} added as a Soft Commit.`
+                        : `${memberName}'s commitment cleared.`,
+                "success"
+            );
+    
+            return true;
+        } catch (error) {
+            console.error(
+                "Unable to update commitment:",
+                {
+                    qSlotId,
+                    memberId,
+                    commitmentType:
+                        nextCommitment,
+                    error,
+                }
+            );
+    
+            showToast(
+                "Unable to update commitment.",
+                "error"
+            );
+    
+            return false;
+        } finally {
+            state.qSlotCommitmentLoadingBySlotId = {
+                ...(state.qSlotCommitmentLoadingBySlotId || {}),
+                [qSlotId]: false,
+            };
+    
+            if (
+                state.currentView ===
+                "dashboard"
+            ) {
+                renderApp();
+            }
+        }
+    }
+    
+    async function updateMyQSlotCommitment(
+        qSlotId,
+        commitmentType
+    ) {
+        if (!state.currentUserMemberId) {
+            showToast(
+                "Your account is not linked to a PAX record.",
+                "error"
+            );
+    
+            return;
+        }
+    
+        await updateQSlotCommitment({
+            qSlotId,
+            memberId:
+                state.currentUserMemberId,
+            commitmentType,
+            toggleCurrent: true,
+        });
+    }
+
     const activeExecution = getActiveWorkoutExecution();
     const resumeWorkoutSection = renderResumeWorkoutSection(activeExecution);
 
@@ -844,14 +2304,21 @@ export function renderDashboard() {
         const isPastTodayWorkout = isTodayQPastWorkoutTime(nextQSlot);
 
         dashboardCtaSection = document.createElement("div");
-        dashboardCtaSection.classList.add("section");
+        dashboardCtaSection.classList.add(
+            "section",
+            "dashboard-hero-section"
+        );
 
         const nextQHeading = document.createElement("div");
         nextQHeading.classList.add("detail-label");
         nextQHeading.textContent = "My Next Q";
 
         const nextQCard = document.createElement("div");
-        nextQCard.classList.add("member-card", "dashboard-next-q-card");
+        nextQCard.classList.add(
+            "member-card",
+            "dashboard-next-q-card",
+            "dashboard-hero-card"
+        );
 
         const nextQCardContent = document.createElement("div");
 
@@ -1157,14 +2624,22 @@ export function renderDashboard() {
 
     function renderNoUpcomingQSection() {
         const section = document.createElement("div");
-        section.classList.add("section");
+        section.classList.add(
+            "section",
+            "dashboard-hero-section",
+            "dashboard-empty-hero"
+        );
     
         const heading = document.createElement("div");
         heading.classList.add("detail-label");
         heading.textContent = "Next Action";
     
         const card = document.createElement("div");
-        card.classList.add("member-card", "dashboard-next-q-card");
+        card.classList.add(
+            "member-card",
+            "dashboard-next-q-card",
+            "dashboard-hero-card"
+        );
     
         const content = document.createElement("div");
     
@@ -1209,244 +2684,1301 @@ export function renderDashboard() {
         return section;
     }
 
+    function renderTomorrowCommitmentsSection() {
+        if (tomorrowQSlots.length === 0) {
+            return null;
+        }
+
+        const isSectionExpanded =
+            Boolean(
+                state.dashboardTomorrowCommitmentsExpanded
+    );
+    
+        const section =
+            document.createElement("div");
+    
+        section.classList.add(
+            "section",
+            "dashboard-commitments-section"
+        );
+    
+        const headingButton =
+            document.createElement("button");
+
+        headingButton.type = "button";
+
+        headingButton.classList.add(
+            "dashboard-commitments-heading"
+        );
+
+        headingButton.setAttribute(
+            "aria-expanded",
+            String(isSectionExpanded)
+        );
+
+        if (isSectionExpanded) {
+            headingButton.classList.add("expanded");
+        }
+
+        const headingText =
+            document.createElement("div");
+
+        headingText.classList.add(
+            "dashboard-commitments-heading-text"
+        );
+
+        const eyebrow =
+            document.createElement("div");
+
+        eyebrow.classList.add(
+            "detail-label",
+            "dashboard-commitments-eyebrow"
+        );
+
+        eyebrow.textContent = "Tomorrow";
+
+        const summary =
+            document.createElement("div");
+
+        summary.classList.add(
+            "dashboard-commitments-summary"
+        );
+
+        summary.textContent =
+            `${tomorrowQSlots.length} ${
+                tomorrowQSlots.length === 1
+                    ? "beatdown"
+                    : "beatdowns"
+            } available`;
+
+        const helper =
+            document.createElement("div");
+
+        helper.classList.add(
+            "dashboard-commitments-helper"
+        );
+
+        helper.textContent =
+            isSectionExpanded
+                ? "Choose an AO and set your commitment."
+                : "Choose where you're posting";
+
+        const sectionChevron =
+            document.createElement("span");
+
+        sectionChevron.classList.add(
+            "dashboard-commitments-section-chevron"
+        );
+
+        sectionChevron.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        sectionChevron.textContent =
+            isSectionExpanded ? "⌃" : "›";
+
+        headingText.append(
+            eyebrow,
+            summary,
+            helper
+        );
+
+        headingButton.append(
+            headingText,
+            sectionChevron
+        );
+
+        headingButton.addEventListener(
+            "click",
+            () => {
+                state.dashboardTomorrowCommitmentsExpanded =
+                    !state.dashboardTomorrowCommitmentsExpanded;
+
+                if (
+                    !state.dashboardTomorrowCommitmentsExpanded
+                ) {
+                    state.dashboardExpandedCommitmentSlotId =
+                        null;
+
+                    clearCommitmentEditor();
+                }
+
+                renderApp();
+            }
+        );
+    
+        const list =
+            document.createElement("div");
+    
+        list.classList.add(
+            "dashboard-commitment-list"
+        );
+    
+        section.appendChild(
+            headingButton
+        );
+        
+        if (!isSectionExpanded) {
+            return section;
+        }
+        
+        section.appendChild(list);
+    
+        tomorrowQSlots.forEach(slot => {
+            const ao = state.aos.find(
+                candidate =>
+                    candidate.id === slot.aoId
+            );
+    
+            const q = state.members.find(
+                member =>
+                    member.id === slot.qUserId
+            );
+    
+            const summary =
+                state
+                    .qSlotCommitmentSummariesBySlotId?.[
+                        slot.id
+                    ];
+    
+            const isUpdating =
+                Boolean(
+                    state
+                        .qSlotCommitmentLoadingBySlotId?.[
+                            slot.id
+                        ]
+                );
+    
+            const isExpanded =
+                state.dashboardExpandedCommitmentSlotId ===
+                slot.id;
+    
+            const detailsAreLoading =
+                Boolean(
+                    state
+                        .qSlotCommitmentDetailsLoadingBySlotId?.[
+                            slot.id
+                        ]
+                );
+    
+            const detailsFailed =
+                Boolean(
+                    state
+                        .qSlotCommitmentDetailsErrorBySlotId?.[
+                            slot.id
+                        ]
+                );
+    
+            const commitments =
+                state.qSlotCommitmentsBySlotId?.[
+                    slot.id
+                ];
+    
+            const row =
+                document.createElement("div");
+    
+            row.classList.add(
+                "dashboard-commitment-row"
+            );
+    
+            if (isExpanded) {
+                row.classList.add("expanded");
+            }
+    
+            const summaryRow =
+                document.createElement("div");
+    
+            summaryRow.classList.add(
+                "dashboard-commitment-summary-row"
+            );
+    
+            const identity =
+                document.createElement("button");
+    
+            identity.type = "button";
+    
+            identity.classList.add(
+                "dashboard-commitment-identity"
+            );
+    
+            identity.setAttribute(
+                "aria-expanded",
+                String(isExpanded)
+            );
+    
+            const title =
+                document.createElement("div");
+    
+            title.classList.add(
+                "dashboard-commitment-ao"
+            );
+    
+            title.textContent =
+                ao?.name || "Unknown AO";
+    
+            const displayTime =
+                getSlotDisplayTime(slot, ao);
+    
+            const meta =
+                document.createElement("div");
+    
+            meta.classList.add(
+                "dashboard-commitment-meta"
+            );
+    
+            meta.textContent = [
+                displayTime || null,
+                q?.paxName ||
+                    q?.realName ||
+                    "Q Assigned",
+            ]
+                .filter(Boolean)
+                .join(" · ");
+    
+            identity.append(
+                title,
+                meta
+            );
+    
+            const controls =
+                document.createElement("div");
+    
+            controls.classList.add(
+                "dashboard-commitment-inline-controls"
+            );
+    
+            const hcButton =
+                document.createElement("button");
+    
+            hcButton.type = "button";
+    
+            hcButton.classList.add(
+                "dashboard-commitment-choice",
+                "dashboard-commitment-choice-hc"
+            );
+    
+            hcButton.textContent =
+                summary
+                    ? `HC ${summary.hcCount}`
+                    : "HC —";
+    
+            if (summary?.myCommitment === "hc") {
+                hcButton.classList.add("selected");
+            }
+    
+            hcButton.disabled =
+                isUpdating || !summary;
+    
+            hcButton.setAttribute(
+                "aria-pressed",
+                String(
+                    summary?.myCommitment === "hc"
+                )
+            );
+    
+            hcButton.addEventListener(
+                "click",
+                async event => {
+                    event.stopPropagation();
+    
+                    await updateMyQSlotCommitment(
+                        slot.id,
+                        "hc"
+                    );
+                }
+            );
+    
+            const scButton =
+                document.createElement("button");
+    
+            scButton.type = "button";
+    
+            scButton.classList.add(
+                "dashboard-commitment-choice",
+                "dashboard-commitment-choice-sc"
+            );
+    
+            scButton.textContent =
+                summary
+                    ? `SC ${summary.scCount}`
+                    : "SC —";
+    
+            if (summary?.myCommitment === "sc") {
+                scButton.classList.add("selected");
+            }
+    
+            scButton.disabled =
+                isUpdating || !summary;
+    
+            scButton.setAttribute(
+                "aria-pressed",
+                String(
+                    summary?.myCommitment === "sc"
+                )
+            );
+    
+            scButton.addEventListener(
+                "click",
+                async event => {
+                    event.stopPropagation();
+    
+                    await updateMyQSlotCommitment(
+                        slot.id,
+                        "sc"
+                    );
+                }
+            );
+    
+            const expandButton =
+                document.createElement("button");
+    
+            expandButton.type = "button";
+    
+            expandButton.classList.add(
+                "dashboard-commitment-expand-button"
+            );
+    
+            expandButton.setAttribute(
+                "aria-expanded",
+                String(isExpanded)
+            );
+    
+            expandButton.setAttribute(
+                "aria-label",
+                isExpanded
+                    ? `Hide commitments for ${ao?.name || "this AO"}`
+                    : `Show commitments for ${ao?.name || "this AO"}`
+            );
+    
+            expandButton.textContent =
+                isExpanded ? "⌃" : "›";
+    
+            const toggleExpanded =
+                async () => {
+                    const willExpand =
+                        state
+                            .dashboardExpandedCommitmentSlotId !==
+                        slot.id;
+    
+                    state.dashboardExpandedCommitmentSlotId =
+                        willExpand
+                            ? slot.id
+                            : null;
+
+                    clearCommitmentEditor();
+    
+                    renderApp();
+    
+                    if (willExpand) {
+                        const nextCommitments = {
+                            ...(
+                                state.qSlotCommitmentsBySlotId ||
+                                {}
+                            ),
+                        };
+                    
+                        delete nextCommitments[slot.id];
+                    
+                        state.qSlotCommitmentsBySlotId =
+                            nextCommitments;
+                    
+                        await loadCommitmentDetailsForSlot(
+                            slot.id
+                        );
+                    }
+                };
+    
+            identity.addEventListener(
+                "click",
+                toggleExpanded
+            );
+    
+            expandButton.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+                    toggleExpanded();
+                }
+            );
+    
+            controls.append(
+                hcButton,
+                scButton,
+                expandButton
+            );
+    
+            summaryRow.append(
+                identity,
+                controls
+            );
+    
+            row.appendChild(summaryRow);
+    
+            if (isExpanded) {
+                const expandedDetails =
+                    document.createElement("div");
+    
+                expandedDetails.classList.add(
+                    "dashboard-commitment-expanded"
+                );
+    
+                if (detailsAreLoading) {
+                    const loading =
+                        document.createElement("div");
+    
+                    loading.classList.add("stats-line");
+                    loading.textContent =
+                        "Loading commitments...";
+    
+                    expandedDetails.appendChild(loading);
+                } else if (detailsFailed) {
+                    const failed =
+                        document.createElement("div");
+    
+                    failed.classList.add("stats-line");
+                    failed.textContent =
+                        "Commitments could not be loaded.";
+    
+                    const retryButton =
+                        document.createElement("button");
+    
+                    retryButton.type = "button";
+    
+                    retryButton.classList.add(
+                        "secondary-button",
+                        "small-action-button"
+                    );
+    
+                    retryButton.textContent = "Retry";
+    
+                    retryButton.addEventListener(
+                        "click",
+                        async event => {
+                            event.stopPropagation();
+    
+                            const nextDetails = {
+                                ...(
+                                    state
+                                        .qSlotCommitmentsBySlotId ||
+                                    {}
+                                ),
+                            };
+    
+                            delete nextDetails[slot.id];
+    
+                            state.qSlotCommitmentsBySlotId =
+                                nextDetails;
+    
+                            await loadCommitmentDetailsForSlot(
+                                slot.id
+                            );
+                        }
+                    );
+    
+                    expandedDetails.append(
+                        failed,
+                        retryButton
+                    );
+                } else if (
+                    Array.isArray(commitments) &&
+                    commitments.length === 0
+                ) {
+                    const empty =
+                        document.createElement("div");
+                
+                    empty.classList.add(
+                        "stats-line",
+                        "dashboard-commitment-empty"
+                    );
+                
+                    empty.textContent =
+                        "No commitments yet.";
+                
+                    expandedDetails.appendChild(empty);
+                
+                    if (
+                        canManageCommitmentsForSlot(slot)
+                    ) {
+                        expandedDetails.appendChild(
+                            createManagedCommitmentAdder(
+                                slot,
+                                commitments
+                            )
+                        );
+                    }
+                } else if (
+                    Array.isArray(commitments)
+                ) {
+                    const hardCommits =
+                        commitments.filter(
+                            commitment =>
+                                commitment.commitmentType ===
+                                "hc"
+                        );
+    
+                    const softCommits =
+                        commitments.filter(
+                            commitment =>
+                                commitment.commitmentType ===
+                                "sc"
+                        );
+    
+                    if (hardCommits.length > 0) {
+                        expandedDetails.appendChild(
+                            createCommitmentNameGroup(
+                                "Hard Commits",
+                                commitments,
+                                "hc",
+                                slot
+                            )
+                        );
+                    }
+    
+                    if (softCommits.length > 0) {
+                        expandedDetails.appendChild(
+                            createCommitmentNameGroup(
+                                "Soft Commits",
+                                commitments,
+                                "sc",
+                                slot
+                            )
+                        );
+                    }
+
+                    if (
+                        canManageCommitmentsForSlot(slot)
+                    ) {
+                        expandedDetails.appendChild(
+                            createManagedCommitmentAdder(
+                                slot,
+                                commitments
+                            )
+                        );
+                    }
+                }
+    
+                row.appendChild(expandedDetails);
+            }
+    
+            list.appendChild(row);
+        });
+    
+        return section;
+    }
+
     function renderAnnouncementsSection() {
-        const announcements = state.announcements || [];
+        const announcements =
+            state.announcements || [];
     
         if (announcements.length === 0) {
             return null;
         }
     
-        const isExpanded = Boolean(state.dashboardAnnouncementsExpanded);
+        const section =
+            document.createElement("section");
     
-        const section = document.createElement("div");
         section.classList.add(
             "section",
-            "dashboard-announcements-section",
-            "compact-announcements-section"
+            "dashboard-announcements-section"
         );
     
-        const headerButton = document.createElement("button");
-        headerButton.type = "button";
-        headerButton.classList.add("announcement-toggle-row");
+        const header =
+            document.createElement("div");
     
-        const heading = document.createElement("div");
+        header.classList.add(
+            "dashboard-section-header"
+        );
+    
+        const heading =
+            document.createElement("div");
+    
         heading.classList.add("detail-label");
-        heading.textContent = `Announcements (${announcements.length})`;
+        heading.textContent = "Announcements";
     
-        const toggleText = document.createElement("div");
-        toggleText.classList.add("stats-line");
-        toggleText.textContent = isExpanded ? "Hide" : "Show";
+        const count =
+            document.createElement("div");
     
-        headerButton.append(heading, toggleText);
+        count.classList.add(
+            "dashboard-section-count"
+        );
     
-        headerButton.addEventListener("click", () => {
-            state.dashboardAnnouncementsExpanded = !state.dashboardAnnouncementsExpanded;
-        
-            if (!state.dashboardAnnouncementsExpanded) {
-                state.expandedDashboardAnnouncementId = null;
-            }
-        
-            renderApp();
-        });
+        count.textContent =
+            String(announcements.length);
     
-        const list = document.createElement("div");
-        list.classList.add("announcement-list");
+        header.append(
+            heading,
+            count
+        );
     
-        const visibleAnnouncements = isExpanded
-            ? announcements
-            : announcements.slice(0, 1);
+        const deck =
+            document.createElement("div");
     
-            visibleAnnouncements.forEach(announcement => {
-                const isAnnouncementExpanded =
-                    state.expandedDashboardAnnouncementId === announcement.id;
-            
-                const row = document.createElement("button");
-                row.type = "button";
-                row.classList.add("announcement-inline-row", "announcement-title-only-row");
-            
-                const title = document.createElement("div");
-                title.classList.add("member-name", "announcement-title");
-                title.textContent = announcement.title || "📣 Announcement";
-            
-                row.appendChild(title);
-            
-                row.addEventListener("click", () => {
-                    state.expandedDashboardAnnouncementId = isAnnouncementExpanded
-                        ? null
-                        : announcement.id;
-            
-                    renderApp();
-                });
-            
-                list.appendChild(row);
-            
-                if (isAnnouncementExpanded) {
-                    const body = document.createElement("div");
-                    body.classList.add("stats-line", "announcement-body", "announcement-expanded-body");
-                    body.textContent = announcement.body || "";
-                
-                    list.appendChild(body);
-                
-                    if (announcement.linkUrl) {
-                        const link = document.createElement("a");
-                        link.href = announcement.linkUrl;
-                        link.target = "_blank";
-                        link.rel = "noopener noreferrer";
-                        link.textContent = announcement.linkLabel || "Open Link";
-                        link.classList.add("secondary-button", "announcement-link-button");
-                
-                        list.appendChild(link);
-                    }
+        deck.classList.add(
+            "dashboard-card-deck",
+            "dashboard-announcements-deck"
+        );
+    
+        announcements.forEach(
+            announcement => {
+                const isExpanded =
+                    state
+                        .expandedDashboardAnnouncementId ===
+                    announcement.id;
+    
+                const card =
+                    document.createElement("article");
+    
+                card.classList.add(
+                    "dashboard-deck-card",
+                    "dashboard-announcement-v2-card"
+                );
+    
+                if (isExpanded) {
+                    card.classList.add("expanded");
                 }
-            });
     
-        section.append(headerButton, list);
+                const cardButton =
+                    document.createElement("button");
+    
+                cardButton.type = "button";
+    
+                cardButton.classList.add(
+                    "dashboard-announcement-v2-toggle"
+                );
+    
+                cardButton.setAttribute(
+                    "aria-expanded",
+                    String(isExpanded)
+                );
+    
+                const titleRow =
+                    document.createElement("div");
+
+                titleRow.classList.add(
+                    "dashboard-announcement-v2-title-row"
+                );
+
+                const title =
+                    document.createElement("div");
+
+                title.classList.add(
+                    "dashboard-announcement-v2-title"
+                );
+
+                title.textContent =
+                    announcement.title ||
+                    "Announcement";
+
+                const arrow =
+                    createIcon(
+                        isExpanded
+                            ? "chevronUp"
+                            : "chevronRight",
+                        "dashboard-announcement-v2-arrow"
+                    );
+
+                arrow.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+
+                titleRow.append(
+                    title,
+                    arrow
+                );
+    
+                const preview =
+                    document.createElement("div");
+    
+                preview.classList.add(
+                    "dashboard-announcement-v2-preview"
+                );
+    
+                preview.textContent =
+                    announcement.body ||
+                    "Tap to read more.";
+    
+                const actionLabel =
+                    document.createElement("div");
+    
+                actionLabel.classList.add(
+                    "dashboard-announcement-v2-action"
+                );
+    
+                actionLabel.textContent =
+                    isExpanded
+                        ? "Hide details"
+                        : "Read announcement";
+    
+                cardButton.append(
+                    titleRow,
+                    preview,
+                    actionLabel
+                );
+    
+                cardButton.addEventListener(
+                    "click",
+                    () => {
+                        state
+                            .expandedDashboardAnnouncementId =
+                            isExpanded
+                                ? null
+                                : announcement.id;
+    
+                        renderApp();
+                    }
+                );
+    
+                card.appendChild(cardButton);
+    
+                if (isExpanded) {
+                    const expanded =
+                        document.createElement("div");
+    
+                    expanded.classList.add(
+                        "dashboard-announcement-v2-expanded"
+                    );
+    
+                    const body =
+                        document.createElement("div");
+    
+                    body.classList.add(
+                        "dashboard-announcement-v2-body"
+                    );
+    
+                    body.textContent =
+                        announcement.body || "";
+    
+                    expanded.appendChild(body);
+    
+                    if (announcement.linkUrl) {
+                        const link =
+                            document.createElement("a");
+    
+                        link.href =
+                            announcement.linkUrl;
+    
+                        link.target = "_blank";
+    
+                        link.rel =
+                            "noopener noreferrer";
+    
+                        link.textContent =
+                            announcement.linkLabel ||
+                            "Open Link";
+    
+                        link.classList.add(
+                            "dashboard-announcement-v2-link"
+                        );
+    
+                        expanded.appendChild(link);
+                    }
+    
+                    card.appendChild(expanded);
+                }
+    
+                deck.appendChild(card);
+            }
+        );
+    
+        section.append(
+            header,
+            deck
+        );
     
         return section;
     }
 
     function renderMyUpcomingQs() {
-        const mySlots = myUpcomingQSlots.slice(1);
-
-        const section = document.createElement("div");
-        section.classList.add("section");
-
-        const heading = document.createElement("div");
-        heading.textContent = "My Qs";
+        const mySlots =
+            myUpcomingQSlots.slice(1);
+    
+        const section =
+            document.createElement("section");
+    
+        section.classList.add(
+            "section",
+            "dashboard-upcoming-qs-section"
+        );
+    
+        const header =
+            document.createElement("div");
+    
+        header.classList.add(
+            "dashboard-section-header"
+        );
+    
+        const heading =
+            document.createElement("div");
+    
         heading.classList.add("detail-label");
-        section.appendChild(heading); 
-
+        heading.textContent = "Upcoming Qs";
+    
+        header.appendChild(heading);
+    
+        section.appendChild(header);
+    
         if (mySlots.length === 0) {
-            const empty = document.createElement("div");
-            empty.classList.add("detail-value");
-            empty.textContent = "No other upcoming Qs."
+            const empty =
+                document.createElement("div");
+    
+            empty.classList.add(
+                "dashboard-upcoming-q-empty"
+            );
+    
+            const emptyTitle =
+                document.createElement("div");
+    
+            emptyTitle.classList.add(
+                "dashboard-upcoming-q-empty-title"
+            );
+    
+            emptyTitle.textContent =
+                "No other upcoming Qs";
+    
+            const emptyCopy =
+                document.createElement("div");
+    
+            emptyCopy.classList.add(
+                "stats-line"
+            );
+    
+            emptyCopy.textContent =
+                "Claim another spot when you're ready.";
+    
+            const claimButton =
+                document.createElement("button");
+    
+            claimButton.type = "button";
+    
+            claimButton.classList.add(
+                "secondary-button",
+                "dashboard-upcoming-q-empty-action"
+            );
+    
+            claimButton.textContent =
+                "View Q Signup";
+    
+            claimButton.addEventListener(
+                "click",
+                () => {
+                    navigateTo("qSignup");
+                }
+            );
+    
+            empty.append(
+                emptyTitle,
+                emptyCopy,
+                claimButton
+            );
+    
             section.appendChild(empty);
+    
             return section;
         }
-
+    
+        const deck =
+            document.createElement("div");
+    
+        deck.classList.add(
+            "dashboard-card-deck",
+            "dashboard-upcoming-q-deck"
+        );
+    
         mySlots.forEach(slot => {
-            const row = document.createElement("div");
-            row.classList.add("selected-summary-row");
-            row.style.cursor = "pointer";
-
-            row.addEventListener("click", () => {
-                const matchingWorkout = findMatchingPlannedWorkoutForSlot(slot);
-                const ao = state.aos.find(a => a.id === slot.aoId);
-
-                if (!matchingWorkout) {
-                    const newWorkout = createBlankWorkout({
-                        date: slot.date,
-                        aoId: ao?.id || slot.aoId || null,
-                        aoName: ao?.name || "",
-                        siteId: slot.siteId || null,
-                        qSlotId: slot.id,
-                    });
-                    
-                    savePlannerDraft(
-                        createNewPlannerDraft(newWorkout)
-                    );
-                    
-                    state.selectedPlannedWorkoutId = null;
-                    state.returnToViewAfterPlanner = "dashboard";
-                    state.returnToLaunchModeAfterPlanner = null;
-                    
-                    navigateTo("workoutPlanner");
-                } else {
-                    if (!matchingWorkout.isFinalized) {
-
+            const ao =
+                state.aos.find(
+                    candidate =>
+                        candidate.id === slot.aoId
+                );
+    
+            const matchingWorkout =
+                findMatchingPlannedWorkoutForSlot(
+                    slot
+                );
+    
+            const hasPlannedWorkout =
+                Boolean(matchingWorkout);
+    
+            const dateParts =
+                slot.date
+                    .split("-")
+                    .map(Number);
+    
+            const slotDate =
+                new Date(
+                    dateParts[0],
+                    dateParts[1] - 1,
+                    dateParts[2]
+                );
+    
+            const card =
+                document.createElement("article");
+    
+            card.classList.add(
+                "dashboard-deck-card",
+                "dashboard-upcoming-q-card"
+            );
+    
+            card.tabIndex = 0;
+    
+            card.setAttribute(
+                "role",
+                "button"
+            );
+    
+            const openSlot =
+                () => {
+                    if (!matchingWorkout) {
+                        const newWorkout =
+                            createBlankWorkout({
+                                date: slot.date,
+                                aoId:
+                                    ao?.id ||
+                                    slot.aoId ||
+                                    null,
+    
+                                aoName:
+                                    ao?.name ||
+                                    "",
+    
+                                siteId:
+                                    slot.siteId ||
+                                    null,
+    
+                                qSlotId:
+                                    slot.id,
+                            });
+    
                         savePlannerDraft(
-                            createExistingPlannerDraft(matchingWorkout)
+                            createNewPlannerDraft(
+                                newWorkout
+                            )
                         );
-                    
-                        state.selectedPlannedWorkoutId = null;
-                        state.returnToViewAfterPlanner = "dashboard";
-                        state.returnToLaunchModeAfterPlanner = null;
-                    
-                        navigateTo("workoutPlanner");
+    
+                        state.selectedPlannedWorkoutId =
+                            null;
+    
+                        state.returnToViewAfterPlanner =
+                            "dashboard";
+    
+                        state.returnToLaunchModeAfterPlanner =
+                            null;
+    
+                        navigateTo(
+                            "workoutPlanner"
+                        );
+    
                         return;
                     }
-                
-                    state.selectedPlannedWorkoutId = matchingWorkout.id;
+    
+                    if (!matchingWorkout.isFinalized) {
+                        savePlannerDraft(
+                            createExistingPlannerDraft(
+                                matchingWorkout
+                            )
+                        );
+    
+                        state.selectedPlannedWorkoutId =
+                            null;
+    
+                        state.returnToViewAfterPlanner =
+                            "dashboard";
+    
+                        state.returnToLaunchModeAfterPlanner =
+                            null;
+    
+                        navigateTo(
+                            "workoutPlanner"
+                        );
+    
+                        return;
+                    }
+    
+                    state.selectedPlannedWorkoutId =
+                        matchingWorkout.id;
+    
                     state.plannedWorkoutLaunchMode =
-                        slot.date === today ? "execution" : null;
-                
-                    navigateTo("plannedWorkoutDetail");
+                        slot.date === today
+                            ? "execution"
+                            : null;
+    
+                    navigateTo(
+                        "plannedWorkoutDetail"
+                    );
+                };
+    
+            card.addEventListener(
+                "click",
+                openSlot
+            );
+    
+            card.addEventListener(
+                "keydown",
+                event => {
+                    if (
+                        event.key !== "Enter" &&
+                        event.key !== " "
+                    ) {
+                        return;
+                    }
+    
+                    event.preventDefault();
+                    openSlot();
                 }
-            });
-
-            const ao = state.aos.find(a => a.id === slot.aoId);
-            const matchingWorkout = findMatchingPlannedWorkoutForSlot(slot);
-            const hasPlannedWorkout = Boolean(matchingWorkout);
-
-            const title = document.createElement("div");
-            title.classList.add("member-name");
-            title.textContent = `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
-
-            const status = document.createElement("div");
+            );
+    
+            const topRow =
+                document.createElement("div");
+    
+            topRow.classList.add(
+                "dashboard-upcoming-q-top-row"
+            );
+    
+            const dateBlock =
+                document.createElement("div");
+    
+            dateBlock.classList.add(
+                "dashboard-upcoming-q-date"
+            );
+    
+            const month =
+                document.createElement("div");
+    
+            month.classList.add(
+                "dashboard-upcoming-q-month"
+            );
+    
+            month.textContent =
+                slotDate
+                    .toLocaleDateString(
+                        undefined,
+                        {
+                            month: "short",
+                        }
+                    )
+                    .toUpperCase();
+    
+            const day =
+                document.createElement("div");
+    
+            day.classList.add(
+                "dashboard-upcoming-q-day"
+            );
+    
+            day.textContent =
+                String(
+                    slotDate.getDate()
+                );
+    
+            dateBlock.append(
+                month,
+                day
+            );
+    
+            const arrow =
+                document.createElement("span");
+    
+            arrow.classList.add(
+                "dashboard-upcoming-q-arrow"
+            );
+    
+            arrow.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+    
+            arrow.textContent = "›";
+    
+            topRow.append(
+                dateBlock,
+                arrow
+            );
+    
+            const weekday =
+                document.createElement("div");
+    
+            weekday.classList.add(
+                "dashboard-upcoming-q-weekday"
+            );
+    
+            weekday.textContent =
+                slotDate.toLocaleDateString(
+                    undefined,
+                    {
+                        weekday: "long",
+                    }
+                );
+    
+            const aoName =
+                document.createElement("div");
+    
+            aoName.classList.add(
+                "dashboard-upcoming-q-ao"
+            );
+    
+            aoName.textContent =
+                ao?.name ||
+                "Unknown AO";
+    
+            const displayTime =
+                getSlotDisplayTime(
+                    slot,
+                    ao
+                );
+    
+            const meta =
+                document.createElement("div");
+    
+            meta.classList.add(
+                "dashboard-upcoming-q-meta"
+            );
+    
+            meta.textContent =
+                displayTime ||
+                "Time not set";
+    
+            const emphasisBadge =
+                createWorkoutEmphasisBadge(
+                    slot,
+                    ao
+                );
+    
+            if (emphasisBadge) {
+                emphasisBadge.classList.add(
+                    "dashboard-upcoming-q-emphasis"
+                );
+            }
+    
+            const status =
+                document.createElement("div");
+    
             status.classList.add(
                 "dashboard-status-pill",
-                getWorkoutReadinessClass(matchingWorkout),
+                getWorkoutReadinessClass(
+                    matchingWorkout
+                )
             );
-            status.textContent = hasPlannedWorkout 
-                ? getWorkoutReadinessLabel(matchingWorkout)
-                : "Needs BD";
-
-            const rowText = document.createElement("div");
-            rowText.classList.add("upcoming-q-row-text");
-            
-            const emphasisBadge = createWorkoutEmphasisBadge(slot, ao);
-            
-            rowText.append(title);
-            
-            if (emphasisBadge) {
-                emphasisBadge.classList.add("dashboard-q-emphasis");
-                rowText.appendChild(emphasisBadge);
-            }
-
-            const rowActions = document.createElement("div");
-            rowActions.classList.add("upcoming-q-row-actions");
-
-            const unclaimButton = document.createElement("button");
-            unclaimButton.classList.add("secondary-button", "small-action-button");
-            unclaimButton.textContent = "Unclaim";
-
-            unclaimButton.addEventListener("click", async (event) => {
-                event.stopPropagation();
-
-                const result = await unclaimQSlot(slot);
-
-                if (result?.success) {
-                    renderApp();
+    
+            status.textContent =
+                hasPlannedWorkout
+                    ? getWorkoutReadinessLabel(
+                        matchingWorkout
+                    )
+                    : "Needs BD";
+    
+            const footer =
+                document.createElement("div");
+    
+            footer.classList.add(
+                "dashboard-upcoming-q-footer"
+            );
+    
+            const actionLabel =
+                document.createElement("span");
+    
+            actionLabel.classList.add(
+                "dashboard-upcoming-q-action-label"
+            );
+    
+            actionLabel.textContent =
+                !matchingWorkout
+                    ? "Start planning"
+                    : !matchingWorkout.isFinalized
+                        ? "Continue planning"
+                        : "View workout";
+    
+            const unclaimButton =
+                document.createElement("button");
+    
+            unclaimButton.type = "button";
+    
+            unclaimButton.classList.add(
+                "secondary-button",
+                "dashboard-upcoming-q-unclaim"
+            );
+    
+            unclaimButton.textContent =
+                "Unclaim";
+    
+            unclaimButton.addEventListener(
+                "click",
+                async event => {
+                    event.stopPropagation();
+    
+                    const result =
+                        await unclaimQSlot(slot);
+    
+                    if (result?.success) {
+                        renderApp();
+                    }
                 }
-            });
-
-            rowActions.append(status, unclaimButton);
-            row.append(rowText, rowActions);
-
-            section.appendChild(row);
+            );
+    
+            footer.append(
+                actionLabel,
+                unclaimButton
+            );
+    
+            card.append(
+                topRow,
+                weekday,
+                aoName,
+                meta
+            );
+    
+            if (emphasisBadge) {
+                card.appendChild(
+                    emphasisBadge
+                );
+            }
+    
+            card.append(
+                status,
+                footer
+            );
+    
+            deck.appendChild(card);
         });
-
+    
+        section.appendChild(deck);
+    
         return section;
     }
 
-    const myUpcomingQsSection = renderMyUpcomingQs();
+    const tomorrowCommitmentsSection =
+        renderTomorrowCommitmentsSection();
 
-    const announcementsSection = renderAnnouncementsSection();
+    const myUpcomingQsSection =
+        renderMyUpcomingQs();
+
+    const announcementsSection =
+        renderAnnouncementsSection();
+
+    loadTomorrowCommitmentSummaries();
 
     function renderMyStatsSection() {
-        const memberId = state.currentUserMemberId;
-
+        const memberId =
+            state.currentUserMemberId;
+    
         if (!memberId) {
             return null;
         }
-
-        const memberStatsKey = `${state.currentRegionId}__${memberId}`;
-        const stats = state.memberDashboardStatsByMemberId?.[memberStatsKey] || null;
-        
+    
+        const memberStatsKey =
+            `${state.currentRegionId}__${memberId}`;
+    
+        const stats =
+            state
+                .memberDashboardStatsByMemberId?.[
+                    memberStatsKey
+                ] || null;
+    
         if (!stats) {
             const workspaceGeneration =
                 state.workspaceGeneration;
-
+    
             loadMemberDashboardStats(
                 state.currentRegionId,
                 memberId
@@ -1458,164 +3990,179 @@ export function renderDashboard() {
                     ) {
                         return;
                     }
-
+    
                     state.memberDashboardStatsByMemberId = {
-                        ...(state.memberDashboardStatsByMemberId || {}),
-                        [memberStatsKey]: loadedStats
+                        ...(
+                            state
+                                .memberDashboardStatsByMemberId ||
+                            {}
+                        ),
+    
+                        [memberStatsKey]:
+                            loadedStats,
                     };
-
-                    if (state.currentView === "dashboard") {
+    
+                    if (
+                        state.currentView ===
+                        "dashboard"
+                    ) {
                         renderApp();
                     }
                 })
                 .catch(error => {
-                    console.error("Failed to load member dashboard stats:", error);
+                    console.error(
+                        "Failed to load member dashboard stats:",
+                        error
+                    );
                 });
         }
-
-        const section = document.createElement("div");
-        section.classList.add("section");
-
-        const heading = document.createElement("div");
-        heading.classList.add("detail-label");
-        heading.textContent = "My Stats";
-
-        const card = document.createElement("div");
-        card.classList.add("member-card", "dashboard-stats-card");
-
-        const grid = document.createElement("div");
-        grid.classList.add("stats-grid");
-
-        function getDaysAgoLabel(dateString) {
-            if (!dateString) return "";
-        
-            const today = new Date();
-            const target = new Date(dateString);
-        
-            today.setHours(0, 0, 0, 0);
-            target.setHours(0, 0, 0, 0);
-        
-            const diffDays = Math.floor(
-                (today - target) / (1000 * 60 * 60 * 24)
-            );
-        
-            if (diffDays === 0) return "Today";
-            if (diffDays === 1) return "1 day ago";
-            return `${diffDays} days ago`;
-        }
-
-        const statItems = [
-            { label: "Posts", value: stats?.posts ?? "...", icon: "posts", action: "posts" },
-            { label: "Qs Led", value: stats?.qs ?? "...", icon: "qs", action: "qs" },
-            { 
-                label: "Last Post",
-                value: stats?.lastPostDate ? formatMonthDayYear(stats.lastPostDate) : "...",
-                subtext: stats?.lastPostDate ? getDaysAgoLabel(stats.lastPostDate) : "",
-                type: "date",
-                icon: "lastPost",
-                action: "lastPost"
+    
+        const section =
+            document.createElement("section");
+    
+        section.classList.add(
+            "section",
+            "dashboard-stats-section"
+        );
+    
+        const header =
+            document.createElement("div");
+    
+        header.classList.add(
+            "dashboard-section-header"
+        );
+    
+        const heading =
+            document.createElement("div");
+    
+        heading.classList.add(
+            "detail-label"
+        );
+    
+        heading.textContent =
+            "My Stats";
+    
+        const profileButton =
+            document.createElement("button");
+    
+        profileButton.type =
+            "button";
+    
+        profileButton.classList.add(
+            "dashboard-stats-profile-link"
+        );
+    
+        profileButton.textContent =
+            "View profile ›";
+    
+        profileButton.addEventListener(
+            "click",
+            () => {
+                if (!linkedMember) {
+                    return;
+                }
+    
+                state.selectedPaxId =
+                    linkedMember.id;
+    
+                navigateTo(
+                    "paxProfile"
+                );
+            }
+        );
+    
+        header.append(
+            heading,
+            profileButton
+        );
+    
+        const card =
+            document.createElement("div");
+    
+        card.classList.add(
+            "dashboard-stats-summary-card"
+        );
+    
+        const metricRow =
+            document.createElement("div");
+    
+        metricRow.classList.add(
+            "dashboard-stats-metric-row"
+        );
+    
+        const metrics = [
+            {
+                label: "Posts",
+                value:
+                    stats?.posts ??
+                    "—",
+                action: "posts",
             },
-            { 
-                label: "Last Q", 
-                value: stats?.lastQDate ? formatMonthDayYear(stats.lastQDate) : "...",
-                subtext: stats?.lastQDate ? getDaysAgoLabel(stats.lastQDate) : "",
-                type: "date",
-                icon: "qs", 
-                action:"lastQ" 
+            {
+                label: "Qs Led",
+                value:
+                    stats?.qs ??
+                    "—",
+                action: "qs",
             },
-
-            { label: "FNGs EH'd", value: stats?.fngsEh ?? "...", icon: "fngsEh" },
-
-            { 
-                label: "First Post",
-                value: stats?.firstPostDate ? formatMonthDayYear(stats.firstPostDate) : "...",
-                type: "date",
-                icon: "fngDate",
-                action: "firstPost"
+            {
+                label: "FNGs EH’d",
+                value:
+                    stats?.fngsEh ??
+                    "—",
+                action: null,
             },
         ];
-
-        async function hydrateMemberSessions(mode) {
+    
+        async function openMemberHistory(
+            mode
+        ) {
+            const cacheKey =
+                `${state.currentRegionId}__${memberId}__${mode}`;
+    
+            if (
+                !state
+                    .memberSessionsLoadedByMode?.[
+                        cacheKey
+                    ]
+            ) {
+                showToast(
+                    "Loading full history...",
+                    "info"
+                );
+            }
+    
             const requestRegionId =
                 state.currentRegionId;
-        
+    
             const requestGeneration =
                 state.workspaceGeneration;
-        
-            const cacheKey =
-                `${requestRegionId}__${memberId}__${mode}`;
-        
-            state.memberSessionsLoadedByMode =
-                state.memberSessionsLoadedByMode ||
-                {};
-        
-            const isRequestCurrent = () =>
-                requestGeneration ===
-                    state.workspaceGeneration &&
-                requestRegionId ===
-                    state.currentRegionId;
-        
-            if (
-                state.memberSessionsLoadedByMode[
-                    cacheKey
-                ]
-            ) {
-                return {
-                    status: "loaded",
-                    sessions:
-                        state.sessions.filter(
-                            session => {
-                                const isQ =
-                                    session.qIds?.includes(
-                                        memberId
-                                    );
-        
-                                const attended =
-                                    session.attendeeIds?.includes(
-                                        memberId
-                                    );
-        
-                                if (mode === "q") {
-                                    return isQ;
-                                }
-        
-                                if (
-                                    mode ===
-                                    "attended"
-                                ) {
-                                    return attended;
-                                }
-        
-                                return attended || isQ;
-                            }
-                        ),
-        
-                    loadedFromNetwork: false,
-                };
-            }
-        
+    
             const sessions =
                 await loadMemberSessions(
                     requestRegionId,
                     memberId,
                     mode
                 );
-        
-            if (!isRequestCurrent()) {
-                return {
-                    status: "stale",
-                    sessions: [],
-                    loadedFromNetwork: true,
-                };
+    
+            const isCurrent =
+                requestGeneration ===
+                    state.workspaceGeneration &&
+                requestRegionId ===
+                    state.currentRegionId;
+    
+            if (!isCurrent) {
+                return;
             }
-        
+    
             const existingIds =
                 new Set(
                     state.sessions.map(
-                        session => session.id
+                        session =>
+                            session.id
                     )
                 );
-        
+    
             const newSessions =
                 sessions.filter(
                     session =>
@@ -1623,394 +4170,271 @@ export function renderDashboard() {
                             session.id
                         )
                 );
-        
+    
             state.sessions = [
                 ...state.sessions,
                 ...newSessions,
             ];
-        
-            state.memberSessionsLoadedByMode[
-                cacheKey
-            ] = true;
-        
-            return {
-                status: "loaded",
-                sessions,
-                loadedFromNetwork: true,
+    
+            state.memberSessionsLoadedByMode = {
+                ...(
+                    state
+                        .memberSessionsLoadedByMode ||
+                    {}
+                ),
+    
+                [cacheKey]: true,
             };
+    
+            state.sessionHistoryFilterType =
+                mode;
+    
+            state.sessionHistoryAoFilter =
+                "";
+    
+            state.sessionHistorySearchTerm =
+                "";
+    
+            navigateTo(
+                "sessionHistory"
+            );
         }
-
-        async function loadDashboardSessionByDate(
-            date,
-            mode
-        ) {
-            const requestRegionId =
-                state.currentRegionId;
-        
-            const requestGeneration =
-                state.workspaceGeneration;
-        
-            const session =
-                await loadMemberSessionByDate(
-                    requestRegionId,
-                    memberId,
-                    date,
-                    mode
+    
+        metrics.forEach(metric => {
+            const metricElement =
+                metric.action
+                    ? document.createElement(
+                        "button"
+                    )
+                    : document.createElement(
+                        "div"
+                    );
+    
+            if (metric.action) {
+                metricElement.type =
+                    "button";
+            }
+    
+            metricElement.classList.add(
+                "dashboard-stats-metric"
+            );
+    
+            const value =
+                document.createElement("div");
+    
+            value.classList.add(
+                "dashboard-stats-metric-value"
+            );
+    
+            value.textContent =
+                metric.value;
+    
+            const label =
+                document.createElement("div");
+    
+            label.classList.add(
+                "dashboard-stats-metric-label"
+            );
+    
+            label.textContent =
+                metric.label;
+    
+            metricElement.append(
+                value,
+                label
+            );
+    
+            if (
+                metric.action ===
+                "posts"
+            ) {
+                metricElement.addEventListener(
+                    "click",
+                    () => {
+                        openMemberHistory(
+                            "attended"
+                        );
+                    }
                 );
-        
-            const isRequestCurrent =
-                requestGeneration ===
-                    state.workspaceGeneration &&
-                requestRegionId ===
-                    state.currentRegionId;
-        
-            if (!isRequestCurrent) {
-                return {
-                    status: "stale",
-                    session: null,
-                };
             }
-        
-            return {
-                status: "loaded",
-                session,
-            };
-        }
-
-        statItems.forEach(item => {
-            const tile = document.createElement("div");
-            tile.classList.add("stat-tile");
-
-            const value = document.createElement("div");
-            value.classList.add("stat-value");
-            value.textContent = item.value;
-
-            const label = document.createElement("div");
-            label.classList.add("stat-label");
-            label.textContent = item.label;
-
-            if (item.type) {
-                tile.classList.add(`stat-tile-${item.type}`);
-            }
-
-            const icon = createIcon(item.icon);
-
-            const text = document.createElement("div");
-            text.classList.add("stat-text");
-
-            text.append(value, label);
-
-            if (item.subtext) {
-                const subtext = document.createElement("div");
-                subtext.classList.add("stat-subtext");
-                subtext.textContent = item.subtext;
-                text.appendChild(subtext);
-            } 
-
-            tile.append(icon, text);
-
-            if (item.action === "posts") {
-                tile.classList.add("clickable-stat-tile");
-
-                tile.addEventListener("click", async () => {
-                    const cacheKey = `${state.currentRegionId}__${memberId}__attended`;
-                
-                    if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
-                        showToast("Loading full history...", "info");
-                    }
-                
-                    const result =
-                        await hydrateMemberSessions(
-                            "attended"
-                        );
-
-                    if (result.status !== "loaded") {
-                        return;
-                    }
-
-                    state.sessionHistoryFilterType =
-                        "attended";
-
-                    state.sessionHistoryAoFilter = "";
-                    state.sessionHistorySearchTerm = "";
-
-                    navigateTo("sessionHistory");
-                });
-            }
-
-            if (item.action === "qs") {
-                tile.classList.add("clickable-stat-tile");
-
-                tile.addEventListener("click", async () => {
-                    const cacheKey = `${state.currentRegionId}__${memberId}__q`;
-                
-                    if (!state.memberSessionsLoadedByMode?.[cacheKey]) {
-                        showToast("Loading full history...", "info");
-                    }
-                
-                    const result =
-                        await hydrateMemberSessions("q");
-
-                    if (result.status !== "loaded") {
-                        return;
-                    }
-
-                    state.sessionHistoryFilterType = "q";
-                    state.sessionHistoryAoFilter = "";
-                    state.sessionHistorySearchTerm = "";
-
-                    navigateTo("sessionHistory");
-                });
-            }
-
-            if (item.action === "lastPost") {
-                tile.classList.add("clickable-stat-tile");
-
-                tile.addEventListener("click", async () => {
-                    const result =
-                        await loadDashboardSessionByDate(
-                            stats?.lastPostDate,
-                            "attended"
-                        );
-
-                    if (
-                        result.status !== "loaded" ||
-                        !result.session
-                    ) {
-                        return;
-                    }
-
-                    const session = result.session;
-                
-                    const existingIds = new Set(state.sessions.map(session => session.id));
-                    if (!existingIds.has(session.id)) {
-                        state.sessions = [...state.sessions, session];
-                    }
-                
-                    state.selectedSessionId = session.id;
-                    navigateTo("sessionDetail");
-                });
-            }
-
-            if (item.action === "lastQ") {
-                tile.classList.add("clickable-stat-tile");
-            
-                tile.addEventListener("click", async () => {
-                    const result =
-                        await loadDashboardSessionByDate(
-                            stats?.lastQDate,
+    
+            if (
+                metric.action ===
+                "qs"
+            ) {
+                metricElement.addEventListener(
+                    "click",
+                    () => {
+                        openMemberHistory(
                             "q"
                         );
-
-                    if (
-                        result.status !== "loaded" ||
-                        !result.session
-                    ) {
-                        return;
                     }
-
-                    const session = result.session;
-            
-                    const existingIds = new Set(state.sessions.map(session => session.id));
-                    if (!existingIds.has(session.id)) {
-                        state.sessions = [...state.sessions, session];
-                    }
-            
-                    state.selectedSessionId = session.id;
-                    navigateTo("sessionDetail");
-                });
+                );
             }
-
-            if (item.action === "firstPost") {
-                tile.classList.add("clickable-stat-tile");
-
-                tile.addEventListener("click", async () => {
-                    const result =
-                        await loadDashboardSessionByDate(
-                            stats?.firstPostDate,
-                            "attended"
-                        );
-
-                    if (
-                        result.status !== "loaded" ||
-                        !result.session
-                    ) {
-                        return;
-                    }
-
-                    const session = result.session;
-                
-                    const existingIds = new Set(state.sessions.map(session => session.id));
-                    if (!existingIds.has(session.id)) {
-                        state.sessions = [...state.sessions, session];
-                    }
-                
-                    state.selectedSessionId = session.id;
-                    navigateTo("sessionDetail");
-                });
-            }
-
-            grid.append(tile);
+    
+            metricRow.appendChild(
+                metricElement
+            );
         });
-
-        card.append(grid);
-        section.append(heading, card);
-
-        return section;
-    }
-
-    const myStatsSection = renderMyStatsSection();
-
-    const recentSessionsSection = document.createElement("div");
-    const recentHeading = document.createElement("h2");
-    const recentSessionList = document.createElement("div");
-    recentHeading.textContent = "My Recent Activity";
-    recentSessionsSection.append(recentHeading);
-
-    const recentActivityKey = `${state.currentRegionId}__${state.currentUserMemberId}`;
-    const recentActivity =
-        state.recentMemberActivityByMemberId?.[recentActivityKey] || null;
     
-    if (!recentActivity && state.currentUserMemberId) {
-        const workspaceGeneration =
-            state.workspaceGeneration;
+        const lastPostRow =
+            document.createElement("button");
     
-        loadRecentMemberActivity(
-            state.currentRegionId,
-            state.currentUserMemberId,
-            2
-        )
-            .then(sessions => {
+        lastPostRow.type =
+            "button";
+    
+        lastPostRow.classList.add(
+            "dashboard-stats-last-post"
+        );
+    
+        const lastPostLabel =
+            document.createElement("span");
+    
+        lastPostLabel.classList.add(
+            "dashboard-stats-last-post-label"
+        );
+    
+        lastPostLabel.textContent =
+            "Last post";
+    
+        const lastPostValue =
+            document.createElement("span");
+    
+        lastPostValue.classList.add(
+            "dashboard-stats-last-post-value"
+        );
+    
+        lastPostValue.textContent =
+            stats?.lastPostDate
+                ? formatMonthDayYear(
+                    stats.lastPostDate
+                )
+                : "No posts yet";
+    
+        const lastPostArrow =
+            document.createElement("span");
+    
+        lastPostArrow.classList.add(
+            "dashboard-stats-last-post-arrow"
+        );
+    
+        lastPostArrow.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    
+        lastPostArrow.textContent =
+            "›";
+    
+        lastPostRow.append(
+            lastPostLabel,
+            lastPostValue,
+            lastPostArrow
+        );
+    
+        lastPostRow.addEventListener(
+            "click",
+            async () => {
                 if (
-                    workspaceGeneration !==
-                    state.workspaceGeneration
+                    !stats?.lastPostDate
                 ) {
                     return;
                 }
     
-                state.recentMemberActivityByMemberId = {
-                    ...(state.recentMemberActivityByMemberId || {}),
-                    [recentActivityKey]: sessions,
-                };
+                const requestRegionId =
+                    state.currentRegionId;
     
-                const existingIds = new Set(
-                    state.sessions.map(session => session.id)
-                );
+                const requestGeneration =
+                    state.workspaceGeneration;
     
-                const newSessions = sessions.filter(
-                    session => !existingIds.has(session.id)
-                );
+                const session =
+                    await loadMemberSessionByDate(
+                        requestRegionId,
+                        memberId,
+                        stats.lastPostDate,
+                        "attended"
+                    );
     
-                state.sessions = [
-                    ...state.sessions,
-                    ...newSessions
-                ];
+                const isCurrent =
+                    requestGeneration ===
+                        state.workspaceGeneration &&
+                    requestRegionId ===
+                        state.currentRegionId;
     
-                if (state.currentView === "dashboard") {
-                    renderApp();
+                if (
+                    !isCurrent ||
+                    !session
+                ) {
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error("Failed to load recent member activity:", error);
-            });
-    }
     
-    const sortedSessions = recentActivity || [];
-        if (sortedSessions.length === 0) {
-        recentSessionList.textContent = "No recent activity.";
-        } else {
-            sortedSessions.slice(0, 2).forEach((session) => {
-                const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
-
-                const qNames = effectiveQIds
-                    .map(qId => state.members.find(m => m.id === qId))
-                    .filter(Boolean)
-                    .map(member => member.paxName);
-                
-                const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
-                const sessionDetail = document.createElement("div");
-                sessionDetail.classList.add("member-card", "session-history-card", "dashboard-activity-card");
-
-                const topLine = document.createElement("div");
-                topLine.classList.add("member-name");
-                topLine.textContent = `${formatDate(session.date)} · ${session.aoName}`;
-
-                const isQ = effectiveQIds.includes(state.currentUserMemberId);
-                const isSoloQ = isQ && effectiveQIds.length === 1;
-                const isCoQ = isQ && effectiveQIds.length > 1;
-
-                const typeLine = document.createElement("div");
-                typeLine.classList.add("stats-line", "activity-type");
-
-            if (isQ) {
-                typeLine.classList.add("q");
+                const alreadyLoaded =
+                    state.sessions.some(
+                        candidate =>
+                            candidate.id ===
+                            session.id
+                    );
+    
+                if (!alreadyLoaded) {
+                    state.sessions = [
+                        ...state.sessions,
+                        session,
+                    ];
+                }
+    
+                state.selectedSessionId =
+                    session.id;
+    
+                navigateTo(
+                    "sessionDetail"
+                );
             }
-
-           if (isCoQ) {
-            typeLine.textContent = "Co-Q";
-           } else if (isQ) {
-            typeLine.textContent = "Q'd";
-           } else {
-            typeLine.textContent = "Attended";
-           }
-
-            const qLine = document.createElement("div");
-            qLine.classList.add("stats-line", "q-line");
-            qLine.textContent = `Q: ${qLabel}`;
-
-            const summaryLine = document.createElement("div");
-            summaryLine.classList.add("stats-line");
-            const {
-                totalAttendance,
-                fngCount,
-            } = getSessionDisplayCounts(session);
-            
-            summaryLine.textContent =
-                `${totalAttendance} Attended · ${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
-
-            sessionDetail.append(topLine, typeLine);
-            
-            if (!isSoloQ) {
-                sessionDetail.appendChild(qLine);
-            }
-             
-            sessionDetail.appendChild(summaryLine);
-
-            sessionDetail.addEventListener("click", () => {
-                state.selectedSessionId = session.id;
-                navigateTo("sessionDetail");
-                renderApp();
-            })
-
-            recentSessionList.appendChild(sessionDetail);
-        });
-
-        const viewAllActivityButton = document.createElement("button");
-        viewAllActivityButton.classList.add("secondary-button", "view-all-activity-button");
-        viewAllActivityButton.textContent = "View All Activity";
-
-        viewAllActivityButton.addEventListener("click", () => {
-            navigateTo("sessionHistory");
-        });
-
-        recentSessionList.appendChild(viewAllActivityButton);
+        );
+    
+        card.append(
+            metricRow,
+            lastPostRow
+        );
+    
+        section.append(
+            header,
+            card
+        );
+    
+        return section;
     }
-    recentSessionsSection.append(recentSessionList);
+    const myStatsSection = renderMyStatsSection();
 
     const nav = createGlobalNav();
 
     const primaryActionsRow = createPrimaryActionsRow();
 
+    const activeHeroSection =
+        resumeWorkoutSection ||
+        dashboardCtaSection;
+
     app.append(
         dashboardHeader,
         userRow,
-        ...(resumeWorkoutSection ? [resumeWorkoutSection] : []),
-        dashboardCtaSection,
-        ...(announcementsSection ? [announcementsSection] : []),
+
+        activeHeroSection,
+
         primaryActionsRow,
+    
+        ...(tomorrowCommitmentsSection
+            ? [tomorrowCommitmentsSection]
+            : []),
+    
         myUpcomingQsSection,
-        ...(myStatsSection ? [myStatsSection] : []),
-        recentSessionsSection,
+    
+        ...(announcementsSection
+            ? [announcementsSection]
+            : []),
+    
+        ...(myStatsSection
+            ? [myStatsSection]
+            : []),
+
         nav
     );
 

@@ -338,14 +338,22 @@ export function renderQSignupView() {
         openOption.textContent = "Open";
         qSelect.appendChild(openOption);
 
+        const getMemberDisplayName = member =>
+            member.paxName ||
+            member.realName ||
+            member.fullName ||
+            "Unnamed PAX";
+        
         const activeMembers = [...state.members]
             .filter(member => member.status !== "inactive")
-            .sort((a, b) => a.paxName.localeCompare(b.paxName));
+            .sort((a, b) =>
+                getMemberDisplayName(a).localeCompare(getMemberDisplayName(b))
+            );
 
         activeMembers.forEach(member => {
             const option = document.createElement("option");
             option.value = member.id;
-            option.textContent = member.paxName;
+            option.textContent = getMemberDisplayName(member);
             qSelect.appendChild(option);
         });
 
@@ -567,14 +575,22 @@ export function renderQSignupView() {
 
         const qSelect = document.createElement("select");
 
+        const getMemberDisplayName = member =>
+            member.paxName ||
+            member.realName ||
+            member.fullName ||
+            "Unnamed PAX";
+        
         const activeMembers = [...state.members]
             .filter(member => member.status !== "inactive")
-            .sort((a, b) => a.paxName.localeCompare(b.paxName));
+            .sort((a, b) =>
+                getMemberDisplayName(a).localeCompare(getMemberDisplayName(b))
+            );
 
         activeMembers.forEach(member => {
             const option = document.createElement("option");
             option.value = member.id;
-            option.textContent = member.paxName;
+            option.textContent = getMemberDisplayName(member);
             qSelect.appendChild(option);
         });
 

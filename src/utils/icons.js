@@ -23,7 +23,8 @@ import {
     CloudFog,
     Snowflake,
     CloudDrizzle,
-    ChevronRightCircle,
+    ChevronRight,
+    ChevronUp,
     ChartColumnIncreasing,
     ArrowUpRight,
     Shield,
@@ -35,6 +36,13 @@ import {
     ShieldCheck,
     Settings2,
     CircleUserRound,
+    CalendarCheck,
+    History,
+    NotebookPen,
+    CalendarRange,
+    Megaphone,
+    Menu,
+    ExternalLink,
 } from "lucide";
 
 const ICONS = {
@@ -44,6 +52,7 @@ const ICONS = {
     favoriteAo: MapPin,
     lastPost: CalendarDays,
     fngDate: Sparkles,
+
     dumbbell: Dumbbell,
     bicepsFlexed: BicepsFlexed,
     footprints: Footprints,
@@ -54,18 +63,31 @@ const ICONS = {
     trendingUp: TrendingUp,
     circle: Circle,
     clipboardList: ClipboardList,
-    chevronRight: ChevronRightCircle,
+
+    chevronRight: ChevronRight,
+    chevronUp: ChevronUp,
+
     chartColumn: ChartColumnIncreasing,
     arrowUpRight: ArrowUpRight,
+    externalLink: ExternalLink,
+
     shield: Shield,
     medal: Medal,
     pencil: Pencil,
+
     firstF: Dumbbell,
     secondF: Users,
     thirdF: HeartHandshake,
     leadership: ShieldCheck,
     administration: Settings2,
     account: CircleUserRound,
+
+    qSignup: CalendarCheck,
+    weeklySchedule: CalendarRange,
+    planner: NotebookPen,
+    history: History,
+    announcements: Megaphone,
+    menu: Menu,
 };
 
 const weatherIconMap = {

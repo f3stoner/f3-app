@@ -123,8 +123,8 @@ function getUpcomingRemindersForUser({
         type: "day-before",
         slot,
         key: buildNotificationKey({ type: "day-before", slot }),
-        title: "The Q",
-        body: `You are Qing tomorrow at ${ao?.name || "your AO"} - don't forget to post a preblast.`,
+        title: `You're the Q tomorrow at ${ao?.name || "your AO"}`,
+        body: "Don't forget to post your preblast.",
       });
     }
   });
@@ -145,11 +145,11 @@ function getUpcomingRemindersForUser({
       type: "weekly-summary",
       slot: null,
       key: `weekly_${todayKey}`,
-      title: "The Q",
+      title: "Your Q Schedule This Week",
       body:
         weeklySlots.length === 1
-          ? `You are Qing this week: ${summaryParts[0]}`
-          : `You are Qing ${weeklySlots.length}x this week: ${summaryParts.join(", ")}`,
+          ? `You're the Q ${summaryParts[0]}.`
+          : `${weeklySlots.length} Qs this week: ${summaryParts.join(", ")}`,
     });
   }
   return reminders;

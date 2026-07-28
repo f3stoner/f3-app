@@ -429,6 +429,190 @@ export async function loadAllQSlots(regionId) {
     return allQSlots;
 }
 
+function mapQSlotCommitmentSummaryFromDb(row) {
+    return {
+        qSlotId: row.q_slot_id,
+        hcCount: Number(row.hc_count || 0),
+        scCount: Number(row.sc_count || 0),
+        myCommitment:
+            row.my_commitment === "hc" ||
+            row.my_commitment === "sc"
+                ? row.my_commitment
+                : null,
+    };
+}
+
+function mapQSlotCommitmentFromDb(row) {
+    return {
+        commitmentId: row.commitment_id,
+        qSlotId: row.q_slot_id,
+        memberId: row.member_id,
+        paxName: row.pax_name || "",
+        realName: row.real_name || "",
+        homeAo: row.home_ao || "",
+        commitmentType: row.commitment_type,
+        source: row.source,
+        createdBy: row.created_by || null,
+        updatedBy: row.updated_by || null,
+        createdAt: row.created_at || null,
+        updatedAt: row.updated_at || null,
+    };
+}
+
+export async function loadQSlotCommitmentSummaries(
+    qSlotIds = []
+) {
+    const cleanQSlotIds = [
+        ...new Set(
+            (Array.isArray(qSlotIds) ? qSlotIds : [])
+                .filter(Boolean)
+        ),
+    ];
+
+    if (cleanQSlotIds.length === 0) {
+        return [];
+    }
+
+    const { data, error } = await supabase.rpc(
+        "load_q_slot_commitment_summaries",
+        {
+            target_q_slot_ids: cleanQSlotIds,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to load Q-slot commitment summaries:",
+            {
+                qSlotIds: cleanQSlotIds,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return (data || []).map(
+        mapQSlotCommitmentSummaryFromDb
+    );
+}
+
+export async function loadQSlotCommitments(
+    qSlotId
+) {
+    if (!qSlotId) {
+        return [];
+    }
+
+    const { data, error } = await supabase.rpc(
+        "load_q_slot_commitments",
+        {
+            target_q_slot_id: qSlotId,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to load Q-slot commitments:",
+            {
+                qSlotId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return (data || []).map(
+        mapQSlotCommitmentFromDb
+    );
+}
+
+export async function setQSlotCommitment({
+    qSlotId,
+    memberId,
+    commitmentType,
+}) {
+    if (!qSlotId) {
+        throw new Error(
+            "Q slot id is required to set a commitment."
+        );
+    }
+
+    if (!memberId) {
+        throw new Error(
+            "Member id is required to set a commitment."
+        );
+    }
+
+    if (
+        commitmentType !== null &&
+        commitmentType !== "hc" &&
+        commitmentType !== "sc"
+    ) {
+        throw new Error(
+            "Commitment type must be hc, sc, or null."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_q_slot_commitment",
+        {
+            target_q_slot_id: qSlotId,
+            target_member_id: memberId,
+            target_commitment_type:
+                commitmentType,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to set Q-slot commitment:",
+            {
+                qSlotId,
+                memberId,
+                commitmentType,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    const row = Array.isArray(data)
+        ? data[0]
+        : data;
+
+    if (!row) {
+        throw new Error(
+            "Q-slot commitment command returned no result."
+        );
+    }
+
+    return {
+        commitmentId:
+            row.commitment_id || null,
+        qSlotId:
+            row.q_slot_id || qSlotId,
+        memberId:
+            row.member_id || memberId,
+        commitmentType:
+            row.commitment_type || null,
+        source:
+            row.source || null,
+        createdBy:
+            row.created_by || null,
+        updatedBy:
+            row.updated_by || null,
+        createdAt:
+            row.created_at || null,
+        updatedAt:
+            row.updated_at || null,
+        cleared:
+            Boolean(row.cleared),
+    };
+}
+
 export async function loadExercises() {
     const { data, error } = await supabase
         .from("exercises")

@@ -47,6 +47,16 @@ export const state = {
     aos: savedState?.aos || [],
     sites: savedState?.sites || [],
     qSlots: savedState?.qSlots || [],
+    qSlotCommitmentSummariesBySlotId: {},
+    qSlotCommitmentsBySlotId: {},
+    qSlotCommitmentLoadingBySlotId: {},
+    qSlotCommitmentSummaryRequestKey: null,
+    dashboardCommitmentEditor: {
+        slotId: null,
+        memberId: null,
+        searchTerm: "",
+        selectedMemberId: null,
+    },
     homeAoId: savedState?.homeAoId || null,
     favoriteAoIds: savedState?.favoriteAoIds || null,
 
