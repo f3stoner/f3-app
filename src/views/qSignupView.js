@@ -16,7 +16,7 @@ import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon } from "../utils/icons.js";
 import { registerViewCleanup } from "../utils/viewCleanup.js";
-import { hasPermission, PERMISSIONS, managesAo } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, managesAo, managesQSlot } from "../utils/permissions.js";
 import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
@@ -135,7 +135,6 @@ export function renderQSignupView() {
     setupQSlotRealtime();
     cleanupMainMenu();
 
-    const canManageQSlots = hasPermission(PERMISSIONS.MANAGE_Q_SLOTS);
     const canManageAos = hasPermission(PERMISSIONS.MANAGE_AOS);
 
     const header = createAppHeader({
@@ -213,9 +212,9 @@ export function renderQSignupView() {
     let manageAosButton = null;
     let addSlotButton = null;
 
-    const canAddOneOffSlots =
-        canManageQSlots &&
-        state.aos.some(ao => ao.isActive !== false && managesAo(ao.id));
+    const canAddOneOffSlots = state.aos.some(
+        ao => ao.isActive !== false && managesQSlot(ao.id)
+    );
 
     if (canManageAos) {
         manageAosButton = document.createElement("button");
@@ -299,7 +298,7 @@ export function renderQSignupView() {
 
         const activeAos = [...state.aos]
             .filter(ao => ao.isActive !== false)
-            .filter(ao => managesAo(ao.id))
+            .filter(ao => managesQSlot(ao.id))
             .sort((a, b) => a.name.localeCompare(b.name));
 
         if (!activeAos.length) {
@@ -406,11 +405,11 @@ export function renderQSignupView() {
                 return;
             }
 
-            if (!managesAo(aoSelect.value)) {
+            if (!managesQSlot(aoSelect.value)) {
                 showToast("You do not have permission to create slots for this AO.", "error");
                 return;
             }
-
+            
             if (!dateInput.value) {
                 alert("Please select a date.");
                 return;
@@ -868,7 +867,7 @@ export function renderQSignupView() {
         listContainer.appendChild(empty);
     } else {
         sortedSlots.forEach(slot => {
-            const managesThisAo = managesAo(slot.aoId);
+            const managesThisAo = managesQSlot(slot);
 
             const card = document.createElement("div");
             card.classList.add("member-card", "q-slot-card");
