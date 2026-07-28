@@ -75,6 +75,12 @@ const AO_Q_READINESS_POSITIONS = ["aoq", "ao_coq", "first_f"];
 const AO_SESSION_EDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 const AO_MEMBER_MANAGEMENT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 const AO_SESSION_AUDIT_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
+const AO_Q_SLOT_MANAGEMENT_POSITIONS = [
+    "aoq",
+    "ao_coq",
+    "first_f",
+    "ao_data_q",
+];
 
 export function hasPermission(permission) {
     const role = state.currentUserRole || "pax";
@@ -154,7 +160,7 @@ export function managesQSlot(slotOrAoId) {
         ? slotOrAoId?.aoId || slotOrAoId?.ao_id
         : slotOrAoId;
 
-    return managesAo(aoId);
+    return managesAo(aoId, AO_Q_SLOT_MANAGEMENT_POSITIONS);
 }
 
 export function canViewAoInsights(aoId) {
