@@ -168,11 +168,13 @@ export function renderQSignupView() {
     allOption.textContent = "All AOs";
     aoFilterSelect.appendChild(allOption);
 
-    const filterAos = [...state.aos].sort((a, b) => {
-        if (homeAo && a.id === homeAo.id) return -1;
-        if (homeAo && b.id === homeAo.id) return 1;
-        return a.name.localeCompare(b.name);
-    });
+    const filterAos = state.aos
+        .filter(ao => ao.isActive !== false)
+        .sort((a, b) => {
+            if (homeAo && a.id === homeAo.id) return -1;
+            if (homeAo && b.id === homeAo.id) return 1;
+            return a.name.localeCompare(b.name);
+        });
 
     filterAos.forEach(ao => {
         const option = document.createElement("option");
@@ -186,6 +188,17 @@ export function renderQSignupView() {
     if (!state.hasInitializedQSignupFilter) {
         state.qSignupAoFilter = homeAo ? homeAo.id : "all";
         state.hasInitializedQSignupFilter = true;
+    }
+
+    const selectedFilterAoIsActive = filterAos.some(
+        ao => ao.id === state.qSignupAoFilter
+    );
+    
+    if (
+        state.qSignupAoFilter !== "all" &&
+        !selectedFilterAoIsActive
+    ) {
+        state.qSignupAoFilter = "all";
     }
 
     aoFilterSelect.value = state.qSignupAoFilter || "";
@@ -409,7 +422,7 @@ export function renderQSignupView() {
                 showToast("You do not have permission to create slots for this AO.", "error");
                 return;
             }
-            
+
             if (!dateInput.value) {
                 alert("Please select a date.");
                 return;
