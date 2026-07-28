@@ -3417,18 +3417,29 @@ export function renderDashboard() {
                     actionLabel
                 );
     
-                cardButton.addEventListener(
-                    "click",
-                    () => {
-                        state
-                            .expandedDashboardAnnouncementId =
-                            isExpanded
-                                ? null
-                                : announcement.id;
-    
-                        renderApp();
-                    }
-                );
+                cardButton.addEventListener("click", () => {
+                    const previousScroll =
+                        deck.scrollLeft;
+                
+                    state.expandedDashboardAnnouncementId =
+                        isExpanded
+                            ? null
+                            : announcement.id;
+                
+                    renderApp();
+                
+                    requestAnimationFrame(() => {
+                        const nextDeck =
+                            document.querySelector(
+                                ".dashboard-announcements-deck"
+                            );
+                
+                        if (nextDeck) {
+                            nextDeck.scrollLeft =
+                                previousScroll;
+                        }
+                    });
+                });
     
                 card.appendChild(cardButton);
     
