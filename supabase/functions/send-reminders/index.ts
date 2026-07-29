@@ -232,30 +232,15 @@ async function markNotificationFailed(
   }
 }
 
-async function clearDeadSubscription(userId: string, failedEndpoint: string | null) {
-  if (!failedEndpoint) return false;
-
-  const { data, error: readError } = await supabase
-    .from("notification_settings")
-    .select("push_subscription")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (readError) throw readError;
-
-  const currentEndpoint = data?.push_subscription?.endpoint || null;
-
-  if (currentEndpoint !== failedEndpoint) {
-    return false;
-  }
+async function deleteDeadSubscription(
+  endpoint: string | null
+) {
+  if (!endpoint) return false;
 
   const { error } = await supabase
-    .from("notification_settings")
-    .update({
-      push_enabled: false,
-      push_subscription: null,
-    })
-    .eq("user_id", userId);
+    .from("push_subscriptions")
+    .delete()
+    .eq("endpoint", endpoint);
 
   if (error) throw error;
 
@@ -317,7 +302,7 @@ serve(async () => {
     sent: 0,
     skippedDuplicates: 0,
     failed: 0,
-    disabledDeadSubscriptions: 0,
+    deletedDeadSubscriptions: 0,
   };
 
   try {
@@ -330,14 +315,20 @@ serve(async () => {
     ] = await Promise.all([
       supabase
         .from("notification_settings")
-        .select("user_id, push_enabled, push_subscription")
-        .eq("push_enabled", true)
-        .not("push_subscription", "is", null),
-        supabase
-          .from("q_slots")
-          .select("id, ao_id, date, q_user_id")
-          .gte("date", todayKey)
-          .lt("date", addDaysToDateKey(todayKey, 7)),      
+        .select(`
+            user_id,
+            push_enabled,
+            push_subscriptions (
+                endpoint,
+                subscription
+            )
+        `)
+        .eq("push_enabled", true),
+      supabase
+        .from("q_slots")
+        .select("id, ao_id, date, q_user_id")
+        .gte("date", todayKey)
+        .lt("date", addDaysToDateKey(todayKey, 7)),      
       supabase.from("aos").select("id, name, time"),
       supabase.from("profiles").select("id, member_id"),
     ]);
@@ -408,48 +399,67 @@ serve(async () => {
 
         const payload = JSON.stringify(payloadObject);
 
-        try {
-          const result = await webpush.sendNotification(
-            settings.push_subscription,
-            payload
-          );
+        const subscriptions =
+            settings.push_subscriptions ?? [];
 
-          console.log(
-            `Sent ${reminder.type} to ${settings.user_id}:`,
-            result.statusCode
-          );
+        if (subscriptions.length === 0) {
+            continue;
+        }
 
-          summary.sent++;
+        let delivered = false;
+        let lastStatusCode: number | null = null;
 
-          await markNotificationSent(
-            claim.id,
-            result.statusCode ?? null
-          );
-        } catch (error) {
-          await markNotificationFailed(claim.id, error);
+        for (const subscriptionRow of subscriptions) {
+            try {
+                const result =
+                    await webpush.sendNotification(
+                        subscriptionRow.subscription,
+                        payload
+                    );
 
-          const statusCode = getErrorStatusCode(error);
+                console.log(
+                    `Sent ${reminder.type} to ${settings.user_id}:`,
+                    result.statusCode
+                );
 
-          console.error(
-            `Failed ${reminder.type} for ${settings.user_id}:`,
-            statusCode || error
-          );
+                delivered = true;
+                lastStatusCode = result.statusCode ?? null;
 
-          summary.failed++;
+                summary.sent++;
+            } catch (error) {
+                const statusCode =
+                    getErrorStatusCode(error);
 
-          if (statusCode === 404 || statusCode === 410) {
-            const failedEndpoint =
-              settings.push_subscription?.endpoint || null;
+                if (statusCode === 404 || statusCode === 410) {
+                    const removed =
+                        await deleteDeadSubscription(
+                            subscriptionRow.endpoint
+                        );
 
-            const cleared = await clearDeadSubscription(
-              settings.user_id,
-              failedEndpoint
-            );
+                    if (removed) {
+                        summary.deletedDeadSubscriptions++;
+                    }
+                }
 
-            if (cleared) {
-              summary.disabledDeadSubscriptions++;
+                summary.failed++;
+
+                console.error(
+                  `Failed ${reminder.type} for ${settings.user_id}:`,
+                  statusCode || error
+              );
             }
-          }
+        }
+
+        if (delivered) {
+            await markNotificationSent(
+                claim.id,
+                lastStatusCode
+            );
+        } else {
+            await markNotificationFailed(
+                claim.id,
+                new Error("Failed to deliver to all registered devices.")
+            );
         }
       }
     }

@@ -2171,7 +2171,6 @@ export async function upsertNotificationSettings(userId, settings) {
                 user_id: userId,
                 push_enabled: settings.push_enabled,
                 timezone: settings.timezone,
-                push_subscription: settings.push_subscription ?? null,
             },
             { onConflict: "user_id" }
         )
@@ -2180,6 +2179,63 @@ export async function upsertNotificationSettings(userId, settings) {
 
     if (error) throw error;
     return data;
+}
+
+export async function upsertPushSubscription(
+    userId,
+    subscription
+) {
+    if (!subscription?.endpoint) {
+        throw new Error("Push subscription endpoint is required.");
+    }
+
+    const { data, error } = await supabase
+        .from("push_subscriptions")
+        .upsert(
+            {
+                user_id: userId,
+                endpoint: subscription.endpoint,
+                subscription,
+                last_seen_at: new Date().toISOString(),
+            },
+            {
+                onConflict: "endpoint",
+            }
+        )
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function deletePushSubscription(
+    endpoint
+) {
+    if (!endpoint) return;
+
+    const { error } = await supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("endpoint", endpoint);
+
+    if (error) throw error;
+}
+
+export async function touchPushSubscription(
+    endpoint
+) {
+    if (!endpoint) return;
+
+    const { error } = await supabase
+        .from("push_subscriptions")
+        .update({
+            last_seen_at: new Date().toISOString(),
+        })
+        .eq("endpoint", endpoint);
+
+    if (error) throw error;
 }
 
 export async function updateCustomTemplates(userId, customTemplates) {

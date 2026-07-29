@@ -1719,24 +1719,31 @@ async function bootApp() {
 
         getNotificationSettings(state.currentUserId)
             .then(dbNotificationSettings => {
-                state.notificationSettings = dbNotificationSettings
-                    ? {
-                        pushEnabled: dbNotificationSettings.push_enabled,
-                        timezone: dbNotificationSettings.timezone,
-                        pushSubscription: dbNotificationSettings.push_subscription,
-                    }
-                    : {
-                        pushEnabled: false,
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        pushSubscription: null,
-                    };
+                state.notificationSettings =
+                    dbNotificationSettings
+                        ? {
+                            pushEnabled:
+                                dbNotificationSettings.push_enabled,
+                            timezone:
+                                dbNotificationSettings.timezone,
+                        }
+                        : {
+                            pushEnabled: false,
+                            timezone:
+                                Intl.DateTimeFormat()
+                                    .resolvedOptions()
+                                    .timeZone,
+                        };
 
                 if (state.currentView === "settings") {
                     renderApp();
                 }
             })
             .catch(error => {
-                console.error("Failed to load notification settings:", error);
+                console.error(
+                    "Failed to load notification settings:",
+                    error
+                );
             });
         
         console.log(
