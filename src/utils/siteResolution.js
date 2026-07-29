@@ -2,7 +2,7 @@ import { state } from "../modules/state.js";
 
 export function resolveSiteForQSlot(slot, ao) {
     const siteId =
-        slot.siteId ||
+        slot?.siteId ||
         ao?.defaultSiteId ||
         null;
 
@@ -11,7 +11,7 @@ export function resolveSiteForQSlot(slot, ao) {
     }
 
     return (
-        state.sites.find(site => site.id === siteId) ||
+        state.sites?.find(site => site.id === siteId) ||
         null
     );
 }
