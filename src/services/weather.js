@@ -1,20 +1,23 @@
 import { supabase } from "./supabaseClient.js";
 
-export async function getAoWeather(aoId, targetDateTime) {
-    if (!aoId) {
+export async function getSiteWeather(siteId, targetDateTime) {
+    if (!siteId) {
         return {
             weatherUnavailable: true,
-            reason: "Missing AO",
+            reason: "Missing Site",
         };
     }
 
     try {
-        const { data, error } = await supabase.functions.invoke("get-ao-weather", {
-            body: {
-                aoId,
-                targetDateTime,
-            },
-        });
+        const { data, error } = await supabase.functions.invoke(
+            "get-ao-weather",
+            {
+                body: {
+                    siteId,
+                    targetDateTime,
+                },
+            }
+        );
 
         if (error) {
             console.error("Weather fetch failed.", error);
@@ -27,7 +30,7 @@ export async function getAoWeather(aoId, targetDateTime) {
 
         return data;
     } catch (err) {
-        console.error("Weather invoke exception", err);
+        console.error("Weather invoke exception.", err);
 
         return {
             weatherUnavailable: true,

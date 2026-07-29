@@ -8,7 +8,7 @@ import { logActionFailure } from "../services/appEvents.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { getAoWeather } from "../services/weather.js";
+import { getSiteWeather } from "../services/weather.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 
@@ -124,28 +124,48 @@ export function renderBackblastView () {
             : "";
 
         const displayTime =
+            session.startTime ||
             qSlot?.overrideTime ||
+            qSlot?.startTime ||
             ao?.timeSchedule?.[dayKey] ||
             ao?.time ||
             "";
 
-        if (!ao?.id || !displayTime || !session.date) return;
+        if (!session.siteId || !displayTime || !session.date) return;
 
         try {
             const targetDateTime = `${session.date}T${displayTime}:00`;
             const startingText = state.draftBackblastText || "";
 
-            const weather = await getAoWeather(ao.id, targetDateTime);
+            const weather = await getSiteWeather(
+                session.siteId,
+                targetDateTime
+            );
             
             if (!weather || weather.weatherUnavailable) return;
             
             if ((state.draftBackblastText || "") !== startingText) return;
             
             const weatherParts = [
-                weather.temp != null ? `${weather.temp}°` : "--°",
-                weather.humidity != null ? `${weather.humidity}% humidity` : null,
-                weather.precipChance != null ? `${weather.precipChance}% rain` : null,
-                weather.windMph != null ? `Wind ${weather.windMph} mph` : null,
+                weather.temp != null
+                    ? `${weather.temp}°`
+                    : "--°",
+            
+                weather.feelsLike != null
+                    ? `Feels like ${weather.feelsLike}°`
+                    : null,
+            
+                weather.humidity != null
+                    ? `${weather.humidity}% humidity`
+                    : null,
+            
+                weather.precipChance != null
+                    ? `${weather.precipChance}% rain`
+                    : null,
+            
+                weather.windMph != null
+                    ? `Wind ${weather.windMph} mph`
+                    : null,
             ].filter(Boolean);
             
             const weatherLine = `Weather: ${weatherParts.join(" • ")}`;

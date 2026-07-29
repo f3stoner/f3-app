@@ -1,3 +1,3 @@
-export function ggetWeatherCacheKey(aoId, targetDateTime) {
-    return `${aoId}__${targetDateTime}`;
+export function getWeatherCacheKey(siteId, targetDateTime) {
+    return `${siteId}__${targetDateTime}`;
 }

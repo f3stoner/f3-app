@@ -11,7 +11,7 @@ import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
 import { addAdminFlags } from "../services/appData.js";
 import { logSaveFailure } from "../services/appEvents.js";
-import { getAoWeather } from "../services/weather.js";
+import { getSiteWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import {
@@ -1432,17 +1432,18 @@ function findPotentialDuplicateSession(session) {
 }
 
 async function attachWeatherSnapshot(session) {
-    const ao =
-        state.aos.find(a => a.id === session.aoId)
-        || state.aos.find(a => a.name === session.aoName);
-
-    if (!ao?.id || !ao?.time || !session.date) {
+    if (!session.siteId || !session.startTime || !session.date) {
         return session;
     }
 
     try {
-        const targetDateTime = `${session.date}T${ao.time}:00`;
-        const weather = await getAoWeather(ao.id, targetDateTime);
+        const targetDateTime =
+            `${session.date}T${session.startTime}:00`;
+
+        const weather = await getSiteWeather(
+            session.siteId,
+            targetDateTime
+        );
 
         if (!weather || weather.weatherUnavailable) {
             return session;
@@ -1452,6 +1453,7 @@ async function attachWeatherSnapshot(session) {
             ...session,
             weatherSnapshot: {
                 temp: weather.temp ?? null,
+                feelsLike: weather.feelsLike ?? null,
                 condition: weather.condition ?? null,
                 precipChance: weather.precipChance ?? null,
                 windMph: weather.windMph ?? null,
@@ -1635,40 +1637,79 @@ saveButton.addEventListener("click", async () => {
 
         return;
     }
-    draftSession.fngs = collectFngsFromUi();
-    draftSession.visitors = collectVisitorsFromUi();
-    draftSession.notes = notes.value.trim();
 
-    draftSession = normalizeSessionForSave(draftSession);
-
-    const validationMessage = validateSessionForSave(draftSession);
-    if (validationMessage) {
-        alert(validationMessage);
-        return;
-    }
-
-    const duplicateSession = findPotentialDuplicateSession(draftSession);
-    if (duplicateSession) {
-        const shouldViewExisting = confirm(
-            `A session already exists for ${draftSession.aoName} on ${formatDate(draftSession.date)}.\n\nView the existing session?`
-        );
-
-        if (shouldViewExisting) {
-            state.selectedSessionId = duplicateSession.id;
-            state.editingSessionId = null;
-            state.draftSession = null;
-            navigateTo("sessionDetail");
-        }
-
-        return;
-    }
-
+    /*
+     * Lock the save flow before any async work begins.
+     *
+     * This prevents repeated taps from starting multiple
+     * weather requests or session saves.
+     */
     if (isSavingSession) return;
 
     isSavingSession = true;
     updateSaveButtonState();
 
     try {
+        draftSession.fngs = collectFngsFromUi();
+        draftSession.visitors = collectVisitorsFromUi();
+        draftSession.notes = notes.value.trim();
+
+        draftSession = normalizeSessionForSave(
+            draftSession
+        );
+
+        /*
+         * Validate before attempting optional weather
+         * enrichment.
+         */
+        const validationMessage =
+            validateSessionForSave(draftSession);
+
+        if (validationMessage) {
+            alert(validationMessage);
+            return;
+        }
+
+        /*
+         * Duplicate detection is also local and should happen
+         * before optional network enrichment.
+         */
+        const duplicateSession =
+            findPotentialDuplicateSession(draftSession);
+
+        if (duplicateSession) {
+            const shouldViewExisting = confirm(
+                `A session already exists for ${draftSession.aoName} on ${formatDate(draftSession.date)}.\n\nView the existing session?`
+            );
+
+            if (shouldViewExisting) {
+                state.selectedSessionId =
+                    duplicateSession.id;
+
+                state.editingSessionId = null;
+                state.draftSession = null;
+
+                navigateTo("sessionDetail");
+            }
+
+            return;
+        }
+
+        /*
+         * Weather is optional enrichment and must never prevent
+         * offline session persistence.
+         *
+         * navigator.onLine is only a fast-path signal. The
+         * helper still catches request failures if connectivity
+         * disappears after this check.
+         */
+        if (navigator.onLine) {
+            draftSession =
+                await attachWeatherSnapshot(
+                    draftSession
+                );
+        }
+
         let saveOutcome = null;
         let savedSession = null;
     

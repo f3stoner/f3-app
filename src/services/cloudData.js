@@ -1119,6 +1119,7 @@ function mapAoFromDb(row) {
     return {
         id: row.id,
         name: row.name,
+        defaultSiteId: row.default_site_id || null,
         locationName: row.location_name,
         daysOfWeek: row.days_of_week || [],
         time: row.time,
@@ -1801,6 +1802,113 @@ export async function deletePlannedWorkoutFromCloud(regionId, workoutId) {
     if (error) throw error;
 }
 
+export async function insertSite(regionId, site) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to create a Site."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "save_site_command",
+        {
+            p_action: "create",
+            p_region_id: regionId,
+            p_site_id: site.id,
+            p_name: site.name,
+            p_address: site.address || null,
+            p_map_url: site.mapUrl || null,
+            p_latitude: site.latitude ?? null,
+            p_longitude: site.longitude ?? null,
+            p_weather_location_label:
+                site.weatherLocationLabel || null,
+            p_weather_enabled:
+                site.weatherEnabled ?? true,
+            p_is_active:
+                site.isActive ?? true,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to create Site:",
+            {
+                regionId,
+                siteId: site.id,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.site) {
+        throw new Error(
+            "Site command returned no Site."
+        );
+    }
+
+    return mapSiteFromDb(data.site);
+}
+
+export async function updateSiteInCloud(
+    regionId,
+    site
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to update a Site."
+        );
+    }
+
+    if (!site?.id) {
+        throw new Error(
+            "Site id is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "save_site_command",
+        {
+            p_action: "update",
+            p_region_id: regionId,
+            p_site_id: site.id,
+            p_name: site.name,
+            p_address: site.address || null,
+            p_map_url: site.mapUrl || null,
+            p_latitude: site.latitude ?? null,
+            p_longitude: site.longitude ?? null,
+            p_weather_location_label:
+                site.weatherLocationLabel || null,
+            p_weather_enabled:
+                site.weatherEnabled ?? true,
+            p_is_active:
+                site.isActive ?? true,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to update Site:",
+            {
+                regionId,
+                siteId: site.id,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.site) {
+        throw new Error(
+            "Site command returned no Site."
+        );
+    }
+
+    return mapSiteFromDb(data.site);
+}
+
 export async function insertAo(regionId, ao) {
     const { data, error } = await supabase
         .from("aos")
@@ -1809,6 +1917,7 @@ export async function insertAo(regionId, ao) {
                 id: ao.id,
                 region_id: regionId,
                 name: ao.name,
+                default_site_id: ao.defaultSiteId || null,
                 location_name: ao.locationName || null,
                 days_of_week: ao.daysOfWeek || [],
                 time: ao.time,
@@ -1838,6 +1947,7 @@ export async function updateAoInCloud(regionId, ao) {
         .update({
             region_id: regionId,
             name: ao.name,
+            default_site_id: ao.defaultSiteId || null,
             location_name: ao.locationName || "",
             days_of_week: ao.daysOfWeek || [],
             time: ao.time,

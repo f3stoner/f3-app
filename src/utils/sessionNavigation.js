@@ -1,9 +1,11 @@
 import { state } from "../modules/state.js";
 import { createSession } from "../modules/sessions.js";
 import { navigateTo } from "./navigation.js";
+import { resolveSiteForQSlot } from "./siteResolution.js";
 
 export function startSessionFromQSlot(qSlot) {
     const ao = state.aos.find(ao => ao.id === qSlot.aoId);
+    const site = resolveSiteForQSlot(qSlot, ao);
 
     state.editingSessionId = null;
     state.selectedSessionId = null;
@@ -11,7 +13,7 @@ export function startSessionFromQSlot(qSlot) {
     state.draftSession = createSession(qSlot.date, {
         aoId: qSlot.aoId,
         aoName: ao?.name || qSlot.aoName || "",
-        siteId: qSlot.siteId || null,
+        siteId: site?.id || null,
         startTime:
             qSlot.overrideTime ||
             qSlot.startTime ||

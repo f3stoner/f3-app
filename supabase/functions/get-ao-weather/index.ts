@@ -9,11 +9,11 @@ const corsHeaders = {
 const PROVIDER = "open-meteo";
 
 type WeatherPayload = {
-  aoId?: string;
+  siteId?: string;
   targetDateTime?: string;
 };
 
-type AoRecord = {
+type SiteRecord = {
   id: string;
   region_id: string;
   name: string;
@@ -83,7 +83,7 @@ function getTargetParts(targetDateTime?: string) {
     };
   }
 
-  // Expected format: local AO time, e.g. "2026-06-20T05:30:00"
+  // Expected format: local Site time, e.g. "2026-06-20T05:30:00"
   // Do NOT send "2026-06-20T10:30:00.000Z" from the frontend.
   const forecastDate = targetDateTime.slice(0, 10);
   const forecastHour = Number(targetDateTime.slice(11, 13));
@@ -135,7 +135,11 @@ function findHourlyIndex(hourlyTimes: string[], targetHourKey: string) {
   );
 }
 
-function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
+function normalizeWeather(
+  raw: any,
+  site: SiteRecord,
+  targetHourKey: string,
+) {
   const hourly = raw.hourly ?? {};
   const daily = raw.daily ?? {};
 
@@ -194,10 +198,12 @@ function normalizeWeather(raw: any, ao: AoRecord, targetHourKey: string) {
             }),
         });
 
-  return {
-    aoId: ao.id,
-    aoName: ao.name,
-    locationLabel: ao.weather_location_label ?? ao.name,
+    return {
+      siteId: site.id,
+      siteName: site.name,
+      locationLabel:
+        site.weather_location_label ??
+        site.name,
 
     targetTime: hourly.time?.[hourlyIndex] ?? null,
     targetHourKey,
@@ -239,20 +245,61 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { aoId, targetDateTime } = (await req.json()) as WeatherPayload;
+    const { siteId, targetDateTime } =
+      (await req.json()) as WeatherPayload;
 
-    if (!aoId) {
-      return jsonResponse({ error: "Missing aoId" }, 400);
+    if (!siteId) {
+      return jsonResponse(
+        { error: "Missing siteId" },
+        400,
+      );
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!supabaseUrl || !serviceRoleKey) {
-      return jsonResponse({ error: "Missing Supabase function secrets" }, 500);
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+      return jsonResponse(
+        { error: "Missing Supabase function secrets" },
+        500
+      );
     }
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { forecastDate, forecastHour, targetHourKey } = getTargetParts(targetDateTime);
+
+    const authHeader =
+      req.headers.get("Authorization") ?? "";
+
+    const userClient = createClient(
+      supabaseUrl,
+      anonKey,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      }
+    );
+
+    const adminClient = createClient(
+      supabaseUrl,
+      serviceRoleKey
+    );
+
+    const {
+      data: { user },
+      error: authError,
+    } = await userClient.auth.getUser();
+
+    if (authError || !user) {
+      return jsonResponse(
+        { error: "Unauthorized" },
+        401
+      );
+    }
+
+    const { forecastDate, forecastHour, targetHourKey } =
+        getTargetParts(targetDateTime);
 
     if (isForecastTooFarOut(forecastDate)) {
       return jsonResponse({
@@ -264,41 +311,81 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: ao, error: aoError } = await supabase
-      .from("aos")
-      .select("id, region_id, name, latitude, longitude, weather_location_label, weather_enabled")
-      .eq("id", aoId)
-      .single<AoRecord>();
-
-    if (aoError || !ao) {
-      return jsonResponse({ error: "AO not found" }, 404);
+    const {
+      data: site,
+      error: siteError,
+    } = await adminClient
+      .from("sites")
+      .select(
+        "id, region_id, name, latitude, longitude, weather_location_label, weather_enabled",
+      )
+      .eq("id", siteId)
+      .single<SiteRecord>();
+    
+    if (siteError || !site) {
+      return jsonResponse(
+        { error: "Site not found" },
+        404,
+      );
     }
 
-    if (!ao.weather_enabled) {
+    const {
+      data: access,
+      error: accessError,
+    } = await userClient
+      .from("region_access")
+      .select("region_id")
+      .eq("user_id", user.id)
+      .eq("region_id", site.region_id)
+      .maybeSingle();
+    
+    if (accessError) {
+      console.error(
+        "Region access lookup failed",
+        accessError
+      );
+    
+      return jsonResponse(
+        { error: "Authorization failed" },
+        500
+      );
+    }
+    
+    if (!access) {
+      return jsonResponse(
+        { error: "Forbidden" },
+        403
+      );
+    }
+    
+    if (!site.weather_enabled) {
       return jsonResponse({
         weatherUnavailable: true,
-        reason: "Weather disabled for this AO",
+        reason: "Weather disabled for this Site",
+      });
+    }
+    
+    if (
+      site.latitude == null ||
+      site.longitude == null
+    ) {
+      return jsonResponse({
+        weatherUnavailable: true,
+        reason: "Site is missing coordinates",
       });
     }
 
-    if (ao.latitude == null || ao.longitude == null) {
-      return jsonResponse({
-        weatherUnavailable: true,
-        reason: "AO is missing coordinates",
-      });
-    }
-
-    const { data: cached } = await supabase
-      .from("ao_weather_cache")
+    const { data: cached } = await adminClient
+      .from("site_weather_cache")
       .select("normalized_weather, expires_at")
-      .eq("ao_id", aoId)
+      .eq("site_id", siteId)
       .eq("forecast_date", forecastDate)
       .eq("forecast_hour", forecastHour)
       .maybeSingle();
 
       if (cached && new Date(cached.expires_at) > new Date()) {
         console.log("WEATHER CACHE HIT", {
-          aoId,
+          siteId,
           targetDateTime,
           forecastDate,
           forecastHour,
@@ -312,16 +399,9 @@ Deno.serve(async (req) => {
         });
       }
 
-    if (cached && new Date(cached.expires_at) > new Date()) {
-      return jsonResponse({
-        ...cached.normalized_weather,
-        cached: true,
-      });
-    }
-
     const params = new URLSearchParams({
-      latitude: String(ao.latitude),
-      longitude: String(ao.longitude),
+      latitude: String(site.latitude),
+      longitude: String(site.longitude),
       current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
       hourly:
         "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m",
@@ -359,10 +439,14 @@ Deno.serve(async (req) => {
     }
 
     const rawWeather = await weatherResponse.json();
-    const normalizedWeather = normalizeWeather(rawWeather, ao, targetHourKey);
+    const normalizedWeather = normalizeWeather(
+      rawWeather,
+      site,
+      targetHourKey,
+    );
 
     console.log("WEATHER DEBUG", {
-      aoName: ao.name,
+      siteName: site.name,
       targetDateTime,
       targetHourKey,
       forecastDate,
@@ -372,12 +456,12 @@ Deno.serve(async (req) => {
 
     const expiresAt = getCacheExpiration(forecastDate);
 
-    const { error: cacheError } = await supabase
-      .from("ao_weather_cache")
+    const { error: cacheError } = await adminClient
+      .from("site_weather_cache")
       .upsert(
         {
-          region_id: ao.region_id,
-          ao_id: ao.id,
+          region_id: site.region_id,
+          site_id: site.id,
           forecast_date: forecastDate,
           forecast_hour: forecastHour,
           provider: PROVIDER,
@@ -386,7 +470,8 @@ Deno.serve(async (req) => {
           expires_at: expiresAt.toISOString(),
         },
         {
-          onConflict: "ao_id,forecast_date,forecast_hour",
+          onConflict:
+            "site_id,forecast_date,forecast_hour",
         },
       );
 
@@ -399,7 +484,7 @@ Deno.serve(async (req) => {
       cached: false,
     });
   } catch (error) {
-    console.error("get-ao-weather error", error);
+    console.error("get-site-weather error", error);
 
     return jsonResponse({
       weatherUnavailable: true,

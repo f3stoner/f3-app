@@ -76,22 +76,37 @@ export function renderAdminSettingsView() {
             "Create, edit, and activate workout locations.",
             "aoManagement"
         ),
-        createAdminCard(
-            "Admin Flags",
-            "Review legacy roster and import flags.",
-            "adminFlags"
-        ),
-        createAdminCard(
-            "Review Stale PAX",
-            "Find inactive or outdated roster records.",
-            "stalePax"
-        ),
-        createAdminCard(
-            "Import Runs",
-            "Review nightly Aggieland dry-run results.",
-            "importRuns"
-        )
     );
+        if (
+            hasPermission(
+                PERMISSIONS.MANAGE_SITES
+            )
+        ) {
+            adminCards.push(
+                createAdminCard(
+                    "Manage Sites",
+                    "Create and maintain the physical locations used by AOs and workouts.",
+                    "siteManagement"
+                )
+            );
+        }
+        adminCards.push(
+            createAdminCard(
+                "Admin Flags",
+                "Review legacy roster and import flags.",
+                "adminFlags"
+            ),
+            createAdminCard(
+                "Review Stale PAX",
+                "Find inactive or outdated roster records.",
+                "stalePax"
+            ),
+            createAdminCard(
+                "Import Runs",
+                "Review nightly Aggieland dry-run results.",
+                "importRuns"
+            )
+        );
     
     if (
         isSuperAdmin() &&

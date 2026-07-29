@@ -418,6 +418,7 @@ const RESTORABLE_VIEWS = new Set([
     "operationsCenter",
     "rosterManagement",
     "leadership",
+    "siteManagement",
 ]);
 
 function restoreNavState(nav) {
@@ -491,6 +492,14 @@ const lazyRouteLoaders = {
             module =>
                 module.renderLeadershipView
         ),
+    siteManagement: () =>
+        import(
+            /* webpackChunkName: "route-site-management" */
+            "./views/siteManagementView.js"
+        ).then(
+            module =>
+                module.renderSiteManagementView
+        ),
 };
 
 const lazyRoutePromises = new Map();
@@ -505,6 +514,7 @@ function getLazyRouteLabel(viewName) {
         rosterManagement: "Roster Management",
         weeklyQCalendar: "Weekly Q Calendar",
         leadership: "Leadership",
+        siteManagement: "Site Management",
     };
 
     return labels[viewName] || "Screen";
@@ -715,6 +725,13 @@ function renderApp() {
         renderQSignupView();
     } else if (state.currentView === "aoManagement") {
         renderAoManagementView();
+    } else if (
+        state.currentView === "siteManagement"
+    ) {
+        renderLazyRoute(
+            "siteManagement",
+            currentRenderSequence
+        ); 
     } else if (state.currentView === "aoEdit") {
         renderAoEditView();
     } else if (state.currentView === "preblast") {

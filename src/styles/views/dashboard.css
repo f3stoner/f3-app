@@ -511,7 +511,7 @@ button:not(.primary-button) {
 
     flex:
         0 0
-        clamp(148px, 43vw, 180px);
+        clamp(144px, 39vw, 168px);
 
     min-height: 158px;
 
@@ -547,6 +547,11 @@ button:not(.primary-button) {
     box-shadow:
         0 14px 34px
         rgba(0, 0, 0, 0.27);
+}
+
+.view-dashboard
+.dashboard-quick-access-deck {
+    padding-right: 1.75rem;
 }
 
 .view-dashboard

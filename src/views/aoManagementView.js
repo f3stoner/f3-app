@@ -80,7 +80,15 @@ if (sortedAos.length === 0) {
 
         const locationLine = document.createElement("div");
         locationLine.classList.add("stats-line");
-        locationLine.textContent = ao.locationName || "No location set";
+        
+        const defaultSite = (state.sites || []).find(
+            site => site.id === ao.defaultSiteId
+        );
+        
+        locationLine.textContent =
+            defaultSite?.name ||
+            ao.locationName ||
+            "No default Site";
 
         const statusLine = document.createElement("div");
         statusLine.classList.add("stats-line");

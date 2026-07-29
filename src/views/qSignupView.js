@@ -2,7 +2,16 @@ import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { formatDate, getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateQSlotInCloud, deleteQSlotFromCloud, insertQSlot, loadMappedQSlots, subscribeToQSlotChanges, unsubscribeFromChannel } from "../services/cloudData.js";
+import {
+    updateQSlotInCloud,
+    deleteQSlotFromCloud,
+    insertQSlot,
+    loadMappedQSlots,
+    subscribeToQSlotChanges,
+    unsubscribeFromChannel,
+    loadQSlotCommitmentSummaries,
+    setQSlotCommitment,
+} from "../services/cloudData.js";
 import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
@@ -21,11 +30,13 @@ import { createModalShell, closeActiveModal } from "../utils/modal.js";
 import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
+import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 
 
 let qSlotRealtimeChannel = null;
 let qSlotRealtimeRegionId = null;
 let qSlotRefreshTimerId = null;
+let expandedQSlotId = null;
 
 function createBlankWorkout({
     date = getTodayDate(),
@@ -93,7 +104,7 @@ function setupQSlotRealtime() {
     ) {
         return;
     }
-
+ 
     if (qSlotRealtimeRegionId) {
         unsubscribeFromChannel(`q-slots-${qSlotRealtimeRegionId}`);
     }
@@ -144,22 +155,23 @@ export function renderQSignupView() {
         showMenu: true,
     });
 
+    const intro = document.createElement("section");
+    intro.classList.add("q-signup-intro");
+
     const title = document.createElement("h1");
     title.textContent = "Q Signup";
 
     const subtitle = document.createElement("div");
-    subtitle.classList.add("view-subtitle");
-    subtitle.textContent = "Claim upcoming Q slots.";
+    subtitle.classList.add("q-signup-subtitle");
+    subtitle.textContent = "See upcoming workouts and claim a Q.";
+
+    intro.append(title, subtitle);
 
     const currentMember = state.members.find(
         member => member.id === state.currentUserMemberId);
 
     const homeAoName = currentMember?.homeAo || "";
     const homeAo = state.aos.find(ao => ao.name === homeAoName) || null;
-
-    const aoFilterLabel = document.createElement("div");
-    aoFilterLabel.classList.add("detail-label");
-    aoFilterLabel.textContent = "Filter by AO";
 
     const aoFilterSelect = document.createElement("select");
 
@@ -248,12 +260,31 @@ export function renderQSignupView() {
     }
 
     const adminRow = document.createElement("div");
-    adminRow.classList.add("button-row");
-
-    if (manageAosButton) adminRow.appendChild(manageAosButton);
-    if (addSlotButton) adminRow.appendChild(addSlotButton);
+    adminRow.classList.add(
+        "button-row",
+        "q-signup-admin-actions"
+    );
+    
+    if (manageAosButton) {
+        manageAosButton.classList.add(
+            "q-signup-admin-button",
+            "secondary-button"
+        );
+    
+        adminRow.appendChild(manageAosButton);
+    }
+    
+    if (addSlotButton) {
+        addSlotButton.classList.add(
+            "q-signup-admin-button",
+            "primary-button"
+        );
+    
+        adminRow.appendChild(addSlotButton);
+    }
 
     const listContainer = document.createElement("div");
+    listContainer.classList.add("q-signup-timeline");
 
     const EMPHASIS_OPTIONS = [
         "heavy",
@@ -330,6 +361,60 @@ export function renderQSignupView() {
         if (activeAos.length === 1) {
             aoSelect.value = activeAos[0].id;
         }
+
+        const siteLabel = document.createElement("div");
+        siteLabel.classList.add("detail-label");
+        siteLabel.textContent = "Site";
+
+        const siteSelect = document.createElement("select");
+
+        function populateSiteOptions() {
+            siteSelect.textContent = "";
+
+            const selectedAo = state.aos.find(
+                ao => ao.id === aoSelect.value
+            ) || null;
+
+            const defaultSite = state.sites?.find(
+                site => site.id === selectedAo?.defaultSiteId
+            ) || null;
+
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = defaultSite
+                ? `Use AO default — ${defaultSite.name}`
+                : "Use AO default — No default configured";
+
+            siteSelect.appendChild(defaultOption);
+
+            const availableSites = [...(state.sites || [])]
+                .filter(site =>
+                    !site.regionId ||
+                    site.regionId === state.currentRegionId
+                )
+                .sort((a, b) =>
+                    String(a.name || "").localeCompare(
+                        String(b.name || "")
+                    )
+                );
+
+            availableSites.forEach(site => {
+                const option = document.createElement("option");
+                option.value = site.id;
+                option.textContent =
+                    site.name || "Unnamed Site";
+
+                siteSelect.appendChild(option);
+            });
+
+            siteSelect.value = "";
+        }
+
+        populateSiteOptions();
+
+        aoSelect.addEventListener("change", () => {
+            populateSiteOptions();
+        });
 
         const dateLabel = document.createElement("div");
         dateLabel.classList.add("detail-label");
@@ -418,6 +503,25 @@ export function renderQSignupView() {
                 return;
             }
 
+            const selectedAo = state.aos.find(
+                ao => ao.id === aoSelect.value
+            ) || null;
+            
+            const selectedSiteId =
+                siteSelect.value || null;
+            
+            if (
+                !selectedSiteId &&
+                !selectedAo?.defaultSiteId
+            ) {
+                showToast(
+                    "Select a Site because this AO has no default Site.",
+                    "error"
+                );
+            
+                return;
+            }
+
             if (!managesQSlot(aoSelect.value)) {
                 showToast("You do not have permission to create slots for this AO.", "error");
                 return;
@@ -439,6 +543,7 @@ export function renderQSignupView() {
             const newSlot = {
                 id: crypto.randomUUID(),
                 aoId: aoSelect.value,
+                siteId: selectedSiteId,
                 date: dateInput.value,
                 qUserId: qSelect.value || null,
                 createdAt: new Date().toISOString(),
@@ -465,6 +570,8 @@ export function renderQSignupView() {
             heading,
             aoLabel,
             aoSelect,
+            siteLabel,
+            siteSelect,
             dateLabel,
             dateInput,
             qLabel,
@@ -484,6 +591,49 @@ export function renderQSignupView() {
     
         const heading = document.createElement("h2");
         heading.textContent = "Edit Slot";
+
+        const ao = state.aos.find(
+            candidate => candidate.id === slot.aoId
+        ) || null;
+        
+        const defaultSite = state.sites?.find(
+            site => site.id === ao?.defaultSiteId
+        ) || null;
+        
+        const siteLabel = document.createElement("div");
+        siteLabel.classList.add("detail-label");
+        siteLabel.textContent = "Site";
+        
+        const siteSelect = document.createElement("select");
+        
+        const defaultSiteOption = document.createElement("option");
+        defaultSiteOption.value = "";
+        defaultSiteOption.textContent = defaultSite
+            ? `Use AO default — ${defaultSite.name}`
+            : "Use AO default — No default configured";
+        
+        siteSelect.appendChild(defaultSiteOption);
+        
+        const availableSites = [...(state.sites || [])]
+            .filter(site =>
+                !site.regionId ||
+                site.regionId === state.currentRegionId
+            )
+            .sort((a, b) =>
+                String(a.name || "").localeCompare(
+                    String(b.name || "")
+                )
+            );
+        
+        availableSites.forEach(site => {
+            const option = document.createElement("option");
+            option.value = site.id;
+            option.textContent = site.name || "Unnamed Site";
+        
+            siteSelect.appendChild(option);
+        });
+        
+        siteSelect.value = slot.siteId || "";
     
         const timeLabel = document.createElement("div");
         timeLabel.classList.add("detail-label");
@@ -539,9 +689,22 @@ export function renderQSignupView() {
                 if (!activeRegionId) {
                     throw new Error("No active region id");
                 }
+
+                const selectedSiteId =
+                    siteSelect.value || null;
+
+                if (!selectedSiteId && !ao?.defaultSiteId) {
+                    showToast(
+                        "Select a Site because this AO has no default Site.",
+                        "error"
+                    );
+
+                    return;
+                }
     
                 await updateQSlotInCloud(activeRegionId, {
                     ...slot,
+                    siteId: selectedSiteId,
                     overrideEmphasis: emphasisSelect.value || null,
                     customEmphasisLabel: customEmphasisInput.value.trim() || null,
                     overrideTime: timeInput.value.trim() || null,
@@ -563,6 +726,8 @@ export function renderQSignupView() {
     
         modal.append(
             heading,
+            siteLabel,
+            siteSelect,
             timeLabel,
             timeInput,
             emphasisLabel,
@@ -651,6 +816,146 @@ export function renderQSignupView() {
             qSelect,
             buttonRow
         );
+    }
+
+    async function updateMyQSlotCommitment(
+        qSlotId,
+        commitmentType
+    ) {
+        if (!state.currentUserMemberId) {
+            showToast(
+                "Your account is not linked to a PAX record.",
+                "error"
+            );
+    
+            return;
+        }
+    
+        if (
+            state.qSlotCommitmentLoadingBySlotId?.[
+                qSlotId
+            ]
+        ) {
+            return;
+        }
+    
+        const currentSummary =
+            state.qSlotCommitmentSummariesBySlotId?.[
+                qSlotId
+            ] || {
+                qSlotId,
+                hcCount: 0,
+                scCount: 0,
+                myCommitment: null,
+            };
+    
+        const previousCommitment =
+            currentSummary.myCommitment || null;
+    
+        const nextCommitment =
+            previousCommitment === commitmentType
+                ? null
+                : commitmentType;
+    
+        state.qSlotCommitmentLoadingBySlotId = {
+            ...(
+                state.qSlotCommitmentLoadingBySlotId ||
+                {}
+            ),
+            [qSlotId]: true,
+        };
+    
+        try {
+            await setQSlotCommitment({
+                qSlotId,
+                memberId:
+                    state.currentUserMemberId,
+                commitmentType:
+                    nextCommitment,
+            });
+    
+            let hcCount =
+                Number(currentSummary.hcCount || 0);
+    
+            let scCount =
+                Number(currentSummary.scCount || 0);
+    
+            if (previousCommitment === "hc") {
+                hcCount = Math.max(
+                    0,
+                    hcCount - 1
+                );
+            }
+    
+            if (previousCommitment === "sc") {
+                scCount = Math.max(
+                    0,
+                    scCount - 1
+                );
+            }
+    
+            if (nextCommitment === "hc") {
+                hcCount += 1;
+            }
+    
+            if (nextCommitment === "sc") {
+                scCount += 1;
+            }
+    
+            state.qSlotCommitmentSummariesBySlotId = {
+                ...(
+                    state.qSlotCommitmentSummariesBySlotId ||
+                    {}
+                ),
+                [qSlotId]: {
+                    ...currentSummary,
+                    qSlotId,
+                    hcCount,
+                    scCount,
+                    myCommitment:
+                        nextCommitment,
+                },
+            };
+    
+            showToast(
+                nextCommitment === "hc"
+                    ? "Hard Commit added."
+                    : nextCommitment === "sc"
+                        ? "Soft Commit added."
+                        : "Commitment cleared.",
+                "success"
+            );
+        } catch (error) {
+            console.error(
+                "Unable to update Q-slot commitment:",
+                {
+                    qSlotId,
+                    commitmentType:
+                        nextCommitment,
+                    error,
+                }
+            );
+    
+            showToast(
+                "Unable to update commitment.",
+                "error"
+            );
+        } finally {
+            state.qSlotCommitmentLoadingBySlotId = {
+                ...(
+                    state.qSlotCommitmentLoadingBySlotId ||
+                    {}
+                ),
+                [qSlotId]: false,
+            };
+    
+            if (
+                state.currentView ===
+                "qSignup"
+            ) {
+                renderApp();
+            }
+        }
     }
 
     async function claimQSlot(slot) {
@@ -824,6 +1129,111 @@ export function renderQSignupView() {
         return `${displayHours}:${minutes} ${period}`;
     }
 
+    function addDaysToDateString(dateString, days) {
+        const date = new Date(`${dateString}T00:00:00`);
+        date.setDate(date.getDate() + days);
+    
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+    
+        return `${year}-${month}-${day}`;
+    }
+    
+    function formatTimelineDate(dateString) {
+        const date = new Date(`${dateString}T00:00:00`);
+    
+        return date
+            .toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+            })
+            .toUpperCase();
+    }
+    
+    function buildTimelineSections(slots) {
+        const tomorrow = addDaysToDateString(today, 1);
+        const slotsByDate = new Map();
+    
+        slots.forEach(slot => {
+            if (!slotsByDate.has(slot.date)) {
+                slotsByDate.set(slot.date, []);
+            }
+    
+            slotsByDate.get(slot.date).push(slot);
+        });
+    
+        return [...slotsByDate.entries()].map(([date, dateSlots]) => {
+            let label = formatTimelineDate(date);
+            let tone = "future";
+    
+            if (date === today) {
+                label = "TODAY";
+                tone = "today";
+            } else if (date === tomorrow) {
+                label = "TOMORROW";
+                tone = "tomorrow";
+            }
+    
+            return {
+                date,
+                label,
+                tone,
+                slots: dateSlots,
+            };
+        });
+    }
+    
+    function createTimelineSectionHeader(section) {
+        const header = document.createElement("div");
+    
+        header.classList.add(
+            "q-signup-timeline-header",
+            `q-signup-timeline-header-${section.tone}`
+        );
+    
+        const headingWrap = document.createElement("div");
+        headingWrap.classList.add("q-signup-timeline-heading-wrap");
+    
+        const heading = document.createElement("div");
+        heading.classList.add("q-signup-timeline-heading");
+        heading.textContent = section.label;
+    
+        if (
+            section.tone === "today" ||
+            section.tone === "tomorrow"
+        ) {
+            const dateText = document.createElement("div");
+            dateText.classList.add("q-signup-timeline-date");
+    
+            dateText.textContent = new Date(
+                `${section.date}T00:00:00`
+            )
+                .toLocaleDateString(undefined, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                })
+                .toUpperCase();
+    
+            headingWrap.append(heading, dateText);
+        } else {
+            headingWrap.appendChild(heading);
+        }
+    
+        const count = document.createElement("div");
+        count.classList.add("q-signup-timeline-count");
+        count.textContent = String(section.slots.length);
+    
+        header.append(
+            headingWrap,
+            count
+        );
+    
+        return header;
+    }
+
     if (!state.qSignupMonth) {
         state.qSignupMonth = getCurrentMonthKey();
     }
@@ -864,296 +1274,914 @@ export function renderQSignupView() {
             return aoA.localeCompare(aoB);
         }
     
-        const siteA = state.sites?.find(site => site.id === a.siteId)?.name || "";
-        const siteB = state.sites?.find(site => site.id === b.siteId)?.name || "";
-    
+        const resolvedSiteA =
+            resolveSiteForQSlot(
+                a,
+                state.aos.find(ao => ao.id === a.aoId)
+            );
+
+        const resolvedSiteB =
+            resolveSiteForQSlot(
+                b,
+                state.aos.find(ao => ao.id === b.aoId)
+            );
+
+        const siteA =
+            resolvedSiteA?.name || "";
+
+        const siteB =
+            resolvedSiteB?.name || "";
+            
         return siteA.localeCompare(siteB);
     });
 
+    function loadVisibleCommitmentSummaries(slots) {
+        const qSlotIds = slots
+            .map(slot => slot.id)
+            .filter(Boolean);
+    
+        if (!qSlotIds.length) {
+            return;
+        }
+    
+        const requestKey = [
+            state.currentRegionId,
+            state.workspaceGeneration,
+            ...qSlotIds,
+        ].join("__");
+    
+        if (
+            state.qSignupCommitmentSummaryRequestKey ===
+            requestKey
+        ) {
+            return;
+        }
+    
+        state.qSignupCommitmentSummaryRequestKey =
+            requestKey;
+    
+        const requestGeneration =
+            state.workspaceGeneration;
+    
+        loadQSlotCommitmentSummaries(qSlotIds)
+            .then(summaries => {
+                if (
+                    requestGeneration !==
+                    state.workspaceGeneration
+                ) {
+                    return;
+                }
+    
+                const nextBySlotId = {};
+    
+                qSlotIds.forEach(qSlotId => {
+                    nextBySlotId[qSlotId] = {
+                        qSlotId,
+                        hcCount: 0,
+                        scCount: 0,
+                        myCommitment: null,
+                    };
+                });
+    
+                summaries.forEach(summary => {
+                    nextBySlotId[summary.qSlotId] =
+                        summary;
+                });
+    
+                state.qSlotCommitmentSummariesBySlotId = {
+                    ...(
+                        state.qSlotCommitmentSummariesBySlotId ||
+                        {}
+                    ),
+                    ...nextBySlotId,
+                };
+    
+                if (
+                    state.currentView ===
+                    "qSignup"
+                ) {
+                    renderApp();
+                }
+            })
+            .catch(error => {
+                console.error(
+                    "Failed to load Q signup commitments:",
+                    error
+                );
+    
+                if (
+                    requestGeneration ===
+                    state.workspaceGeneration
+                ) {
+                    state.qSignupCommitmentSummaryRequestKey =
+                        null;
+                }
+            });
+    }
+
+    loadVisibleCommitmentSummaries(sortedSlots);
+
+    const timelineSections =
+        buildTimelineSections(sortedSlots);
+
     if (sortedSlots.length === 0) {
         const empty = document.createElement("div");
-        empty.classList.add("detail-value");
-        empty.textContent = state.qSignupOpenOnly
-        ? "No open Q slots for this filter"
-        : "No Q slots available yet";
-
+        empty.classList.add("q-signup-empty-state");
+    
+        const emptyTitle = document.createElement("div");
+        emptyTitle.classList.add("q-signup-empty-title");
+        emptyTitle.textContent = state.qSignupOpenOnly
+            ? "No open Q slots"
+            : "No Q slots this month";
+    
+        const emptyMessage = document.createElement("div");
+        emptyMessage.classList.add("q-signup-empty-message");
+        emptyMessage.textContent = state.qSignupOpenOnly
+            ? "Try another AO or turn off the open-only filter."
+            : "Check another month or ask leadership to add the schedule.";
+    
+        empty.append(
+            emptyTitle,
+            emptyMessage
+        );
+    
         listContainer.appendChild(empty);
     } else {
-        sortedSlots.forEach(slot => {
+        timelineSections.forEach(section => {
+            const sectionElement =
+                document.createElement("section");
+    
+            sectionElement.classList.add(
+                "q-signup-timeline-section"
+            );
+    
+            const sectionHeader =
+                createTimelineSectionHeader(section);
+    
+            const sectionRows =
+                document.createElement("div");
+    
+            sectionRows.classList.add(
+                "q-signup-timeline-rows"
+            );
+    
+            sectionElement.append(
+                sectionHeader,
+                sectionRows
+            );
+    
+            section.slots.forEach(slot => {
             const managesThisAo = managesQSlot(slot);
+    
+            const ao = state.aos.find(
+                candidate => candidate.id === slot.aoId
+            );
+    
+            const site = resolveSiteForQSlot(
+                slot,
+                ao
+            );
 
-            const card = document.createElement("div");
-            card.classList.add("member-card", "q-slot-card");
-
-            if (managesThisAo) {
-                card.classList.add("clickable-card");
-
-                card.addEventListener("click", () => {
-                    openEditSlotModal(slot);
-                });
-            }
-
-            const ao = state.aos.find(a => a.id === slot.aoId);
-
-            const site = state.sites?.find(
-                candidate => candidate.id === slot.siteId
-            ) || null;
-
-            const emphasisBadge = createWorkoutEmphasisBadge(slot, ao);
-
+            const emphasisBadge = createWorkoutEmphasisBadge(
+                slot,
+                ao
+            );
+    
             const dayKey = String(
                 new Date(`${slot.date}T00:00:00`).getDay()
             );
-
+    
             const rawDisplayTime =
                 slot.overrideTime ||
                 slot.startTime ||
                 ao?.timeSchedule?.[dayKey] ||
                 ao?.time ||
                 "";
+    
+            const displayTime = formatQSlotTime(
+                rawDisplayTime
+            );
+    
+            const displaySiteName =
+                site?.name ||
+                ao?.locationName ||
+                "";
 
-            const displayTime = formatQSlotTime(rawDisplayTime);
-            const displaySiteName = site?.name || "";
             const displayTitle = slot.overrideTitle || "";
-            const isMine = slot.qUserId === state.currentUserMemberId;
-            const canEditSlot = managesThisAo || isMine;
-            const qMember = state.members.find(m => m.id === slot.qUserId);
+    
+            const isMine =
+                slot.qUserId === state.currentUserMemberId;
+    
+            const canEditSlot =
+                managesThisAo || isMine;
+    
+            const qMember = state.members.find(
+                member => member.id === slot.qUserId
+            );
+    
+            const qDisplayName =
+                qMember?.paxName ||
+                qMember?.realName ||
+                qMember?.fullName ||
+                "";
+    
             const matchingWorkout = findWorkoutForQSlot(
                 slot,
                 state.plannedWorkouts,
                 state.currentUserId,
                 state.aos
             );
-            const hasPlannedWorkout = Boolean(matchingWorkout);
+    
+            const hasPlannedWorkout = Boolean(
+                matchingWorkout
+            );
 
-            const topLine = document.createElement("div");
-            topLine.classList.add("member-name");
-            if (managesThisAo) {
-                topLine.title = "Tap card to edit slot";
+            const commitmentSummary =
+                state.qSlotCommitmentSummariesBySlotId?.[
+                    slot.id
+                ] || null;
+
+            const isUpdatingCommitment =
+                Boolean(
+                    state.qSlotCommitmentLoadingBySlotId?.[
+                        slot.id
+                    ]
+                );
+    
+    
+            // Compact timeline row
+
+            const card = document.createElement("article");
+            card.classList.add("q-signup-slot-card");
+
+            const isExpanded =
+                expandedQSlotId === slot.id;
+
+            if (isExpanded) {
+                card.classList.add("expanded");
             }
-            topLine.textContent = displayTitle
-                ? `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"} - ${displayTitle}`
-                : `${formatDate(slot.date)} - ${ao?.name || "Unknown AO"}`;
 
-            const siteLine = document.createElement("div");
-            siteLine.classList.add("stats-line");
-            
-            if (displaySiteName) {
-                siteLine.textContent = displaySiteName;
+            card.tabIndex = 0;
+            card.setAttribute("role", "button");
+            card.setAttribute(
+                "aria-expanded",
+                String(isExpanded)
+            );
+
+            if (!slot.qUserId) {
+                card.classList.add("q-signup-slot-open");
+            } else if (isMine) {
+                card.classList.add("q-signup-slot-mine");
+            } else {
+                card.classList.add("q-signup-slot-filled");
             }
 
-            const titleLine = document.createElement("div");
-            titleLine.classList.add("stats-line");
-            titleLine.textContent = isMine
-                ? "Q: You"
-                : qMember
-                    ? `Q: ${qMember.paxName}`
-                    : slot.qUserId
-                        ? "Q: Filled"
-                        : "Q: Open";
 
-            const previewLine = document.createElement("div");
-            previewLine.classList.add("stats-line");
-            
+            // Main collapsed row
+
+            const rowMain = document.createElement("div");
+            rowMain.classList.add("q-signup-row-main");
+
+            const identity = document.createElement("div");
+            identity.classList.add("q-signup-row-identity");
+
+            const titleRow = document.createElement("div");
+            titleRow.classList.add("q-signup-row-title");
+
+            const aoName = document.createElement("div");
+            aoName.classList.add("q-signup-row-ao-name");
+            aoName.textContent = ao?.name || "Unknown AO";
+
+            titleRow.appendChild(aoName);
+
+            if (emphasisBadge) {
+                emphasisBadge.classList.add(
+                    "q-signup-slot-emphasis"
+                );
+
+                titleRow.appendChild(emphasisBadge);
+            }
+
             if (isMine) {
-                previewLine.textContent = !hasPlannedWorkout
+                const planningBadge = document.createElement("div");
+
+                planningBadge.classList.add(
+                    "q-signup-planning-status"
+                );
+
+                planningBadge.textContent = !hasPlannedWorkout
                     ? "Needs BD"
                     : matchingWorkout.isFinalized
                         ? "BD Ready"
                         : "Draft BD";
+
+                titleRow.appendChild(planningBadge);
             }
 
-            const timeLine = document.createElement("div");
-            timeLine.classList.add("stats-line");
-            timeLine.textContent = displayTime ? `Start: ${displayTime}` : "No time set";
+            const metadata = document.createElement("div");
+            metadata.classList.add("q-signup-row-metadata");
 
-            const actionWrap = document.createElement("div");
-            actionWrap.classList.add("q-slot-actions");
+            if (displayTime) {
+                const timeText = document.createElement("span");
+
+                timeText.classList.add(
+                    "q-signup-row-time"
+                );
+
+                timeText.textContent = displayTime;
+
+                metadata.appendChild(timeText);
+            }
+
+            if (displaySiteName) {
+                if (displayTime) {
+                    const separator = document.createElement("span");
+
+                    separator.classList.add(
+                        "q-signup-row-metadata-separator"
+                    );
+
+                    separator.textContent = "•";
+
+                    metadata.appendChild(separator);
+                }
+
+                const siteText = document.createElement("span");
+
+                siteText.classList.add(
+                    "q-signup-row-site"
+                );
+
+                siteText.textContent = displaySiteName;
+                siteText.title = displaySiteName;
+
+                metadata.appendChild(siteText);
+            }
+
+            if (!displayTime && !displaySiteName) {
+                metadata.textContent = "Schedule not set";
+            }
+
+            identity.append(
+                titleRow,
+                metadata
+            );
+
+            if (displayTitle) {
+                const customTitle = document.createElement("div");
+                customTitle.classList.add(
+                    "q-signup-slot-custom-title"
+                );
+                customTitle.textContent = displayTitle;
+
+                identity.appendChild(customTitle);
+            }
+
+
+            // Status and primary action
+
+            const statusArea = document.createElement("div");
+            statusArea.classList.add("q-signup-row-status-area");
+
+            const statusText = document.createElement("div");
+            statusText.classList.add("q-signup-row-status");
+
+            statusText.textContent = !slot.qUserId
+                ? "OPEN"
+                : isMine
+                    ? "MY Q"
+                    : qDisplayName || "Filled";
+
+            const expandIndicator = document.createElement("span");
+
+            expandIndicator.classList.add(
+                "q-signup-expand-indicator"
+            );
+            
+            expandIndicator.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+            
+            expandIndicator.textContent =
+                isExpanded ? "⌃" : "⌄";
+            
+            const statusTopRow =
+                document.createElement("div");
+            
+            statusTopRow.classList.add(
+                "q-signup-status-top-row"
+            );
+            
+            statusTopRow.append(
+                statusText,
+                expandIndicator
+            );
+            
+            statusArea.appendChild(
+                statusTopRow
+            );
 
             if (!slot.qUserId) {
                 const claimButton = document.createElement("button");
+
+                claimButton.classList.add(
+                    "q-signup-row-primary-button",
+                    "q-signup-claim-button"
+                );
+
                 claimButton.textContent = "Claim";
-            
-                claimButton.addEventListener("click", async (event) => {
-                    event.stopPropagation();
-                    await claimQSlot(slot);
-                });
-            
-                actionWrap.appendChild(claimButton);
+
+                claimButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+                        await claimQSlot(slot);
+                    }
+                );
+
+                statusArea.appendChild(claimButton);
             } else if (isMine) {
                 const workoutButton = document.createElement("button");
-                workoutButton.textContent = !hasPlannedWorkout 
+
+                workoutButton.classList.add(
+                    "q-signup-row-primary-button",
+                    "q-signup-workout-button"
+                );
+
+                workoutButton.textContent = !hasPlannedWorkout
                     ? "Plan BD"
-                    : matchingWorkout.isFinalized 
+                    : matchingWorkout.isFinalized
                         ? "View BD"
-                        : "Continue Planning";
+                        : "Continue";
 
-                workoutButton.addEventListener("click", (event) => {
-                    event.stopPropagation();
+                workoutButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
 
-                    if (hasPlannedWorkout) {
-                        if (!matchingWorkout.isFinalized) {
-                    
-                            savePlannerDraft(
-                                createExistingPlannerDraft(matchingWorkout)
-                            );
-                    
-                            state.selectedPlannedWorkoutId = null;
-                    
-                            navigateTo("workoutPlanner");
+                        if (hasPlannedWorkout) {
+                            if (!matchingWorkout.isFinalized) {
+                                savePlannerDraft(
+                                    createExistingPlannerDraft(
+                                        matchingWorkout
+                                    )
+                                );
+
+                                state.selectedPlannedWorkoutId = null;
+
+                                navigateTo("workoutPlanner");
+                                return;
+                            }
+
+                            state.selectedPlannedWorkoutId =
+                                matchingWorkout.id;
+
+                            state.plannedWorkoutLaunchMode = null;
+
+                            navigateTo("plannedWorkoutDetail");
                             return;
                         }
-                    
-                        state.selectedPlannedWorkoutId = matchingWorkout.id;
-                        state.plannedWorkoutLaunchMode = null;
-                        navigateTo("plannedWorkoutDetail");
-                    } else {
+
                         const newWorkout = createBlankWorkout({
                             date: slot.date,
-                            aoId: ao?.id || slot.aoId || null,
+                            aoId:
+                                ao?.id ||
+                                slot.aoId ||
+                                null,
                             aoName: ao?.name || "",
-                            siteId: slot.siteId || null,
+                            siteId:
+                                site?.id ||
+                                null,
                             qSlotId: slot.id,
                         });
-                        
+
                         savePlannerDraft(
-                            createNewPlannerDraft(newWorkout)
+                            createNewPlannerDraft(
+                                newWorkout
+                            )
                         );
-                        
+
                         navigateTo("workoutPlanner");
                     }
-                });
+                );
 
-                const unclaimButton = document.createElement("button");
-                unclaimButton.textContent = "Unclaim";
-
-                unclaimButton.addEventListener("click", async (event) => {
-                    event.stopPropagation();
-                    try {
-                        const result = await unclaimQSlot(slot);
-
-                        if (!result?.success) {
-                            return;
-                        }
-
-                        renderApp();
-                    } catch (error) {
-                        console.error("Failed to unclaim Q slot:", error);
-                        showToast("Failed to unclaim Q slot.", "error");
-
-                        logActionFailure("unclaimQSlot", error, {
-                            qSlotId: slot?.id || null,
-                            aoId: slot?.aoId || null,
-                            date: slot?.date || null,
-                            currentUserMemberId: state.currentUserMemberId || null,
-                        });
-                    }
-                });
-
-                actionWrap.append(workoutButton, unclaimButton);
+                statusArea.appendChild(workoutButton);
             }
 
-            let adminActions = null;
+            rowMain.append(
+                identity,
+                statusArea
+            );
+
+            card.appendChild(rowMain);
+
+
+            // Secondary actions
+            // These remain visible for this commit.
+            // The next commit moves them into expansion.
+
+            const secondaryActions =
+                document.createElement("div");
+
+            secondaryActions.classList.add(
+                "q-signup-row-secondary-actions",
+                "q-signup-expansion-panel"
+            );
+
+            secondaryActions.hidden = !isExpanded;
 
             if (canEditSlot) {
                 const editButton = document.createElement("button");
-                editButton.classList.add("q-slot-edit-button");
-                editButton.textContent = "Edit";
-            
-                editButton.addEventListener("click", (event) => {
+                editButton.textContent = "Edit Slot";
+
+                editButton.addEventListener("click", event => {
                     event.stopPropagation();
                     openEditSlotModal(slot);
                 });
-            
-                actionWrap.appendChild(editButton);
+
+                secondaryActions.appendChild(editButton);
+            }
+
+            if (isMine) {
+                const unclaimButton = document.createElement("button");
+                unclaimButton.textContent = "Unclaim";
+
+                unclaimButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+
+                        try {
+                            const result =
+                                await unclaimQSlot(slot);
+
+                            if (!result?.success) {
+                                return;
+                            }
+
+                            renderApp();
+                        } catch (error) {
+                            console.error(
+                                "Failed to unclaim Q slot:",
+                                error
+                            );
+
+                            showToast(
+                                "Failed to unclaim Q slot.",
+                                "error"
+                            );
+
+                            logActionFailure(
+                                "unclaimQSlot",
+                                error,
+                                {
+                                    qSlotId:
+                                        slot?.id ||
+                                        null,
+                                    aoId:
+                                        slot?.aoId ||
+                                        null,
+                                    date:
+                                        slot?.date ||
+                                        null,
+                                    currentUserMemberId:
+                                        state.currentUserMemberId ||
+                                        null,
+                                }
+                            );
+                        }
+                    }
+                );
+
+                secondaryActions.appendChild(
+                    unclaimButton
+                );
             }
 
             if (managesThisAo) {
-                adminActions = document.createElement("div");
-                adminActions.classList.add("q-slot-admin-actions");
-
                 const assignButton = document.createElement("button");
                 assignButton.textContent = "Assign Q";
 
-                assignButton.addEventListener("click", (event) => {
-                    event.stopPropagation();
-                    openAssignQModal(slot);
-                });
+                assignButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+                        openAssignQModal(slot);
+                    }
+                );
 
                 const clearButton = document.createElement("button");
                 clearButton.textContent = "Clear Q";
-
                 clearButton.disabled = !slot.qUserId;
 
-                clearButton.addEventListener("click", async (event) => {
-                    event.stopPropagation();
-                    
-                    try{
-                        const result = await unclaimQSlot(slot, {
-                            bypassDropGuard: true,
-                        });
-                        
-                        if (!result?.success) {
-                            return;
-                        }
-                        
-                        renderApp();
-                    } catch (error) {
-                        console.error("Failed to clear Q slot:", error);
-                        showToast("Failed to clear Q slot.", "error");
+                clearButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
 
-                        logActionFailure("clearQSlot", error, {
-                            qSlotId: slot?.id || null,
-                            aoId: slot?.aoId || null,
-                            date: slot?.date || null,
-                            bypassDropGuard: true,
-                        });
+                        try {
+                            const result =
+                                await unclaimQSlot(
+                                    slot,
+                                    {
+                                        bypassDropGuard: true,
+                                    }
+                                );
+
+                            if (!result?.success) {
+                                return;
+                            }
+
+                            renderApp();
+                        } catch (error) {
+                            console.error(
+                                "Failed to clear Q slot:",
+                                error
+                            );
+
+                            showToast(
+                                "Failed to clear Q slot.",
+                                "error"
+                            );
+
+                            logActionFailure(
+                                "clearQSlot",
+                                error,
+                                {
+                                    qSlotId:
+                                        slot?.id ||
+                                        null,
+                                    aoId:
+                                        slot?.aoId ||
+                                        null,
+                                    date:
+                                        slot?.date ||
+                                        null,
+                                    bypassDropGuard: true,
+                                }
+                            );
+                        }
                     }
-                });
+                );
 
                 const deleteButton = document.createElement("button");
-                deleteButton.classList.add("danger-button");
+
+                deleteButton.classList.add(
+                    "danger-button"
+                );
+
                 deleteButton.textContent = "Remove";
 
-                deleteButton.addEventListener("click", async (event) => {
+                deleteButton.addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+                        await deleteQSlot(slot);
+                    }
+                );
+
+                secondaryActions.append(
+                    assignButton,
+                    clearButton,
+                    deleteButton
+                );
+            }
+
+            const expandedDetails =
+                document.createElement("div");
+
+            expandedDetails.classList.add(
+                "q-signup-expanded-details"
+            );
+
+            expandedDetails.hidden = !isExpanded;
+
+            const commitmentRow =
+                document.createElement("div");
+
+            commitmentRow.classList.add(
+                "q-signup-commitment-row"
+            );
+
+            const commitmentCounts =
+                document.createElement("div");
+
+            commitmentCounts.classList.add(
+                "q-signup-commitment-counts"
+            );
+
+            const hcCount =
+                document.createElement("span");
+
+            hcCount.textContent = commitmentSummary
+                ? `HC ${commitmentSummary.hcCount}`
+                : "HC —";
+
+            const scCount =
+                document.createElement("span");
+
+            scCount.textContent = commitmentSummary
+                ? `SC ${commitmentSummary.scCount}`
+                : "SC —";
+
+            commitmentCounts.append(
+                hcCount,
+                scCount
+            );
+
+            const commitmentControls =
+                document.createElement("div");
+
+            commitmentControls.classList.add(
+                "q-signup-commitment-controls"
+            );
+
+            const hcButton =
+                document.createElement("button");
+
+            hcButton.type = "button";
+            hcButton.textContent = "HC";
+
+            hcButton.classList.add(
+                "q-signup-commitment-button",
+                "q-signup-commitment-button-hc"
+            );
+
+            if (
+                commitmentSummary?.myCommitment === "hc"
+            ) {
+                hcButton.classList.add("selected");
+            }
+
+            hcButton.disabled =
+                isUpdatingCommitment ||
+                !commitmentSummary;
+
+            hcButton.setAttribute(
+                "aria-pressed",
+                String(
+                    commitmentSummary?.myCommitment ===
+                    "hc"
+                )
+            );
+
+            hcButton.addEventListener(
+                "click",
+                async event => {
                     event.stopPropagation();
-                    await deleteQSlot(slot);
-                });
 
-                adminActions.append(assignButton, clearButton, deleteButton);
+                    await updateMyQSlotCommitment(
+                        slot.id,
+                        "hc"
+                    );
+                }
+            );
+
+            const scButton =
+                document.createElement("button");
+
+            scButton.type = "button";
+            scButton.textContent = "SC";
+
+            scButton.classList.add(
+                "q-signup-commitment-button",
+                "q-signup-commitment-button-sc"
+            );
+
+            if (
+                commitmentSummary?.myCommitment === "sc"
+            ) {
+                scButton.classList.add("selected");
             }
 
-            const mainRow = document.createElement("div");
-            mainRow.classList.add("q-slot-main-row");
+            scButton.disabled =
+                isUpdatingCommitment ||
+                !commitmentSummary;
 
-            const cardContent = document.createElement("div");
+            scButton.setAttribute(
+                "aria-pressed",
+                String(
+                    commitmentSummary?.myCommitment ===
+                    "sc"
+                )
+            );
 
-            cardContent.append(topLine);
+            scButton.addEventListener(
+                "click",
+                async event => {
+                    event.stopPropagation();
 
-            if (displaySiteName) {
-                cardContent.append(siteLine);
+                    await updateMyQSlotCommitment(
+                        slot.id,
+                        "sc"
+                    );
+                }
+            );
+
+            commitmentControls.append(
+                hcButton,
+                scButton
+            );
+
+            commitmentRow.append(
+                commitmentCounts,
+                commitmentControls
+            );
+
+            expandedDetails.appendChild(
+                commitmentRow
+            );
+
+            if (displayTitle || hasPlannedWorkout) {
+                const workoutDetail =
+                    document.createElement("div");
+
+                workoutDetail.classList.add(
+                    "q-signup-expanded-detail"
+                );
+
+                const workoutLabel =
+                    document.createElement("div");
+
+                workoutLabel.classList.add(
+                    "q-signup-expanded-label"
+                );
+
+                workoutLabel.textContent = "Workout";
+
+                const workoutValue =
+                    document.createElement("div");
+
+                workoutValue.classList.add(
+                    "q-signup-expanded-value"
+                );
+
+                workoutValue.textContent =
+                    displayTitle ||
+                    matchingWorkout?.title ||
+                    (
+                        matchingWorkout
+                            ? "Workout planned"
+                            : "No beatdown planned yet"
+                    );
+
+                workoutDetail.append(
+                    workoutLabel,
+                    workoutValue
+                );
+
+                expandedDetails.appendChild(
+                    workoutDetail
+                );
             }
 
-            if (emphasisBadge) {
-                cardContent.append(emphasisBadge);
+            card.appendChild(expandedDetails);
+
+            if (secondaryActions.children.length) {
+                card.appendChild(secondaryActions);
             }
 
-            cardContent.append(titleLine, timeLine);
-
-            if (isMine) {
-                cardContent.append(previewLine);
+            function toggleExpandedRow() {
+                const shouldExpand =
+                    expandedQSlotId !== slot.id;
+            
+                expandedQSlotId =
+                    shouldExpand
+                        ? slot.id
+                        : null;
+            
+                renderApp();
             }
-                        
-            mainRow.append(cardContent, actionWrap);
-            card.appendChild(mainRow);  
+            
+            rowMain.addEventListener(
+                "click",
+                toggleExpandedRow
+            );
+            
+            card.addEventListener(
+                "keydown",
+                event => {
+                    if (
+                        event.key !== "Enter" &&
+                        event.key !== " "
+                    ) {
+                        return;
+                    }
+            
+                    event.preventDefault();
+                    toggleExpandedRow();
+                }
+            );
 
-            if (managesThisAo && adminActions) {
-                card.append(adminActions);
-            }
-
-            listContainer.appendChild(card);
+            sectionRows.appendChild(card);
         });
-    }
+
+        listContainer.appendChild(
+            sectionElement
+        );
+    });
+}
 
     const nav = createGlobalNav();
 
@@ -1195,11 +2223,11 @@ export function renderQSignupView() {
 
     app.append(
         header,
-        title,
-        subtitle,
-        ...(adminRow.children.length ? [adminRow] : []),
+        intro,
+        ...(adminRow.children.length
+            ? [adminRow]
+            : []),
         monthNavRow,
-        aoFilterLabel,
         controlsRow,
         listContainer,
         nav

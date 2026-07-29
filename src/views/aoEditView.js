@@ -81,9 +81,10 @@ export function renderAoEditView() {
         emphasisSchedule: { ...(existingAo.emphasisSchedule || {}) },
         timeSchedule: { ...(existingAo.timeSchedule || {}) },
      }
-    : {
+     : {
         id: crypto.randomUUID(),
         name: "",
+        defaultSiteId: null,
         locationName: "",
         address: "",
         mapUrl: "",
@@ -112,6 +113,35 @@ export function renderAoEditView() {
 
     nameInput.addEventListener("input", (event) => {
         draftAo.name = event.target.value;
+    });
+
+    const defaultSiteLabel = document.createElement("div");
+    defaultSiteLabel.classList.add("detail-label");
+    defaultSiteLabel.textContent = "Default Site";
+
+    const defaultSiteSelect = document.createElement("select");
+
+    const noDefaultSiteOption = document.createElement("option");
+    noDefaultSiteOption.value = "";
+    noDefaultSiteOption.textContent = "No default Site";
+    defaultSiteSelect.appendChild(noDefaultSiteOption);
+
+    const availableSites = [...(state.sites || [])]
+        .filter(site => site.isActive !== false)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+    availableSites.forEach(site => {
+        const option = document.createElement("option");
+        option.value = site.id;
+        option.textContent = site.name || "Unnamed Site";
+        defaultSiteSelect.appendChild(option);
+    });
+
+    defaultSiteSelect.value = draftAo.defaultSiteId || "";
+
+    defaultSiteSelect.addEventListener("change", event => {
+        draftAo.defaultSiteId = event.target.value || null;
+        renderSiteSelectionState();
     });
 
     const locationLabel = document.createElement("div");
@@ -200,6 +230,81 @@ export function renderAoEditView() {
     const weatherEnabledRow = document.createElement("div");
     weatherEnabledRow.classList.add("ao-status-row");
     weatherEnabledRow.append(weatherEnabledWrap);
+
+    const siteDetailsWrap = document.createElement("div");
+    siteDetailsWrap.classList.add("section");
+
+    const siteDetailsName = document.createElement("div");
+    siteDetailsName.classList.add("member-name");
+
+    const siteDetailsAddress = document.createElement("div");
+    siteDetailsAddress.classList.add("stats-line");
+
+    const siteDetailsWeather = document.createElement("div");
+    siteDetailsWeather.classList.add("stats-line");
+
+    siteDetailsWrap.append(
+        siteDetailsName,
+        siteDetailsAddress,
+        siteDetailsWeather
+    );
+
+    const legacyLocationWrap = document.createElement("div");
+    legacyLocationWrap.classList.add("section");
+
+    legacyLocationWrap.append(
+        locationLabel,
+        locationInput,
+        addressLabel,
+        addressInput,
+        latitudeLabel,
+        latitudeInput,
+        longitudeLabel,
+        longitudeInput,
+        weatherLocationLabel,
+        weatherLocationInput,
+        weatherEnabledLabel,
+        weatherEnabledRow
+    );
+
+    function renderSiteSelectionState() {
+        const selectedSite = (state.sites || []).find(
+            site => site.id === draftAo.defaultSiteId
+        );
+
+        const hasSelectedSite = Boolean(selectedSite);
+
+        siteDetailsWrap.hidden = !hasSelectedSite;
+        legacyLocationWrap.hidden = hasSelectedSite;
+
+        if (!selectedSite) {
+            siteDetailsName.textContent = "";
+            siteDetailsAddress.textContent = "";
+            siteDetailsWeather.textContent = "";
+            return;
+        }
+
+        siteDetailsName.textContent =
+            selectedSite.name || "Unnamed Site";
+
+        siteDetailsAddress.textContent =
+            selectedSite.address || "No address set";
+
+        if (selectedSite.weatherEnabled) {
+            const weatherLabel =
+                selectedSite.weatherLocationLabel ||
+                selectedSite.name ||
+                "Weather location not set";
+
+            siteDetailsWeather.textContent =
+                `Weather enabled • ${weatherLabel}`;
+        } else {
+            siteDetailsWeather.textContent =
+                "Weather disabled";
+        }
+    }
+
+    renderSiteSelectionState();
 
     const PATTERN_OPTIONS = [
         { value: "fixed", label: "Fixed" },
@@ -569,6 +674,7 @@ export function renderAoEditView() {
         }
 
         draftAo.name = draftAo.name.trim();
+        draftAo.defaultSiteId = draftAo.defaultSiteId || null;
         draftAo.locationName = draftAo.locationName.trim();
         draftAo.address = (draftAo.address || "").trim();
         draftAo.mapUrl = (draftAo.mapUrl || "").trim();
@@ -676,18 +782,10 @@ export function renderAoEditView() {
         title,
         nameLabel,
         nameInput,
-        locationLabel,
-        locationInput,
-        addressLabel,
-        addressInput,
-        latitudeLabel,
-        latitudeInput,
-        longitudeLabel,
-        longitudeInput,
-        weatherLocationLabel,
-        weatherLocationInput,
-        weatherEnabledLabel,
-        weatherEnabledRow,
+        defaultSiteLabel,
+        defaultSiteSelect,
+        siteDetailsWrap,
+        legacyLocationWrap,
         /*mapUrlLabel,
         mapUrlInput,*/
         timeLabel,

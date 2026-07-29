@@ -4,12 +4,13 @@ import { showToast } from "../utils/toast.js";
 import { logActionFailure } from "../services/appEvents.js";
 import { createCustomTemplate, ensureCustomTemplates } from "../utils/customTemplates.js";
 import { navigateTo } from "../utils/navigation.js";
-import { getAoWeather } from "../services/weather.js";
+import { getSiteWeather } from "../services/weather.js";
 import { updateCustomTemplates, updatePlannedWorkoutInCloud, updateQSlotInCloud } from "../services/cloudData.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot, getWorkoutEmphasisTagsForSlot } from "../utils/workoutEmphasis.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
+import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 
 export function renderPreblastView() {
 
@@ -139,7 +140,9 @@ export function renderPreblastView() {
             : "";
     
         const displayTime =
+            workout?.startTime ||
             qSlot?.overrideTime ||
+            qSlot?.startTime ||
             ao?.timeSchedule?.[dayKey] ||
             ao?.time ||
             "";
@@ -150,19 +153,20 @@ export function renderPreblastView() {
     }
     
     const preblastAo = getPreblastAo(preblastQSlot, preblastWorkout);
+    const preblastSite = resolveSiteForQSlot(preblastQSlot, preblastAo);
     const targetDateTime = getTargetDateTime(preblastQSlot, preblastWorkout, preblastAo);
     
     upsertEmphasisHashtag();
 
-    if (preblastAo?.id && targetDateTime && !state.hasAddedPreblastForecast) {
+    if (preblastSite?.id && targetDateTime && !state.hasAddedPreblastForecast) {
         state.hasAddedPreblastForecast = true;
 
         upsertForecastLine();
 
-        getAoWeather(preblastAo.id, targetDateTime)
+        getSiteWeather(preblastSite.id, targetDateTime)
             .then(weather => {
                 console.log("preblast weather result", {
-                    aoId: preblastAo.id,
+                    siteId: preblastSite.id,
                     targetDateTime,
                     weather,
                 });
@@ -300,6 +304,11 @@ export function renderPreblastView() {
             typeof weather.temp === "number"
                 ? `${weather.temp}°`
                 : "temp unavailable";
+
+        const feelsLikeLabel =
+            typeof weather.feelsLike === "number"
+                ? `feels like ${weather.feelsLike}°`
+                : null;
     
         const humidityLabel =
             typeof weather.humidity === "number"
@@ -316,7 +325,17 @@ export function renderPreblastView() {
                 ? `${weather.windMph} mph wind`
                 : "wind unavailable";
     
-        return `Forecast: ${tempLabel}, ${humidityLabel}, ${rainLabel}, ${windLabel}.`;
+                return `Forecast: ${
+                    [
+                        tempLabel,
+                        feelsLikeLabel,
+                        humidityLabel,
+                        rainLabel,
+                        windLabel,
+                    ]
+                        .filter(Boolean)
+                        .join(", ")
+                }.`;
     }
     
     function buildEmphasisHashtag() {

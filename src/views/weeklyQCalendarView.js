@@ -11,11 +11,12 @@ import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleImage.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
-import { getAoWeather } from "../services/weather.js";
+import { getSiteWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
+import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -74,12 +75,13 @@ function getWeatherTargetDateTime(date, ao, slot = null) {
 
 function getWeatherCacheKey(date, ao, slot = null) {
     const targetDateTime = getWeatherTargetDateTime(date, ao, slot);
+    const site = resolveSiteForQSlot(slot, ao);
 
-    if (!ao?.id || !targetDateTime) {
+    if (!site?.id || !targetDateTime) {
         return null;
     }
 
-    return `${ao.id}__${targetDateTime}`;
+    return `${site.id}__${targetDateTime}`;
 }
 
 function renderWeeklyWeatherRow(weatherRow, weather) {
@@ -127,8 +129,9 @@ function patchWeeklyWeather(cacheKey) {
 async function loadWeeklyWeather(date, ao, slot = null) {
     const targetDateTime = getWeatherTargetDateTime(date, ao, slot);
     const cacheKey = getWeatherCacheKey(date, ao, slot);
+    const site = resolveSiteForQSlot(slot, ao);
 
-    if (!ao?.id || !targetDateTime || !cacheKey) {
+    if (!site?.id || !targetDateTime || !cacheKey) {
         return;
     }
 
@@ -145,7 +148,7 @@ async function loadWeeklyWeather(date, ao, slot = null) {
     patchWeeklyWeather(cacheKey);
 
     try {
-        const weather = await getAoWeather(ao.id, targetDateTime);
+        const weather = await getSiteWeather(site.id, targetDateTime);
         state.weatherByAoDate[cacheKey] = weather;
     } catch (error) {
         console.error("Failed to load weekly weather:", error);
@@ -324,9 +327,18 @@ export function renderWeeklyQCalendarView() {
                 const metaLine = document.createElement("div");
                 metaLine.classList.add("stats-line");
 
+                const workout = findWorkoutForQSlot(
+                    slot,
+                    state.plannedWorkouts,
+                    state.currentUserId,
+                    state.aos
+                );
+                
                 const displayTime =
-                    slot.overrideTime ||
-                    ao?.timeSchedule?.[String(getDayOfWeekFromDateKey(slot.date))] ||
+                    workout?.startTime ||
+                    slot?.overrideTime ||
+                    slot?.startTime ||
+                    ao?.timeSchedule?.[String(getDayOfWeekFromDateKey(date))] ||
                     ao?.time ||
                     "";
                 

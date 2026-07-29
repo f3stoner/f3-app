@@ -17,7 +17,7 @@ import { generatePreblast } from "../modules/generatePreblast.js";
 import { showToast } from "../utils/toast.js";
 import { unclaimQSlot } from "../services/qSlots.js";
 import { createIcon, createWeatherIcon } from "../utils/icons.js";
-import { getAoWeather } from "../services/weather.js";
+import { getSiteWeather } from "../services/weather.js";
 import { APP_EVENTS } from "../constants/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import {
@@ -34,6 +34,7 @@ import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 import { switchWorkspace } from "../services/workspaceService.js";
+import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 
 function createBlankWorkout({
     date = getTodayDate(),
@@ -870,38 +871,40 @@ export function renderDashboard() {
 
     function getWeatherCacheKey(slot, ao) {
         const targetDateTime = getNextQTargetDateTime(slot, ao);
-
-        if (!slot || !ao || !targetDateTime) {
+        const site = resolveSiteForQSlot(slot, ao);
+    
+        if (!site?.id || !targetDateTime) {
             return null;
         }
-
-        return `${ao.id}__${targetDateTime}`;
+    
+        return `${site.id}__${targetDateTime}`;
     }
 
     async function loadNextQWeather(slot, ao) {
         const workspaceGeneration =
             state.workspaceGeneration;
-
+    
         const targetDateTime = getNextQTargetDateTime(slot, ao);
         const cacheKey = getWeatherCacheKey(slot, ao);
-
-        if (!ao?.id || !targetDateTime || !cacheKey) {
+        const site = resolveSiteForQSlot(slot, ao);
+    
+        if (!site?.id || !targetDateTime || !cacheKey) {
             return;
         }
 
-        if (state.weatherByAoDate?.[cacheKey]) {
+        if (state.weatherBySiteDate?.[cacheKey]) {
             return;
         }
 
-        state.weatherByAoDate = state.weatherByAoDate || {};
-        state.weatherByAoDate[cacheKey] = {
+        state.weatherBySiteDate = state.weatherBySiteDate || {};
+        state.weatherBySiteDate[cacheKey] = {
             isLoading: true,
         };
 
         patchNextQWeather(cacheKey);
 
         try {
-            const weather = await getAoWeather(ao.id, targetDateTime);
+            const weather = await getSiteWeather(site.id, targetDateTime);
 
             if (
                 workspaceGeneration !==
@@ -910,7 +913,7 @@ export function renderDashboard() {
                 return;
             }
 
-            state.weatherByAoDate[cacheKey] = weather;
+            state.weatherBySiteDate[cacheKey] = weather;
         } catch (error) {
             if (
                 workspaceGeneration !==
@@ -921,7 +924,7 @@ export function renderDashboard() {
 
             console.error("Failed to load next Q weather:", error);
 
-            state.weatherByAoDate[cacheKey] = {
+            state.weatherBySiteDate[cacheKey] = {
                 weatherUnavailable: true,
             };
         }
@@ -973,7 +976,18 @@ export function renderDashboard() {
                 ? `${weather.windMph} mph wind`
                 : "wind unavailable";
 
-        weatherLine.textContent = `${tempLabel} · ${humidityLabel} · ${rainLabel} · ${windLabel}`;
+        const feelsLikeLabel =
+            typeof weather.feelsLike === "number"
+                ? `Feels like ${weather.feelsLike}°`
+                : null;
+        
+        weatherLine.textContent = [
+            tempLabel,
+            feelsLikeLabel,
+            humidityLabel,
+            rainLabel,
+            windLabel,
+        ].filter(Boolean).join(" · ");
     }
 
     function patchNextQWeather(cacheKey) {
@@ -985,7 +999,7 @@ export function renderDashboard() {
 
         renderNextQWeatherLine(
             weatherLine,
-            state.weatherByAoDate?.[cacheKey]
+            state.weatherBySiteDate?.[cacheKey]
         );
     }
 
@@ -1038,9 +1052,12 @@ export function renderDashboard() {
     function getSlotDisplayTime(slot, ao) {
         if (!slot || !ao) return "";
     
+        const workout = findMatchingPlannedWorkoutForSlot(slot);
+    
         const dayKey = String(getDayOfWeekFromDateKey(slot.date));
     
         return (
+            workout?.startTime ||
             slot.overrideTime ||
             slot.startTime ||
             ao.timeSchedule?.[dayKey] ||
@@ -2291,10 +2308,76 @@ export function renderDashboard() {
 
     if (nextQSlot) {
         const ao = state.aos.find(a => a.id === nextQSlot.aoId);
+    
+        const nextQSite = resolveSiteForQSlot(
+            nextQSlot,
+            ao
+        );
+
+        const debugDisplayTime =
+    getSlotDisplayTime(
+        nextQSlot,
+        ao
+    );
+
+const debugTargetDateTime =
+    getNextQTargetDateTime(
+        nextQSlot,
+        ao
+    );
+
+const debugWeatherCacheKey =
+    getWeatherCacheKey(
+        nextQSlot,
+        ao
+    );
+
+console.log(
+    "DASHBOARD WEATHER DEBUG",
+    {
+        nextQSlot,
+        ao,
+        nextQSite,
+
+        stateSites:
+            state.sites,
+
+        sitesCount:
+            state.sites?.length || 0,
+
+        slotSiteId:
+            nextQSlot?.siteId || null,
+
+        aoDefaultSiteId:
+            ao?.defaultSiteId || null,
+
+        displayTime:
+            debugDisplayTime,
+
+        targetDateTime:
+            debugTargetDateTime,
+
+        weatherCacheKey:
+            debugWeatherCacheKey,
+
+        cachedWeather:
+            debugWeatherCacheKey
+                ? state.weatherByAoDate?.[
+                    debugWeatherCacheKey
+                ]
+                : null,
+
+        activeWorkoutExecution:
+            localStorage.getItem(
+                "activeWorkoutExecution"
+            ),
+    }
+);
+    
         const displayTime = getSlotDisplayTime(nextQSlot, ao);
         const weatherCacheKey = getWeatherCacheKey(nextQSlot, ao);
         const nextQWeather = weatherCacheKey
-            ? state.weatherByAoDate?.[weatherCacheKey]
+            ? state.weatherBySiteDate?.[weatherCacheKey]
             : null;
         const matchingWorkout = findMatchingPlannedWorkoutForSlot(nextQSlot);
         const hasPlannedWorkout = Boolean(matchingWorkout);
@@ -2390,7 +2473,7 @@ export function renderDashboard() {
                     aoId: ao?.id || nextQSlot.aoId || null,
                     siteId:
                         matchingWorkout?.siteId ||
-                        nextQSlot.siteId ||
+                        nextQSite?.id ||
                         null,
                     startTime:
                         matchingWorkout?.startTime ||
@@ -2437,7 +2520,7 @@ export function renderDashboard() {
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
-                    siteId: nextQSlot.siteId || null,
+                    siteId: nextQSite?.id || null,
                     qSlotId: nextQSlot.id,
                 });
                 
@@ -2515,7 +2598,7 @@ export function renderDashboard() {
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
-                    siteId: nextQSlot.siteId || null,
+                    siteId: nextQSite?.id || null,
                     startTime:
                         nextQSlot.overrideTime ||
                         nextQSlot.startTime ||
@@ -2558,7 +2641,7 @@ export function renderDashboard() {
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
-                    siteId: nextQSlot.siteId || null,
+                    siteId: nextQSite?.id || null,
                     qSlotId: nextQSlot.id,
                 });
                 
@@ -2579,7 +2662,7 @@ export function renderDashboard() {
                         aoId: ao?.id || nextQSlot.aoId || null,
                         siteId:
                             matchingWorkout?.siteId ||
-                            nextQSlot.siteId ||
+                            nextQSite?.id ||
                             null,
                         startTime:
                             matchingWorkout?.startTime ||
@@ -3603,7 +3686,12 @@ export function renderDashboard() {
                     candidate =>
                         candidate.id === slot.aoId
                 );
-    
+        
+            const site = resolveSiteForQSlot(
+                slot,
+                ao
+            );
+        
             const matchingWorkout =
                 findMatchingPlannedWorkoutForSlot(
                     slot
@@ -3655,7 +3743,7 @@ export function renderDashboard() {
                                     "",
     
                                 siteId:
-                                    slot.siteId ||
+                                    site?.id ||
                                     null,
     
                                 qSlotId:

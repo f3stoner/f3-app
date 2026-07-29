@@ -1,0 +1,742 @@
+/* ========================================
+   Q Signup
+   ======================================== */
+
+   .view-qSignup {
+    width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+}
+
+
+/* ----------------------------------------
+   Intro
+   ---------------------------------------- */
+
+.view-qSignup .q-signup-intro {
+    margin: 0.8rem 0 1rem;
+}
+
+.view-qSignup .q-signup-intro h1 {
+    margin-bottom: 0.35rem;
+}
+
+.view-qSignup .q-signup-subtitle {
+    max-width: 32rem;
+
+    color: var(--muted);
+
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+/* ----------------------------------------
+   Page-level administrative actions
+   ---------------------------------------- */
+
+.view-qSignup .q-signup-admin-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+}
+
+.view-qSignup .q-signup-admin-button {
+    width: 100%;
+    min-height: 46px;
+    margin: 0;
+    border-radius: var(--radius-md);
+}
+
+.view-qSignup .q-signup-admin-button.secondary-button {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    opacity: 1;
+}
+
+.view-qSignup .q-signup-admin-button.primary-button {
+    background: var(--primary);
+    color: var(--text-inverse);
+    border-color: var(--primary);
+}
+
+
+/* ----------------------------------------
+   Month navigation
+   ---------------------------------------- */
+
+.view-qSignup .q-signup-month-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.35rem 0 1rem;
+}
+
+.view-qSignup .q-signup-month-label {
+    min-width: 0;
+
+    text-align: center;
+
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-qSignup .month-nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+
+    margin: 0;
+    padding: 0;
+
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    box-shadow: none;
+
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.view-qSignup .month-nav-button:hover {
+    background: var(--surface-raised);
+    border-color: var(--border-strong);
+    box-shadow: none;
+}
+
+.view-qSignup .month-nav-button:disabled {
+    opacity: 0.28;
+    cursor: default;
+}
+
+
+/* ----------------------------------------
+   Filters
+   ---------------------------------------- */
+
+.view-qSignup .q-signup-controls-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+
+    margin: 0.1rem 0 1rem;
+}
+
+.view-qSignup .q-signup-controls-row select {
+    min-width: 0;
+    margin: 0;
+    border-radius: var(--radius-md);
+}
+
+.view-qSignup .q-signup-controls-row .ao-status-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    min-height: 44px;
+    margin: 0;
+    padding: 0 0.85rem;
+
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    background: var(--surface);
+    color: var(--muted);
+
+    font-size: 0.85rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.view-qSignup
+.q-signup-controls-row
+.ao-status-toggle input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+/* ----------------------------------------
+   Timeline
+   ---------------------------------------- */
+
+   .view-qSignup .q-signup-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.view-qSignup .q-signup-timeline-section {
+    min-width: 0;
+    overflow: hidden;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-qSignup .q-signup-timeline-header {
+    min-height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    padding: 0.52rem 0.75rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(255, 255, 255, 0.022);
+}
+
+.view-qSignup .q-signup-timeline-heading-wrap {
+    min-width: 0;
+
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.view-qSignup .q-signup-timeline-heading {
+    color: var(--accent-bright);
+
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.07em;
+}
+
+.view-qSignup .q-signup-timeline-date {
+    color: var(--muted);
+
+    font-size: 0.7rem;
+    font-weight: 750;
+    line-height: 1;
+    letter-spacing: 0.03em;
+}
+
+.view-qSignup
+.q-signup-timeline-header-today
+.q-signup-timeline-heading {
+    color: #63d471;
+}
+
+.view-qSignup
+.q-signup-timeline-header-tomorrow
+.q-signup-timeline-heading {
+    color: #f5b82e;
+}
+
+.view-qSignup .q-signup-timeline-count {
+    min-width: 24px;
+    height: 24px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 0.3rem;
+
+    border: 1px solid currentColor;
+    border-radius: 999px;
+
+    color: var(--accent-bright);
+
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-qSignup
+.q-signup-timeline-header-today
+.q-signup-timeline-count {
+    color: #63d471;
+}
+
+.view-qSignup
+.q-signup-timeline-header-tomorrow
+.q-signup-timeline-count {
+    color: #f5b82e;
+}
+
+.view-qSignup .q-signup-timeline-rows {
+    min-width: 0;
+}
+
+.view-qSignup
+.q-signup-timeline-rows
+.q-signup-slot-card {
+    margin: 0;
+
+    border-width: 0 0 1px;
+    border-radius: 0;
+
+    box-shadow: none;
+}
+
+.view-qSignup
+.q-signup-timeline-rows
+.q-signup-slot-card:last-child {
+    border-bottom: 0;
+}
+
+
+/* ----------------------------------------
+   Compact timeline rows
+   ---------------------------------------- */
+
+   .view-qSignup .q-signup-slot-card {
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(47, 140, 255, 0.035),
+            transparent 58%
+        ),
+        rgba(255, 255, 255, 0.014);
+
+    box-shadow: none;
+}
+
+.view-qSignup .q-signup-slot-card:last-child {
+    border-bottom: 0;
+}
+
+.view-qSignup .q-signup-row-main {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 0.65rem;
+
+    min-height: 58px;
+    padding: 0.55rem 0.75rem;
+}
+
+.view-qSignup .q-signup-row-identity {
+    min-width: 0;
+}
+
+.view-qSignup .q-signup-row-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+
+    min-width: 0;
+}
+
+.view-qSignup .q-signup-row-ao-name {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-qSignup .q-signup-slot-emphasis {
+    flex: 0 0 auto;
+    width: fit-content;
+    margin: 0;
+    padding: 0.16rem 0.38rem;
+    font-size: 0.62rem;
+    line-height: 1;
+}
+
+.view-qSignup .q-signup-row-metadata {
+    min-width: 0;
+    margin-top: 0.18rem;
+
+    display: flex;
+    align-items: center;
+    gap: 0.32rem;
+
+    color: var(--muted);
+
+    font-size: 0.76rem;
+    font-weight: 650;
+    line-height: 1.1;
+}
+
+.view-qSignup .q-signup-row-time {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.view-qSignup .q-signup-row-metadata-separator {
+    flex: 0 0 auto;
+}
+
+.view-qSignup .q-signup-row-site {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.view-qSignup .q-signup-slot-custom-title {
+    margin-top: 0.3rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: rgba(245, 245, 242, 0.78);
+
+    font-size: 0.75rem;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.view-qSignup .q-signup-planning-status {
+    flex: 0 0 auto;
+
+    width: fit-content;
+    margin: 0;
+    padding: 0.2rem 0.45rem;
+
+    border: 1px solid rgba(245, 184, 46, 0.45);
+    border-radius: 999px;
+
+    background: rgba(245, 184, 46, 0.09);
+    color: #f5b82e;
+
+    font-size: 0.62rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+
+/* ----------------------------------------
+   Status and primary action
+   ---------------------------------------- */
+.view-qSignup .q-signup-status-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.view-qSignup .q-signup-row-status-area {
+    min-width: 78px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.28rem;
+}
+
+.view-qSignup .q-signup-row-status {
+    max-width: 112px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: rgba(245, 245, 242, 0.68);
+
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 850;
+    line-height: 1;
+    text-align: right;
+}
+
+.view-qSignup
+.q-signup-slot-open
+.q-signup-row-status {
+    color: #55c85a;
+}
+
+.view-qSignup
+.q-signup-slot-mine
+.q-signup-row-status {
+    color: #48a5ff;
+}
+
+.view-qSignup .q-signup-row-primary-button {
+    width: auto;
+    min-width: 68px;
+    min-height: 32px;
+
+    margin: 0;
+    padding: 0.36rem 0.6rem;
+
+    border-radius: var(--radius-sm);
+
+    box-shadow: none;
+
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+.view-qSignup .q-signup-claim-button {
+    border-color: rgba(85, 200, 90, 0.7);
+
+    background: rgba(85, 200, 90, 0.08);
+    color: #6be271;
+}
+
+.view-qSignup .q-signup-claim-button:hover {
+    background: rgba(85, 200, 90, 0.18);
+    box-shadow: none;
+}
+
+.view-qSignup .q-signup-workout-button {
+    border-color: rgba(50, 149, 255, 0.7);
+
+    background: rgba(50, 149, 255, 0.1);
+    color: #58acff;
+}
+
+.view-qSignup .q-signup-workout-button:hover {
+    background: rgba(50, 149, 255, 0.2);
+    box-shadow: none;
+}
+
+
+/* ----------------------------------------
+   Expansion
+   ---------------------------------------- */
+
+   .view-qSignup .q-signup-slot-card {
+    cursor: pointer;
+}
+
+.view-qSignup .q-signup-slot-card:focus-visible {
+    outline: 2px solid var(--accent-bright);
+    outline-offset: -2px;
+}
+
+.view-qSignup .q-signup-slot-card.expanded {
+    background:
+        linear-gradient(
+            115deg,
+            rgba(47, 140, 255, 0.07),
+            transparent 62%
+        ),
+        rgba(255, 255, 255, 0.025);
+}
+
+.view-qSignup .q-signup-expand-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 14px;
+    height: 14px;
+
+    flex: 0 0 auto;
+
+    color: var(--muted);
+
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.view-qSignup .q-signup-expanded-details {
+    display: block;
+    margin: 0;
+    padding: 0 0.75rem 0.7rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.view-qSignup
+.q-signup-expanded-details[hidden],
+.view-qSignup
+.q-signup-expansion-panel[hidden] {
+    display: none;
+}
+
+.view-qSignup .q-signup-expanded-detail {
+    min-width: 0;
+}
+
+.view-qSignup .q-signup-expanded-label {
+    color: var(--muted);
+
+    font-size: 0.62rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.view-qSignup .q-signup-expanded-value {
+    margin-top: 0.3rem;
+
+    overflow-wrap: anywhere;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    font-weight: 850;
+    line-height: 1.15;
+}
+
+.view-qSignup .q-signup-row-secondary-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+
+    padding: 0.6rem 0.75rem 0.7rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.view-qSignup
+.q-signup-row-secondary-actions
+button {
+    width: auto;
+    min-height: 34px;
+
+    margin: 0;
+    padding: 0.4rem 0.62rem;
+
+    border-radius: 999px;
+
+    background: transparent;
+    color: var(--muted);
+
+    box-shadow: none;
+
+    font-size: 0.7rem;
+}
+
+.view-qSignup
+.q-signup-row-secondary-actions
+button:hover {
+    background: var(--surface-raised);
+    color: var(--text);
+    box-shadow: none;
+}
+
+.view-qSignup
+.q-signup-row-secondary-actions
+button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.view-qSignup
+.q-signup-row-secondary-actions
+.danger-button {
+    margin-left: auto;
+
+    color: #ff6868;
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* ----------------------------------------
+   Commitments
+   ---------------------------------------- */
+
+.view-qSignup .q-signup-commitment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    margin: 0;
+    padding-top: 0.7rem;
+
+    border-top: 0;
+}
+
+.view-qSignup .q-signup-commitment-counts {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+
+    color: var(--muted);
+
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.view-qSignup .q-signup-commitment-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.view-qSignup .q-signup-commitment-button {
+    width: auto;
+    min-width: 48px;
+    min-height: 34px;
+
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+
+    border-radius: 999px;
+
+    background: transparent;
+    color: var(--muted);
+
+    box-shadow: none;
+
+    font-size: 0.72rem;
+}
+
+.view-qSignup
+.q-signup-commitment-button-hc.selected {
+    border-color: rgba(85, 200, 90, 0.65);
+    background: rgba(85, 200, 90, 0.14);
+    color: #6be271;
+}
+
+.view-qSignup
+.q-signup-commitment-button-sc.selected {
+    border-color: rgba(245, 184, 46, 0.65);
+    background: rgba(245, 184, 46, 0.13);
+    color: #f5b82e;
+}
+
+.view-qSignup
+.q-signup-commitment-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
