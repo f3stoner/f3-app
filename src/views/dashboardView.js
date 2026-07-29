@@ -36,6 +36,56 @@ import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft, createExist
 import { switchWorkspace } from "../services/workspaceService.js";
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 
+const DASHBOARD_ENCOURAGEMENT_PHRASES = [
+    "Let’s get to work.",
+    "Time to lead.",
+    "Iron sharpens iron.",
+    "Make today count.",
+    "Lead from the front.",
+    "Show up. Do work.",
+    "Consistency wins.",
+    "Get after it.",
+    "Better than yesterday.",
+    "Keep showing up.",
+    "Set the standard.",
+    "Pick up the Six.",
+    "Build the men around you.",
+    "Leave it better than you found it.",
+    "Your brothers are counting on you.",
+    "Stand in the gap.",
+    "Leave no man behind.",
+];
+
+function getDashboardEncouragementPhrase() {
+    const today = getTodayDate();
+
+    const rotationKey = [
+        today,
+        state.currentUserMemberId ||
+            state.currentUserId ||
+            "pax",
+    ].join("__");
+
+    let hash = 0;
+
+    for (
+        let index = 0;
+        index < rotationKey.length;
+        index += 1
+    ) {
+        hash =
+            (
+                hash * 31 +
+                rotationKey.charCodeAt(index)
+            ) >>> 0;
+    }
+
+    return DASHBOARD_ENCOURAGEMENT_PHRASES[
+        hash %
+            DASHBOARD_ENCOURAGEMENT_PHRASES.length
+    ];
+}
+
 function createBlankWorkout({
     date = getTodayDate(),
     aoId = null,
@@ -468,28 +518,50 @@ export function renderDashboard() {
         greetingPrefix,
         profileLink
     );
-
+    
+    const welcomeMeta =
+        document.createElement("div");
+    
+    welcomeMeta.classList.add(
+        "dashboard-welcome-meta"
+    );
+    
+    const welcomeSubtitle =
+        document.createElement("div");
+    
+    welcomeSubtitle.classList.add(
+        "dashboard-welcome-subtitle"
+    );
+    
+    welcomeSubtitle.textContent =
+        getDashboardEncouragementPhrase();
+    
     const roleBadge =
         document.createElement("span");
-
+    
     roleBadge.classList.add(
         "role-badge",
         "dashboard-role-badge"
     );
-
+    
     const role =
         state.currentUserRole || "pax";
-
+    
     roleBadge.dataset.role = role;
-
+    
     roleBadge.textContent =
         getDashboardLeadershipBadge();
-
+    
+    welcomeMeta.append(
+        welcomeSubtitle,
+        roleBadge
+    );
+    
     welcomeContent.append(
         greeting,
-        //roleBadge
+        welcomeMeta
     );
-
+    
     userRow.appendChild(
         welcomeContent
     );
