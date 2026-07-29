@@ -1,13 +1,42 @@
 import { formatDate } from "../utils/date.js";
 
-export function generatePreblast(workout, aos = [], sites = []) {
+export function generatePreblast(
+    workout,
+    aos = [],
+    sites = []
+) {
+    if (!workout) {
+        console.warn(
+            "Cannot generate preblast without a workout."
+        );
+
+        return "";
+    }
+
+    const safeAos = Array.isArray(aos)
+        ? aos
+        : [];
+
+    const safeSites = Array.isArray(sites)
+        ? sites
+        : [];
+
     const ao =
-        aos.find(a => a.id === workout.aoId) ||
-        aos.find(a => a.name === workout.aoName) ||
+        safeAos.find(
+            candidate =>
+                candidate.id === workout.aoId
+        ) ||
+        safeAos.find(
+            candidate =>
+                candidate.name === workout.aoName
+        ) ||
         null;
 
     const site =
-        sites.find(candidate => candidate.id === workout.siteId) ||
+        safeSites.find(
+            candidate =>
+                candidate.id === workout.siteId
+        ) ||
         null;
 
     const formattedDate = workout.date ? formatDate(workout.date) : "TBD";

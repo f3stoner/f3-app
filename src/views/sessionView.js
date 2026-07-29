@@ -377,6 +377,7 @@ aoSelect.addEventListener("change", (event) => {
 
     draftSession.aoId = selectedAo?.id || null;
     draftSession.aoName = selectedAo?.name || "";
+    draftSession.siteId = selectedAo?.defaultSiteId || null;
 
     cachedLastPostMapByAoKey.clear();
 
@@ -1393,12 +1394,19 @@ function normalizeSessionForSave(session) {
         date: session.date || getTodayDate(),
         aoId: ao?.id || session.aoId || null,
         aoName: ao?.name || session.aoName || "",
+        siteId:
+            session.siteId ||
+            ao?.defaultSiteId ||
+            null,
         attendeeIds,
         qIds,
         fngs: session.fngs || [],
         visitors: session.visitors || [],
         notes: session.notes || "",
-        startTime: session.startTime || ao?.time || null,
+        startTime:
+            session.startTime ||
+            ao?.time ||
+            null,
     };
 }
 
