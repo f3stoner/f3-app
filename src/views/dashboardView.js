@@ -469,21 +469,6 @@ export function renderDashboard() {
         profileLink
     );
 
-    const welcomeSubtitle =
-        document.createElement("div");
-
-    welcomeSubtitle.classList.add(
-        "dashboard-welcome-subtitle"
-    );
-
-    welcomeSubtitle.textContent =
-        "Let’s get better.";
-
-    welcomeContent.append(
-        greeting,
-        welcomeSubtitle
-    );
-
     const roleBadge =
         document.createElement("span");
 
@@ -500,9 +485,13 @@ export function renderDashboard() {
     roleBadge.textContent =
         getDashboardLeadershipBadge();
 
-    userRow.append(
-        welcomeContent,
-        roleBadge
+    welcomeContent.append(
+        greeting,
+        //roleBadge
+    );
+
+    userRow.appendChild(
+        welcomeContent
     );
 
     function getWorkoutReadinessLabel(workout) {
