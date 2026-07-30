@@ -338,43 +338,48 @@ export function generateBackblastHeader(
         visitorText,
         visitors,
         fngs,
+        totalAttendees,
     } = buildBackblastData(
         session,
         members
     );
 
     return [
-        `${qSectionLabel}: ${qLabel}`,
-
-        "",
-
-        `PAX (${paxNamesArray.length}):`,
-        paxNames,
-
-        "",
-
-        `Visiting PAX (${visitors.length}):`,
-        visitorText,
-
-        "",
-
-        `FNGs (${fngs.length}):`,
-        fngText,
-
-        "",
-
         [
             session.aoName,
             formattedDate,
         ]
             .filter(Boolean)
             .join(" · "),
-
+    
         siteName || null,
-
+    
         buildConditionsLine(
             session.weatherSnapshot
         ),
+    
+        "",
+    
+        `Total Attendees: ${totalAttendees}`,
+    
+        "",
+    
+        `${qSectionLabel}: ${qLabel}`,
+    
+        "",
+    
+        `PAX (${paxNamesArray.length}):`,
+        paxNames,
+    
+        "",
+    
+        `Visiting PAX (${visitors.length}):`,
+        visitorText,
+    
+        "",
+    
+        `FNGs (${fngs.length}):`,
+        fngText,
     ]
         .filter(item => item !== null)
         .join("\n");
