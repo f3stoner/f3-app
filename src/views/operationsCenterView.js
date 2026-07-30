@@ -4,7 +4,10 @@ import {
     createMainMenu,
 } from "../components/mainMenu.js";
 import { state } from "../modules/state.js";
-import { loadOperationsOverview } from "../services/cloudData.js";
+import {
+    loadMemberMerges,
+    loadOperationsOverview,
+} from "../services/cloudData.js";
 import {
     hasPermission,
     PERMISSIONS,
@@ -316,15 +319,23 @@ async function loadAndRenderOperationsOverview(
     }
 
     try {
-        const overview =
-            await loadOperationsOverview(
+        const [
+            overview,
+            memberMerges,
+        ] = await Promise.all([
+            loadOperationsOverview(
                 getScopeRegionId(scope)
-            );
-
+            ),
+            loadMemberMerges(),
+        ]);
+        
         state.operationsOverviewByScope = {
             ...(state.operationsOverviewByScope ||
                 {}),
-            [scope]: overview,
+            [scope]: {
+                ...overview,
+                memberMerges,
+            },
         };
     } catch (error) {
         console.error(
@@ -452,10 +463,16 @@ function renderOverview(content, overview, scope) {
             ).toLocaleString()}`
             : "Update time unavailable";
 
+    const memberMergeSection =
+        createMemberMergeSection(
+            overview.memberMerges || []
+        );
+    
     content.append(
         adoptionSection,
         usageSection,
         healthSection,
+        memberMergeSection,
         generated
     );
 }
@@ -480,6 +497,86 @@ function createSection(titleText, cards) {
     grid.append(...cards);
 
     section.append(title, grid);
+
+    return section;
+}
+
+function createMemberMergeSection(
+    merges
+) {
+    const section =
+        document.createElement("section");
+
+    section.classList.add(
+        "operations-section"
+    );
+
+    const title =
+        document.createElement("h2");
+
+    title.textContent =
+        "Member Merges";
+
+    section.appendChild(title);
+
+    if (merges.length === 0) {
+        const empty =
+            document.createElement("div");
+
+        empty.classList.add("stats-line");
+
+        empty.textContent =
+            "No pending member merges.";
+
+        section.appendChild(empty);
+
+        return section;
+    }
+
+    merges.forEach(merge => {
+        const row =
+            document.createElement("div");
+
+        row.classList.add(
+            "operations-list-row"
+        );
+
+        const text =
+            document.createElement("div");
+
+        text.classList.add(
+            "operations-list-text"
+        );
+
+        text.textContent =
+            `${merge.duplicate_pax_name} → ${merge.canonical_pax_name}`;
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+        button.textContent = "Review";
+
+        button.addEventListener(
+            "click",
+            () => {
+                navigateTo(
+                    "memberMergeDetail",
+                    {
+                        mergeId:
+                            merge.merge_id,
+                    }
+                );
+            }
+        );
+
+        row.append(
+            text,
+            button
+        );
+
+        section.appendChild(row);
+    });
 
     return section;
 }

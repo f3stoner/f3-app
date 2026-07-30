@@ -3,21 +3,6 @@ import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { state } from "./state.js";
 import { getSessionAnnouncementText } from "../utils/announcements.js";
 
-function getBackblastIntroTemplate() {
-    return state.customTemplates?.backblastIntro || "";
-}
-
-function applyBackblastTemplate(template, values) {
-    if (!template) return "";
-
-    return template
-        .replaceAll("{paxCount}", values.paxCount)
-        .replaceAll("{aoName}", values.aoName)
-        .replaceAll("{date}", values.date)
-        .replaceAll("{qName}", values.qName)
-        .trim();
-}
-
 function buildConditionsLine(weather) {
     if (!weather) return null;
 
@@ -49,19 +34,30 @@ function getMemberBackblastName(member) {
     return safeString(member.paxName || member.realName, "Unknown");
 }
 
-export function generateBackblast (session, members) {
+function buildBackblastData(session, members) {
     const attendeeIds = session.attendeeIds || [];
     const fngs = session.fngs || [];
-    const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
+    const effectiveQIds =
+        session.qIds ||
+        (session.qId ? [session.qId] : []);
     const visitors = session.visitors || [];
 
     const ao =
-        state.aos.find(candidate => candidate.id === session.aoId) ||
-        state.aos.find(candidate => candidate.name === session.aoName) ||
+        state.aos.find(
+            candidate =>
+                candidate.id === session.aoId
+        ) ||
+        state.aos.find(
+            candidate =>
+                candidate.name === session.aoName
+        ) ||
         null;
 
     const site =
-        state.sites?.find(candidate => candidate.id === session.siteId) ||
+        state.sites?.find(
+            candidate =>
+                candidate.id === session.siteId
+        ) ||
         null;
 
     const siteName =
@@ -80,228 +76,495 @@ export function generateBackblast (session, members) {
             .filter(Boolean)
     );
 
-    const formattedDate = formatDate(session.date);
+    const formattedDate =
+        formatDate(session.date);
 
     const qNames = effectiveQIds
         .map(qId => {
-            const matchedMember = members.find(m => m.id === qId)
+            const matchedMember =
+                members.find(
+                    member =>
+                        member.id === qId
+                );
 
             if (!matchedMember) {
-                console.warn("Backblast Q not found in members:", {
-                    qId,
-                    attendeeIds,
-                    memberCount: members.length,
-                });
+                console.warn(
+                    "Backblast Q not found in members:",
+                    {
+                        qId,
+                        attendeeIds,
+                        memberCount:
+                            members.length,
+                    }
+                );
+
                 return null;
             }
-            return `@${getMemberBackblastName(matchedMember)}`;
+
+            return `@${getMemberBackblastName(
+                matchedMember
+            )}`;
         })
         .filter(Boolean)
-    
-    const sortedQNames = qNames.sort((a, b) => a.localeCompare(b));
+        .sort((a, b) =>
+            a.localeCompare(b)
+        );
 
-    const qLabel = sortedQNames.length > 0 ? sortedQNames.join("\n") : "-";
+    const qLabel =
+        qNames.length > 0
+            ? qNames.join("\n")
+            : "-";
 
-    const qSectionLabel = sortedQNames.length === 1 ? "Q" : `Qs (${sortedQNames.length})`;
+    const qSectionLabel =
+        qNames.length === 1
+            ? "Q"
+            : `Qs (${qNames.length})`;
 
-    const qIdSet = new Set(effectiveQIds);
-    
-    const paxNamesArray = attendeeIds
-        .filter(id => !qIdSet.has(id))
-        .filter(id => !fngMemberIdSet.has(id))
-        .map(id => {
-            const member = members.find(m => m.id === id);
-            return getMemberBackblastName(member);
-        })
-        .sort(safeLocaleCompare);
+    const qIdSet =
+        new Set(effectiveQIds);
 
-    const paxNames = paxNamesArray.length > 0 
-    ? paxNamesArray.map(name => `@${name}`).join("\n") 
-    : "None";
+    const paxNamesArray =
+        attendeeIds
+            .filter(
+                id =>
+                    !qIdSet.has(id)
+            )
+            .filter(
+                id =>
+                    !fngMemberIdSet.has(id)
+            )
+            .map(id => {
+                const member =
+                    members.find(
+                        candidate =>
+                            candidate.id === id
+                    );
 
-    const fngText = fngs.length === 0
-        ? "None"
-        : fngs
-            .map(fng => {
-                const displayName =
-                    fng.paxName && fng.realName
-                        ? `${fng.paxName} (${fng.realName})`
-                        : (
-                            fng.paxName ||
-                            fng.realName ||
+                return getMemberBackblastName(
+                    member
+                );
+            })
+            .sort(safeLocaleCompare);
+
+    const paxNames =
+        paxNamesArray.length > 0
+            ? paxNamesArray
+                .map(name => `@${name}`)
+                .join("\n")
+            : "None";
+
+    const fngText =
+        fngs.length === 0
+            ? "None"
+            : fngs
+                .map(fng => {
+                    const displayName =
+                        fng.paxName &&
+                        fng.realName
+                            ? `${fng.paxName} (${fng.realName})`
+                            : (
+                                fng.paxName ||
+                                fng.realName ||
+                                "Unknown"
+                            );
+
+                    const inviterIds = [
+                        ...(
+                            Array.isArray(
+                                fng.inviterIds
+                            )
+                                ? fng.inviterIds
+                                : []
+                        ),
+                        fng.invitedById,
+                        fng.invited_by_id,
+                    ].filter(Boolean);
+
+                    const uniqueInviterIds = [
+                        ...new Set(
+                            inviterIds
+                        ),
+                    ];
+
+                    if (
+                        uniqueInviterIds.length === 0
+                    ) {
+                        return displayName;
+                    }
+
+                    const inviterNames =
+                        uniqueInviterIds
+                            .map(
+                                inviterId => {
+                                    const inviter =
+                                        members.find(
+                                            member =>
+                                                member.id ===
+                                                inviterId
+                                        );
+
+                                    if (!inviter) {
+                                        console.warn(
+                                            "Backblast inviter not found in members:",
+                                            {
+                                                inviterId,
+                                                fngMemberId:
+                                                    fng.memberId ||
+                                                    null,
+                                                fngName:
+                                                    displayName,
+                                            }
+                                        );
+
+                                        return null;
+                                    }
+
+                                    return `@${getMemberBackblastName(
+                                        inviter
+                                    )}`;
+                                }
+                            )
+                            .filter(Boolean);
+
+                    if (
+                        inviterNames.length === 0
+                    ) {
+                        return displayName;
+                    }
+
+                    return `${displayName} (Invited by ${inviterNames.join(", ")})`;
+                })
+                .sort(safeLocaleCompare)
+                .join("\n");
+
+    const visitorText =
+        visitors.length === 0
+            ? "None"
+            : visitors
+                .map(visitor => {
+                    const name =
+                        safeString(
+                            visitor.f3Name,
                             "Unknown"
                         );
 
-                /*
-                * New sessions store all Proud Papas in inviterIds.
-                * Historical sessions may only have invitedById.
-                */
-                const inviterIds = [
-                    ...(
-                        Array.isArray(fng.inviterIds)
-                            ? fng.inviterIds
-                            : []
-                    ),
-                    fng.invitedById,
-                    fng.invited_by_id,
-                ].filter(Boolean);
+                    return visitor.homeRegion
+                        ? `${name} (${visitor.homeRegion})`
+                        : name;
+                })
+                .sort(safeLocaleCompare)
+                .join("\n");
 
-                const uniqueInviterIds = [
-                    ...new Set(inviterIds),
-                ];
-
-                if (uniqueInviterIds.length === 0) {
-                    return displayName;
-                }
-
-                const inviterNames = uniqueInviterIds
-                    .map(inviterId => {
-                        const inviter = members.find(
-                            member => member.id === inviterId
-                        );
-
-                        if (!inviter) {
-                            console.warn(
-                                "Backblast inviter not found in members:",
-                                {
-                                    inviterId,
-                                    fngMemberId: fng.memberId || null,
-                                    fngName: displayName,
-                                }
-                            );
-
-                            return null;
-                        }
-
-                        return `@${getMemberBackblastName(inviter)}`;
-                    })
-                    .filter(Boolean);
-
-                if (inviterNames.length === 0) {
-                    return displayName;
-                }
-
-                return `${displayName} (Invited by ${inviterNames.join(", ")})`;
-            })
-            .sort(safeLocaleCompare)
-            .join("\n");
-
-    const visitorText = visitors.length === 0
-    ? "None"
-    : visitors
-        .map(visitor => {
-            const name = safeString(visitor.f3Name, "Unknown");
-            return visitor.homeRegion
-                ? `${name} (${visitor.homeRegion})`
-                : name;
-        })
-        .sort(safeLocaleCompare)
-        .join("\n");
-
-        const totalAttendees = new Set([
-            ...attendeeIds.filter(id => !fngMemberIdSet.has(id)),
+    const totalAttendees =
+        new Set([
+            ...attendeeIds.filter(
+                id =>
+                    !fngMemberIdSet.has(id)
+            ),
             ...effectiveQIds,
-        ]).size + fngs.length + visitors.length;
+        ]).size +
+        fngs.length +
+        visitors.length;
 
-    const qNamePlain = sortedQNames.length > 0
-        ? sortedQNames.map(name => name.replace(/^@/, "")).join(", ")
-        : "YHC";
+    const backblastIntro =
+        `${totalAttendees} HIM met at ${
+            session.aoName || "the AO"
+        } today to get 1% better.`;
 
-    const backblastIntro = applyBackblastTemplate(
-        getBackblastIntroTemplate(),
-        {
-            paxCount: String(totalAttendees),
-            aoName: session.aoName || "",
-            date: formattedDate,
-            qName: qNamePlain,
-        }
+    const aoHashtag =
+        session.aoName
+            ? `#${session.aoName.replace(
+                /\s+/g,
+                ""
+            )}`
+            : "";
+
+    return {
+        attendeeIds,
+        fngs,
+        visitors,
+        effectiveQIds,
+        formattedDate,
+        siteName,
+        siteAddress,
+        qNames,
+        qLabel,
+        qSectionLabel,
+        paxNamesArray,
+        paxNames,
+        fngText,
+        visitorText,
+        totalAttendees,
+        backblastIntro,
+        aoHashtag,
+    };
+}
+
+export function generateBackblastHashtags(
+    session,
+    members
+) {
+    if (!session) return "";
+
+    const {
+        aoHashtag,
+    } = buildBackblastData(
+        session,
+        members
     );
 
-    const workout = session.workout;
-    let workoutText = session.notes ? session.notes : "-";
+    return [
+        "#backblast",
+        aoHashtag,
+    ]
+        .filter(Boolean)
+        .join(" ");
+}
+
+export function generateBackblastHeader(
+    session,
+    members
+) {
+    if (!session) return "";
+
+    const {
+        formattedDate,
+        siteName,
+        qLabel,
+        qSectionLabel,
+        paxNamesArray,
+        paxNames,
+        fngText,
+        visitorText,
+        visitors,
+        fngs,
+    } = buildBackblastData(
+        session,
+        members
+    );
+
+    return [
+        `${qSectionLabel}: ${qLabel}`,
+
+        "",
+
+        `PAX (${paxNamesArray.length}):`,
+        paxNames,
+
+        "",
+
+        `Visiting PAX (${visitors.length}):`,
+        visitorText,
+
+        "",
+
+        `FNGs (${fngs.length}):`,
+        fngText,
+
+        "",
+
+        [
+            session.aoName,
+            formattedDate,
+        ]
+            .filter(Boolean)
+            .join(" · "),
+
+        siteName || null,
+
+        buildConditionsLine(
+            session.weatherSnapshot
+        ),
+    ]
+        .filter(item => item !== null)
+        .join("\n");
+}
+
+export function generateBackblastBody(
+    session
+) {
+    if (!session) return "";
+
+    const workout =
+        session.workout;
+
+    let workoutText =
+        session.notes
+            ? session.notes
+            : "-";
 
     if (workout) {
         const parts = [];
 
         if (workout.title) {
-            parts.push(`Title: ${workout.title}`);
+            parts.push(
+                `Title: ${workout.title}`
+            );
         }
 
         if (workout.introduction) {
-            parts.push(`${getWorkoutFieldLabel(state, "introduction")}:\n${workout.introduction}`);
+            parts.push(
+                `${getWorkoutFieldLabel(
+                    state,
+                    "introduction"
+                )}:\n${workout.introduction}`
+            );
         }
 
         if (workout.warmorama) {
-            parts.push(`${getWorkoutFieldLabel(state, "warmorama")}:\n${workout.warmorama}`);
+            parts.push(
+                `${getWorkoutFieldLabel(
+                    state,
+                    "warmorama"
+                )}:\n${workout.warmorama}`
+            );
         }
 
         if (workout.thangs) {
-            parts.push(`${getWorkoutFieldLabel(state, "thangs")}:\n${workout.thangs}`);
+            parts.push(
+                `${getWorkoutFieldLabel(
+                    state,
+                    "thangs"
+                )}:\n${workout.thangs}`
+            );
         }
 
         if (workout.finisher) {
-            parts.push(`${getWorkoutFieldLabel(state, "finisher")}:\n${workout.finisher}`);
+            parts.push(
+                `${getWorkoutFieldLabel(
+                    state,
+                    "finisher"
+                )}:\n${workout.finisher}`
+            );
         }
 
         if (workout.notes) {
-            parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
+            parts.push(
+                `${getWorkoutFieldLabel(
+                    state,
+                    "notes"
+                )}:\n${workout.notes}`
+            );
         }
 
-        const thirdFText = String(
-            workout.thirdFText || ""
-        )
-            .replace(/^THIRD F\s*:?\s*/i, "")
-            .trim();
-        
+        const thirdFText =
+            String(
+                workout.thirdFText || ""
+            )
+                .replace(
+                    /^THIRD F\s*:?\s*/i,
+                    ""
+                )
+                .trim();
+
         if (thirdFText) {
-            parts.push(`THIRD F\n\n${thirdFText}`);
+            parts.push(
+                `THIRD F\n\n${thirdFText}`
+            );
         }
 
         const announcementText =
-            getSessionAnnouncementText(session)
-                .replace(/^ANNOUNCEMENTS\s*:?\s*/i, "")
+            getSessionAnnouncementText(
+                session
+            )
+                .replace(
+                    /^ANNOUNCEMENTS\s*:?\s*/i,
+                    ""
+                )
                 .trim();
 
         if (announcementText) {
-            parts.push(`ANNOUNCEMENTS\n\n${announcementText}`);
+            parts.push(
+                `ANNOUNCEMENTS\n\n${announcementText}`
+            );
         }
 
         if (session.notes) {
-            parts.push(`Session Notes:\n${session.notes}`);
+            parts.push(
+                `Session Notes:\n${session.notes}`
+            );
         }
 
-        workoutText = parts.length > 0 ? parts.join("\n\n") : "-";
+        workoutText =
+            parts.length > 0
+                ? parts.join("\n\n")
+                : "-";
     } else if (session.notes) {
-        workoutText = `Notes:\n${session.notes}`;
+        workoutText =
+            `Notes:\n${session.notes}`;
     }
 
-    const aoHashtag = session.aoName
-        ? `#${session.aoName.replace(/\s+/g, "")}`
-        : "";
+    return workoutText;
+}
 
+export function composeBackblast({
+    hashtagsText = "",
+    introText = "",
+    headerText = "",
+    bodyText = "",
+}) {
     return [
-        `#backblast ${aoHashtag}`.trim(),
-        "",
-        backblastIntro,
-        backblastIntro ? "" : null,
-        `AO: ${session.aoName}`,
-        siteName ? `Site: ${siteName}` : null,
-        siteAddress ? `Address: ${siteAddress}` : null,
-        `Date: ${formattedDate}`,
-        buildConditionsLine(session.weatherSnapshot),
-        "",
-        `Total Attendees: ${totalAttendees}`,
-        "",
-        `${qSectionLabel}: ${qLabel}`,
-        "",
-        `PAX (${paxNamesArray.length}):`, 
-        `${paxNames}`,
-        "",
-        `Visiting PAX (${visitors.length}):`,
-        `${visitorText}`,
-        "",
-        `FNGs (${fngs.length}): ${fngText}`,
-        "",
-        workoutText,
-    ].filter(item => item !== null).join("\n");
+        hashtagsText.trim() || null,
+        introText.trim() || null,
+        headerText.trim() || null,
+        bodyText.trim() || null,
+    ]
+        .filter(Boolean)
+        .join("\n\n");
+}
+
+export function generateBackblastIntro(
+    session,
+    members
+) {
+    if (!session) return "";
+
+    return buildBackblastData(
+        session,
+        members
+    ).backblastIntro;
+}
+
+export function buildBackblastSnapshot(
+    session,
+    members
+) {
+    return composeBackblast({
+
+        hashtagsText:
+            session.backblastHashtagsText ??
+            generateBackblastHashtags(
+                session,
+                members
+            ),
+    
+        introText:
+            session.backblastIntroText ??
+            generateBackblastIntro(
+                session,
+                members
+            ),
+    
+        headerText:
+            generateBackblastHeader(
+                session,
+                members
+            ),
+    
+        bodyText:
+            session.backblastBodyText ??
+            generateBackblastBody(
+                session
+            ),
+    });
+}
+
+export function generateBackblast(
+    session,
+    members
+) {
+    return buildBackblastSnapshot(
+        session,
+        members
+    );
 }

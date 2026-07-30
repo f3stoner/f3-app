@@ -26,7 +26,10 @@ const PAX_PROFILE_VIEWS = new Set([
     "paxCommunity",
 ]);
 
-export function navigateTo(view) {
+export function navigateTo(
+    view,
+    params = {}
+) {
     const currentView = state.currentView;
 
     if (currentView && currentView !== view) {
@@ -42,7 +45,7 @@ export function navigateTo(view) {
     ) {
         state.viewHistory.push(currentView);
     }
-   
+    state.currentViewParams = params;
     state.currentView = view;
     saveNavState(state);
     renderApp();
@@ -69,7 +72,7 @@ export function goBack(fallbackView = "dashboard") {
     if (currentView && currentView !== nextView) {
         runViewCleanup(currentView);
     }
-
+    state.currentViewParams = {};
     state.currentView = nextView;
     saveNavState(state);
     renderApp();

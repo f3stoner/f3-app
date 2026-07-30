@@ -77,6 +77,9 @@ export async function loadRecentSessions(regionId, days = 180) {
             created_at,
             created_by_user_id,
             backblast_text,
+            backblast_hashtags_text,
+            backblast_intro_text,
+            backblast_body_text,
             backblast_status,
             backblast_posted_at,
             unresolved_pax,
@@ -131,6 +134,9 @@ export async function loadMatchingSessions({
         created_at,
         created_by_user_id,
         backblast_text,
+        backblast_hashtags_text,
+        backblast_intro_text,
+        backblast_body_text,
         backblast_status,
         backblast_posted_at,
         unresolved_pax,
@@ -269,6 +275,9 @@ export async function loadOlderSessionsPage(regionId, beforeDate, limit = 100) {
             created_at,
             created_by_user_id,
             backblast_text,
+            backblast_hashtags_text,
+            backblast_intro_text,
+            backblast_body_text,
             backblast_status,
             backblast_posted_at,
             unresolved_pax,
@@ -1039,8 +1048,20 @@ export function mapSessionFromDb(row) {
         sourceQSlotId: row.source_q_slot_id || null,
         createdAt: row.created_at,
         createdByUserId: row.created_by_user_id || null,
-        backblastText: row.backblast_text || "",
-        backblastStatus: row.backblast_status || null,
+        backblastText:
+            row.backblast_text || "",
+
+        backblastHashtagsText:
+            row.backblast_hashtags_text ?? null,
+
+        backblastIntroText:
+            row.backblast_intro_text ?? null,
+
+        backblastBodyText:
+            row.backblast_body_text ?? null,
+
+        backblastStatus:
+            row.backblast_status || null,
         backblastPostedAt: row.backblast_posted_at || null,
         unresolvedPax: row.unresolved_pax || [],
         weatherSnapshot: row.weather_snapshot || null,
@@ -1473,8 +1494,20 @@ export async function insertSession(regionId, session) {
                 source_q_slot_id: session.sourceQSlotId || null,
                 created_at: session.createdAt,
                 created_by_user_id: session.createdByUserId,
-                backblast_text: session.backblastText || "",
-                backblast_status: session.backblastStatus || null,
+                backblast_text:
+                    session.backblastText || "",
+
+                backblast_hashtags_text:
+                    session.backblastHashtagsText ?? null,
+
+                backblast_intro_text:
+                    session.backblastIntroText ?? null,
+
+                backblast_body_text:
+                    session.backblastBodyText ?? null,
+
+                backblast_status:
+                    session.backblastStatus || null,
                 backblast_posted_at: session.backblastPostedAt || null,
                 unresolved_pax: session.unresolvedPax || [],
                 weather_snapshot: session.weatherSnapshot || null,
@@ -1538,8 +1571,20 @@ export async function updateSessionInCloud(regionId, session) {
             source_planned_workout_id: session.sourcePlannedWorkoutId || null,
             source_q_slot_id: session.sourceQSlotId || null,
             created_at: session.createdAt,
-            backblast_text: session.backblastText || "",
-            backblast_status: session.backblastStatus || null,
+            backblast_text:
+                session.backblastText || "",
+
+            backblast_hashtags_text:
+                session.backblastHashtagsText ?? null,
+
+            backblast_intro_text:
+                session.backblastIntroText ?? null,
+
+            backblast_body_text:
+                session.backblastBodyText ?? null,
+
+            backblast_status:
+                session.backblastStatus || null,
             backblast_posted_at: session.backblastPostedAt || null,
             unresolved_pax: session.unresolvedPax || [],
             weather_snapshot: session.weatherSnapshot || null,
@@ -4595,6 +4640,67 @@ export async function loadOperationsOverview(
                 data?.health?.lastAuditAt || null,
         },
     };
+}
+
+export async function loadMemberMerges() {
+    const { data, error } = await supabase.rpc(
+        "load_member_merges"
+    );
+
+    if (error) throw error;
+
+    return data || [];
+}
+
+export async function loadMemberMerge(
+    mergeId
+) {
+    if (!mergeId) {
+        throw new Error(
+            "Merge id is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "load_member_merge",
+        {
+            p_merge_id: mergeId,
+        }
+    );
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function executeMemberMerge(
+    mergeId,
+    expectedPlanHash
+) {
+    if (!mergeId) {
+        throw new Error(
+            "Merge id is required."
+        );
+    }
+
+    if (!expectedPlanHash) {
+        throw new Error(
+            "Expected plan hash is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "execute_member_merge",
+        {
+            p_merge_id: mergeId,
+            p_expected_plan_hash:
+                expectedPlanHash,
+        }
+    );
+
+    if (error) throw error;
+
+    return data;
 }
 
 export async function loadMembersByIds(

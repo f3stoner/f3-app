@@ -57,6 +57,8 @@ import { renderPaxCommunityView } from "./views/paxCommunity.js";
 import { renderSettingsView } from "./views/settingsView.js";
 import { initializeGlobalErrorTelemetry } from "./services/globalErrorTelemetry.js";
 import { switchWorkspace } from "./services/workspaceService.js";
+import { supabase } from "./services/supabaseClient.js";
+import { renderMemberMergeDetailView } from "./views/memberMergeDetail.js";
 
 initializeGlobalErrorTelemetry();
 
@@ -69,7 +71,20 @@ if (process.env.NODE_ENV === "development") {
     window.state = state;
     window.renderApp = renderApp;
     window.logAppEvent = logAppEvent;
-
+    window.createMemberMergeDraft = async (...args) => {
+        return supabase.rpc(
+            "create_member_merge_draft",
+            ...args
+        );
+    };
+    window.previewMemberMerge = async mergeId => {
+        return supabase.rpc(
+            "preview_member_merge",
+            {
+                p_merge_id: mergeId,
+            }
+        );
+    };
     window.synchronizePendingSessions = async () => {
         const module = await import(
             "./services/pendingSessionSyncService.js"
@@ -815,6 +830,8 @@ function renderApp() {
             "operationsCenter",
             currentRenderSequence
         );
+    } else if (state.currentView === "memberMergeDetail") {
+        renderMemberMergeDetailView(state.currentViewParams || {});
     } else {
         console.warn("Unknown view. Resetting to dashboard:", state.currentView);
 

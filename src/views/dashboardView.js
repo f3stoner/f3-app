@@ -2554,6 +2554,8 @@ console.log(
                     createdByUserId: state.currentUserId,
                     createdAt: Date.now(),
                     backblastText: "",
+                    backblastIntroText: "",
+                    backblastBodyText: "",
                 };
         
                 state.editingSessionId = null;
@@ -2743,6 +2745,8 @@ console.log(
                         createdByUserId: state.currentUserId,
                         createdAt: Date.now(),
                         backblastText: "",
+                        backblastIntroText: "",
+                        backblastBodyText: "",
                     };
             
                     state.editingSessionId = null;

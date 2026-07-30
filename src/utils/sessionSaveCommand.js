@@ -186,6 +186,15 @@ export function buildSessionSaveRpcCommand({
         backblastText:
             session.backblastText || "",
 
+        backblastHashtagsText:
+            session.backblastHashtagsText ?? null,
+        
+        backblastIntroText:
+            session.backblastIntroText ?? "",
+        
+        backblastBodyText:
+            session.backblastBodyText ?? "",
+
         backblastStatus:
             session.backblastStatus || null,
 

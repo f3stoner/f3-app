@@ -1,0 +1,645 @@
+/* =========================================================
+   BACKBLAST
+   ========================================================= */
+
+   .view-backblast {
+    --backblast-accent: #8fd3ff;
+    --backblast-accent-bright: #c9eaff;
+    --backblast-accent-soft:
+        rgba(143, 211, 255, 0.1);
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    padding-bottom: 7.5rem;
+
+    overflow-x: clip;
+    box-sizing: border-box;
+
+    background:
+        radial-gradient(
+            circle at 45% -8%,
+            rgba(143, 211, 255, 0.08),
+            transparent 320px
+        ),
+        var(--bg);
+}
+
+
+/* ---------------------------------------------------------
+   Page intro
+   --------------------------------------------------------- */
+
+.view-backblast > h1 {
+    margin-bottom: 0.45rem;
+}
+
+.view-backblast
+> .detail-label {
+    max-width: 34rem;
+
+    margin:
+        0
+        0
+        1rem;
+
+    color: var(--muted);
+
+    font-size: 0.82rem;
+    font-weight: 750;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+}
+
+
+/* ---------------------------------------------------------
+   Composer shell
+   --------------------------------------------------------- */
+
+.view-backblast
+.backblast-composer {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.14);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.055),
+            transparent 38%
+        ),
+        rgba(255, 255, 255, 0.018);
+
+    box-shadow:
+        0 14px 36px
+        rgba(0, 0, 0, 0.24);
+}
+
+
+/* ---------------------------------------------------------
+   Editable sections
+   --------------------------------------------------------- */
+
+.view-backblast
+.backblast-composer-editable {
+    position: relative;
+
+    min-width: 0;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.025),
+            transparent 58%
+        ),
+        rgba(255, 255, 255, 0.012);
+
+    transition:
+        background 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.view-backblast
+.backblast-composer-editable
++ .backblast-composer-editable {
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+}
+
+.view-backblast
+.backblast-composer-editable-label {
+    padding:
+        0.75rem
+        1rem
+        0;
+
+    color:
+        rgba(143, 211, 255, 0.7);
+
+    font-size: 0.66rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+
+    transition:
+        color 150ms ease;
+}
+
+.view-backblast
+.backblast-composer-editable:focus-within {
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.065),
+            transparent 62%
+        ),
+        rgba(255, 255, 255, 0.02);
+
+    box-shadow:
+        inset 3px 0 0
+        var(--backblast-accent);
+}
+
+.view-backblast
+.backblast-composer-editable:focus-within
+.backblast-composer-editable-label {
+    color:
+        var(--backblast-accent-bright);
+}
+
+
+/* ---------------------------------------------------------
+   Editable fields
+   --------------------------------------------------------- */
+
+.view-backblast
+.backblast-composer-field {
+    display: block;
+
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+    padding:
+        0.55rem
+        1rem
+        1rem;
+
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+
+    resize: none;
+
+    overflow-y: hidden;
+
+    background: transparent;
+    color: var(--text);
+
+    box-sizing: border-box;
+
+    font-family:
+        var(--font-body);
+
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.5;
+
+    caret-color:
+        var(--backblast-accent-bright);
+}
+
+.view-backblast
+.backblast-composer-field:hover {
+    background:
+        rgba(255, 255, 255, 0.012);
+}
+
+.view-backblast
+.backblast-composer-field:focus {
+    background: transparent;
+}
+
+.view-backblast
+.backblast-composer-field::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+
+/* Hashtags */
+
+.view-backblast
+.backblast-composer-editable-hashtags {
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.045),
+            transparent 62%
+        ),
+        rgba(255, 255, 255, 0.014);
+}
+
+.view-backblast
+.backblast-composer-hashtags {
+    min-height: 2.6rem;
+
+    color:
+        var(--backblast-accent-bright);
+
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+
+/* Opening */
+
+.view-backblast
+.backblast-composer-intro {
+    min-height: 5rem;
+
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+
+/* Workout details */
+
+.view-backblast
+.backblast-composer-editable-body {
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+}
+
+.view-backblast
+.backblast-composer-body {
+    min-height: 18rem;
+    max-height: 65vh;
+
+    padding-bottom: 1.25rem;
+
+    overflow-y: auto;
+
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(143, 211, 255, 0.35)
+        transparent;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.view-backblast
+.backblast-composer-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.view-backblast
+.backblast-composer-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.view-backblast
+.backblast-composer-body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(143, 211, 255, 0.32);
+}
+
+
+/* ---------------------------------------------------------
+   Live session data
+   --------------------------------------------------------- */
+
+.view-backblast
+.backblast-composer-generated {
+    position: relative;
+
+    min-width: 0;
+
+    margin: 0;
+    padding:
+        0.9rem
+        1rem
+        1rem;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.055),
+            transparent 48%
+        ),
+        rgba(0, 0, 0, 0.13);
+}
+
+.view-backblast
+.backblast-composer-generated-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    margin:
+        0
+        0
+        0.65rem;
+
+    color:
+        var(--backblast-accent);
+
+    font-size: 0.66rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.view-backblast
+.backblast-composer-generated-label::before {
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    flex: 0 0 auto;
+
+    border-radius: 999px;
+
+    background:
+        var(--backblast-accent);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(143, 211, 255, 0.1);
+}
+
+.view-backblast
+.backblast-composer-generated-content {
+    max-width: 100%;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0;
+
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+
+    border: 0;
+    background: transparent;
+
+    color:
+        rgba(245, 245, 242, 0.8);
+
+    font-family:
+        var(--font-body);
+
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   Media
+   --------------------------------------------------------- */
+
+.view-backblast
+.preblast-media-section {
+    margin-top: 1rem;
+    padding: 1rem;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-backblast
+.media-input {
+    width: 100%;
+    margin: 0;
+}
+
+.view-backblast
+.preblast-media-helper {
+    margin-top: 0.65rem;
+
+    color: var(--muted);
+
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.view-backblast
+.preblast-media-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    margin-top: 0.75rem;
+}
+
+.view-backblast
+.preblast-media-item {
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        var(--surface);
+}
+
+.view-backblast
+.preblast-media-preview {
+    display: block;
+
+    width: 100%;
+    max-height: 22rem;
+
+    object-fit: contain;
+
+    background:
+        rgba(0, 0, 0, 0.3);
+}
+
+.view-backblast
+.preblast-media-item
+button {
+    width: 100%;
+    min-height: 42px;
+
+    margin: 0;
+    padding: 0.6rem 0.75rem;
+
+    border: 0;
+    border-top:
+        1px solid
+        var(--border);
+
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--danger);
+
+    box-shadow: none;
+
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+
+
+/* ---------------------------------------------------------
+   Actions
+   --------------------------------------------------------- */
+
+.view-backblast
+.button-row {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 0.65rem;
+
+    margin-top: 1rem;
+}
+
+.view-backblast
+.button-row
+button {
+    width: 100%;
+    min-height: 46px;
+
+    margin: 0;
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow: none;
+}
+
+.view-backblast
+.button-row
+button:first-child {
+    border-color:
+        rgba(143, 211, 255, 0.72);
+
+    background:
+        linear-gradient(
+            135deg,
+            #f5f5f2,
+            #c9eaff
+        );
+
+    color: #071018;
+
+    font-weight: 850;
+
+    box-shadow:
+        0 10px 26px
+        rgba(143, 211, 255, 0.14);
+}
+
+.view-backblast
+.button-row
+button:first-child:hover {
+    filter: brightness(1.06);
+}
+
+.view-backblast
+.button-row
+button:not(:first-child) {
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--surface);
+
+    color: var(--text);
+}
+
+.view-backblast
+.button-row
+button:not(:first-child):hover {
+    border-color:
+        var(--border-strong);
+
+    background:
+        var(--surface-raised);
+
+    box-shadow: none;
+}
+
+
+/* ---------------------------------------------------------
+   Mobile
+   --------------------------------------------------------- */
+
+@media (max-width: 520px) {
+    .view-backblast
+    .backblast-composer-editable-label,
+    .view-backblast
+    .backblast-composer-generated-label {
+        font-size: 0.62rem;
+    }
+
+    .view-backblast
+    .backblast-composer-field {
+        padding-right: 0.85rem;
+        padding-left: 0.85rem;
+
+        font-size: 0.94rem;
+    }
+
+    .view-backblast
+    .backblast-composer-editable-label {
+        padding-right: 0.85rem;
+        padding-left: 0.85rem;
+    }
+
+    .view-backblast
+    .backblast-composer-generated {
+        padding-right: 0.85rem;
+        padding-left: 0.85rem;
+    }
+
+    .view-backblast
+    .backblast-composer-generated-content {
+        font-size: 0.82rem;
+    }
+
+    .view-backblast
+    .backblast-composer-body {
+        max-height: 60vh;
+    }
+}
+
+@media (max-width: 390px) {
+    .view-backblast
+    .button-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .view-backblast
+    .backblast-composer-editable,
+    .view-backblast
+    .backblast-composer-editable-label {
+        transition: none;
+    }
+}

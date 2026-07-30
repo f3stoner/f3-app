@@ -1,16 +1,18 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { generateBackblast } from "../modules/backblast.js";
+import {
+    buildBackblastSnapshot,
+    generateBackblastBody,
+    generateBackblastHeader,
+    generateBackblastHashtags,
+    generateBackblastIntro,
+} from "../modules/backblast.js";
 import { updateSession } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
-import { updateCustomTemplates } from "../services/cloudData.js";
 import { logActionFailure } from "../services/appEvents.js";
-import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { getSiteWeather } from "../services/weather.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
-import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -36,12 +38,41 @@ export function renderBackblastView () {
 
         if (session) {
             try {
-                const updatedSession = {
-                    ...session,
-                    backblastText: state.draftBackblastText || "",
-                };
+                const backblastText =
+                    buildCurrentBackblastText();
 
-                await updateSession(session.id, updatedSession);
+                    const {
+                        _backblastSectionsInitialized,
+                        ...persistableSession
+                    } = session;
+                    
+                    const updatedSession = {
+                        ...persistableSession,
+                    
+                        backblastHashtagsText:
+                            session.backblastHashtagsText ??
+                            null,
+                    
+                        backblastIntroText:
+                            session.backblastIntroText ??
+                            null,
+                    
+                        backblastBodyText:
+                            session.backblastBodyText ??
+                            null,
+                    
+                        backblastText,
+                    };
+
+                await updateSession(
+                    session.id,
+                    updatedSession
+                );
+
+                Object.assign(
+                    session,
+                    updatedSession
+                );
             } catch (error) {
                 console.error("Failed to save backblast text:", error);
                 showToast("Failed to save backblast.", "error");
@@ -74,335 +105,302 @@ export function renderBackblastView () {
         s => s.id === state.selectedSessionId
     );
 
-    function appendAnnouncementsToBackblast(text) {
-        const savedAnnouncementText = session?.workout?.announcementText?.trim();
+    function buildCurrentBackblastText() {
+        if (!session) return "";
     
-        if (savedAnnouncementText) {
-            return `${text.trim()}\n\nANNOUNCEMENTS\n\n${savedAnnouncementText}`;
-        }
-    
-        const announcements = filterDateAwareContent(
-            state.announcements || [],
-            session?.date || new Date()
-        );
-    
-        if (announcements.length === 0) {
-            return text;
-        }
-    
-        const announcementText = announcements
-            .map(announcement => `${announcement.title}\n${announcement.body}`)
-            .join("\n\n");
-    
-        return `${text.trim()}\n\nANNOUNCEMENTS\n\n${announcementText}`;
-    }
-
-    function insertWeatherAfterDate(text, weatherLine) {
-        const lines = text.split("\n");
-    
-        const dateLineIndex = lines.findIndex(line =>
-            /^date:/i.test(line.trim())
-        );
-    
-        if (dateLineIndex === -1) {
-            return `${text}\n\n${weatherLine}`;
-        }
-    
-        lines.splice(dateLineIndex + 1, 0, weatherLine);
-        return lines.join("\n");
-    }
-
-    async function addWeatherToBackblast(session, textArea) {
-        if (!session || state.hasAddedBackblastWeather) return;
-    
-        const ao = state.aos.find(a => a.name === session.aoName);
-    
-        const qSlot = getBackblastQSlot();
-
-        const dayKey = session.date
-            ? String(new Date(`${session.date}T12:00:00`).getDay())
-            : "";
-
-        const displayTime =
-            session.startTime ||
-            qSlot?.overrideTime ||
-            qSlot?.startTime ||
-            ao?.timeSchedule?.[dayKey] ||
-            ao?.time ||
-            "";
-
-        if (!session.siteId || !displayTime || !session.date) return;
-
-        try {
-            const targetDateTime = `${session.date}T${displayTime}:00`;
-            const startingText = state.draftBackblastText || "";
-
-            const weather = await getSiteWeather(
-                session.siteId,
-                targetDateTime
-            );
-            
-            if (!weather || weather.weatherUnavailable) return;
-            
-            if ((state.draftBackblastText || "") !== startingText) return;
-            
-            const weatherParts = [
-                weather.temp != null
-                    ? `${weather.temp}°`
-                    : "--°",
-            
-                weather.feelsLike != null
-                    ? `Feels like ${weather.feelsLike}°`
-                    : null,
-            
-                weather.humidity != null
-                    ? `${weather.humidity}% humidity`
-                    : null,
-            
-                weather.precipChance != null
-                    ? `${weather.precipChance}% rain`
-                    : null,
-            
-                weather.windMph != null
-                    ? `Wind ${weather.windMph} mph`
-                    : null,
-            ].filter(Boolean);
-            
-            const weatherLine = `Weather: ${weatherParts.join(" • ")}`;
-            
-            const alreadyHasWeather = /^weather:/im.test(startingText);
-
-            if (alreadyHasWeather) {
-                state.hasAddedBackblastWeather = true;
-                return;
-            }
-
-            state.draftBackblastText = insertWeatherAfterDate(startingText, weatherLine);
-            state.hasAddedBackblastWeather = true;
-
-            textArea.value = state.draftBackblastText;
-            autoResize(textArea);
-
-        } catch (error) {
-            console.error("Failed to add weather to backblast:", error);
-        }
-    }
-
-    function getBackblastAo() {
-        return state.aos.find(ao => ao.name === session?.aoName);
-    }
-    
-    function getBackblastQSlot() {
-        const ao = getBackblastAo();
-    
-        if (!session || !ao) return null;
-    
-        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
-    
-        return state.qSlots.find(slot =>
-            slot.date === session.date &&
-            slot.aoId === ao.id &&
-            (!slot.qUserId || effectiveQIds.includes(slot.qUserId))
+        return buildBackblastSnapshot(
+            session,
+            state.members
         );
     }
-    
-    function buildEmphasisHashtag() {
-        const ao = getBackblastAo();
-        const qSlot = getBackblastQSlot();
-    
-        if (!qSlot) return "";
-    
-        const emphasis = getWorkoutEmphasisForSlot(qSlot, ao);
-        const label = qSlot.customEmphasisLabel || emphasis?.label;
-    
-        if (!label) return "";
-    
-        return `#${label.toLowerCase()}`;
-    }
-    
-    function upsertEmphasisHashtag() {
-        const hashtag = buildEmphasisHashtag();
-    
-        if (!hashtag) return;
-    
-        const currentText = state.draftBackblastText || "";
-    
-        const emphasisLabels = [
-            "Heavy",
-            "Upper",
-            "Lower",
-            "Cardio",
-            "Ruck",
-            "Run",
-            "Core",
-            "30/30",
-            "Stairs",
-            "Bootcamp",
-            "MurphTraining",
-            "Other",
-        ];
-    
-        const emphasisRegex = new RegExp(
-            `\\s+#(?:${emphasisLabels.map(label =>
-                label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-            ).join("|")})`,
-            "gi"
-        );
-    
-        const withoutOldEmphasis = currentText.replace(emphasisRegex, "");
-    
-        if (withoutOldEmphasis.toLowerCase().includes(hashtag.toLowerCase())) {
-            state.draftBackblastText = withoutOldEmphasis;
-            return;
-        }
-    
-        const lines = withoutOldEmphasis.split("\n");
-        const firstNonEmptyIndex = lines.findIndex(line => line.trim());
-    
-        if (firstNonEmptyIndex === -1) {
-            state.draftBackblastText = hashtag;
-            return;
-        }
-    
-        lines[firstNonEmptyIndex] = `${lines[firstNonEmptyIndex].trimEnd()} ${hashtag}`;
-    
-        state.draftBackblastText = lines.join("\n");
-    }
 
-    if (!state.draftBackblastText && session) {
-        state.draftBackblastText = generateBackblast(session, state.members);
+    let hashtagsText = "";
+    let introText = "";
+    let bodyText = "";
+
+    if (session) {
+        hashtagsText =
+            session.backblastHashtagsText ??
+            generateBackblastHashtags(session, state.members);
+        
+        introText =
+            session.backblastIntroText ??
+            generateBackblastIntro(session, state.members);
+        
+        bodyText =
+            session.backblastBodyText ??
+            generateBackblastBody(session);
+    
+        state.draftBackblastText =
+            buildCurrentBackblastText();
     }
-
-    upsertEmphasisHashtag();
-
 
     const title = document.createElement("h1");
     title.textContent = "Backblast";
-
+    
     const helper = document.createElement("div");
     helper.classList.add("detail-label");
-    helper.textContent = "Edit before sharing";
+    helper.textContent =
+        "Your edits stay intact while attendance updates automatically.";
+    
+    const composer = document.createElement("section");
+    
+    composer.classList.add(
+        "card",
+        "backblast-composer"
+    );
+    
+    /* =========================================================
+       HASHTAGS
+       ========================================================= */
+    
+    const hashtagsTextArea =
+        document.createElement("textarea");
+    
+    hashtagsTextArea.classList.add(
+        "backblast-composer-field",
+        "backblast-composer-hashtags"
+    );
+    
+    hashtagsTextArea.rows = 1;
+    
+    hashtagsTextArea.value = hashtagsText;
+    
+    hashtagsTextArea.placeholder =
+        "#backblast #TheHub";
 
-    /*const hasSavedOpener = Boolean(state.customTemplates?.backblastIntro);
+    const hashtagsField =
+        document.createElement("div");
+    
+    hashtagsField.classList.add(
+        "backblast-composer-editable",
+        "backblast-composer-editable-hashtags"
+    );
+    
+    const hashtagsLabel =
+        document.createElement("div");
+    
+    hashtagsLabel.classList.add(
+        "backblast-composer-editable-label"
+    );
+    
+    hashtagsLabel.textContent =
+        "EDIT HASHTAGS";
+    
+    hashtagsField.append(
+        hashtagsLabel,
+        hashtagsTextArea
+    );
+    
+    /* =========================================================
+       OPENING
+       ========================================================= */
+    
+    const introTextArea =
+        document.createElement("textarea");
+    
+    introTextArea.classList.add(
+        "backblast-composer-field",
+        "backblast-composer-intro"
+    );
+    
+    introTextArea.value = introText;
+    
+    introTextArea.placeholder =
+        "Add an opening note...";
 
-    let openerExpanded = false;
+    const introField =
+        document.createElement("div");
+    
+    introField.classList.add(
+        "backblast-composer-editable"
+    );
+    
+    const introLabel =
+        document.createElement("div");
+    
+    introLabel.classList.add(
+        "backblast-composer-editable-label"
+    );
+    
+    introLabel.textContent =
+        "EDIT OPENING";
+    
+    introField.append(
+        introLabel,
+        introTextArea
+    );
+    
+    /* =========================================================
+       LIVE SESSION DATA
+       ========================================================= */
+    
+    const generatedBlock =
+        document.createElement("div");
+    
+    generatedBlock.classList.add(
+        "backblast-composer-generated"
+    );
+    
+    const generatedLabel =
+        document.createElement("div");
+    
+    generatedLabel.classList.add(
+        "backblast-composer-generated-label"
+    );
+    
+    generatedLabel.textContent =
+        "LIVE SESSION DATA";
+    
+    const generatedContent =
+        document.createElement("pre");
+    
+    generatedContent.classList.add(
+        "backblast-composer-generated-content"
+    );
+    
+    generatedContent.textContent =
+        session
+            ? generateBackblastHeader(
+                session,
+                state.members
+            )
+            : "";
+    
+    generatedBlock.append(
+        generatedLabel,
+        generatedContent
+    );
+    
+    /* =========================================================
+       WORKOUT / NARRATIVE
+       ========================================================= */
+    
+    const bodyTextArea =
+        document.createElement("textarea");
+    
+    bodyTextArea.classList.add(
+        "backblast-composer-field",
+        "backblast-composer-body"
+    );
+    
+    bodyTextArea.value = bodyText;
+    
+    bodyTextArea.placeholder =
+        "Add workout details, commentary, announcements, or closing notes...";
 
-    const templateSection = document.createElement("div");
-    templateSection.classList.add("card");
-
-    const templateTitle = document.createElement("h2");
-    templateTitle.textContent = "Backblast Opener";
-
-    const DEFAULT_BACKBLAST_OPENER =
-    "{paxCount} PAX including YHC joined together in the gloom this morning at {aoName}.";
-
-    const templateHelper = document.createElement("div");
-    templateHelper.classList.add("detail-label", "backblast-template-helper");
-    templateHelper.textContent = hasSavedOpener
-        ? "Saved opener is active for generated backblasts."
-        : "Available tags: {paxCount}, {aoName}, {date}, and {qNames}. Tags are case-sensitive.";
-
-    const templateTextArea = document.createElement("textarea");
-    templateTextArea.classList.add("preblast-textarea");
-    templateTextArea.style.minHeight = "80px";
-    templateTextArea.style.maxHeight = "160px";
-    templateTextArea.style.overflowY = "auto";
-    templateTextArea.value = state.customTemplates?.backblastIntro || "";
-    templateTextArea.placeholder = DEFAULT_BACKBLAST_OPENER;
-    templateTextArea.style.display = "none";
-
-
-    const saveTemplateButton = document.createElement("button");
-    saveTemplateButton.textContent = "Save Opener";
-    saveTemplateButton.style.display = "none";
-
-    const toggleTemplateButton = document.createElement("button");
-    toggleTemplateButton.textContent = hasSavedOpener ? "Edit" : "Customize";
-
-    saveTemplateButton.addEventListener("click", async () => {
-        try {
-            const openerText =
-                templateTextArea.value.trim() ||
-                DEFAULT_BACKBLAST_OPENER;
-
-            const updatedTemplates = {
-                ...(state.customTemplates || {}),
-                backblastIntro: openerText,
-            };
-
-            await updateCustomTemplates(state.currentUserId, updatedTemplates);
-
-            state.customTemplates = updatedTemplates;
-
-            showToast("Backblast opener saved.", "success");
-            renderApp();
-        } catch (error) {
-            console.error("Failed to save backblast opener:", error);
-            showToast("Failed to save opener.", "error");
-        }
-    });
-
-    toggleTemplateButton.addEventListener("click", () => {
-        openerExpanded = !openerExpanded;
-
-        templateTextArea.style.display = openerExpanded ? "block" : "none";
-        saveTemplateButton.style.display = openerExpanded ? "inline-block" : "none";
-
-        toggleTemplateButton.textContent = openerExpanded
-        ? "Hide"
-        : (hasSavedOpener ? "Edit" : "Customize");
-
-        if (openerExpanded) {
-            autoResize(templateTextArea);
-        }
-    });
-
-    const applyTemplateButton = document.createElement("button");
-    applyTemplateButton.textContent = "Apply Saved Opener";
-    applyTemplateButton.disabled = !hasSavedOpener;
-
-    applyTemplateButton.addEventListener("click", () => {
-        if (!session) {
-            showToast("Could not apply opener. Session not found.", "error");
-            return;
-        }
-
-        const confirmed = confirm("Regenerate this backblast with your saved opener? This will replace your current draft.");
-        if (!confirmed) return;
-
-        session.backblastText = "";
-        state.draftBackblastText = generateBackblast(session, state.members);
-        renderApp();
-    });
-
-    templateSection.append(templateTitle, templateHelper, toggleTemplateButton, applyTemplateButton, templateTextArea, saveTemplateButton);*/
-
-    const textArea = document.createElement("textarea");
-    textArea.classList.add("preblast-textarea");
-    textArea.value = state.draftBackblastText || "";
+    const bodyField =
+        document.createElement("div");
+    
+    bodyField.classList.add(
+        "backblast-composer-editable",
+        "backblast-composer-editable-body"
+    );
+    
+    const bodyLabel =
+        document.createElement("div");
+    
+    bodyLabel.classList.add(
+        "backblast-composer-editable-label"
+    );
+    
+    bodyLabel.textContent =
+        "EDIT WORKOUT DETAILS";
+    
+    bodyField.append(
+        bodyLabel,
+        bodyTextArea
+    );
+    
+    composer.append(
+        hashtagsField,
+        introField,
+        generatedBlock,
+        bodyField
+    );
 
     function autoResize(textarea) {
         textarea.style.height = "auto";
-    
-        const maxHeight = Math.floor(window.innerHeight * 0.65);
-    
+
+        const maxHeight =
+            Math.floor(
+                window.innerHeight * 0.65
+            );
+
         textarea.style.height =
-            Math.min(textarea.scrollHeight, maxHeight) + "px";
+            Math.min(
+                textarea.scrollHeight,
+                maxHeight
+            ) + "px";
     }
 
-    autoResize(textArea);
-   /* autoResize(templateTextArea);*/
+    function rebuildBackblastDraft() {
+    if (!session) {
+        state.draftBackblastText = "";
+        return;
+    }
 
-    addWeatherToBackblast(session, textArea);
+    state.draftBackblastText =
+        buildCurrentBackblastText();
 
-    /*templateTextArea.addEventListener("input", () => {
-        autoResize(templateTextArea);
-    })*/
+    generatedContent.textContent =
+        generateBackblastHeader(
+            session,
+            state.members
+        );
+    }
 
-    textArea.addEventListener("input", () => {
-        autoResize(textArea);
-        state.draftBackblastText = textArea.value;
-    })
+    autoResize(hashtagsTextArea);
+    autoResize(introTextArea);
+    autoResize(bodyTextArea);
+
+    hashtagsTextArea.addEventListener(
+        "input",
+        () => {
+            autoResize(
+                hashtagsTextArea
+            );
+    
+            if (!session) return;
+    
+            session.backblastHashtagsText =
+                hashtagsTextArea.value;
+    
+            rebuildBackblastDraft();
+        }
+    );
+    
+    introTextArea.addEventListener(
+        "input",
+        () => {
+            autoResize(
+                introTextArea
+            );
+    
+            if (!session) return;
+    
+            session.backblastIntroText =
+                introTextArea.value;
+    
+            rebuildBackblastDraft();
+        }
+    );
+    
+    bodyTextArea.addEventListener(
+        "input",
+        () => {
+            autoResize(
+                bodyTextArea
+            );
+    
+            if (!session) return;
+    
+            session.backblastBodyText =
+                bodyTextArea.value;
+    
+            rebuildBackblastDraft();
+        }
+    );
 
     const mediaSection = document.createElement("div");
     mediaSection.classList.add("preblast-media-section");
@@ -499,12 +497,16 @@ export function renderBackblastView () {
     const copyButton = document.createElement("button");
     copyButton.textContent = "Copy Backblast";
     copyButton.addEventListener("click", async () => {
-        const textToCopy = textArea.value || state.draftBackblastText || "";
-    
+        const textToCopy =
+            buildCurrentBackblastText();
+
         try {
-            await copyTextToClipboard(textToCopy);
-    
-            state.draftBackblastText = textToCopy;
+            await copyTextToClipboard(
+                textToCopy
+            );
+
+            state.draftBackblastText =
+                textToCopy;
     
             copyButton.textContent = "Copied";
             showToast("Backblast copied.", "success");
@@ -530,9 +532,20 @@ export function renderBackblastView () {
         shareButton.textContent = "Share Not Available";
     } else {
         shareButton.addEventListener("click", () => {
-            const mediaFiles = state.draftBackblastMediaFiles || [];
-            const rawText = state.draftBackblastText || "";
-            const text = mediaFiles.length ? stripUrls(rawText) : rawText;
+            const mediaFiles =
+                state.draftBackblastMediaFiles ||
+                [];
+
+            const rawText =
+                buildCurrentBackblastText();
+
+            state.draftBackblastText =
+                rawText;
+
+            const text =
+                mediaFiles.length
+                    ? stripUrls(rawText)
+                    : rawText;
             
             const filesToShare = mediaFiles;
             
@@ -559,13 +572,34 @@ export function renderBackblastView () {
 
                         if (!session) return;
 
-                        const updatedSession = {
-                            ...session,
-                            backblastText: state.draftBackblastText || "",
-                            backblastStatus: "shared",
-                            backblastPostedAt: new Date().toISOString(),
-                        };
+                        const backblastText =
+                            buildCurrentBackblastText();
 
+                            const persistableSession = { ...session };
+                            
+                            const updatedSession = {
+                                ...persistableSession,
+                            
+                                backblastHashtagsText:
+                                    session.backblastHashtagsText ??
+                                    null,
+                            
+                                backblastIntroText:
+                                    session.backblastIntroText ??
+                                    null,
+                            
+                                backblastBodyText:
+                                    session.backblastBodyText ??
+                                    null,
+                            
+                                backblastText,
+                            
+                                backblastStatus:
+                                    "shared",
+                            
+                                backblastPostedAt:
+                                    new Date().toISOString(),
+                            };
                         try {
                             await updateSession(session.id, updatedSession);
                             Object.assign(session, updatedSession);
@@ -608,21 +642,60 @@ export function renderBackblastView () {
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
 
-    resetButton.addEventListener("click", () => {
-        const confirmed = confirm("Reset backblast to original?");
-        if (!confirmed) return;
-        const session = state.sessions.find(
-            s => s.id === state.selectedSessionId
-        );
-        if (!session) {
-            showToast("Could not reset backblast. Session not found.", "error");
-            return;
+    resetButton.addEventListener(
+        "click",
+        () => {
+            const confirmed = confirm(
+                "Reset the hashtags, opening notes, and backblast to their generated versions?"
+            );
+    
+            if (!confirmed) return;
+    
+            const session =
+                state.sessions.find(
+                    candidate =>
+                        candidate.id ===
+                        state.selectedSessionId
+                );
+    
+            if (!session) {
+                showToast(
+                    "Could not reset backblast. Session not found.",
+                    "error"
+                );
+    
+                return;
+            }
+    
+            session.backblastHashtagsText =
+                generateBackblastHashtags(
+                    session,
+                    state.members
+                );
+
+            session.backblastIntroText =
+                generateBackblastIntro(
+                    session,
+                    state.members
+                );
+
+            session.backblastBodyText =
+                generateBackblastBody(
+                    session
+                );
+    
+            session.backblastText =
+                buildCurrentBackblastText();
+    
+            state.draftBackblastText =
+                session.backblastText;
+    
+            state.hasAddedBackblastWeather =
+                false;
+    
+            renderApp();
         }
-        session.backblastText = "";
-        state.hasAddedBackblastWeather = false;
-        state.draftBackblastText = generateBackblast(session, state.members);
-        renderApp();
-    });
+    );
 
     const actionRow = document.createElement("div");
     actionRow.classList.add("button-row");
@@ -633,8 +706,7 @@ export function renderBackblastView () {
         header,
         title,
         helper,
-        textArea,
-        /*templateSection,*/
+        composer,
         mediaSection,
         actionRow
     );

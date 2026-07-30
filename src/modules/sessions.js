@@ -25,5 +25,7 @@ export function createSession(
         createdAt: Date.now(),
         createdByUserId: state.currentUserId,
         backblastText: "",
+        backblastIntroText: "",
+        backblastBodyText: "",
     };
 }
