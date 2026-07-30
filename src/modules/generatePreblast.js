@@ -96,16 +96,6 @@ export function generatePreblast(
         lines.push(thirdFText);
     }
 
-    const announcementText =
-        String(workout.announcementText || "").trim();
-
-    if (announcementText) {
-        lines.push("");
-        lines.push("ANNOUNCEMENTS");
-        lines.push("");
-        lines.push(announcementText);
-    }
-
     lines.push("");
     lines.push("HC below!");
 
