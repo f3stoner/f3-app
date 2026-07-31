@@ -190,10 +190,10 @@ export function buildSessionSaveRpcCommand({
             session.backblastHashtagsText ?? null,
         
         backblastIntroText:
-            session.backblastIntroText ?? "",
+            session.backblastIntroText ?? null,
         
         backblastBodyText:
-            session.backblastBodyText ?? "",
+            session.backblastBodyText ?? null,
 
         backblastStatus:
             session.backblastStatus || null,

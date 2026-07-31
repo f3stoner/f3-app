@@ -367,9 +367,8 @@ export function renderPlannedWorkoutDetail() {
         liveWorkout ||
         offlineWorkout;
 
-    const currentMember = state.members.find(
-        member => member.id === state.currentUserMemberId
-    );
+    const currentMember =
+        state.currentUserMember;
 
     const isExecutionMode =
     state.plannedWorkoutLaunchMode === "execution" ||

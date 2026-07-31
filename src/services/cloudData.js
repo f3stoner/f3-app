@@ -350,6 +350,54 @@ export async function loadAllMembers(regionId) {
     return allMembers;
 }
 
+export async function loadMemberById(
+    memberId
+) {
+    if (!memberId) {
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .from("members")
+        .select("*")
+        .eq("id", memberId)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+        return null;
+    }
+
+    const member =
+        mapMemberFromDb(data);
+
+    const inviterRelationships =
+        await loadMemberInviters([
+            memberId,
+        ]);
+
+    const inviterIds = [
+        ...new Set([
+            member.invitedById,
+            ...inviterRelationships
+                .map(
+                    relationship =>
+                        relationship
+                            .inviterMemberId
+                )
+                .filter(Boolean),
+        ].filter(Boolean)),
+    ];
+
+    return {
+        ...member,
+        inviterIds,
+        invitedById:
+            inviterIds[0] || null,
+    };
+}
+
 export async function loadMemberInviters(memberIds = []) {
     const cleanMemberIds = [...new Set(memberIds)].filter(Boolean);
 
@@ -1010,17 +1058,28 @@ export async function updateRegionWorkoutFieldLabels(regionId, labels) {
 }
 
 export function mapMemberFromDb(row) {
-    const invitedById = row.invited_by_id || null;
+    const invitedById =
+        row.invited_by_id || null;
 
     return {
         id: row.id,
-        paxName: row.pax_name,
-        realName: row.real_name,
-        homeAo: row.home_ao,
+        regionId:
+            row.region_id || null,
+        paxName:
+            row.pax_name || "",
+        realName:
+            row.real_name || "",
+        homeAo:
+            row.home_ao || "",
         invitedById,
-        inviterIds: invitedById ? [invitedById] : [],
-        firstPostDate: row.first_post_date,
-        status: row.status,
+        inviterIds:
+            invitedById
+                ? [invitedById]
+                : [],
+        firstPostDate:
+            row.first_post_date || null,
+        status:
+            row.status || "active",
     };
 }
 
@@ -1348,6 +1407,46 @@ export async function updateMemberInCloud(regionId, member) {
     if (error) throw error;
     
     return mapMemberFromDb(data);
+}
+
+export async function updateMyMemberProfileInCloud({
+    realName,
+    homeAo,
+}) {
+    const { data, error } = await supabase.rpc(
+        "update_my_member_profile",
+        {
+            p_real_name:
+                realName || null,
+            p_home_ao:
+                homeAo || null,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to update authenticated member profile:",
+            {
+                realName,
+                homeAo,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    const row = Array.isArray(data)
+        ? data[0]
+        : data;
+
+    if (!row) {
+        throw new Error(
+            "Profile update returned no member."
+        );
+    }
+
+    return mapMemberFromDb(row);
 }
 
 export async function setMemberInviters(

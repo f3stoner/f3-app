@@ -24,7 +24,8 @@ import {
     executeSessionSaveCommand,
     loadMembersByIds,
     rebuildMemberStatsForMembers,
-    getAffectedMemberIdsFromSession
+    getAffectedMemberIdsFromSession,
+    updateMyMemberProfileInCloud
 } from "./cloudData.js";
 import { prepareSessionSaveCommand, buildSessionSaveRpcCommand } from "../utils/sessionSaveCommand.js";
 import { submitSessionSaveCommand } from "./sessionSubmissionService.js";
@@ -881,8 +882,12 @@ export async function renameMember(
     if (
         memberId === state.currentUserMemberId
     ) {
+        state.currentUserMember =
+            updatedMember;
+    
         state.currentUserDisplayName =
             updatedMember.paxName ||
+            updatedMember.realName ||
             state.currentUserDisplayName;
     }
 
@@ -939,45 +944,130 @@ export async function addMember(
     return savedMember;
 }
 
-export async function updateMember(memberId, updatedMember) {
-    const activeRegionId = state.currentRegionId;
-    if (!activeRegionId) {
-        throw new Error("No active region id");
+export async function updateCurrentUserMemberProfile({
+    realName,
+    homeAo,
+}) {
+    const savedMember =
+        await updateMyMemberProfileInCloud({
+            realName,
+            homeAo,
+        });
+
+    /*
+     * Canonical identity must always update,
+     * regardless of active workspace roster.
+     */
+    state.currentUserMember =
+        savedMember;
+
+    state.currentUserMemberId =
+        savedMember.id;
+
+    state.currentUserDisplayName =
+        savedMember.paxName ||
+        savedMember.realName ||
+        state.currentUserDisplayName;
+
+    /*
+     * The authenticated member may also exist
+     * in the active workspace roster. Keep that
+     * copy synchronized when present.
+     */
+    const rosterIndex =
+        state.members.findIndex(
+            member =>
+                member.id ===
+                savedMember.id
+        );
+
+    if (rosterIndex !== -1) {
+        state.members[rosterIndex] =
+            savedMember;
     }
-    const savedMember = await updateMemberInCloud(
-        activeRegionId,
-        updatedMember
-    );
-    
+
+    persistAppData();
+
+    return savedMember;
+}
+
+export async function updateMember(
+    memberId,
+    updatedMember
+) {
+    const activeRegionId =
+        state.currentRegionId;
+
+    if (!activeRegionId) {
+        throw new Error(
+            "No active region id"
+        );
+    }
+
+    const savedMember =
+        await updateMemberInCloud(
+            activeRegionId,
+            updatedMember
+        );
+
+    const inviterIds =
+        updatedMember.inviterIds ||
+        (
+            updatedMember.invitedById
+                ? [
+                    updatedMember
+                        .invitedById,
+                ]
+                : []
+        );
+
     await setMemberInviters(
         memberId,
-        updatedMember.inviterIds || (
-            updatedMember.invitedById
-                ? [updatedMember.invitedById]
-                : []
-        )
+        inviterIds
     );
-    
+
     savedMember.inviterIds =
-        updatedMember.inviterIds ||
-        (updatedMember.invitedById
-            ? [updatedMember.invitedById]
-            : []);
-    
+        inviterIds;
+
     savedMember.invitedById =
-        savedMember.inviterIds[0] || null;
-    
-    const index = state.members.findIndex(
-        member => member.id === memberId
-    );
-    
-    if (index === -1) return false;
-    
-    state.members[index] = savedMember;
-    
+        inviterIds[0] || null;
+
+    const rosterIndex =
+        state.members.findIndex(
+            member =>
+                member.id === memberId
+        );
+
+    /*
+     * The canonical member may not belong to the
+     * active workspace roster. Only synchronize
+     * roster state when the member is present.
+     */
+    if (rosterIndex !== -1) {
+        state.members[rosterIndex] =
+            savedMember;
+    }
+
+    /*
+     * Canonical authenticated identity is
+     * independent of active roster membership.
+     */
+    if (
+        memberId ===
+        state.currentUserMemberId
+    ) {
+        state.currentUserMember =
+            savedMember;
+
+        state.currentUserDisplayName =
+            savedMember.paxName ||
+            savedMember.realName ||
+            state.currentUserDisplayName;
+    }
+
     persistAppData();
-    
-    return true;
+
+    return savedMember;
 }
 
 export function removeMemberFromState(memberId) {

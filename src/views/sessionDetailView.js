@@ -24,6 +24,9 @@ import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 import { getSessionAnnouncementText } from "../utils/announcements.js";
 import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
 import { normalizeThangSections } from "../utils/thangs.js";
+import {
+    getMemberById,
+} from "../utils/memberLookup.js";
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
@@ -74,17 +77,33 @@ export function renderSessionDetail() {
     const formattedDate = formatDate(session.date);
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
-    const qNames = effectiveQIds
-        .map(qId => state.members.find(m => m.id === qId))
-        .filter(Boolean)
-        .map(member => member.paxName);
+    const qNames =
+        effectiveQIds
+            .map(qId =>
+                getMemberById(qId)
+            )
+            .filter(Boolean)
+            .map(member =>
+                member.paxName ||
+                member.realName ||
+                "Unknown"
+            );
+
     const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
 
-    const paxNamesArray = getRegularPaxIds(session)
-        .map(id => {
-            const member = state.members.find(m => m.id === id);
-            return member ? member.paxName : "Unknown";
-        });
+    const paxNamesArray =
+        getRegularPaxIds(session)
+            .map(id => {
+                const member =
+                    getMemberById(id);
+
+                return (
+                    member?.paxName ||
+                    member?.realName ||
+                    "Unknown"
+                );
+            });
+    
     const paxNames = paxNamesArray.length > 0 
         ? paxNamesArray.join(", ") 
         : "-";
@@ -205,7 +224,7 @@ export function renderSessionDetail() {
                 
                 const inviterNames = uniqueInviterIds
                     .map(inviterId =>
-                        state.members.find(member => member.id === inviterId)
+                        getMemberById(inviterId)
                     )
                     .filter(Boolean)
                     .map(inviter =>

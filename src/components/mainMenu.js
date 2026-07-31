@@ -79,7 +79,9 @@ function getDefaultAoInsightsSelection() {
     const today = new Date().toISOString().slice(0, 10);
 
     const memberStats =
-        state.memberStatsByMemberId?.[state.currentMemberId];
+        state.memberStatsByMemberId?.[
+            state.currentUserMemberId
+        ];
 
     const favoriteAo = memberStats?.favoriteAo;
 
@@ -305,9 +307,11 @@ export function createMainMenu() {
             state.plannedWorkouts = [];
     
             state.currentUserId = null;
+            state.currentUserProfileId = null;
             state.currentUserRole = null;
             state.currentUserDisplayName = null;
             state.currentUserMemberId = null;
+            state.currentUserMember = null;
     
             state.selectedMemberId = null;
             state.selectedSessionId = null;
@@ -320,9 +324,14 @@ export function createMainMenu() {
     
             state.currentView = "dashboard";
             state.currentRegionId = null;
+            state.activeRegionId = null;
+            state.homeRegionId = null;
             state.profileRegionId = null;
             state.regionOverrideId = null;
+            state.pendingRegionId = null;
+
             state.availableRegions = [];
+            state.accessibleRegions = [];
     
             state.qSignupAoFilter = "all";
             state.qSignupOpenOnly = false;

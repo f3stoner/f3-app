@@ -15,6 +15,7 @@ import {
     loadAllRegions,
     loadAccessibleRegions,
     getNotificationSettings,
+    loadMemberById,
 } from "./services/cloudData.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
@@ -68,6 +69,63 @@ import(
 
 
 if (process.env.NODE_ENV === "development") {
+    window.auditCurrentIdentity = () => {
+        const result = {
+            currentUserId:
+                state.currentUserId,
+    
+            currentUserMemberId:
+                state.currentUserMemberId,
+    
+            currentUserMember:
+                state.currentUserMember,
+    
+            activeRegionId:
+                state.activeRegionId,
+    
+            homeRegionId:
+                state.homeRegionId,
+    
+            memberIsInActiveRoster:
+                state.members.some(
+                    member =>
+                        member.id ===
+                        state.currentUserMemberId
+                ),
+    
+            identityMatches:
+                !state.currentUserMemberId ||
+                state.currentUserMember?.id ===
+                    state.currentUserMemberId,
+        };
+    
+        console.table({
+            currentUserId:
+                result.currentUserId,
+    
+            currentUserMemberId:
+                result.currentUserMemberId,
+    
+            currentMemberObjectId:
+                result.currentUserMember?.id ||
+                null,
+    
+            activeRegionId:
+                result.activeRegionId,
+    
+            homeRegionId:
+                result.homeRegionId,
+    
+            memberIsInActiveRoster:
+                result.memberIsInActiveRoster,
+    
+            identityMatches:
+                result.identityMatches,
+        });
+    
+        return result;
+    };
+
     window.state = state;
     window.renderApp = renderApp;
     window.logAppEvent = logAppEvent;
@@ -689,7 +747,12 @@ function renderApp() {
     const app = document.getElementById("app");
 
     if (app) {
-        app.classList.add(`view-${state.currentView}`); 
+        app.className = app.className
+            .split(/\s+/)
+            .filter(className => !className.startsWith("view-"))
+            .join(" ");
+
+        app.classList.add(`view-${state.currentView}`);
     }
 
     saveNavState(state);
@@ -915,19 +978,22 @@ export async function saveCurrentOfflineBootSnapshot() {
         profile: {
             id:
                 state.currentUserProfileId,
-
+        
             displayName:
                 state.currentUserDisplayName,
-
+        
             role:
                 state.currentUserRole,
-
+        
             regionId:
                 state.homeRegionId,
-
+        
             memberId:
                 state.currentUserMemberId,
-
+        
+            member:
+                state.currentUserMember,
+        
             customTemplates:
                 state.customTemplates,
         },
@@ -1052,6 +1118,15 @@ function hydrateOfflineBootSnapshot(snapshot, regionData) {
 
     state.currentUserMemberId =
         profile.memberId || null;
+
+    state.currentUserMember =
+        profile.member ||
+        regionData?.members?.find(
+            member =>
+                member.id ===
+                state.currentUserMemberId
+        ) ||
+        null;
 
     state.customTemplates =
         profile.customTemplates ||
@@ -1325,13 +1400,121 @@ async function synchronizePendingSessionsForCurrentContext() {
 let hasRegisteredPendingSessionOnlineListener =
     false;
 
+async function refreshAuthenticatedIdentity() {
+    const session =
+        await getCurrentSession();
+
+    if (!session) {
+        return false;
+    }
+
+    const profile =
+        await ensureMyProfile(
+            session.user.id,
+            session
+        );
+
+    const currentUserMemberId =
+        profile.member_id || null;
+
+    const currentUserMember =
+        currentUserMemberId
+            ? await loadMemberById(
+                currentUserMemberId
+            )
+            : null;
+
+    if (
+        currentUserMemberId &&
+        !currentUserMember
+    ) {
+        throw new Error(
+            "The authenticated profile references a member that could not be loaded."
+        );
+    }
+
+    if (
+        currentUserMember &&
+        currentUserMember.id !==
+            currentUserMemberId
+    ) {
+        throw new Error(
+            "Current user member identity is inconsistent."
+        );
+    }
+
+    state.currentUserId =
+        session.user.id;
+
+    state.currentUserProfileId =
+        profile.id;
+
+    state.currentUserRole =
+        profile.role || "pax";
+
+    state.currentUserDisplayName =
+        profile.display_name || "User";
+
+    state.profileRegionId =
+        profile.region_id;
+
+    state.homeRegionId =
+        profile.region_id;
+
+    state.currentUserMemberId =
+        currentUserMemberId;
+
+    state.currentUserMember =
+        currentUserMember;
+
+    state.customTemplates =
+        profile.custom_templates ||
+        state.customTemplates;
+
+    return true;
+}
+
+async function runReconnectLifecycle() {
+    try {
+        const identityRefreshed =
+            await refreshAuthenticatedIdentity();
+
+        if (!identityRefreshed) {
+            console.warn(
+                "Reconnect skipped because no authenticated session was found."
+            );
+
+            return;
+        }
+
+        await synchronizePendingSessionsForCurrentContext();
+
+        try {
+            await saveCurrentOfflineBootSnapshot();
+        } catch (error) {
+            console.warn(
+                "Reconnect succeeded, but the offline snapshot could not be updated:",
+                error
+            );
+        }
+
+        renderApp();
+    } catch (error) {
+        console.warn(
+            "Reconnect identity refresh failed:",
+            error
+        );
+    }
+}
+
 function initializeReconnectLifecycle() {
     /*
-     * Attempt synchronization immediately when online.
-     * An offline launch will wait for the online event.
+     * A cloud boot may fall back to the offline snapshot even
+     * while the browser still reports that it is online.
+     * Run the full reconciliation sequence in that case too.
      */
     if (navigator.onLine) {
-        void synchronizePendingSessionsForCurrentContext();
+        void runReconnectLifecycle();
     }
 
     if (
@@ -1343,9 +1526,12 @@ function initializeReconnectLifecycle() {
     hasRegisteredPendingSessionOnlineListener =
         true;
 
-    window.addEventListener("online", () => {
-        void synchronizePendingSessionsForCurrentContext();
-    });
+    window.addEventListener(
+        "online",
+        () => {
+            void runReconnectLifecycle();
+        }
+    );
 }
 
 function recordBootDiagnostic(step, details = {}) {
@@ -1516,8 +1702,15 @@ async function bootApp() {
             state.homeRegionId = profile.region_id;
             state.activeRegionId = profile.region_id;
 
-            state.currentUserMemberId = profile.member_id || null;
-            state.customTemplates = profile.custom_templates || state.customTemplates;
+            state.currentUserMemberId =
+                profile.member_id || null;
+
+            state.currentUserMember = null;
+
+            state.customTemplates =
+                profile.custom_templates ||
+                state.customTemplates;
+
             state.hasInitializedQSignupFilter = false;
 
             phaseStartedAt = performance.now();
@@ -1525,10 +1718,42 @@ async function bootApp() {
             const [
                 availableRegions,
                 accessibleRegions,
+                currentUserMember,
             ] = await Promise.all([
                 loadAllRegions(),
-                loadAccessibleRegions(state.currentUserId),
+
+                loadAccessibleRegions(
+                    state.currentUserId
+                ),
+
+                state.currentUserMemberId
+                    ? loadMemberById(
+                        state.currentUserMemberId
+                    )
+                    : Promise.resolve(null),
             ]);
+
+            state.currentUserMember =
+                currentUserMember;
+
+            if (
+                state.currentUserMemberId &&
+                !state.currentUserMember
+            ) {
+                throw new Error(
+                    "The authenticated profile references a member that could not be loaded."
+                );
+            }
+            
+            if (
+                state.currentUserMember &&
+                state.currentUserMember.id !==
+                    state.currentUserMemberId
+            ) {
+                throw new Error(
+                    "Current user member identity is inconsistent."
+                );
+            }
             
             bootPhases.loadAllRegionsMs = Math.round(
                 performance.now() - phaseStartedAt

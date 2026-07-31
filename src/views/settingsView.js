@@ -1,5 +1,5 @@
 import { state } from "../modules/state.js";
-import { updateMember } from "../services/appData.js";
+import { updateCurrentUserMemberProfile } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
 import {
     cleanupMainMenu,
@@ -21,9 +21,8 @@ export function renderSettingsView() {
         showMenu: true,
     });
 
-    const member = state.members.find(
-        member => member.id === state.currentUserMemberId
-    );
+    const member =
+        state.currentUserMember;
 
     if (!member) {
         const emptyState = document.createElement("div");
@@ -91,7 +90,35 @@ export function renderSettingsView() {
     noHomeAoOption.value = "";
     noHomeAoOption.textContent = "No Home AO Selected";
 
-    homeAoSelect.appendChild(noHomeAoOption);
+    homeAoSelect.appendChild(
+        noHomeAoOption
+    );
+    
+    const currentHomeAoExists =
+        (state.aos || []).some(
+            ao =>
+                ao.name === member.homeAo
+        );
+    
+    if (
+        member.homeAo &&
+        !currentHomeAoExists
+    ) {
+        const currentHomeAoOption =
+            document.createElement("option");
+    
+        currentHomeAoOption.value =
+            member.homeAo;
+    
+        currentHomeAoOption.textContent =
+            `${member.homeAo} (Home Region)`;
+    
+        currentHomeAoOption.selected = true;
+    
+        homeAoSelect.appendChild(
+            currentHomeAoOption
+        );
+    }
 
     const activeAos = (state.aos || [])
         .filter(ao => ao.isActive !== false)
@@ -115,27 +142,46 @@ export function renderSettingsView() {
     saveButton.textContent = "Save Profile";
     saveButton.classList.add("primary-button", "settings-save-button");
 
-    saveButton.addEventListener("click", async () => {
-        const updatedMember = {
-            ...member,
-            realName: realNameInput.value.trim(),
-            homeAo: homeAoSelect.value || null,
-        };
-
-        saveButton.disabled = true;
-        saveButton.textContent = "Saving…";
-
-        try {
-            await updateMember(member.id, updatedMember);
-            showToast("Settings saved", "success");
-        } catch (error) {
-            console.error("Failed to save settings:", error);
-            showToast("Failed to save settings", "error");
-        } finally {
-            saveButton.disabled = false;
-            saveButton.textContent = "Save Profile";
+    saveButton.addEventListener(
+        "click",
+        async () => {
+            const realName =
+                realNameInput.value.trim();
+    
+            const homeAo =
+                homeAoSelect.value || null;
+    
+            saveButton.disabled = true;
+            saveButton.textContent =
+                "Saving…";
+    
+            try {
+                await updateCurrentUserMemberProfile({
+                    realName,
+                    homeAo,
+                });
+    
+                showToast(
+                    "Settings saved",
+                    "success"
+                );
+            } catch (error) {
+                console.error(
+                    "Failed to save settings:",
+                    error
+                );
+    
+                showToast(
+                    "Failed to save settings",
+                    "error"
+                );
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent =
+                    "Save Profile";
+            }
         }
-    });
+    );
 
     const notificationsHeading = document.createElement("h2");
     notificationsHeading.textContent = "Notifications";

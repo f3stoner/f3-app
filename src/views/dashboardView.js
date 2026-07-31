@@ -35,6 +35,9 @@ import { createAppHeader } from "../components/appHeader.js";
 import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 import { switchWorkspace } from "../services/workspaceService.js";
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
+import {
+    getMemberById,
+} from "../utils/memberLookup.js";
 
 const DASHBOARD_ENCOURAGEMENT_PHRASES = [
     "Let’s get to work.",
@@ -422,11 +425,8 @@ export function renderDashboard() {
         "dashboard-welcome-row"
     );
 
-    const linkedMember = state.members.find(
-        member =>
-            member.id ===
-            state.currentUserMemberId
-    );
+    const linkedMember =
+        state.currentUserMember;
 
     const displayName =
         linkedMember?.paxName ||
@@ -1343,11 +1343,14 @@ export function renderDashboard() {
         }
     }
 
-    function getCommitmentMemberName(commitment) {
-        const member = state.members.find(
-            candidate =>
-                candidate.id === commitment.memberId
-        );
+    function getCommitmentMemberName(
+        commitment
+    ) {
+        const member =
+            getMemberById(
+                commitment.memberId,
+                getCommitmentParticipantDirectory()
+            );
     
         return (
             member?.paxName ||
@@ -2287,9 +2290,9 @@ export function renderDashboard() {
             }
     
             const member =
-                getCommitmentParticipantDirectory().find(
-                    candidate =>
-                        candidate.id === memberId
+                getMemberById(
+                    memberId,
+                    getCommitmentParticipantDirectory()
                 );
     
             const memberName =
@@ -2554,8 +2557,9 @@ console.log(
                     createdByUserId: state.currentUserId,
                     createdAt: Date.now(),
                     backblastText: "",
-                    backblastIntroText: "",
-                    backblastBodyText: "",
+                    backblastHashtagsText: null,
+                    backblastIntroText: null,
+                    backblastBodyText: null,
                 };
         
                 state.editingSessionId = null;
@@ -2979,10 +2983,10 @@ console.log(
                     candidate.id === slot.aoId
             );
     
-            const q = state.members.find(
-                member =>
-                    member.id === slot.qUserId
-            );
+            const q =
+                getMemberById(
+                    slot.qUserId
+                );
     
             const summary =
                 state

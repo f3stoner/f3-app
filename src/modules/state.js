@@ -36,6 +36,13 @@ export const state = {
     currentUserId: null,
     currentUserRole: null,
     currentUserDisplayName: null,
+
+    currentUserId: null,
+    currentUserProfileId: null,
+    currentUserRole: null,
+    currentUserDisplayName: null,
+    currentUserMemberId: null,
+    currentUserMember: null,
     
     profileAoPermissions: [],
     profileRegionPositions: [],
@@ -81,7 +88,6 @@ export const state = {
     qSignupOpenOnly: savedState?.qSignupOpenOnly ?? false,
     draftPreblastText: "",
     selectedPreblastWorkoutId: null,
-    currentUserMemberId: null,
     claimingMemberId: null,
     claimMemberSearchTerm: "",
     draftPreblastMediaFiles: [],

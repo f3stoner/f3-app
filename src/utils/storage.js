@@ -178,6 +178,9 @@ export async function saveOfflineBootSnapshot({
                 profile.memberId ??
                 profile.member_id ??
                 null,
+
+            member:
+                profile.member ?? null,
         
             customTemplates:
                 profile.customTemplates ??

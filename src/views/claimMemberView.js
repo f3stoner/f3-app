@@ -183,6 +183,17 @@ export function renderClaimMemberView() {
                         state.members[index] = savedMember;
                     }
 
+                    state.currentUserMemberId =
+                        savedMember.id;
+
+                    state.currentUserMember =
+                        savedMember;
+
+                    state.currentUserDisplayName =
+                        savedMember.paxName ||
+                        savedMember.realName ||
+                        state.currentUserDisplayName;
+
                     state.currentUserMemberId = selectedMember.id;
                     state.currentUserDisplayName = selectedMember.paxName;
                     state.claimedMemberIds?.add(selectedMember.id);

@@ -1,6 +1,8 @@
 import { state } from "../modules/state.js";
 import { formatDate } from "./date.js";
 import { getWorkoutEmphasisForSlot } from "./workoutEmphasis.js";
+import { getMemberById } from "../utils/memberLookup.js";
+
 
 let html2canvasPromise = null;
 
@@ -70,8 +72,14 @@ const AO_COLOR_OVERRIDES = {
 };
 
 function getMemberName(memberId) {
-    const member = state.members.find(m => m.id === memberId);
-    return member?.paxName || "Filled";
+    const member =
+        getMemberById(memberId);
+
+    return (
+        member?.paxName ||
+        member?.realName ||
+        "Filled"
+    );
 }
 
 function getAo(slot) {

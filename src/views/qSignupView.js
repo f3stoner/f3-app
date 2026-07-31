@@ -31,6 +31,9 @@ import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.j
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
+import {
+    getMemberById,
+} from "../utils/memberLookup.js";
 
 
 let qSlotRealtimeChannel = null;
@@ -167,8 +170,8 @@ export function renderQSignupView() {
 
     intro.append(title, subtitle);
 
-    const currentMember = state.members.find(
-        member => member.id === state.currentUserMemberId);
+    const currentMember =
+        state.currentUserMember;
 
     const homeAoName = currentMember?.homeAo || "";
     const homeAo = state.aos.find(ao => ao.name === homeAoName) || null;
@@ -1475,9 +1478,10 @@ export function renderQSignupView() {
             const canEditSlot =
                 managesThisAo || isMine;
     
-            const qMember = state.members.find(
-                member => member.id === slot.qUserId
-            );
+            const qMember =
+                getMemberById(
+                    slot.qUserId
+                );
     
             const qDisplayName =
                 qMember?.paxName ||

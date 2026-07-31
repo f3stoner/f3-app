@@ -6,11 +6,12 @@ import { formatDate } from "../utils/date.js";
 import { loadMemberCommunityData } from "../services/cloudData.js";
 import { createPaxProfileNav } from "../components/paxProfileNav.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { getMemberById } from "../utils/memberLookup.js";
 
 function getSelectedMember() {
-    return state.members.find(
-        member => member.id === state.selectedPaxId
-    ) || null;
+    return getMemberById(
+        state.selectedPaxId
+    );
 }
 
 function createSection(title, content) {
@@ -44,9 +45,10 @@ function createSummaryMetric(label, value) {
 }
 
 function createMostPostedWithRow(buddy, rank) {
-    const member = state.members.find(
-        candidate => candidate.id === buddy.memberId
-    );
+    const member =
+        getMemberById(
+            buddy.memberId
+        );
 
     const row = document.createElement("button");
     row.type = "button";

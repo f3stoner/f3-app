@@ -6,9 +6,12 @@ import { formatDate } from "../utils/date.js";
 import { createPaxProfileNav } from "../components/paxProfileNav.js";
 import { canViewPaxOverview } from "../utils/permissions.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
+import { getMemberById } from "../utils/memberLookup.js";
 
 function getSelectedMember() {
-    return state.members.find(member => member.id === state.selectedPaxId) || null;
+    return getMemberById(
+        state.selectedPaxId
+    );
 }
 
 function getMemberStats(memberId) {

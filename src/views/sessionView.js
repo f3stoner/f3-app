@@ -25,6 +25,10 @@ import { doesSearchMatch } from "../utils/search.js";
 import { getTotalAttendanceCount, memberAttendedSession } from "../utils/sessionAttendance.js";
 import { loadSessionVisitors } from "../services/sessionVisitorData.js";
 import { hasPermission, PERMISSIONS, canEditAoSession, canManageSession } from "../utils/permissions.js";
+import {
+    getMemberById,
+    getMemberDirectory,
+} from "../utils/memberLookup.js";
 
 export function renderSession() { 
 const app = document.getElementById("app");
@@ -45,7 +49,7 @@ let cachedDisplayNameByMemberId = null;
 function buildDisplayNameByMemberId() {
     const paxNameGroups = new Map();
 
-    (state.members || []).forEach(member => {
+    getMemberDirectory().forEach(member => {
         const paxName = String(member.paxName || "").trim();
         if (!paxName) return;
 
@@ -56,7 +60,7 @@ function buildDisplayNameByMemberId() {
 
     const displayNameByMemberId = new Map();
 
-    (state.members || []).forEach(member => {
+    getMemberDirectory().forEach(member => {
         const paxName = String(member.paxName || "").trim();
         const realName = String(member.realName || "").trim();
         const homeAo = String(member.homeAo || "").trim();
@@ -690,7 +694,16 @@ function getCommittedMemberIds() {
 }
 
 function getKnownMemberIds() {
-    return new Set(state.members.map(member => normalizeId(member.id)));
+    return new Set(
+        getMemberDirectory()
+            .map(
+                member =>
+                    normalizeId(
+                        member.id
+                    )
+            )
+            .filter(Boolean)
+    );
 }
 
 function getUniqueQIds() {
@@ -1033,14 +1046,33 @@ function renderMemberList() {
     const selectableMembers = getCachedSelectableMembers();
     const committedMemberIds = getCommittedMemberIds();
 
-    const qMembers = selectableMembers.filter(member =>
-        getUniqueQIds().includes(normalizeId(member.id))
-    );
+    const qMembers =
+        getUniqueQIds()
+            .map(qId =>
+                getMemberById(qId)
+            )
+            .filter(Boolean);
 
-    const selectedMembers = selectableMembers.filter(member =>
-        draftSession.attendeeIds.includes(member.id) &&
-        !(draftSession.qIds || []).includes(member.id)
-    );
+    const selectedMembers =
+        [
+            ...new Set(
+                draftSession.attendeeIds ||
+                []
+            ),
+        ]
+            .filter(
+                memberId =>
+                    !getUniqueQIds()
+                        .includes(
+                            normalizeId(
+                                memberId
+                            )
+                        )
+            )
+            .map(memberId =>
+                getMemberById(memberId)
+            )
+            .filter(Boolean);
 
     const hcMembers = selectableMembers.filter(member => {
         if (draftSession.attendeeIds.includes(member.id)) {

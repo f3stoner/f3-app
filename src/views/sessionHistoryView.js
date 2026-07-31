@@ -7,6 +7,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { loadOlderSessionsPage, loadSessionsByIds, loadMatchingSessions, searchHistoricalBackblasts } from "../services/cloudData.js";
 import { getSessionDisplayCounts, getRegularPaxIds, memberAttendedSession } from "../utils/sessionAttendance.js";
+import { getMemberById } from "../utils/memberLookup.js";
 
 state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
 
@@ -150,7 +151,7 @@ export function renderSessionHistory() {
         const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
         const qNames = effectiveQIds
-            .map(qId => state.members.find(m => m.id === qId))
+            .map(qId => getMemberById(qId))
             .filter(Boolean)
             .map(member => member.paxName);
 
@@ -221,7 +222,7 @@ export function renderSessionHistory() {
 
     function getMemberNamesByIds(ids = []) {
         return ids
-            .map(id => state.members.find(m => m.id === id))
+            .map(id => getMemberById(id))
             .filter(Boolean)
             .flatMap(member => [member.paxName, member.realName])
             .filter(Boolean)

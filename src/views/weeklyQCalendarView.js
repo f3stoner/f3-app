@@ -17,6 +17,8 @@ import { createAppHeader } from "../components/appHeader.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
 import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
+import { getMemberById } from "../utils/memberLookup.js";
+
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -51,8 +53,14 @@ function getWeekDates(startDate) {
 }
 
 function getMemberName(memberId) {
-    const member = state.members.find(m => m.id === memberId);
-    return member?.paxName || "Filled";
+    const member =
+        getMemberById(memberId);
+
+    return (
+        member?.paxName ||
+        member?.realName ||
+        "Filled"
+    );
 }
 
 function getAoForSlot(slot) {

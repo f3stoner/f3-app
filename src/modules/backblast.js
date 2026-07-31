@@ -2,6 +2,9 @@ import { formatDate } from "../utils/date.js";
 import { getWorkoutFieldLabel } from "../utils/workoutLabels.js";
 import { state } from "./state.js";
 import { getSessionAnnouncementText } from "../utils/announcements.js";
+import {
+    getMemberById,
+} from "../utils/memberLookup.js";
 
 function buildConditionsLine(weather) {
     if (!weather) return null;
@@ -82,9 +85,9 @@ function buildBackblastData(session, members) {
     const qNames = effectiveQIds
         .map(qId => {
             const matchedMember =
-                members.find(
-                    member =>
-                        member.id === qId
+                getMemberById(
+                    qId,
+                    members
                 );
 
             if (!matchedMember) {
@@ -135,9 +138,9 @@ function buildBackblastData(session, members) {
             )
             .map(id => {
                 const member =
-                    members.find(
-                        candidate =>
-                            candidate.id === id
+                    getMemberById(
+                        id,
+                        members
                     );
 
                 return getMemberBackblastName(
@@ -197,10 +200,9 @@ function buildBackblastData(session, members) {
                             .map(
                                 inviterId => {
                                     const inviter =
-                                        members.find(
-                                            member =>
-                                                member.id ===
-                                                inviterId
+                                        getMemberById(
+                                            inviterId,
+                                            members
                                         );
 
                                     if (!inviter) {

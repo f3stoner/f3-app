@@ -542,7 +542,8 @@ export function renderWorkoutPlanner() {
         renderApp();
     }
 
-    const currentMember = state.members.find(member => member.id === state.currentUserMemberId);
+    const currentMember =
+        state.currentUserMember;
 
     console.log("planner region debug", {
 
