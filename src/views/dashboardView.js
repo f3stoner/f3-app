@@ -2668,48 +2668,6 @@ const debugWeatherCacheKey =
         nextQSlot,
         ao
     );
-
-console.log(
-    "DASHBOARD WEATHER DEBUG",
-    {
-        nextQSlot,
-        ao,
-        nextQSite,
-
-        stateSites:
-            state.sites,
-
-        sitesCount:
-            state.sites?.length || 0,
-
-        slotSiteId:
-            nextQSlot?.siteId || null,
-
-        aoDefaultSiteId:
-            ao?.defaultSiteId || null,
-
-        displayTime:
-            debugDisplayTime,
-
-        targetDateTime:
-            debugTargetDateTime,
-
-        weatherCacheKey:
-            debugWeatherCacheKey,
-
-        cachedWeather:
-            debugWeatherCacheKey
-                ? state.weatherByAoDate?.[
-                    debugWeatherCacheKey
-                ]
-                : null,
-
-        activeWorkoutExecution:
-            localStorage.getItem(
-                "activeWorkoutExecution"
-            ),
-    }
-);
     
         const displayTime = getSlotDisplayTime(nextQSlot, ao);
         const weatherCacheKey = getWeatherCacheKey(nextQSlot, ao);
