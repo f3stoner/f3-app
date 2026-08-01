@@ -773,11 +773,24 @@ export function renderDashboard() {
                         {
                             invitation,
                             error,
+                            message: error?.message,
+                            code: error?.code,
+                            details: error?.details,
+                            hint: error?.hint,
                         }
                     );
-    
+                
+                    const errorParts = [
+                        error?.code,
+                        error?.message,
+                        error?.details,
+                        error?.hint,
+                    ].filter(Boolean);
+                
                     showToast(
-                        "Unable to add this region.",
+                        errorParts.length > 0
+                            ? errorParts.join(" · ")
+                            : "Unable to add this region.",
                         "error"
                     );
                 } finally {
