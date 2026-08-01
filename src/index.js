@@ -16,6 +16,9 @@ import {
     loadAccessibleRegions,
     getNotificationSettings,
     loadMemberById,
+    claimParticipantRegionAccess,
+    loadMyParticipantRegionInvitations,
+    dismissParticipantRegionInvitation,
 } from "./services/cloudData.js";
 import { getCurrentSession, ensureMyProfile } from "./services/auth.js";
 import { renderAuthView } from "./views/authView.js";
@@ -129,6 +132,16 @@ if (process.env.NODE_ENV === "development") {
     window.state = state;
     window.renderApp = renderApp;
     window.logAppEvent = logAppEvent;
+
+    window.refreshParticipantRegionInvitations =
+        refreshParticipantRegionInvitations;
+
+    window.acceptParticipantRegionInvitation =
+        acceptParticipantRegionInvitation;
+
+    window.dismissParticipantRegionInvitationPrompt =
+        dismissParticipantRegionInvitationPrompt;
+
     window.createMemberMergeDraft = async (...args) => {
         return supabase.rpc(
             "create_member_merge_draft",
@@ -1490,6 +1503,104 @@ async function refreshAuthenticatedIdentity() {
     return true;
 }
 
+export async function refreshParticipantRegionInvitations() {
+    if (!state.currentUserId) {
+        state.participantRegionInvitations = [];
+        return [];
+    }
+
+    try {
+        const invitations =
+            await loadMyParticipantRegionInvitations();
+
+        state.participantRegionInvitations =
+            Array.isArray(invitations)
+                ? invitations
+                : [];
+
+        return state.participantRegionInvitations;
+    } catch (error) {
+        console.warn(
+            "Failed to load participant-based region invitations:",
+            error
+        );
+
+        state.participantRegionInvitations = [];
+
+        return [];
+    }
+}
+
+export async function acceptParticipantRegionInvitation(
+    regionId
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region ID is required."
+        );
+    }
+
+    const result =
+        await claimParticipantRegionAccess(
+            regionId
+        );
+
+    /*
+     * Reload the authoritative access collection after
+     * the server grants access.
+     */
+    const accessibleRegions =
+        await loadAccessibleRegions(
+            state.currentUserId
+        );
+
+    state.accessibleRegions =
+        accessibleRegions || [];
+
+    state.accessibleRegionIds =
+        state.accessibleRegions
+            .map(region => region.id)
+            .filter(Boolean);
+
+    /*
+     * The accepted region should now disappear from the
+     * derived invitation collection.
+     */
+    await refreshParticipantRegionInvitations();
+
+    try {
+        await saveCurrentOfflineBootSnapshot();
+    } catch (error) {
+        console.warn(
+            "Region access was granted, but the offline snapshot could not be updated:",
+            error
+        );
+    }
+
+    return result;
+}
+
+export async function dismissParticipantRegionInvitationPrompt(
+    regionId
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region ID is required."
+        );
+    }
+
+    await dismissParticipantRegionInvitation(
+        regionId
+    );
+
+    await refreshParticipantRegionInvitations();
+
+    return (
+        state.participantRegionInvitations ||
+        []
+    );
+}
+
 export async function reconcileAfterMemberMerge() {
     const identityRefreshed =
         await refreshAuthenticatedIdentity();
@@ -1512,7 +1623,9 @@ export async function reconcileAfterMemberMerge() {
         state.accessibleRegions.map(
             region => region.id
         );
-
+    
+    await refreshParticipantRegionInvitations();
+    
     const activeRegionId =
         state.activeRegionId ||
         state.currentRegionId ||
@@ -1836,17 +1949,23 @@ async function bootApp() {
 
             state.accessibleRegions =
                 accessibleRegions || [];
-
+            
             state.accessibleRegionIds =
                 state.accessibleRegions.map(
                     region => region.id
                 );
-
+            
             console.log(
                 "Accessible regions:",
                 state.accessibleRegionIds
             );
-
+            
+            /*
+             * Invitation loading is supplementary. A failure must not
+             * block application boot.
+             */
+            await refreshParticipantRegionInvitations();
+            
             const savedWorkspaceSnapshot =
                 loadOfflineBootSnapshot(
                     session.user.id

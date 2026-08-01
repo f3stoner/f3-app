@@ -2442,6 +2442,117 @@ export async function loadAccessibleRegions(userId) {
         .map(mapRegionFromDb);
 }
 
+export async function loadMyParticipantRegionInvitations() {
+    const { data, error } = await supabase.rpc(
+        "load_my_participant_region_invitations"
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        regionId:
+            row.region_id,
+
+        regionName:
+            row.region_name || "",
+
+        participantId:
+            row.participant_id || null,
+
+        firstParticipatedOn:
+            row.first_participated_on || null,
+
+        lastParticipatedOn:
+            row.last_participated_on || null,
+
+        participantSources:
+            row.participant_sources || [],
+
+        dashboardDismissed:
+            Boolean(
+                row.dashboard_dismissed
+            ),
+
+        dashboardDismissedAt:
+            row.dashboard_dismissed_at ||
+            null,
+    }));
+}
+
+export async function dismissParticipantRegionInvitation(
+    regionId
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region ID is required."
+        );
+    }
+
+    const { error } =
+        await supabase.rpc(
+            "dismiss_participant_region_invitation",
+            {
+                p_region_id:
+                    regionId,
+            }
+        );
+
+    if (error) {
+        throw error;
+    }
+}
+
+export async function claimParticipantRegionAccess(
+    regionId
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region ID is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "claim_participant_region_access",
+        {
+            p_region_id:
+                regionId,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    const row =
+        Array.isArray(data)
+            ? data[0]
+            : data;
+
+    if (!row?.region_id) {
+        throw new Error(
+            "Region access claim returned no region."
+        );
+    }
+
+    return {
+        regionId:
+            row.region_id,
+
+        regionName:
+            row.region_name || "",
+
+        grantedAt:
+            row.granted_at || null,
+
+        alreadyHadAccess:
+            Boolean(
+                row.already_had_access
+            ),
+    };
+}
+
 export async function getNotificationSettings(userId) {
     const { data, error } = await supabase
         .from("notification_settings")

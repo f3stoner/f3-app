@@ -1,5 +1,10 @@
 import { state } from "../modules/state.js";
-import { renderApp, saveCurrentOfflineBootSnapshot } from "../index.js";
+import {
+    acceptParticipantRegionInvitation,
+    dismissParticipantRegionInvitationPrompt,
+    renderApp,
+    saveCurrentOfflineBootSnapshot,
+} from "../index.js";
 import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import {
@@ -589,6 +594,274 @@ export function renderDashboard() {
         slot.workflowStatus = "logged_elsewhere";
         showToast("Q marked as logged elsewhere.", "success");
         renderApp();
+    }
+
+    function renderParticipantRegionInvitation() {
+       const invitation =
+            (
+                state.participantRegionInvitations ||
+                []
+            ).find(
+                candidate =>
+                    !candidate.dashboardDismissed
+            ); 
+    
+        if (!invitation) {
+            return null;
+        }
+    
+        const section =
+            document.createElement("section");
+    
+        section.classList.add(
+            "section",
+            "participant-region-invitation"
+        );
+    
+        const card =
+            document.createElement("div");
+    
+        card.classList.add(
+            "participant-region-invitation-card"
+        );
+    
+        const content =
+            document.createElement("div");
+    
+        content.classList.add(
+            "participant-region-invitation-content"
+        );
+    
+        const eyebrow =
+            document.createElement("div");
+    
+        eyebrow.classList.add(
+            "participant-region-invitation-eyebrow"
+        );
+    
+        eyebrow.textContent =
+            "Region Available";
+    
+        const regionName =
+            document.createElement("div");
+    
+        regionName.classList.add(
+            "participant-region-invitation-name"
+        );
+    
+        regionName.textContent =
+            invitation.regionName ||
+            "Another Region";
+    
+        const message =
+            document.createElement("div");
+    
+        message.classList.add(
+            "participant-region-invitation-message"
+        );
+    
+        message.textContent =
+            "We found activity tied to your PAX record in this region.";
+    
+        content.append(
+            eyebrow,
+            regionName,
+            message
+        );
+    
+        if (
+            invitation.lastParticipatedOn
+        ) {
+            const lastActivity =
+                document.createElement("div");
+    
+            lastActivity.classList.add(
+                "participant-region-invitation-meta"
+            );
+    
+            lastActivity.textContent =
+                `Last posted: ${
+                    formatDate(
+                        invitation
+                            .lastParticipatedOn
+                    )
+                }`;
+    
+            content.appendChild(
+                lastActivity
+            );
+        }
+    
+        const actions =
+            document.createElement("div");
+    
+        actions.classList.add(
+            "participant-region-invitation-actions"
+        );
+    
+        const addButton =
+            document.createElement("button");
+    
+        addButton.type = "button";
+    
+        addButton.classList.add(
+            "primary-button",
+            "participant-region-invitation-add"
+        );
+    
+        addButton.textContent =
+            "Join Region";
+    
+        const dismissButton =
+            document.createElement("button");
+    
+        dismissButton.type = "button";
+    
+        dismissButton.classList.add(
+            "participant-region-invitation-dismiss"
+        );
+    
+        dismissButton.textContent =
+            "Not now";
+    
+        const isLoading =
+            Boolean(
+                state
+                    .dashboardInvitationActionLoading
+            );
+    
+        addButton.disabled =
+            isLoading;
+    
+        dismissButton.disabled =
+            isLoading;
+    
+        addButton.addEventListener(
+            "click",
+            async () => {
+                if (
+                    state
+                        .dashboardInvitationActionLoading
+                ) {
+                    return;
+                }
+    
+                state.dashboardInvitationActionLoading =
+                    true;
+    
+                addButton.disabled = true;
+                dismissButton.disabled = true;
+    
+                addButton.textContent =
+                    "Adding…";
+    
+                try {
+                    await acceptParticipantRegionInvitation(
+                        invitation.regionId
+                    );
+    
+                    showToast(
+                        `${
+                            invitation.regionName ||
+                            "Region"
+                        } added to your regions.`,
+                        "success"
+                    );
+                } catch (error) {
+                    console.error(
+                        "Failed to accept participant region invitation:",
+                        {
+                            invitation,
+                            error,
+                        }
+                    );
+    
+                    showToast(
+                        "Unable to add this region.",
+                        "error"
+                    );
+                } finally {
+                    state.dashboardInvitationActionLoading =
+                        false;
+    
+                    if (
+                        state.currentView ===
+                        "dashboard"
+                    ) {
+                        renderApp();
+                    }
+                }
+            }
+        );
+    
+        dismissButton.addEventListener(
+            "click",
+            async () => {
+                if (
+                    state
+                        .dashboardInvitationActionLoading
+                ) {
+                    return;
+                }
+    
+                state.dashboardInvitationActionLoading =
+                    true;
+    
+                addButton.disabled = true;
+                dismissButton.disabled = true;
+    
+                dismissButton.textContent =
+                    "Hiding…";
+    
+                try {
+                    await dismissParticipantRegionInvitationPrompt(
+                        invitation.regionId
+                    );
+    
+                    showToast(
+                        "Region invitation moved to Settings.",
+                        "success"
+                    );
+                } catch (error) {
+                    console.error(
+                        "Failed to dismiss participant region invitation:",
+                        {
+                            invitation,
+                            error,
+                        }
+                    );
+    
+                    showToast(
+                        "Unable to hide this invitation.",
+                        "error"
+                    );
+                } finally {
+                    state.dashboardInvitationActionLoading =
+                        false;
+    
+                    if (
+                        state.currentView ===
+                        "dashboard"
+                    ) {
+                        renderApp();
+                    }
+                }
+            }
+        );
+    
+        actions.append(
+            addButton,
+            dismissButton
+        );
+    
+        card.append(
+            content,
+            actions
+        );
+    
+        section.append(card);
+    
+        return section;
     }
 
     function createPrimaryActionsRow() {
@@ -4581,11 +4854,18 @@ console.log(
         resumeWorkoutSection ||
         dashboardCtaSection;
 
+    const participantInvitationSection =
+        renderParticipantRegionInvitation();
+
     app.append(
         dashboardHeader,
         userRow,
 
         activeHeroSection,
+
+        ...(participantInvitationSection
+            ? [participantInvitationSection]
+            : []),
 
         primaryActionsRow,
     

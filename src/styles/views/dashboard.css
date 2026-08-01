@@ -471,6 +471,170 @@ button:not(.primary-button) {
     padding: 0.55rem 0.75rem;
 }
 
+/* Region invitation */
+
+.view-dashboard
+.participant-region-invitation {
+    margin-bottom: 1.35rem;
+}
+
+.view-dashboard
+.participant-region-invitation-card {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    gap: 1rem;
+
+    padding: 1.15rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.2);
+
+    border-radius: 20px;
+
+    background:
+        radial-gradient(
+            circle at 105% -10%,
+            rgba(143, 211, 255, 0.1),
+            transparent 42%
+        ),
+        linear-gradient(
+            150deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.02)
+        );
+
+    box-shadow:
+        0 14px 34px
+        rgba(0, 0, 0, 0.24);
+
+    transition:
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.view-dashboard
+.participant-region-invitation-card:hover {
+    border-color:
+        rgba(143, 211, 255, 0.3);
+
+    background:
+        radial-gradient(
+            circle at 105% -10%,
+            rgba(143, 211, 255, 0.14),
+            transparent 42%
+        ),
+        linear-gradient(
+            150deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.025)
+        );
+}
+
+.view-dashboard
+.participant-region-invitation-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.view-dashboard
+.participant-region-invitation-eyebrow {
+    margin-bottom: 0.35rem;
+
+    color:
+        rgba(143, 211, 255, 0.9);
+
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.view-dashboard
+.participant-region-invitation-name {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-dashboard
+.participant-region-invitation-message {
+    margin-top: 0.55rem;
+
+    color: var(--muted);
+
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.view-dashboard
+.participant-region-invitation-meta {
+    margin-top: 0.45rem;
+
+    color: var(--muted);
+
+    font-size: 0.74rem;
+    font-weight: 650;
+}
+
+.view-dashboard
+.participant-region-invitation-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.6rem;
+
+    flex: 0 0 auto;
+}
+
+.view-dashboard
+.participant-region-invitation-dismiss {
+    width: auto;
+    min-height: 0;
+
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--muted);
+
+    box-shadow: none;
+
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.view-dashboard
+.participant-region-invitation-dismiss:hover {
+    background: transparent;
+    box-shadow: none;
+
+    color: var(--text);
+}
+
+@media (max-width: 560px) {
+    .view-dashboard
+    .participant-region-invitation-card {
+        grid-template-columns: 1fr;
+    }
+
+    .view-dashboard
+    .participant-region-invitation-actions {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+}
+
 /* Section headers */
 
 .view-dashboard

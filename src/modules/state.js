@@ -34,9 +34,6 @@ export const state = {
     draftPlannedWorkout: null,
     rosterSearchTerm: "",
     draftSession: null,
-    currentUserId: null,
-    currentUserRole: null,
-    currentUserDisplayName: null,
 
     currentUserId: null,
     currentUserProfileId: null,
@@ -80,6 +77,9 @@ export const state = {
     workspaceGeneration: 0,
     accessibleRegionIds: savedState?.accessibleRegionIds || [],
     accessibleRegions: [],
+
+    participantRegionInvitations: [],
+    dashboardInvitationDismissLoading: false,
 
     availableRegions: [],
 
