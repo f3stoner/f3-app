@@ -14,6 +14,7 @@ const savedState = loadState();
 export const state = {
     regionName: savedState?.regionName || "F3 Old 300",
     members: savedState?.members || [...seedMembers],
+    participants: savedState?.participants || [],
     sessions: savedState?.sessions || [],
     currentView: "dashboard",
     viewHistory: [],

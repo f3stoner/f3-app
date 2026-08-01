@@ -350,6 +350,89 @@ export async function loadAllMembers(regionId) {
     return allMembers;
 }
 
+export async function loadRegionParticipants(
+    regionId
+) {
+    if (!regionId) {
+        return [];
+    }
+
+    const pageSize = 1000;
+    let from = 0;
+    const allParticipants = [];
+
+    while (true) {
+        const { data, error } =
+            await supabase
+                .from(
+                    "region_participants"
+                )
+                .select(`
+                    id,
+                    region_id,
+                    member_id,
+                    status,
+                    sources,
+                    first_participated_on,
+                    last_participated_on,
+                    created_by_user_id,
+                    created_at,
+                    updated_at,
+                    members!inner (
+                        *
+                    )
+                `)
+                .eq(
+                    "region_id",
+                    regionId
+                )
+                .eq(
+                    "status",
+                    "active"
+                )
+                .order(
+                    "last_participated_on",
+                    {
+                        ascending: false,
+                        nullsFirst: false,
+                    }
+                )
+                .range(
+                    from,
+                    from + pageSize - 1
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        if (
+            !data ||
+            data.length === 0
+        ) {
+            break;
+        }
+
+        allParticipants.push(
+            ...data
+                .map(
+                    mapRegionParticipantFromDb
+                )
+                .filter(Boolean)
+        );
+
+        if (
+            data.length < pageSize
+        ) {
+            break;
+        }
+
+        from += pageSize;
+    }
+
+    return allParticipants;
+}
+
 export async function loadMemberById(
     memberId
 ) {
@@ -826,6 +909,7 @@ export async function loadRegionData(
     const [
         regionResult,
         memberResult,
+        participantResult,
         sessionResult,
         plannedWorkoutResult,
         aoResult,
@@ -859,6 +943,15 @@ export async function loadRegionData(
             loadAllMembers(regionId),
             timings,
             "membersMs"
+        ),
+
+        timed(
+            "loadRegionData:participants",
+            loadRegionParticipants(
+                regionId
+            ),
+            timings,
+            "participantsMs"
         ),
 
         timed(
@@ -1012,6 +1105,7 @@ export async function loadRegionData(
                 invitedById: inviterIds[0] || null,
             };
         }),
+        participants: participantResult,
         memberInviters: memberInviterResult,
         sessions: sessionResult.map(row => {
             const session = mapSessionFromDb(row);
@@ -1080,6 +1174,58 @@ export function mapMemberFromDb(row) {
             row.first_post_date || null,
         status:
             row.status || "active",
+    };
+}
+
+function mapRegionParticipantFromDb(
+    row
+) {
+    const memberRow =
+        row.members;
+
+    if (!memberRow) {
+        return null;
+    }
+
+    const member =
+        mapMemberFromDb(memberRow);
+
+    return {
+        ...member,
+
+        participantId:
+            row.id,
+
+        participantRegionId:
+            row.region_id,
+
+        participantStatus:
+            row.status || "active",
+
+        participantSources:
+            row.sources || [],
+
+        firstParticipatedOn:
+            row.first_participated_on ||
+            null,
+
+        lastParticipatedOn:
+            row.last_participated_on ||
+            null,
+
+        participantCreatedByUserId:
+            row.created_by_user_id ||
+            null,
+
+        participantCreatedAt:
+            row.created_at || null,
+
+        participantUpdatedAt:
+            row.updated_at || null,
+
+        isHomeRegionMember:
+            member.regionId ===
+            row.region_id,
     };
 }
 

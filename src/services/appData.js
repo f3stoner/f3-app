@@ -1078,6 +1078,7 @@ export function removeMemberFromState(memberId) {
 export function replacePersistedData({
     regionName,
     members,
+    participants,
     sessions,
     plannedWorkouts,
     aos,
@@ -1095,6 +1096,7 @@ export function replacePersistedData({
     state.regionName = regionName;
     state.fngNamingPostNumber = fngNamingPostNumber || 1;
     state.members = members;
+    state.participants = participants || [];
     state.sessions = sessions;
     state.plannedWorkouts = plannedWorkouts;
     state.aos = aos || [];
