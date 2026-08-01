@@ -135,6 +135,7 @@ if (process.env.NODE_ENV === "development") {
             ...args
         );
     };
+
     window.previewMemberMerge = async mergeId => {
         return supabase.rpc(
             "preview_member_merge",
@@ -143,6 +144,21 @@ if (process.env.NODE_ENV === "development") {
             }
         );
     };
+
+    window.markMemberMergeReady = async (
+        mergeId,
+        expectedPlanHash
+    ) => {
+        return supabase.rpc(
+            "mark_member_merge_ready",
+            {
+                p_merge_id: mergeId,
+                p_expected_plan_hash:
+                    expectedPlanHash,
+            }
+        );
+    };
+
     window.synchronizePendingSessions = async () => {
         const module = await import(
             "./services/pendingSessionSyncService.js"
@@ -1472,6 +1488,62 @@ async function refreshAuthenticatedIdentity() {
         state.customTemplates;
 
     return true;
+}
+
+export async function reconcileAfterMemberMerge() {
+    const identityRefreshed =
+        await refreshAuthenticatedIdentity();
+
+    if (!identityRefreshed) {
+        throw new Error(
+            "The merge completed, but the authenticated identity could not be refreshed."
+        );
+    }
+
+    const accessibleRegions =
+        await loadAccessibleRegions(
+            state.currentUserId
+        );
+
+    state.accessibleRegions =
+        accessibleRegions || [];
+
+    state.accessibleRegionIds =
+        state.accessibleRegions.map(
+            region => region.id
+        );
+
+    const activeRegionId =
+        state.activeRegionId ||
+        state.currentRegionId ||
+        state.homeRegionId;
+
+    if (!activeRegionId) {
+        throw new Error(
+            "The merge completed, but no active workspace was available to reload."
+        );
+    }
+
+    const workspaceResult =
+        await switchWorkspace(
+            activeRegionId
+        );
+
+    if (workspaceResult !== "loaded") {
+        throw new Error(
+            "The merge completed, but the active workspace could not be reloaded."
+        );
+    }
+
+    await saveCurrentOfflineBootSnapshot();
+
+    return {
+        currentUserMemberId:
+            state.currentUserMemberId,
+
+        activeRegionId:
+            state.activeRegionId,
+    };
 }
 
 async function runReconnectLifecycle() {

@@ -3,8 +3,9 @@ import {
     loadMemberMerge,
     executeMemberMerge,
 } from "../services/cloudData.js";
-import { navigateTo } from "../utils/navigation.js";
+import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
+import { state } from "../modules/state.js";
 
 export async function renderMemberMergeDetailView(
     params = {}
@@ -198,27 +199,76 @@ function createExecuteButton(
                 return;
             }
 
+            button.disabled = true;
+            button.textContent =
+                "Executing Merge…";
+
+            let mergeCommitted =
+                false;
+
             try {
                 await executeMemberMerge(
                     data.merge.id,
                     data.merge.plan_hash
                 );
 
+                mergeCommitted = true;
+
+                button.textContent =
+                    "Refreshing App…";
+
+                /*
+                 * index.js already imports this view, so use a
+                 * dynamic import here instead of introducing a
+                 * static circular dependency.
+                 */
+                const {
+                    reconcileAfterMemberMerge,
+                } = await import(
+                    "../index.js"
+                );
+
+                await reconcileAfterMemberMerge();
+
                 showToast(
                     "Merge completed.",
                     "success"
                 );
 
-                navigateTo(
+                state.currentViewParams =
+                    null;
+
+                goBack(
                     "operationsCenter"
                 );
             } catch (error) {
-                console.error(error);
+                console.error(
+                    "Member merge or reconciliation failed:",
+                    error
+                );
+
+                if (mergeCommitted) {
+                    showToast(
+                        "Merge completed, but the app could not refresh. Reload the app.",
+                        "error"
+                    );
+
+                    button.disabled = true;
+                    button.textContent =
+                        "Merge Completed";
+
+                    return;
+                }
 
                 showToast(
-                    error.message,
+                    error?.message ||
+                    "Member merge failed.",
                     "error"
                 );
+
+                button.disabled = false;
+                button.textContent =
+                    "Execute Merge";
             }
         }
     );
