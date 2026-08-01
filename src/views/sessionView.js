@@ -19,6 +19,7 @@ import {
     loadMemberDashboardStats,
     rebuildMemberStatsForMembers,
     loadQSlotCommitments,
+    searchGlobalMembers,
 } from "../services/cloudData.js";
 import { invalidateMemberStatsCache, invalidateRecentMemberActivityCache } from "../utils/memberStatsCache.js";
 import { doesSearchMatch } from "../utils/search.js";
@@ -111,6 +112,60 @@ function getCachedMemberDisplayName(member) {
     }
 
     return cachedDisplayNameByMemberId.get(member.id) || getMemberDisplayName(member);
+}
+
+function isNonHomeParticipant(member) {
+    if (!member?.id) {
+        return false;
+    }
+
+    if (
+        typeof member.isHomeRegionMember ===
+        "boolean"
+    ) {
+        return !member.isHomeRegionMember;
+    }
+
+    return (
+        member.regionId &&
+        member.regionId !==
+            state.currentRegionId
+    );
+}
+
+function getMemberHomeRegionName(member) {
+    if (!member?.regionId) {
+        return "";
+    }
+
+    const regions = [
+        ...(state.availableRegions || []),
+        ...(state.accessibleRegions || []),
+    ];
+
+    const region = regions.find(
+        item =>
+            item.id ===
+            member.regionId
+    );
+
+    return (
+        region?.name ||
+        "Other Region"
+    );
+}
+
+function getDrContextText(member) {
+    if (!isNonHomeParticipant(member)) {
+        return "";
+    }
+
+    const homeRegionName =
+        getMemberHomeRegionName(member);
+
+    return homeRegionName
+        ? `${homeRegionName} · DR`
+        : "DR";
 }
 
 let cachedSelectableMembers = null;
@@ -411,6 +466,11 @@ searchResults.setAttribute("role", "listbox");
 searchWrap.append(searchInput, searchResults);
 
 let activeSearchResultIndex = -1;
+let globalSearchResults = [];
+let globalSearchLoading = false;
+let globalSearchFailed = false;
+let globalSearchRequestId = 0;
+let globalSearchTimer = null;
 
 function stripParentheticals(value = "") {
     return String(value).replace(/\([^)]*\)/g, "");
@@ -456,6 +516,88 @@ function getSessionSearchResults() {
         .slice(0, 8);
 }
 
+async function runGlobalMemberSearch(
+    searchTerm
+) {
+    const trimmed =
+        String(searchTerm || "")
+            .trim();
+
+    const requestId =
+        ++globalSearchRequestId;
+
+    if (trimmed.length < 2) {
+        globalSearchResults = [];
+        globalSearchLoading = false;
+        globalSearchFailed = false;
+        renderSessionSearchResults();
+        return;
+    }
+
+    globalSearchLoading = true;
+    globalSearchFailed = false;
+    renderSessionSearchResults();
+
+    try {
+        const results =
+            await searchGlobalMembers(
+                trimmed,
+                {
+                    limit: 20,
+                    activeRegionId:
+                        state.currentRegionId,
+                }
+            );
+
+        if (
+            requestId !==
+            globalSearchRequestId
+        ) {
+            return;
+        }
+
+        const localIds = new Set(
+            getCachedSelectableMembers()
+                .map(member => member.id)
+        );
+
+        globalSearchResults =
+            results.filter(member => {
+                return (
+                    member?.id &&
+                    !localIds.has(member.id) &&
+                    !draftSession.attendeeIds
+                        .includes(member.id)
+                );
+            });
+
+        globalSearchFailed = false;
+    } catch (error) {
+        if (
+            requestId !==
+            globalSearchRequestId
+        ) {
+            return;
+        }
+
+        console.error(
+            "Failed to search global members:",
+            error
+        );
+
+        globalSearchResults = [];
+        globalSearchFailed = true;
+    } finally {
+        if (
+            requestId ===
+            globalSearchRequestId
+        ) {
+            globalSearchLoading = false;
+            renderSessionSearchResults();
+        }
+    }
+}
+
 function closeSessionSearchResults() {
     activeSearchResultIndex = -1;
     searchResults.textContent = "";
@@ -466,9 +608,60 @@ function closeSessionSearchResults() {
 async function addMemberFromSearch(member) {
     if (!member) return;
 
-    if (!draftSession.attendeeIds.includes(member.id)) {
-        draftSession.attendeeIds.push(member.id);
-        await maybePromptForFngName(member);
+    if (
+        member.isGlobalSearchResult
+    ) {
+        const participantsById =
+            new Map(
+                (state.participants || [])
+                    .filter(
+                        participant =>
+                            participant?.id
+                    )
+                    .map(
+                        participant => [
+                            participant.id,
+                            participant,
+                        ]
+                    )
+            );
+    
+        participantsById.set(
+            member.id,
+            {
+                ...member,
+    
+                participantId: null,
+                participantRegionId:
+                    state.currentRegionId,
+                participantStatus: "active",
+                participantSources: [],
+                firstParticipatedOn: null,
+                lastParticipatedOn: null,
+                isHomeRegionMember:
+                    member.regionId ===
+                    state.currentRegionId,
+            }
+        );
+    
+        state.participants =
+            [...participantsById.values()];
+    
+        cachedSelectableMembers = null;
+        cachedDisplayNameByMemberId = null;
+    }
+
+    if (
+        !draftSession.attendeeIds
+            .includes(member.id)
+    ) {
+        draftSession.attendeeIds.push(
+            member.id
+        );
+
+        await maybePromptForFngName(
+            member
+        );
     }
 
     clearSessionSearch();
@@ -489,16 +682,37 @@ function renderSessionSearchResults() {
         return;
     }
 
-    const matches = getSessionSearchResults();
+    const localMatches =
+        getSessionSearchResults();
+
+    const matches = [
+        ...localMatches,
+        ...globalSearchResults,
+    ].slice(0, 12);
 
     searchInput.setAttribute("aria-expanded", "true");
 
     if (matches.length === 0) {
         activeSearchResultIndex = -1;
-
-        const empty = document.createElement("div");
-        empty.classList.add("session-search-empty");
-        empty.textContent = "No matching PAX";
+    
+        const empty =
+            document.createElement("div");
+    
+        empty.classList.add(
+            "session-search-empty"
+        );
+    
+        if (globalSearchLoading) {
+            empty.textContent =
+                "Searching all PAX...";
+        } else if (globalSearchFailed) {
+            empty.textContent =
+                "Global search unavailable";
+        } else {
+            empty.textContent =
+                "No matching PAX";
+        }
+    
         searchResults.appendChild(empty);
         return;
     }
@@ -532,22 +746,67 @@ function renderSessionSearchResults() {
         name.classList.add("session-search-result-name");
         name.textContent = getCachedMemberDisplayName(member);
 
+        const isGlobalResult =
+            member.isGlobalSearchResult ===
+            true;
+
         content.appendChild(name);
 
-        const lastPostMap = getCachedLastPostMapForAo(
-            draftSession.aoId,
-            draftSession.aoName
-        );
+        const lastPostMap =
+            getCachedLastPostMapForAo(
+                draftSession.aoId,
+                draftSession.aoName
+            );
 
-        if (isRecentDate(lastPostMap.get(member.id), 20)) {
-            const context = document.createElement("span");
-            context.classList.add("session-search-result-context");
-            context.textContent = `Recent at ${draftSession.aoName || "this AO"}`;
+        const context =
+            document.createElement("span");
+        
+        context.classList.add(
+            "session-search-result-context"
+        );
+        
+        if (isGlobalResult) {
+            context.classList.add(
+                "session-search-result-context-global"
+            );
+        
+            context.textContent =
+                `${
+                    member.homeRegionName ||
+                    "Other Region"
+                } · Global`;
+        
             content.appendChild(context);
-        } else if (member.status === "inactive") {
-            const context = document.createElement("span");
-            context.classList.add("session-search-result-context");
-            context.textContent = "Inactive";
+        } else if (
+            isNonHomeParticipant(member)
+        ) {
+            context.textContent =
+                getDrContextText(member);
+
+            context.classList.add(
+                "session-search-result-context-dr"
+            );
+
+            content.appendChild(context);
+        } else if (
+            isRecentDate(
+                lastPostMap.get(member.id),
+                20
+            )
+        ) {
+            context.textContent =
+                `Recent at ${
+                    draftSession.aoName ||
+                    "this AO"
+                }`;
+
+            content.appendChild(context);
+        } else if (
+            member.status === "inactive"
+        ) {
+            context.textContent =
+                "Inactive";
+
             content.appendChild(context);
         }
 
@@ -579,18 +838,66 @@ function renderSessionSearchResults() {
     }
 }
 
-searchInput.addEventListener("input", event => {
-    state.sessionSearchTerm = event.target.value;
-    activeSearchResultIndex = 0;
-    renderSessionSearchResults();
-});
+searchInput.addEventListener(
+    "input",
+    event => {
+        state.sessionSearchTerm =
+            event.target.value;
+
+        activeSearchResultIndex = 0;
+
+        globalSearchResults = [];
+        globalSearchLoading = false;
+        globalSearchFailed = false;
+
+        /*
+         * Invalidate an older request immediately when the
+         * search term changes.
+         */
+        globalSearchRequestId += 1;
+
+        if (globalSearchTimer) {
+            clearTimeout(
+                globalSearchTimer
+            );
+
+            globalSearchTimer = null;
+        }
+
+        renderSessionSearchResults();
+
+        const trimmedSearchTerm =
+            String(
+                state.sessionSearchTerm ||
+                ""
+            ).trim();
+
+        if (
+            trimmedSearchTerm.length < 2
+        ) {
+            return;
+        }
+
+        globalSearchTimer =
+            setTimeout(() => {
+                globalSearchTimer = null;
+
+                runGlobalMemberSearch(
+                    trimmedSearchTerm
+                );
+            }, 300);
+    }
+);
 
 searchInput.addEventListener("focus", () => {
     renderSessionSearchResults();
 });
 
 searchInput.addEventListener("keydown", event => {
-    const matches = getSessionSearchResults();
+    const matches = [
+        ...getSessionSearchResults(),
+        ...globalSearchResults,
+    ].slice(0, 12);
 
     if (event.key === "Escape") {
         event.preventDefault();
@@ -603,16 +910,29 @@ searchInput.addEventListener("keydown", event => {
 
     if (event.key === "ArrowDown") {
         event.preventDefault();
+
         activeSearchResultIndex =
-            (activeSearchResultIndex + 1) % matches.length;
+            (
+                activeSearchResultIndex +
+                1
+            ) %
+            matches.length;
+
         renderSessionSearchResults();
         return;
     }
 
     if (event.key === "ArrowUp") {
         event.preventDefault();
+
         activeSearchResultIndex =
-            (activeSearchResultIndex - 1 + matches.length) % matches.length;
+            (
+                activeSearchResultIndex -
+                1 +
+                matches.length
+            ) %
+            matches.length;
+
         renderSessionSearchResults();
         return;
     }
@@ -621,9 +941,14 @@ searchInput.addEventListener("keydown", event => {
         event.preventDefault();
 
         const selectedMember =
-            matches[activeSearchResultIndex] || matches[0];
+            matches[
+                activeSearchResultIndex
+            ] ||
+            matches[0];
 
-        addMemberFromSearch(selectedMember);
+        addMemberFromSearch(
+            selectedMember
+        );
     }
 });
 
@@ -733,6 +1058,25 @@ function preventRemovingOnlyQ(memberId) {
 function clearSessionSearch() {
     state.sessionSearchTerm = "";
     searchInput.value = "";
+
+    globalSearchResults = [];
+    globalSearchLoading = false;
+    globalSearchFailed = false;
+
+    /*
+     * Invalidate any currently running request so its
+     * response cannot repopulate the cleared dropdown.
+     */
+    globalSearchRequestId += 1;
+
+    if (globalSearchTimer) {
+        clearTimeout(
+            globalSearchTimer
+        );
+
+        globalSearchTimer = null;
+    }
+
     closeSessionSearchResults();
 }
 
@@ -771,6 +1115,7 @@ async function maybePromptForFngName(member) {
     await updateMember(member.id, updatedMember);
 
     cachedDisplayNameByMemberId = null;
+    cachedSelectableMembers = null;
 }
 
 function createMemberCard(member, options = {}) {
@@ -781,6 +1126,28 @@ function createMemberCard(member, options = {}) {
     const name = document.createElement("span");
     name.classList.add("member-name");
     name.textContent = getCachedMemberDisplayName(member);
+
+    let drBadge = null;
+
+    if (isNonHomeParticipant(member)) {
+        drBadge =
+            document.createElement("span");
+
+        drBadge.classList.add(
+            "session-member-dr-badge"
+        );
+
+        drBadge.textContent = "DR";
+
+        drBadge.title =
+            getMemberHomeRegionName(member)
+                ? `Home Region: ${
+                    getMemberHomeRegionName(
+                        member
+                    )
+                }`
+                : "Downrange PAX";
+    }
 
     const commitmentType =
         options.commitmentType ||
@@ -829,7 +1196,39 @@ function createMemberCard(member, options = {}) {
     addIndicator.textContent = "+";
     addIndicator.setAttribute("aria-hidden", "true");
 
-    card.append(qButton, name);
+    const identity =
+        document.createElement("span");
+
+    identity.classList.add(
+        "session-member-identity"
+    );
+
+    identity.appendChild(name);
+
+    if (isNonHomeParticipant(member)) {
+        const regionContext =
+            document.createElement("span");
+
+        regionContext.classList.add(
+            "session-member-region"
+        );
+
+        regionContext.textContent =
+            getMemberHomeRegionName(member);
+
+        identity.appendChild(
+            regionContext
+        );
+    }
+
+    card.append(
+        qButton,
+        identity
+    );
+
+    if (drBadge) {
+        card.appendChild(drBadge);
+    }
 
     if (commitmentBadge) {
         card.appendChild(commitmentBadge);
@@ -989,18 +1388,57 @@ sessionControls.classList.add("section");
 sessionControls.append(aoLabel, aoSelect);
 
 function getSortedSelectableMembers() {
-    return state.members
-        .filter(member => member.status === "active" || member.status === "inactive")
+    const selectableById = new Map();
+
+    /*
+     * Active regional participants:
+     * - active home-region members
+     * - known DR/non-home participants
+     */
+    (state.participants || []).forEach(member => {
+        if (!member?.id) return;
+
+        selectableById.set(
+            member.id,
+            member
+        );
+    });
+
+    /*
+     * Inactive home-region members remain selectable because
+     * they may return and post again.
+     */
+    (state.members || [])
+        .filter(
+            member =>
+                member?.id &&
+                member.status === "inactive"
+        )
+        .forEach(member => {
+            if (!selectableById.has(member.id)) {
+                selectableById.set(
+                    member.id,
+                    member
+                );
+            }
+        });
+
+    return [...selectableById.values()]
         .sort((a, b) => {
-            const aInactive = a.status === "inactive";
-            const bInactive = b.status === "inactive";
+            const aInactive =
+                a.status === "inactive";
+
+            const bInactive =
+                b.status === "inactive";
 
             if (aInactive !== bInactive) {
                 return aInactive ? 1 : -1;
             }
 
             return getCachedMemberDisplayName(a)
-                .localeCompare(getCachedMemberDisplayName(b));
+                .localeCompare(
+                    getCachedMemberDisplayName(b)
+                );
         });
 }
 

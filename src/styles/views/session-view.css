@@ -1,0 +1,43 @@
+.session-member-identity {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.12rem;
+}
+
+.session-member-region {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.session-member-dr-badge {
+    flex: 0 0 auto;
+
+    padding:
+        0.2rem
+        0.42rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.35);
+
+    border-radius: 999px;
+
+    background:
+        rgba(143, 211, 255, 0.1);
+
+    color: var(--site-accent, #8fd3ff);
+
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1;
+}
+
+.session-search-result-context-dr {
+    color: var(--site-accent, #8fd3ff);
+    font-weight: 700;
+}

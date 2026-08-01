@@ -5087,3 +5087,68 @@ export async function loadRegionLeadershipDirectory(regionId) {
         paxName: row.pax_name,
     }));
 }
+
+export async function searchGlobalMembers(
+    searchTerm,
+    {
+        limit = 20,
+        activeRegionId = null,
+    } = {}
+) {
+    const trimmed =
+        String(searchTerm || "")
+            .trim();
+
+    if (trimmed.length < 2) {
+        return [];
+    }
+
+    const { data, error } =
+        await supabase.rpc(
+            "search_global_members",
+            {
+                p_search_term:
+                    trimmed,
+
+                p_limit:
+                    limit,
+            }
+        );
+
+    if (error) {
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        id:
+            row.member_id,
+
+        paxName:
+            row.pax_name || "",
+
+        realName:
+            row.real_name || "",
+
+        homeAo:
+            row.home_ao || "",
+
+        status:
+            row.status || "active",
+
+        regionId:
+            row.home_region_id,
+
+        homeRegionName:
+            row.home_region_name || "",
+
+        isHomeRegionMember:
+            Boolean(
+                activeRegionId &&
+                row.home_region_id ===
+                    activeRegionId
+            ),
+
+        isGlobalSearchResult:
+            true,
+    }));
+}
