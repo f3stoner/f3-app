@@ -2538,17 +2538,17 @@ export async function claimParticipantRegionAccess(
 
     return {
         regionId:
-            row.region_id,
-
+            row.result_region_id,
+    
         regionName:
-            row.region_name || "",
-
+            row.result_region_name || "",
+    
         grantedAt:
-            row.granted_at || null,
-
+            row.result_granted_at || null,
+    
         alreadyHadAccess:
             Boolean(
-                row.already_had_access
+                row.result_already_had_access
             ),
     };
 }
