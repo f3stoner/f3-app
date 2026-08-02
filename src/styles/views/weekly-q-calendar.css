@@ -669,7 +669,8 @@ svg {
 
 /* Larger screens */
 
-@media (min-width: 620px) {
+@media (orientation: portrait)
+and (min-width: 620px) {
     .view-weeklyQCalendar
     .weekly-q-calendar {
         grid-auto-columns:
@@ -683,12 +684,17 @@ LANDSCAPE WEEK VIEW
 
 @media (orientation: landscape)
 and (min-width: 640px) {
-    .view-weeklyQCalendar {
-        /*
-        * The landscape layout is intended to behave like
-        * the in-app version of the weekly preblast.
-        */
-        padding-bottom: 6.5rem;
+    #app.view-weeklyQCalendar {
+        padding-bottom:
+            max(
+                1rem,
+                env(safe-area-inset-bottom)
+            );
+    }
+
+    #app.view-weeklyQCalendar
+    .global-nav {
+        display: none;
     }
 
     .view-weeklyQCalendar
