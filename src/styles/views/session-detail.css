@@ -1,0 +1,1012 @@
+/* =========================================================
+   SESSION DETAIL
+   ========================================================= */
+
+   #app.view-sessionDetail {
+    --session-accent: #8fd3ff;
+    --session-accent-bright: #c9eaff;
+    --session-success: #58e878;
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            120px +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+}
+
+
+/* =========================================================
+   PAGE INTRO
+   ========================================================= */
+
+.view-sessionDetail
+.session-detail-hero {
+    margin:
+        0
+        0
+        1.15rem;
+}
+
+.view-sessionDetail
+.session-detail-hero-title {
+    margin: 0;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size:
+        clamp(
+            2.35rem,
+            9vw,
+            3.4rem
+        );
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+}
+
+.view-sessionDetail
+.session-detail-ao {
+    margin-top: 0.9rem;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-sessionDetail
+.session-detail-date-line {
+    margin-top: 0.42rem;
+
+    color: var(--muted);
+
+    font-size: 0.9rem;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   HERO META
+   ========================================================= */
+
+.view-sessionDetail
+.session-detail-meta-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 0.6rem;
+
+    margin-top: 1rem;
+}
+
+.view-sessionDetail
+.session-detail-meta-item {
+    min-width: 0;
+
+    padding:
+        0.72rem
+        0.75rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(143, 211, 255, 0.055),
+            rgba(255, 255, 255, 0.018)
+        );
+}
+
+.view-sessionDetail
+.session-detail-meta-label {
+    color:
+        rgba(194, 202, 211, 0.72);
+
+    font-family: var(--font-display);
+    font-size: 0.61rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.view-sessionDetail
+.session-detail-meta-value {
+    margin-top: 0.34rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.view-sessionDetail
+.session-detail-meta-subvalue {
+    margin-top: 0.22rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+
+    font-size: 0.66rem;
+    font-weight: 650;
+    line-height: 1.15;
+}
+
+.view-sessionDetail
+.session-detail-meta-item:nth-child(2)
+.session-detail-meta-value {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   SHARED DETAIL PANELS
+   ========================================================= */
+
+.view-sessionDetail
+.session-detail-panel {
+    width: 100%;
+    min-width: 0;
+
+    margin:
+        0
+        0
+        1rem;
+
+    padding:
+        1rem;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.045),
+            transparent 42%
+        ),
+        rgba(255, 255, 255, 0.016);
+
+    box-sizing: border-box;
+}
+
+.view-sessionDetail
+.session-detail-panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-bottom: 0.9rem;
+}
+
+.view-sessionDetail
+.session-detail-panel-label {
+    margin: 0;
+
+    color:
+        rgba(194, 202, 211, 0.72);
+
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.view-sessionDetail
+.session-detail-panel-title {
+    margin-top: 0.35rem;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-sessionDetail
+.session-detail-count {
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 36px;
+    height: 32px;
+
+    padding:
+        0
+        0.55rem;
+
+    border:
+        1px solid
+        var(--border-strong);
+
+    border-radius: 999px;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   ATTENDANCE
+   ========================================================= */
+
+.view-sessionDetail
+.session-attendance-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.view-sessionDetail
+.session-attendance-chip {
+    display: inline-flex;
+    align-items: center;
+
+    max-width: 100%;
+
+    padding:
+        0.42rem
+        0.72rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.15);
+
+    border-radius: 999px;
+
+    background:
+        rgba(143, 211, 255, 0.075);
+
+    color: var(--text);
+
+    font-size: 0.78rem;
+    font-weight: 750;
+    line-height: 1.1;
+}
+
+.view-sessionDetail
+.session-attendance-empty {
+    color: var(--muted);
+
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+.view-sessionDetail
+.session-attendance-secondary {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    margin-top: 1rem;
+    padding-top: 1rem;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-sessionDetail
+.session-attendance-secondary-section {
+    min-width: 0;
+}
+
+.view-sessionDetail
+.session-attendance-secondary-section
++
+.session-attendance-secondary-section {
+    padding-left: 1rem;
+
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-sessionDetail
+.session-attendance-secondary-label {
+    color: var(--muted);
+
+    font-family: var(--font-display);
+    font-size: 0.67rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.view-sessionDetail
+.session-attendance-secondary-count {
+    margin-top: 0.35rem;
+
+    color:
+        var(--session-success);
+
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-sessionDetail
+.session-attendance-secondary-copy {
+    margin-top: 0.45rem;
+
+    color: var(--muted);
+
+    font-size: 0.76rem;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+
+/* FNG rows keep their existing functionality */
+
+.view-sessionDetail
+.fng-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    padding:
+        0.7rem
+        0;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    color: var(--text);
+
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.view-sessionDetail
+.fng-detail-row:first-child {
+    border-top: 0;
+}
+
+.view-sessionDetail
+.fng-detail-row button {
+    flex: 0 0 auto;
+
+    margin: 0;
+    padding:
+        0.45rem
+        0.65rem;
+
+    font-size: 0.7rem;
+}
+
+
+/* =========================================================
+   WORKOUT
+   ========================================================= */
+
+.view-sessionDetail
+.session-workout-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.view-sessionDetail
+.session-workout-header {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 1rem;
+
+    padding:
+        1rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-sessionDetail
+.session-workout-title {
+    margin-top: 0.35rem;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-sessionDetail
+.session-workout-toggle {
+    min-width: 0;
+
+    margin: 0;
+    padding:
+        0.45rem
+        0.55rem;
+
+    border: 0;
+
+    background: transparent;
+
+    color:
+        var(--session-accent);
+
+    box-shadow: none;
+
+    font-size: 0.72rem;
+}
+
+.view-sessionDetail
+.session-workout-toggle:hover {
+    background:
+        rgba(143, 211, 255, 0.06);
+
+    box-shadow: none;
+}
+
+.view-sessionDetail
+.session-workout-toggle:active {
+    transform: none;
+}
+
+.view-sessionDetail
+.session-workout-content {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 0;
+
+    padding:
+        0
+        1rem
+        1rem;
+}
+
+.view-sessionDetail
+.session-workout-block {
+    min-width: 0;
+
+    padding:
+        1rem
+        0;
+}
+
+.view-sessionDetail
+.session-workout-block:nth-child(even) {
+    padding-left: 1rem;
+
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-sessionDetail
+.session-workout-block:nth-child(n + 3) {
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-sessionDetail
+.session-workout-block-heading {
+    margin-bottom: 0.5rem;
+
+    color:
+        var(--session-accent);
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.view-sessionDetail
+.session-workout-block-content {
+    min-width: 0;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+
+    color: var(--text);
+
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.view-sessionDetail
+.session-workout-panel.is-collapsed
+.session-workout-content {
+    display: none;
+}
+
+.view-sessionDetail
+.session-workout-panel.is-collapsed
+.session-workout-header {
+    border-bottom: 0;
+}
+
+
+/* =========================================================
+   HISTORICAL BACKBLAST
+   ========================================================= */
+
+.view-sessionDetail
+.historical-backblast-card {
+    margin:
+        0
+        0
+        1rem;
+
+    padding:
+        1rem;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-sessionDetail
+.historical-backblast-card
+.detail-label {
+    margin-top: 0;
+}
+
+.view-sessionDetail
+.historical-backblast-card
+.stats-line {
+    margin:
+        0.35rem
+        0
+        0.75rem;
+
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+.view-sessionDetail
+.historical-backblast-card summary {
+    color:
+        var(--session-accent);
+
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.view-sessionDetail
+.historical-backblast-text {
+    margin:
+        0.85rem
+        0
+        0;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--text);
+
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   NOTES
+   ========================================================= */
+
+.view-sessionDetail
+.session-detail-notes-panel {
+    white-space: pre-wrap;
+
+    color: var(--text);
+
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.view-sessionDetail
+.session-detail-actions {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 0.65rem;
+
+    margin-top: 1rem;
+}
+
+.view-sessionDetail
+.session-detail-action {
+    width: 100%;
+    min-height: 48px;
+
+    margin: 0;
+    padding:
+        0.75rem
+        0.7rem;
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow: none;
+
+    font-size: 0.83rem;
+    font-weight: 900;
+}
+
+.view-sessionDetail
+.session-detail-action-primary {
+    border-color:
+        rgba(143, 211, 255, 0.6);
+
+    background:
+        rgba(143, 211, 255, 0.08);
+
+    color:
+        var(--session-accent);
+}
+
+.view-sessionDetail
+.session-detail-action-secondary {
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    color: var(--muted);
+}
+
+.view-sessionDetail
+.session-detail-action-danger {
+    border-color:
+        rgba(239, 68, 68, 0.7);
+
+    background:
+        rgba(239, 68, 68, 0.035);
+
+    color: var(--danger);
+}
+
+
+/* Hide the unrelated global logging FAB on this detail screen */
+
+.view-sessionDetail
+.global-fab {
+    display: none;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 560px) {
+    .view-sessionDetail
+    .session-detail-meta-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .view-sessionDetail
+    .session-detail-meta-item:last-child {
+        grid-column:
+            1 / -1;
+    }
+
+    .view-sessionDetail
+    .session-workout-content {
+        grid-template-columns: 1fr;
+    }
+
+    .view-sessionDetail
+    .session-workout-block:nth-child(even) {
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    .view-sessionDetail
+    .session-workout-block
+    +
+    .session-workout-block {
+        border-top:
+            1px solid
+            rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* =========================================================
+   VISITING PAX / FNG DETAIL
+   ========================================================= */
+
+   .view-sessionDetail
+   .session-attendance-detail-panel {
+       padding: 0;
+       overflow: hidden;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-header {
+       min-width: 0;
+   
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 1rem;
+   
+       padding:
+           1rem;
+   
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.08);
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-list {
+       display: flex;
+       flex-direction: column;
+   
+       min-width: 0;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-row {
+       width: 100%;
+       min-width: 0;
+   
+       display: grid;
+       grid-template-columns:
+           minmax(0, 1fr)
+           auto;
+   
+       align-items: center;
+       gap: 0.85rem;
+   
+       margin: 0;
+       padding:
+           0.9rem
+           1rem;
+   
+       border: 0;
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   
+       background:
+           linear-gradient(
+               110deg,
+               rgba(143, 211, 255, 0.022),
+               transparent 58%
+           );
+   
+       box-sizing: border-box;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-row:last-child {
+       border-bottom: 0;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-identity {
+       min-width: 0;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-name {
+       overflow-wrap: anywhere;
+   
+       color: var(--text);
+   
+       font-size: 0.94rem;
+       font-weight: 800;
+       line-height: 1.25;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-context {
+       margin-top: 0.24rem;
+   
+       color: var(--muted);
+   
+       font-size: 0.72rem;
+       font-weight: 650;
+       line-height: 1.3;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-detail-badge {
+       display: inline-flex;
+       align-items: center;
+   
+       padding:
+           0.28rem
+           0.48rem;
+   
+       border:
+           1px solid
+           rgba(143, 211, 255, 0.28);
+   
+       border-radius: 999px;
+   
+       background:
+           rgba(143, 211, 255, 0.08);
+   
+       color:
+           var(--session-accent);
+   
+       font-size: 0.6rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: 0.06em;
+       text-transform: uppercase;
+   
+       white-space: nowrap;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-roster-button {
+       width: auto;
+       min-width: 0;
+       min-height: 40px;
+   
+       margin: 0;
+       padding:
+           0.55rem
+           0.68rem;
+   
+       border:
+           1px solid
+           rgba(143, 211, 255, 0.42);
+   
+       border-radius:
+           var(--radius-sm);
+   
+       background:
+           rgba(143, 211, 255, 0.08);
+   
+       color:
+           var(--session-accent-bright);
+   
+       box-shadow: none;
+   
+       font-size: 0.68rem;
+       font-weight: 900;
+       line-height: 1;
+   
+       white-space: nowrap;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-roster-button:hover {
+       border-color:
+           rgba(143, 211, 255, 0.62);
+   
+       background:
+           rgba(143, 211, 255, 0.13);
+   
+       box-shadow: none;
+   }
+   
+   .view-sessionDetail
+   .session-attendance-roster-button:active {
+       transform: scale(0.98);
+   }
+   
+   .view-sessionDetail
+   .session-attendance-roster-button.is-complete,
+   .view-sessionDetail
+   .session-attendance-roster-button:disabled {
+       border-color:
+           rgba(111, 209, 131, 0.3);
+   
+       background:
+           rgba(111, 209, 131, 0.08);
+   
+       color:
+           #7fd28f;
+   
+       opacity: 1;
+       cursor: default;
+   }
+   
+   @media (max-width: 420px) {
+       .view-sessionDetail
+       .session-attendance-detail-row {
+           gap: 0.6rem;
+   
+           padding:
+               0.85rem
+               0.8rem;
+       }
+   
+       .view-sessionDetail
+       .session-attendance-roster-button {
+           padding:
+               0.5rem
+               0.58rem;
+   
+           font-size: 0.62rem;
+       }
+   }

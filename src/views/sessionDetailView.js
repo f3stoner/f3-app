@@ -30,9 +30,12 @@ import {
 
 export function renderSessionDetail() {
     const app = document.getElementById("app");
-    app.textContent = "";
 
-    cleanupMainMenu();
+    app.className =
+        "view-sessionDetail";
+
+    app.textContent = "";
+        cleanupMainMenu();
 
     const header = createAppHeader({
         title: "",
@@ -72,8 +75,6 @@ export function renderSessionDetail() {
             return;
         
      } else {
-    const title = document.createElement("h1");
-    title.textContent = "Session";
     const formattedDate = formatDate(session.date);
     const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
 
@@ -120,53 +121,175 @@ export function renderSessionDetail() {
     const shouldShowNotesSection = 
         hasStructuredWorkout && Boolean(session.notes && session.notes.trim());
 
-    const summaryCard = document.createElement("div");
-    summaryCard.classList.add("section", "session-detail-summary");
-
-    const summaryTitle = document.createElement("div");
-    summaryTitle.classList.add("member-name");
-    summaryTitle.textContent = session.aoName;
-
-    const summaryMeta = document.createElement("div");
-    summaryMeta.classList.add("stats-line");
-    summaryMeta.textContent =
-        `${formattedDate} • ${totalAttendance} Attended`;
-
-    const summaryGuestMeta = document.createElement("div");
-    summaryGuestMeta.classList.add("stats-line");
-    summaryGuestMeta.textContent =
-        `${fngCount} FNG${fngCount === 1 ? "" : "s"} • ${visitorCount} Visiting PAX`;
-
-    const summaryQ = document.createElement("div");
-    summaryQ.classList.add("stats-line", "q-line");
-    summaryQ.textContent = `Q: ${qLabel}`;
-
-    const summaryWeather = document.createElement("div");
-    summaryWeather.classList.add("stats-line");
-
-    if (session.weatherSnapshot) {
-        const weather = session.weatherSnapshot;
-
-        const rainLabel =
-            typeof weather.precipChance === "number"
-                ? `${weather.precipChance}% rain`
-                : "rain chance unavailable";
-
-        const windLabel =
-            typeof weather.windMph === "number"
-                ? `${weather.windMph} mph wind`
-                : "wind unavailable";
-
-        summaryWeather.textContent =
-            `Conditions: ${weather.temp}° and ${weather.condition}, ${rainLabel}, ${windLabel}`;
+    const hero =
+        document.createElement("section");
+    
+    hero.classList.add(
+        "session-detail-hero"
+    );
+    
+    const heroTitle =
+        document.createElement("h1");
+    
+    heroTitle.classList.add(
+        "session-detail-hero-title"
+    );
+    
+    heroTitle.textContent =
+        "Session";
+    
+    const heroAo =
+        document.createElement("div");
+    
+    heroAo.classList.add(
+        "session-detail-ao"
+    );
+    
+    heroAo.textContent =
+        session.aoName ||
+        "Unknown AO";
+    
+    const heroDate =
+        document.createElement("div");
+    
+    heroDate.classList.add(
+        "session-detail-date-line"
+    );
+    
+    heroDate.textContent =
+        `${formattedDate} • ` +
+        `${totalAttendance} Attended`;
+    
+    const metaGrid =
+        document.createElement("div");
+    
+    metaGrid.classList.add(
+        "session-detail-meta-grid"
+    );
+    
+    function createMetaItem(
+        labelText,
+        valueText,
+        subvalueText = ""
+    ) {
+        const item =
+            document.createElement("div");
+    
+        item.classList.add(
+            "session-detail-meta-item"
+        );
+    
+        const label =
+            document.createElement("div");
+    
+        label.classList.add(
+            "session-detail-meta-label"
+        );
+    
+        label.textContent =
+            labelText;
+    
+        const value =
+            document.createElement("div");
+    
+        value.classList.add(
+            "session-detail-meta-value"
+        );
+    
+        value.textContent =
+            valueText || "—";
+    
+        item.append(
+            label,
+            value
+        );
+    
+        if (subvalueText) {
+            const subvalue =
+                document.createElement("div");
+    
+            subvalue.classList.add(
+                "session-detail-meta-subvalue"
+            );
+    
+            subvalue.textContent =
+                subvalueText;
+    
+            item.appendChild(subvalue);
+        }
+    
+        return item;
     }
+    
+    metaGrid.appendChild(
+        createMetaItem(
+            "Q",
+            qLabel
+        )
+    );
+    
+    const sessionSite =
+        state.sites?.find(
+            site =>
+                site.id === session.siteId
+        ) || null;
 
-    summaryCard.append(
-        summaryTitle,
-        summaryMeta,
-        summaryGuestMeta,
-        summaryQ,
-        ...(session.weatherSnapshot ? [summaryWeather] : [])
+    const siteName =
+        sessionSite?.name ||
+        session.siteName ||
+        session.site?.name ||
+        session.location ||
+        "Site not recorded";
+    
+    metaGrid.appendChild(
+        createMetaItem(
+            "Site",
+            siteName
+        )
+    );
+    
+    if (session.weatherSnapshot) {
+        const weather =
+            session.weatherSnapshot;
+    
+        const weatherValue =
+            `${weather.temp}° • ` +
+            `${weather.condition}`;
+    
+        const weatherDetails = [
+            typeof weather.precipChance ===
+            "number"
+                ? `${weather.precipChance}% rain`
+                : null,
+            typeof weather.windMph ===
+            "number"
+                ? `${weather.windMph} mph wind`
+                : null,
+        ]
+            .filter(Boolean)
+            .join(" • ");
+    
+        metaGrid.appendChild(
+            createMetaItem(
+                "Conditions",
+                weatherValue,
+                weatherDetails
+            )
+        );
+    } else {
+        metaGrid.appendChild(
+            createMetaItem(
+                "Conditions",
+                "Not recorded"
+            )
+        );
+    }
+    
+    hero.append(
+        heroTitle,
+        heroAo,
+        heroDate,
+        metaGrid
     );
 
     function createDetailSection (labelText, valueText) {
@@ -187,42 +310,129 @@ export function renderSessionDetail() {
     }
 
     function createFngSection() {
-        const section = document.createElement("div");
-        section.classList.add("section");
-
-        const label = document.createElement("div");
-        label.textContent = "FNGs";
-        label.classList.add("detail-label", "session-detail-label");
-
-        const value = document.createElement("div");
-        value.classList.add("detail-value");
-
-        if (session.fngs.length === 0) {
-            value.textContent = "No FNGs";
-        } else {
-            session.fngs.forEach((fng) => {
-                const row = document.createElement("div");
-                row.classList.add("fng-detail-row");
-
-                const displayName = fng.paxName && fng.realName
+        const fngs =
+            Array.isArray(session.fngs)
+                ? session.fngs
+                : [];
+    
+        const panel =
+            document.createElement("section");
+    
+        panel.classList.add(
+            "session-detail-panel",
+            "session-attendance-detail-panel"
+        );
+    
+        const header =
+            document.createElement("div");
+    
+        header.classList.add(
+            "session-attendance-detail-header"
+        );
+    
+        const headerIdentity =
+            document.createElement("div");
+    
+        const label =
+            document.createElement("div");
+    
+        label.classList.add(
+            "session-detail-panel-label"
+        );
+    
+        label.textContent =
+            "FNGs";
+    
+        const title =
+            document.createElement("div");
+    
+        title.classList.add(
+            "session-detail-panel-title"
+        );
+    
+        title.textContent =
+            `${fngs.length} Recorded`;
+    
+        headerIdentity.append(
+            label,
+            title
+        );
+    
+        const count =
+            document.createElement("div");
+    
+        count.classList.add(
+            "session-detail-count"
+        );
+    
+        count.textContent =
+            String(fngs.length);
+    
+        header.append(
+            headerIdentity,
+            count
+        );
+    
+        const list =
+            document.createElement("div");
+    
+        list.classList.add(
+            "session-attendance-detail-list"
+        );
+    
+        fngs.forEach(fng => {
+            const row =
+                document.createElement("div");
+    
+            row.classList.add(
+                "session-attendance-detail-row"
+            );
+    
+            const identity =
+                document.createElement("div");
+    
+            identity.classList.add(
+                "session-attendance-detail-identity"
+            );
+    
+            const displayName =
+                fng.paxName &&
+                fng.realName &&
+                fng.paxName !== fng.realName
                     ? `${fng.paxName} (${fng.realName})`
-                    : (fng.paxName || fng.realName || "Unknown");
-
-                let rowText = displayName;
-
-                const inviterIds = [
-                    ...(
-                        Array.isArray(fng.inviterIds)
-                            ? fng.inviterIds
-                            : []
-                    ),
-                    fng.invitedById,
-                    fng.invited_by_id,
-                ].filter(Boolean);
-                
-                const uniqueInviterIds = [...new Set(inviterIds)];
-                
-                const inviterNames = uniqueInviterIds
+                    : (
+                        fng.paxName ||
+                        fng.realName ||
+                        "Unknown FNG"
+                    );
+    
+            const name =
+                document.createElement("div");
+    
+            name.classList.add(
+                "session-attendance-detail-name"
+            );
+    
+            name.textContent =
+                displayName;
+    
+            identity.appendChild(name);
+    
+            const inviterIds = [
+                ...(
+                    Array.isArray(fng.inviterIds)
+                        ? fng.inviterIds
+                        : []
+                ),
+                fng.invitedById,
+                fng.invited_by_id,
+            ].filter(Boolean);
+    
+            const uniqueInviterIds =
+                [...new Set(inviterIds)];
+    
+            const inviterNames =
+                uniqueInviterIds
                     .map(inviterId =>
                         getMemberById(inviterId)
                     )
@@ -233,133 +443,343 @@ export function renderSessionDetail() {
                         inviter.realName ||
                         "Unknown PAX"
                     );
-                
-                if (inviterNames.length > 0) {
-                    rowText += ` (Invited by ${inviterNames.join(", ")})`;
-                }
-
-                const text = document.createElement("span");
-                text.textContent = rowText;
-
-                const existingMember = fng.memberId
-                    ? state.members.find(m => m.id === fng.memberId)
+    
+            if (inviterNames.length > 0) {
+                const context =
+                    document.createElement("div");
+    
+                context.classList.add(
+                    "session-attendance-detail-context"
+                );
+    
+                context.textContent =
+                    `Invited by ${inviterNames.join(", ")}`;
+    
+                identity.appendChild(context);
+            }
+    
+            const existingMember =
+                fng.memberId
+                    ? getMemberById(fng.memberId)
                     : null;
-
-                const alreadyOnRoster = Boolean(existingMember);
-
-                const addButton = document.createElement("button");
-                addButton.textContent = alreadyOnRoster ? "On Roster" : "Add to Roster";
-                addButton.disabled = alreadyOnRoster;
-
-                addButton.addEventListener("click", async () => {
-                    const inviterIds = [
-                        ...(
-                            Array.isArray(fng.inviterIds)
-                                ? fng.inviterIds
-                                : []
-                        ),
-                        fng.invitedById,
-                        fng.invited_by_id,
-                    ].filter(Boolean);
-                    
-                    const cleanInviterIds = [...new Set(inviterIds)];
-                    
+    
+            const alreadyOnRoster =
+                Boolean(existingMember);
+    
+            const addButton =
+                document.createElement("button");
+    
+            addButton.type = "button";
+    
+            addButton.classList.add(
+                "session-attendance-roster-button"
+            );
+    
+            addButton.textContent =
+                alreadyOnRoster
+                    ? "On Roster"
+                    : "Add to Roster";
+    
+            addButton.disabled =
+                alreadyOnRoster;
+    
+            if (alreadyOnRoster) {
+                addButton.classList.add(
+                    "is-complete"
+                );
+            }
+    
+            addButton.addEventListener(
+                "click",
+                async () => {
+                    if (addButton.disabled) {
+                        return;
+                    }
+    
+                    addButton.disabled = true;
+                    addButton.textContent =
+                        "Adding…";
+    
+                    const cleanInviterIds =
+                        [...new Set(inviterIds)];
+    
                     const newMember = {
                         id: crypto.randomUUID(),
-                        paxName: fng.paxName || fng.realName,
-                        realName: fng.realName,
-                        homeAo: session.aoName,
-                        inviterIds: cleanInviterIds,
-                        invitedById: cleanInviterIds[0] || null,
-                        firstPostDate: session.date,
-                        status: "active",
+                        paxName:
+                            fng.paxName ||
+                            fng.realName,
+                        realName:
+                            fng.realName || "",
+                        homeAo:
+                            session.aoName,
+                        inviterIds:
+                            cleanInviterIds,
+                        invitedById:
+                            cleanInviterIds[0] ||
+                            null,
+                        firstPostDate:
+                            session.date,
+                        status:
+                            "active",
                     };
-
-                    try{
-                        const savedMember = await addMember(newMember);
-                        
-                        const updatedFngs = (session.fngs || []).map(existingFng => {
-                            const isTargetFng =
-                                existingFng.realName === fng.realName &&
-                                existingFng.paxName === fng.paxName;
-                        
-                            return isTargetFng
-                                ? {
+    
+                    try {
+                        const savedMember =
+                            await addMember(
+                                newMember
+                            );
+    
+                        const updatedFngs =
+                            fngs.map(existingFng => {
+                                const isTargetFng =
+                                    existingFng === fng ||
+                                    (
+                                        existingFng.realName ===
+                                            fng.realName &&
+                                        existingFng.paxName ===
+                                            fng.paxName
+                                    );
+    
+                                if (!isTargetFng) {
+                                    return existingFng;
+                                }
+    
+                                return {
                                     ...existingFng,
-                                    memberId: savedMember.id,
-                                    inviterIds: savedMember.inviterIds || cleanInviterIds,
+                                    memberId:
+                                        savedMember.id,
+                                    inviterIds:
+                                        savedMember.inviterIds ||
+                                        cleanInviterIds,
                                     invitedById:
                                         savedMember.invitedById ||
                                         cleanInviterIds[0] ||
                                         null,
-                                }
-                                : existingFng;
-                        });
-                        
+                                };
+                            });
+    
                         const updatedAttendeeIds = [
                             ...new Set([
-                                ...(session.attendeeIds || []),
+                                ...(
+                                    session.attendeeIds ||
+                                    []
+                                ),
                                 savedMember.id,
                             ]),
                         ];
-                        
-                        await updateSession(session.id, {
-                            ...session,
-                            attendeeIds: updatedAttendeeIds,
-                            fngs: updatedFngs,
-                        });
-                        
-                        session.attendeeIds = updatedAttendeeIds;
-                        session.fngs = updatedFngs;
-
-                        addButton.textContent = "On Roster";
-                        addButton.disabled = true;
-                        showToast("FNG added to roster.", "success")
-
+    
+                        await updateSession(
+                            session.id,
+                            {
+                                ...session,
+                                attendeeIds:
+                                    updatedAttendeeIds,
+                                fngs:
+                                    updatedFngs,
+                            }
+                        );
+    
+                        session.attendeeIds =
+                            updatedAttendeeIds;
+    
+                        session.fngs =
+                            updatedFngs;
+    
+                        addButton.textContent =
+                            "On Roster";
+    
+                        addButton.classList.add(
+                            "is-complete"
+                        );
+    
+                        showToast(
+                            "FNG added to roster.",
+                            "success"
+                        );
+    
+                        renderApp();
                     } catch (error) {
-                        console.error("Failed to add member:", error);
-                        showToast("Failed to add member to roster.", "error");
+                        console.error(
+                            "Failed to add member:",
+                            error
+                        );
+    
+                        addButton.disabled =
+                            false;
+    
+                        addButton.textContent =
+                            "Add to Roster";
+    
+                        showToast(
+                            "Failed to add member to roster.",
+                            "error"
+                        );
                     }
-                });
-
-                row.append(text, addButton);
-                value.appendChild(row);
-            });   
-        }
-        section.append(label, value);
-        return section;
+                }
+            );
+    
+            row.append(
+                identity,
+                addButton
+            );
+    
+            list.appendChild(row);
+        });
+    
+        panel.append(
+            header,
+            list
+        );
+    
+        return panel;
     }
 
     function createVisitorSection() {
-        const visitors = session.visitors || [];
+        const visitors =
+            Array.isArray(session.visitors)
+                ? session.visitors
+                : [];
     
-        const section = document.createElement("div");
-        section.classList.add("section");
+        const panel =
+            document.createElement("section");
     
-        const label = document.createElement("div");
-        label.textContent = "Visiting PAX";
-        label.classList.add("detail-label", "session-detail-label");
+        panel.classList.add(
+            "session-detail-panel",
+            "session-attendance-detail-panel"
+        );
     
-        const value = document.createElement("div");
-        value.classList.add("detail-value", "session-detail-value");
+        const header =
+            document.createElement("div");
     
-        if (visitors.length === 0) {
-            value.textContent = "No visiting PAX";
-        } else {
-            visitors.forEach(visitor => {
-                const row = document.createElement("div");
-                row.classList.add("fng-detail-row");
-            
-                row.textContent = visitor.homeRegion
-                    ? `${visitor.f3Name} (${visitor.homeRegion})`
-                    : visitor.f3Name;
-            
-                value.appendChild(row);
-            });
-        }
+        header.classList.add(
+            "session-attendance-detail-header"
+        );
     
-        section.append(label, value);
-        return section;
+        const headerIdentity =
+            document.createElement("div");
+    
+        const label =
+            document.createElement("div");
+    
+        label.classList.add(
+            "session-detail-panel-label"
+        );
+    
+        label.textContent =
+            "Visiting PAX";
+    
+        const title =
+            document.createElement("div");
+    
+        title.classList.add(
+            "session-detail-panel-title"
+        );
+    
+        title.textContent =
+            `${visitors.length} Recorded`;
+    
+        headerIdentity.append(
+            label,
+            title
+        );
+    
+        const count =
+            document.createElement("div");
+    
+        count.classList.add(
+            "session-detail-count"
+        );
+    
+        count.textContent =
+            String(visitors.length);
+    
+        header.append(
+            headerIdentity,
+            count
+        );
+    
+        const list =
+            document.createElement("div");
+    
+        list.classList.add(
+            "session-attendance-detail-list"
+        );
+    
+        visitors.forEach(visitor => {
+            const row =
+                document.createElement("div");
+    
+            row.classList.add(
+                "session-attendance-detail-row"
+            );
+    
+            const identity =
+                document.createElement("div");
+    
+            identity.classList.add(
+                "session-attendance-detail-identity"
+            );
+    
+            const name =
+                document.createElement("div");
+    
+            name.classList.add(
+                "session-attendance-detail-name"
+            );
+    
+            name.textContent =
+                visitor.f3Name ||
+                visitor.paxName ||
+                visitor.name ||
+                "Unknown Visitor";
+    
+            identity.appendChild(name);
+    
+            const homeRegion =
+                visitor.homeRegion ||
+                visitor.home_region ||
+                visitor.regionName ||
+                visitor.region_name ||
+                "";
+    
+            if (homeRegion) {
+                const context =
+                    document.createElement("div");
+    
+                context.classList.add(
+                    "session-attendance-detail-context"
+                );
+    
+                context.textContent =
+                    `Home region: ${homeRegion}`;
+    
+                identity.appendChild(context);
+            }
+    
+            const badge =
+                document.createElement("span");
+    
+            badge.classList.add(
+                "session-attendance-detail-badge"
+            );
+    
+            badge.textContent =
+                "Visitor";
+    
+            row.append(
+                identity,
+                badge
+            );
+    
+            list.appendChild(row);
+        });
+    
+        panel.append(
+            header,
+            list
+        );
+    
+        return panel;
     }
 
     function formatMatchMethod(method) {
@@ -423,77 +843,432 @@ export function renderSessionDetail() {
     }
 
     function createWorkoutSection() {
-        const section = document.createElement("div");
-        section.classList.add("section");
-
-        const label = document.createElement("div");
-        label.textContent = "Workout";
-        label.classList.add("detail-label", "session-detail-label");
-
-        const value = document.createElement("div");
-        value.classList.add("detail-value");
-
-        const workout = session.workout;
-
-        if (!workout) {
-            value.textContent = session.notes || "No workout logged";
-        } else {
-            const parts = [];
-
-        if (workout.title) {
-            parts.push(`Title: ${workout.title}`);
-        }
-
-        if (workout.warmorama) {
-            parts.push(`${getWorkoutFieldLabel(state, "warmorama")}:\n${workout.warmorama}`);
-        }
-
-        if (workout.thangs) {
-            parts.push(`${getWorkoutFieldLabel(state, "thangs")}:\n${workout.thangs}`);
-        }
-
-        if (workout.finisher) {
-            parts.push(`${getWorkoutFieldLabel(state, "finisher")}:\n${workout.finisher}`);
-        }
-
-        if (workout.notes) {
-            parts.push(`${getWorkoutFieldLabel(state, "notes")}:\n${workout.notes}`);
-        }
-
-        const thirdFText = String(
-            workout.thirdFText || ""
-        )
-            .replace(/^THIRD F\s*:?\s*/i, "")
-            .trim();
-        
-        if (thirdFText) {
-            parts.push(`Third F:\n${thirdFText}`);
-        }
-
-        const sessionAnnouncementText =
-            getSessionAnnouncementText(session);
-
-        if (sessionAnnouncementText) {
+        const panel =
+            document.createElement("section");
+    
+        panel.classList.add(
+            "session-detail-panel",
+            "session-workout-panel"
+        );
+    
+        const workout =
+            session.workout;
+    
+        const workoutTitle =
+            workout?.title ||
+            "Workout";
+    
+        const header =
+            document.createElement("div");
+    
+        header.classList.add(
+            "session-workout-header"
+        );
+    
+        const identity =
+            document.createElement("div");
+    
+        const label =
+            document.createElement("div");
+    
+        label.classList.add(
+            "session-detail-panel-label"
+        );
+    
+        label.textContent =
+            "Workout";
+    
+        const title =
+            document.createElement("div");
+    
+        title.classList.add(
+            "session-workout-title"
+        );
+    
+        title.textContent =
+            workoutTitle;
+    
+        identity.append(
+            label,
+            title
+        );
+    
+        const toggle =
+            document.createElement("button");
+    
+        toggle.type = "button";
+    
+        toggle.classList.add(
+            "session-workout-toggle"
+        );
+    
+        toggle.textContent =
+            "Collapse ↑";
+    
+        toggle.addEventListener(
+            "click",
+            () => {
+                const collapsed =
+                    panel.classList.toggle(
+                        "is-collapsed"
+                    );
+    
+                toggle.textContent =
+                    collapsed
+                        ? "Expand ↓"
+                        : "Collapse ↑";
+    
+                toggle.setAttribute(
+                    "aria-expanded",
+                    String(!collapsed)
+                );
+            }
+        );
+    
+        toggle.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+    
+        header.append(
+            identity,
+            toggle
+        );
+    
+        const content =
+            document.createElement("div");
+    
+        content.classList.add(
+            "session-workout-content"
+        );
+    
+        function appendWorkoutBlock(
+            headingText,
+            contentText
+        ) {
             const cleanText =
-                cleanAnnouncementText(sessionAnnouncementText);
-
-            if (cleanText) {
-                parts.push(`Announcements:\n${cleanText}`);
+                String(
+                    contentText || ""
+                ).trim();
+    
+            if (!cleanText) return;
+    
+            const block =
+                document.createElement("section");
+    
+            block.classList.add(
+                "session-workout-block"
+            );
+    
+            const blockHeading =
+                document.createElement("div");
+    
+            blockHeading.classList.add(
+                "session-workout-block-heading"
+            );
+    
+            blockHeading.textContent =
+                headingText;
+    
+            const blockContent =
+                document.createElement("div");
+    
+            blockContent.classList.add(
+                "session-workout-block-content"
+            );
+    
+            blockContent.textContent =
+                cleanText;
+    
+            block.append(
+                blockHeading,
+                blockContent
+            );
+    
+            content.appendChild(block);
+        }
+    
+        if (!workout) {
+            appendWorkoutBlock(
+                "Workout",
+                session.notes ||
+                "No workout logged"
+            );
+        } else {
+            appendWorkoutBlock(
+                getWorkoutFieldLabel(
+                    state,
+                    "warmorama"
+                ),
+                workout.warmorama
+            );
+    
+            const thangSections =
+                normalizeThangSections(
+                    workout
+                );
+    
+            thangSections.forEach(
+                (
+                    thangSection,
+                    index
+                ) => {
+                    appendWorkoutBlock(
+                        thangSection.title ||
+                        `Thang ${index + 1}`,
+                        thangSection.content
+                    );
+                }
+            );
+    
+            appendWorkoutBlock(
+                getWorkoutFieldLabel(
+                    state,
+                    "finisher"
+                ),
+                workout.finisher
+            );
+    
+            appendWorkoutBlock(
+                getWorkoutFieldLabel(
+                    state,
+                    "notes"
+                ),
+                workout.notes
+            );
+    
+            const thirdFText =
+                String(
+                    workout.thirdFText || ""
+                )
+                    .replace(
+                        /^THIRD F\s*:?\s*/i,
+                        ""
+                    )
+                    .trim();
+    
+            appendWorkoutBlock(
+                "Third F",
+                thirdFText
+            );
+    
+            const announcementText =
+                cleanAnnouncementText(
+                    getSessionAnnouncementText(
+                        session
+                    )
+                );
+    
+            appendWorkoutBlock(
+                "Announcements",
+                announcementText
+            );
+    
+            if (
+                content.children.length === 0
+            ) {
+                appendWorkoutBlock(
+                    "Workout",
+                    "No workout details logged"
+                );
             }
         }
-        
-        value.textContent = parts.length > 0
-            ? parts.join("\n\n")
-            : "-";
-        }
-
-        section.append(label, value);
-        return section;
+    
+        panel.append(
+            header,
+            content
+        );
+    
+        return panel;
     }
 
-    const paxSection = createDetailSection(`PAX (${regularPaxCount})`, paxNames);
+    function createAttendancePanel() {
+        const panel =
+            document.createElement("section");
+
+        panel.classList.add(
+            "session-detail-panel",
+            "session-attendance-panel"
+        );
+
+        const heading =
+            document.createElement("div");
+
+        heading.classList.add(
+            "session-detail-panel-heading"
+        );
+
+        const headingText =
+            document.createElement("div");
+
+        const label =
+            document.createElement("div");
+
+        label.classList.add(
+            "session-detail-panel-label"
+        );
+
+        label.textContent =
+            "Attendance";
+
+        const title =
+            document.createElement("div");
+
+        title.classList.add(
+            "session-detail-panel-title"
+        );
+
+        title.textContent =
+            `${totalAttendance} Attended`;
+
+        headingText.append(
+            label,
+            title
+        );
+
+        const count =
+            document.createElement("div");
+
+        count.classList.add(
+            "session-detail-count"
+        );
+
+        count.textContent =
+            String(regularPaxCount);
+
+        heading.append(
+            headingText,
+            count
+        );
+
+        const chips =
+            document.createElement("div");
+
+        chips.classList.add(
+            "session-attendance-chips"
+        );
+
+        if (paxNamesArray.length === 0) {
+            const empty =
+                document.createElement("div");
+
+            empty.classList.add(
+                "session-attendance-empty"
+            );
+
+            empty.textContent =
+                "No regular PAX recorded";
+
+            chips.appendChild(empty);
+        } else {
+            paxNamesArray.forEach(name => {
+                const chip =
+                    document.createElement("span");
+
+                chip.classList.add(
+                    "session-attendance-chip"
+                );
+
+                chip.textContent = name;
+
+                chips.appendChild(chip);
+            });
+        }
+
+        const secondary =
+            document.createElement("div");
+
+        secondary.classList.add(
+            "session-attendance-secondary"
+        );
+
+        function createSecondaryMetric(
+            labelText,
+            countValue,
+            emptyText
+        ) {
+            const section =
+                document.createElement("div");
+
+            section.classList.add(
+                "session-attendance-secondary-section"
+            );
+
+            const metricLabel =
+                document.createElement("div");
+
+            metricLabel.classList.add(
+                "session-attendance-secondary-label"
+            );
+
+            metricLabel.textContent =
+                labelText;
+
+            const metricCount =
+                document.createElement("div");
+
+            metricCount.classList.add(
+                "session-attendance-secondary-count"
+            );
+
+            metricCount.textContent =
+                String(countValue);
+
+            const metricCopy =
+                document.createElement("div");
+
+            metricCopy.classList.add(
+                "session-attendance-secondary-copy"
+            );
+
+            metricCopy.textContent =
+                countValue === 0
+                    ? emptyText
+                    : `${countValue} recorded`;
+
+            section.append(
+                metricLabel,
+                metricCount,
+                metricCopy
+            );
+
+            return section;
+        }
+
+        secondary.append(
+            createSecondaryMetric(
+                "Visitors",
+                visitorCount,
+                "No visiting PAX"
+            ),
+            createSecondaryMetric(
+                "FNGs",
+                fngCount,
+                "No FNGs"
+            )
+        );
+
+        panel.append(
+            heading,
+            chips,
+            secondary
+        );
+
+        return panel;
+    }
+
+    const attendancePanel =
+        createAttendancePanel();
+
     const fngSection = createFngSection();
     const visitorSection = createVisitorSection();
+
+    const shouldShowVisitors =
+        visitorCount > 0;
+
+    const shouldShowFngs =
+        fngCount > 0;
+
     const workoutSection = createWorkoutSection();
     workoutSection.classList.add("session-detail-workout-section");
     const notesSection = createDetailSection("Notes", notesText);
@@ -605,24 +1380,48 @@ export function renderSessionDetail() {
         navigateTo("session");
     });
 
-    const primaryActionsRow = document.createElement("div");
-    primaryActionsRow.classList.add("button-row", "primary-actions-row");
+    const actions =
+        document.createElement("div");
 
-    const secondaryActionsRow = document.createElement("div");
-    secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
+    actions.classList.add(
+        "session-detail-actions"
+    );
 
     const nav = createGlobalNav();
 
-    primaryActionsRow.append(backblastButton);
+    backblastButton.classList.add(
+        "session-detail-action",
+        "session-detail-action-primary"
+    );
+    
+    editButton.classList.add(
+        "session-detail-action",
+        "session-detail-action-primary"
+    );
+    
+    copyToPlanButton.classList.add(
+        "session-detail-action",
+        "session-detail-action-secondary"
+    );
+
     if (canEditSession) {
-        primaryActionsRow.append(editButton);
+        actions.appendChild(
+            editButton
+        );
     }
-    secondaryActionsRow.append(copyToPlanButton);
+    
+    actions.append(
+        backblastButton,
+        copyToPlanButton
+    );
 
     if (canManageSessions) {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete Session";
-        deleteButton.classList.add("danger-button");
+        deleteButton.classList.add(
+            "session-detail-action",
+            "session-detail-action-danger"
+        );
 
         deleteButton.addEventListener("click", async () => {
             const confirmed = confirm("Are you sure you want to delete this session?");
@@ -648,23 +1447,29 @@ export function renderSessionDetail() {
             }
         });
 
-        secondaryActionsRow.appendChild(deleteButton);
+        actions.appendChild(
+            deleteButton
+        );
     }
 
     const historicalBackblastMount = document.createElement("div");
 
     app.append(
         header,
-        title,
-        summaryCard,
-        paxSection,
-        visitorSection,
-        fngSection, 
+        hero,
+        attendancePanel,
+        ...(shouldShowVisitors
+            ? [visitorSection]
+            : []),
+        ...(shouldShowFngs
+            ? [fngSection]
+            : []),
         workoutSection,
         historicalBackblastMount,
-        ...(shouldShowNotesSection ? [notesSection] : []), 
-        primaryActionsRow,
-        secondaryActionsRow,
+        ...(shouldShowNotesSection
+            ? [notesSection]
+            : []),
+        actions,
         nav
     );
 
