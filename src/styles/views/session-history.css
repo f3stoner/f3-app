@@ -1,0 +1,684 @@
+/* =========================================================
+   SESSION HISTORY
+   ========================================================= */
+
+   .view-session-history {
+    --history-accent: #8fd3ff;
+    --history-accent-bright: #c9eaff;
+    --history-accent-soft:
+        rgba(143, 211, 255, 0.1);
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom: 7.5rem;
+
+    overflow-x: clip;
+
+    background:
+        radial-gradient(
+            circle at 45% -8%,
+            rgba(143, 211, 255, 0.08),
+            transparent 320px
+        ),
+        var(--bg);
+}
+
+.view-session-history
+.session-history-subtitle {
+    max-width: 34rem;
+
+    margin:
+        -0.1rem
+        0
+        1.1rem;
+
+    color: var(--muted);
+
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+
+/* Filters */
+
+.view-session-history
+.section {
+    margin-bottom: 0.85rem;
+    padding: 0;
+}
+
+.view-session-history
+.controls-row {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.4fr)
+        minmax(130px, 1fr);
+
+    align-items: stretch;
+    gap: 0.65rem;
+}
+
+.view-session-history
+.controls-row
+.button-row {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 0.45rem;
+
+    margin: 0;
+}
+
+.view-session-history
+.controls-row
+.button-row button {
+    width: 100%;
+    min-height: 44px;
+
+    margin: 0;
+    padding:
+        0.55rem
+        0.65rem;
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow: none;
+
+    font-size: 0.78rem;
+}
+
+.view-session-history
+.controls-row
+select {
+    min-width: 0;
+    min-height: 44px;
+
+    margin: 0;
+    padding:
+        0.55rem
+        0.75rem;
+
+    border-radius:
+        var(--radius-md);
+}
+
+
+/* Search */
+
+.view-session-history
+.session-search {
+    min-height: 48px;
+
+    margin:
+        0
+        0
+        0.55rem;
+
+    padding:
+        0.75rem
+        0.9rem;
+
+    border-color:
+        rgba(143, 211, 255, 0.14);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.view-session-history
+.search-mode-row {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 0.45rem;
+
+    margin:
+        0
+        0
+        0.9rem;
+}
+
+.view-session-history
+.search-mode-row button {
+    min-width: 0;
+    min-height: 38px;
+
+    margin: 0;
+    padding:
+        0.45rem
+        0.35rem;
+
+    border-radius:
+        var(--radius-sm);
+
+    box-shadow: none;
+
+    font-size: 0.72rem;
+}
+
+
+/* Results */
+
+.view-session-history
+.session-results-meta {
+    margin:
+        0
+        0
+        0.75rem;
+
+    color: var(--muted);
+
+    font-size: 0.76rem;
+    font-weight: 750;
+}
+
+.view-session-history
+.session-history-month {
+    overflow: hidden;
+
+    margin-bottom: 0.75rem;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.045),
+            transparent 38%
+        ),
+        rgba(255, 255, 255, 0.014);
+
+    box-shadow:
+        0 14px 34px
+        rgba(0, 0, 0, 0.2);
+}
+
+
+/* Month header */
+
+.view-session-history
+.session-history-month-header {
+    width: 100%;
+    min-height: 48px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        auto;
+
+    align-items: center;
+    gap: 0.7rem;
+
+    margin: 0;
+    padding:
+        0.7rem
+        0.85rem;
+
+    border: 0;
+    border-radius: 0;
+
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    color: var(--text);
+
+    box-shadow: none;
+    text-align: left;
+}
+
+.view-session-history
+.session-history-month-header:hover {
+    background:
+        rgba(143, 211, 255, 0.045);
+
+    box-shadow: none;
+}
+
+.view-session-history
+.session-history-month-header:active {
+    transform: none;
+}
+
+.view-session-history
+.session-history-month-title {
+    min-width: 0;
+
+    color:
+        var(--history-accent);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.78rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.1em;
+}
+
+.view-session-history
+.session-history-month-meta {
+    color: var(--muted);
+
+    font-size: 0.68rem;
+    font-weight: 750;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.view-session-history
+.session-history-month-chevron {
+    color: var(--muted);
+
+    font-family:
+        var(--font-body);
+
+    font-size: 1.35rem;
+    line-height: 1;
+
+    transform: rotate(0deg);
+
+    transition:
+        transform 170ms ease,
+        color 150ms ease;
+}
+
+.view-session-history
+.session-history-month.expanded
+.session-history-month-chevron {
+    transform: rotate(90deg);
+
+    color:
+        var(--history-accent);
+}
+
+
+/* Session rows */
+
+.view-session-history
+.session-history-month-body {
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+}
+
+.view-session-history
+.session-history-month-body[hidden] {
+    display: none;
+}
+
+.view-session-history
+.session-history-row {
+    width: 100%;
+    min-height: 78px;
+
+    display: grid;
+    grid-template-columns:
+        44px
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 0.75rem;
+
+    margin: 0;
+    padding:
+        0.72rem
+        0.8rem;
+
+    border: 0;
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 0;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.025),
+            transparent 60%
+        ),
+        transparent;
+
+    color: var(--text);
+
+    box-shadow: none;
+    text-align: left;
+}
+
+.view-session-history
+.session-history-row:hover {
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.07),
+            transparent 64%
+        ),
+        rgba(255, 255, 255, 0.018);
+
+    box-shadow: none;
+}
+
+.view-session-history
+.session-history-row:active {
+    transform: none;
+
+    background:
+        rgba(143, 211, 255, 0.075);
+}
+
+.view-session-history
+.session-history-row:last-child {
+    border-bottom: 0;
+}
+
+
+/* Date */
+
+.view-session-history
+.session-history-row-date {
+    align-self: center;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-right: 0.65rem;
+
+    border-right:
+        1px solid
+        rgba(255, 255, 255, 0.085);
+}
+
+.view-session-history
+.session-history-row-day {
+    font-family:
+        var(--font-display);
+
+    font-size: 1.25rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-session-history
+.session-history-row-weekday {
+    margin-top: 0.22rem;
+
+    color: var(--muted);
+
+    font-size: 0.58rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.08em;
+}
+
+
+/* Content */
+
+.view-session-history
+.session-history-row-content {
+    min-width: 0;
+}
+
+.view-session-history
+.session-history-row-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-session-history
+.session-history-row-workout {
+    margin-top: 0.28rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color:
+        rgba(245, 245, 242, 0.82);
+
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.view-session-history
+.session-history-row-meta {
+    margin-top: 0.3rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+
+    font-size: 0.7rem;
+    font-weight: 650;
+    line-height: 1.15;
+}
+
+
+/* Trailing controls */
+
+.view-session-history
+.session-history-row-trailing {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    flex: 0 0 auto;
+}
+
+.view-session-history
+.session-history-relevance-badge {
+    padding:
+        0.23rem
+        0.4rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.24);
+
+    border-radius: 999px;
+
+    background:
+        rgba(143, 211, 255, 0.08);
+
+    color:
+        var(--history-accent-bright);
+
+    font-size: 0.55rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.view-session-history
+.session-history-row-chevron {
+    color:
+        rgba(245, 245, 242, 0.38);
+
+    font-family:
+        var(--font-body);
+
+    font-size: 1.35rem;
+    line-height: 1;
+
+    transition:
+        transform 150ms ease,
+        color 150ms ease;
+}
+
+.view-session-history
+.session-history-row:hover
+.session-history-row-chevron {
+    transform: translateX(2px);
+
+    color:
+        var(--history-accent);
+}
+
+
+/* Show all */
+
+.view-session-history
+.session-history-show-all {
+    width: 100%;
+    min-height: 44px;
+
+    margin: 0;
+    padding:
+        0.65rem
+        0.75rem;
+
+    border: 0;
+    border-radius: 0;
+
+    background:
+        rgba(143, 211, 255, 0.025);
+
+    color:
+        var(--history-accent);
+
+    box-shadow: none;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.view-session-history
+.session-history-show-all:hover {
+    background:
+        rgba(143, 211, 255, 0.07);
+
+    box-shadow: none;
+}
+
+.view-session-history
+.session-history-show-all:active {
+    transform: none;
+}
+
+
+/* Older sessions */
+
+.view-session-history
+> .secondary-button {
+    width: 100%;
+    min-height: 44px;
+
+    margin:
+        0.2rem
+        0
+        0.75rem;
+
+    padding:
+        0.65rem
+        0.75rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.16);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.035);
+
+    color:
+        var(--history-accent);
+
+    opacity: 1;
+}
+
+
+/* Mobile */
+
+@media (max-width: 520px) {
+    .view-session-history
+    .controls-row {
+        grid-template-columns: 1fr;
+    }
+
+    .view-session-history
+    .session-history-row {
+        grid-template-columns:
+            38px
+            minmax(0, 1fr)
+            auto;
+
+        gap: 0.6rem;
+
+        min-height: 74px;
+
+        padding:
+            0.68rem
+            0.65rem;
+    }
+
+    .view-session-history
+    .session-history-row-date {
+        padding-right: 0.5rem;
+    }
+
+    .view-session-history
+    .session-history-row-day {
+        font-size: 1.1rem;
+    }
+
+    .view-session-history
+    .session-history-row-title {
+        font-size: 1rem;
+    }
+
+    .view-session-history
+    .session-history-row-workout {
+        font-size: 0.74rem;
+    }
+
+    .view-session-history
+    .session-history-row-meta {
+        font-size: 0.66rem;
+    }
+
+    .view-session-history
+    .session-history-relevance-badge {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .view-session-history
+    .session-history-month-chevron,
+    .view-session-history
+    .session-history-row-chevron {
+        transition: none;
+    }
+}

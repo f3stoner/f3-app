@@ -856,42 +856,6 @@ select:focus,
     white-space: pre-wrap;
 }
 
-.session-history-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-
-    gap: 4px;
-    padding: 14px;
-
-    background: var(--surface-raised);
-    border: 1px solid var(--border-strong);
-
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
-}
-
-.session-preview-line {
-    margin-top: 6px;
-    font-style: italic;
-    opacity: 0.8;
-}
-
-.q-line {
-    font-weight: 500;
-}
-
-.session-date-divider {
-    margin-top: 18px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-strong);
-    color: var(--muted);
-    margin-bottom: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    opacity: 0.85;
-}
-
 .session-detail-value {
     white-space: normal;
     line-height: 1.5;
@@ -1762,43 +1726,6 @@ select:focus,
 
 .controls-row select {
     flex: 1;
-}
-
-.view-session-history .section {
-    padding: 8px;
-    margin-bottom: 0;
-}
-
-.view-session-history .button-row {
-    gap: 6px;
-}
-
-.view-session-history .button-row button {
-    padding: 6px 10px;
-    font-size: 12px;
-}
-
-.view-session-history .session-search {
-    padding: 8px 10px;
-    font-size: 14px;
-    margin-top: 8px;
-}
-
-.view-session-history .detail-label {
-    font-size: 12px;
-    opacity: 0.7;
-}
-
-.view-session-history select {
-    padding: 6px 10px;
-    font-size: 14px;
-    margin-top: 6px;
-}
-
-.view-session-history .controls-row,
-.view-session-history select,
-.view-session-history .session-search {
-  margin-top: 6px;
 }
 
 .saved-section-list .button-row button {
@@ -7181,4 +7108,22 @@ button.leadership-action-card:disabled {
 .session-commitments-loading,
 .session-commitments-failed {
     opacity: 0.75;
+}
+
+.settings-region-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 0.75rem 0;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.08);
+}
+
+.settings-region-row:last-child {
+    border-bottom: none;
 }

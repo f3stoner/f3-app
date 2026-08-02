@@ -31,6 +31,11 @@ export function renderSessionHistory() {
     const title = document.createElement("h1");
     title.textContent = "Session History";
 
+    const subtitle = document.createElement("p");
+    subtitle.classList.add("session-history-subtitle");
+    subtitle.textContent =
+        "Find past beatdowns, workouts, and attendance.";
+
     const filterSection = document.createElement("div");
     filterSection.classList.add("section");
 
@@ -144,57 +149,221 @@ export function renderSessionHistory() {
         sessionList.appendChild(emptyState);
     }
 
-    function createSessionCard(session) {
-        const card = document.createElement("div");
-        card.classList.add("member-card", "session-history-card");
-
-        const effectiveQIds = session.qIds || (session.qId ? [session.qId] : []);
-
+    function createSessionRow(session) {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.classList.add("session-history-row");
+    
+        const dateValue = new Date(
+            `${session.date}T12:00:00`
+        );
+    
+        const dateColumn = document.createElement("div");
+        dateColumn.classList.add(
+            "session-history-row-date"
+        );
+    
+        const dayNumber = document.createElement("div");
+        dayNumber.classList.add(
+            "session-history-row-day"
+        );
+        dayNumber.textContent =
+            String(dateValue.getDate()).padStart(2, "0");
+    
+        const weekday = document.createElement("div");
+        weekday.classList.add(
+            "session-history-row-weekday"
+        );
+        weekday.textContent =
+            dateValue
+                .toLocaleDateString(
+                    undefined,
+                    {
+                        weekday: "short",
+                    }
+                )
+                .toUpperCase();
+    
+        dateColumn.append(
+            dayNumber,
+            weekday
+        );
+    
+        const content = document.createElement("div");
+        content.classList.add(
+            "session-history-row-content"
+        );
+    
+        const titleLine = document.createElement("div");
+        titleLine.classList.add(
+            "session-history-row-title"
+        );
+        titleLine.textContent =
+            session.aoName || "Unknown AO";
+    
+        const effectiveQIds =
+            session.qIds ||
+            (session.qId
+                ? [session.qId]
+                : []);
+    
         const qNames = effectiveQIds
             .map(qId => getMemberById(qId))
             .filter(Boolean)
             .map(member => member.paxName);
-
-        const qLabel = qNames.length > 0 ? qNames.join(", ") : "-";
-
-        const titleLine = document.createElement("div");
-        titleLine.classList.add("member-name");
-        titleLine.textContent = session.aoName;
-
-        const dateLine = document.createElement("div");
-        dateLine.classList.add("stats-line");
-        dateLine.textContent = formatDate(session.date);
-
-        const qLine = document.createElement("div");
-        qLine.classList.add("stats-line", "q-line");
-        qLine.textContent = `Q: ${qLabel}`;
-
-        const statsLine = document.createElement("div");
-        statsLine.classList.add("stats-line");
+    
+        const qLabel =
+            qNames.length > 0
+                ? qNames.join(", ")
+                : "No Q recorded";
+    
         const {
             totalAttendance,
             fngCount,
         } = getSessionDisplayCounts(session);
-        
-        statsLine.textContent =
-            `${totalAttendance} Attended • ${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
     
-        const previewLine = document.createElement("div");
-        previewLine.classList.add("stats-line", "session-preview-line");
-        previewLine.textContent =
+        const workoutTitle =
             session.workout?.title ||
-            session.workout?.thangs?.split("\n")[0] ||
-            session.notes?.split("\n")[0] ||
-            "No workout logged";
-
-        card.append(titleLine, dateLine, qLine, statsLine, previewLine);
-
-        card.addEventListener("click", () => {
+            session.workout?.thangs
+                ?.split("\n")[0] ||
+            session.notes
+                ?.split("\n")[0] ||
+            "No workout title";
+    
+        const workoutLine =
+            document.createElement("div");
+    
+        workoutLine.classList.add(
+            "session-history-row-workout"
+        );
+    
+        workoutLine.textContent =
+            workoutTitle;
+    
+        const metaLine =
+            document.createElement("div");
+    
+        metaLine.classList.add(
+            "session-history-row-meta"
+        );
+    
+        metaLine.textContent =
+            `${qLabel} · ` +
+            `${totalAttendance} PAX · ` +
+            `${fngCount} FNG${fngCount === 1 ? "" : "s"}`;
+    
+        content.append(
+            titleLine,
+            workoutLine,
+            metaLine
+        );
+    
+        const trailing =
+            document.createElement("div");
+    
+        trailing.classList.add(
+            "session-history-row-trailing"
+        );
+    
+        const currentMemberId =
+            state.currentUserMemberId;
+    
+        const isQ =
+            effectiveQIds.includes(
+                currentMemberId
+            );
+    
+        const isAttended =
+            memberAttendedSession(
+                session,
+                currentMemberId
+            );
+    
+        if (isQ || isAttended) {
+            const relevanceBadge =
+                document.createElement("span");
+    
+            relevanceBadge.classList.add(
+                "session-history-relevance-badge"
+            );
+    
+            relevanceBadge.textContent =
+                isQ
+                    ? "You Q’d"
+                    : "You posted";
+    
+            trailing.appendChild(
+                relevanceBadge
+            );
+        }
+    
+        const chevron =
+            document.createElement("span");
+    
+        chevron.classList.add(
+            "session-history-row-chevron"
+        );
+    
+        chevron.textContent = "›";
+    
+        trailing.appendChild(chevron);
+    
+        row.append(
+            dateColumn,
+            content,
+            trailing
+        );
+    
+        row.addEventListener("click", () => {
             state.selectedSessionId = session.id;
             navigateTo("sessionDetail");
         });
+    
+        return row;
+    }
 
-        return card;
+    function getSessionMonthKey(session) {
+        return session.date?.slice(0, 7) || "";
+    }
+    
+    function formatSessionMonth(monthKey) {
+        const [year, month] =
+            monthKey.split("-");
+    
+        const value = new Date(
+            Number(year),
+            Number(month) - 1,
+            1
+        );
+    
+        return value
+            .toLocaleDateString(
+                undefined,
+                {
+                    month: "long",
+                    year: "numeric",
+                }
+            )
+            .toUpperCase();
+    }
+    
+    function groupSessionsByMonth(sessions) {
+        const groups = new Map();
+    
+        sessions.forEach(session => {
+            const monthKey =
+                getSessionMonthKey(session);
+    
+            if (!groups.has(monthKey)) {
+                groups.set(monthKey, []);
+            }
+    
+            groups
+                .get(monthKey)
+                .push(session);
+        });
+    
+        return [...groups.entries()];
     }
 
     function findMatchingMemberIds(searchTerm) {
@@ -281,6 +450,9 @@ function getSessionSearchText(session, mode = "all") {
 
 const resultsMeta = document.createElement("div");
 resultsMeta.classList.add("detail-value", "session-results-meta");
+
+let searchTimeoutId = null;
+
 
 function renderSessionList() {
 
@@ -375,21 +547,187 @@ function renderSessionList() {
 
     resultsMeta.textContent = `${sortedSessions.length} session${sortedSessions.length === 1 ? "" : "s"} found`;
 
-    let lastDate = null;
+    const monthGroups =
+        groupSessionsByMonth(
+            sortedSessions
+        );
 
-    sortedSessions.forEach((session) => {
-        if (session.date !== lastDate) {
-            const dateHeader = document.createElement("div");
-            dateHeader.classList.add("detail-label", "session-date-divider");
-            dateHeader.textContent = formatDate(session.date);
+    monthGroups.forEach(
+        (
+            [
+                monthKey,
+                monthSessions,
+            ],
+            index
+        ) => {
+            const monthSection =
+                document.createElement(
+                    "section"
+                );
 
-            sessionList.appendChild(dateHeader);
-            lastDate = session.date;
+            monthSection.classList.add(
+                "session-history-month"
+            );
+
+            const monthHeader =
+                document.createElement(
+                    "button"
+                );
+
+            monthHeader.type = "button";
+
+            monthHeader.classList.add(
+                "session-history-month-header"
+            );
+
+            const monthTitle =
+                document.createElement("span");
+
+            monthTitle.classList.add(
+                "session-history-month-title"
+            );
+
+            monthTitle.textContent =
+                formatSessionMonth(
+                    monthKey
+                );
+
+            const monthMeta =
+                document.createElement("span");
+
+            monthMeta.classList.add(
+                "session-history-month-meta"
+            );
+
+            monthMeta.textContent =
+                `${monthSessions.length} ` +
+                `session${monthSessions.length === 1 ? "" : "s"}`;
+
+            const monthChevron =
+                document.createElement("span");
+
+            monthChevron.classList.add(
+                "session-history-month-chevron"
+            );
+
+            monthChevron.textContent = "›";
+
+            monthHeader.append(
+                monthTitle,
+                monthMeta,
+                monthChevron
+            );
+
+            const monthBody =
+                document.createElement("div");
+
+            monthBody.classList.add(
+                "session-history-month-body"
+            );
+
+            const isCurrentMonth =
+                index === 0;
+
+            monthSection.classList.toggle(
+                "expanded",
+                isCurrentMonth
+            );
+
+            monthBody.hidden =
+                !isCurrentMonth;
+
+            const initialVisibleCount = 10;
+
+            function renderMonthRows(
+                showAll = false
+            ) {
+                monthBody.textContent = "";
+
+                const visibleSessions =
+                    showAll
+                        ? monthSessions
+                        : monthSessions.slice(
+                            0,
+                            initialVisibleCount
+                        );
+
+                visibleSessions.forEach(
+                    session => {
+                        monthBody.appendChild(
+                            createSessionRow(
+                                session
+                            )
+                        );
+                    }
+                );
+
+                if (
+                    !showAll &&
+                    monthSessions.length >
+                        initialVisibleCount
+                ) {
+                    const showAllButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    showAllButton.type =
+                        "button";
+
+                    showAllButton.classList.add(
+                        "session-history-show-all"
+                    );
+
+                    showAllButton.textContent =
+                        `Show all ${monthSessions.length} sessions`;
+
+                    showAllButton.addEventListener(
+                        "click",
+                        event => {
+                            event.stopPropagation();
+
+                            renderMonthRows(true);
+                        }
+                    );
+
+                    monthBody.appendChild(
+                        showAllButton
+                    );
+                }
+            }
+
+            renderMonthRows(false);
+
+            monthHeader.addEventListener(
+                "click",
+                () => {
+                    const nextExpanded =
+                        !monthSection.classList
+                            .contains(
+                                "expanded"
+                            );
+
+                    monthSection.classList.toggle(
+                        "expanded",
+                        nextExpanded
+                    );
+
+                    monthBody.hidden =
+                        !nextExpanded;
+                }
+            );
+
+            monthSection.append(
+                monthHeader,
+                monthBody
+            );
+
+            sessionList.appendChild(
+                monthSection
+            );
         }
-        sessionList.appendChild(createSessionCard(session));
-        });
-    }
-    let searchTimeoutId = null;
+    );
+}
 
     async function runServerSearch(rawQuery) {
         const trimmed = rawQuery.trim();
@@ -750,6 +1088,7 @@ function renderSessionList() {
     app.append(
         header,
         title,
+        subtitle,
         filterSection,
         searchInput,
         searchModeRow,

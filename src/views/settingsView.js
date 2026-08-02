@@ -52,6 +52,9 @@ export function renderSettingsView() {
     const notificationsSection = document.createElement("section");
     notificationsSection.classList.add("settings-section");
 
+    const regionsSection = document.createElement("section");
+    regionsSection.classList.add("settings-section");
+
     const appInfoSection = document.createElement("section");
     appInfoSection.classList.add("settings-section");
 
@@ -301,6 +304,170 @@ pushButton.addEventListener("click", async () => {
 
 renderPushControls();
 
+const regionsHeading = document.createElement("h2");
+regionsHeading.textContent = "My Regions";
+
+regionsSection.appendChild(
+    regionsHeading
+);
+
+const joinedLabel =
+    document.createElement("div");
+
+joinedLabel.classList.add(
+    "detail-label"
+);
+
+joinedLabel.textContent =
+    "Joined";
+
+regionsSection.appendChild(
+    joinedLabel
+);
+
+(state.accessibleRegions || [])
+    .forEach(region => {
+        const row =
+            document.createElement("div");
+
+        row.classList.add(
+            "settings-region-row"
+        );
+
+        const name =
+            document.createElement("div");
+
+        name.textContent =
+            region.name;
+
+        if (
+            region.id ===
+            state.homeRegionId
+        ) {
+            name.textContent +=
+                " • Home";
+        }
+
+        row.appendChild(name);
+
+        regionsSection.appendChild(
+            row
+        );
+    });
+
+const available =
+    (
+        state.participantRegionInvitations ||
+        []
+    ).filter(
+        invitation =>
+            !(
+                state.accessibleRegions ||
+                []
+            ).some(
+                region =>
+                    region.id ===
+                    invitation.regionId
+            )
+    );
+
+    if (available.length > 0) {
+
+        const availableLabel =
+            document.createElement("div");
+    
+        availableLabel.classList.add(
+            "detail-label"
+        );
+    
+        availableLabel.textContent =
+            "Available";
+    
+        regionsSection.appendChild(
+            availableLabel
+        );
+    
+        available.forEach(
+            invitation => {
+    
+                const row =
+                    document.createElement("div");
+    
+                row.classList.add(
+                    "settings-region-row"
+                );
+    
+                const text =
+                    document.createElement("div");
+    
+                text.textContent =
+                    invitation.regionName;
+    
+                const button =
+                    document.createElement("button");
+    
+                button.type =
+                    "button";
+    
+                button.classList.add(
+                    "secondary-button"
+                );
+    
+                button.textContent =
+                    "Join";
+    
+                button.addEventListener(
+                    "click",
+                    async () => {
+    
+                        button.disabled =
+                            true;
+    
+                        button.textContent =
+                            "Joining…";
+    
+                        try {
+    
+                            await acceptParticipantRegionInvitation(
+                                invitation.regionId
+                            );
+    
+                            renderSettingsView();
+    
+                        } catch (
+                            error
+                        ) {
+    
+                            console.error(
+                                error
+                            );
+    
+                            showToast(
+                                "Unable to join region.",
+                                "error"
+                            );
+    
+                            button.disabled =
+                                false;
+    
+                            button.textContent =
+                                "Join";
+                        }
+                    }
+                );
+    
+                row.append(
+                    text,
+                    button
+                );
+    
+                regionsSection.appendChild(
+                    row
+                );
+            }
+        );
+    }
+
 const appInfoHeading = document.createElement("h2");
 appInfoHeading.textContent = "App Info";
 
@@ -359,9 +526,10 @@ profileSection.append(
         subtitle,
         profileSection,
         notificationsSection,
+        regionsSection,
         appInfoSection
     );
-
+    
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());
     }
