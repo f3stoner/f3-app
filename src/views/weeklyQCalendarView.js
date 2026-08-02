@@ -1,23 +1,16 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
-import { formatDate, getTodayDate } from "../utils/date.js";
+import { getTodayDate } from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { updateQSlotInCloud } from "../services/cloudData.js";
-import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
-import { logActionFailure, logAppEvent } from "../services/appEvents.js";
-import { APP_EVENTS } from "../constants/appEvents.js";
-import { userAlreadyHasQOnDate } from "../utils/qSlotValidation.js";
 import { shareWeeklyQScheduleImage } from "../utils/shareWeeklyQScheduleImage.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
-import { createIcon, createWeatherIcon } from "../utils/icons.js";
-import { getSiteWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
-import { savePlannerDraft, createNewPlannerDraft } from "../services/plannerDraftRepository.js";
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 import { getMemberById } from "../utils/memberLookup.js";
+import { createIcon } from "../utils/icons.js";
 
 
 function formatDateKey(date) {
@@ -35,7 +28,11 @@ function getDayOfWeekFromDateKey(dateKey) {
 function getMondayForDate(dateString = getTodayDate()) {
     const date = new Date(`${dateString}T12:00:00`);
     const day = date.getDay();
-    const diff = day === 0 ? -6: 1 - day;
+
+    const diff =
+        day === 0
+            ? 1
+            : 1 - day;
 
     date.setDate(date.getDate() + diff);
 
@@ -48,8 +45,232 @@ function addDays(dateString, days) {
     return formatDateKey(date);
 }
 
+function getSlotDisplayTime(slot, ao) {
+    return (
+        slot?.overrideTime ||
+        slot?.startTime ||
+        ao?.timeSchedule?.[
+            String(
+                getDayOfWeekFromDateKey(
+                    slot.date
+                )
+            )
+        ] ||
+        ao?.time ||
+        ""
+    );
+}
+
+function parseTimeToMinutes(timeValue) {
+    if (!timeValue) {
+        return null;
+    }
+
+    const match = String(timeValue)
+        .trim()
+        .match(
+            /^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i
+        );
+
+    if (!match) {
+        return null;
+    }
+
+    let hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    const meridiem =
+        match[3]?.toUpperCase() || null;
+
+    if (
+        !Number.isFinite(hours) ||
+        !Number.isFinite(minutes) ||
+        minutes < 0 ||
+        minutes > 59
+    ) {
+        return null;
+    }
+
+    if (meridiem) {
+        if (hours < 1 || hours > 12) {
+            return null;
+        }
+
+        if (meridiem === "AM") {
+            hours =
+                hours === 12
+                    ? 0
+                    : hours;
+        } else {
+            hours =
+                hours === 12
+                    ? 12
+                    : hours + 12;
+        }
+    } else if (hours < 0 || hours > 23) {
+        return null;
+    }
+
+    return hours * 60 + minutes;
+}
+
+function getDefaultWeeklyCalendarStartDate(
+    dateString = getTodayDate()
+) {
+    const date = new Date(
+        `${dateString}T12:00:00`
+    );
+
+    const dayOfWeek = date.getDay();
+
+    /*
+     * Sunday belongs to the upcoming
+     * Monday–Saturday schedule.
+     */
+    if (dayOfWeek === 0) {
+        return addDays(dateString, 1);
+    }
+
+    const currentWeekStart =
+        getMondayForDate(dateString);
+
+    /*
+     * Monday through Friday remain on the
+     * currently active week.
+     */
+    if (dayOfWeek !== 6) {
+        return currentWeekStart;
+    }
+
+    const saturdaySlots =
+        state.qSlots.filter(
+            slot =>
+                slot.date === dateString
+        );
+
+    const latestStartMinutes =
+        saturdaySlots.reduce(
+            (
+                latestMinutes,
+                slot
+            ) => {
+                const ao =
+                    getAoForSlot(slot);
+
+                const displayTime =
+                    getSlotDisplayTime(
+                        slot,
+                        ao
+                    );
+
+                const startMinutes =
+                    parseTimeToMinutes(
+                        displayTime
+                    );
+
+                if (startMinutes === null) {
+                    return latestMinutes;
+                }
+
+                return Math.max(
+                    latestMinutes,
+                    startMinutes
+                );
+            },
+            -1
+        );
+
+    /*
+     * Without a usable Saturday start time,
+     * keep showing the current week rather
+     * than guessing that it has ended.
+     */
+    if (latestStartMinutes < 0) {
+        return currentWeekStart;
+    }
+
+    const now = new Date();
+
+    const currentMinutes =
+        now.getHours() * 60 +
+        now.getMinutes();
+
+    const saturdayScheduleEnd =
+        latestStartMinutes + 120;
+
+    if (
+        currentMinutes >=
+        saturdayScheduleEnd
+    ) {
+        return addDays(
+            currentWeekStart,
+            7
+        );
+    }
+
+    return currentWeekStart;
+}
+
 function getWeekDates(startDate) {
-    return Array.from({ length: 7 }, (_, index) => addDays(startDate, index));
+    return Array.from({ length: 6 }, (_, index) => addDays(startDate, index));
+}
+
+function formatCalendarDayName(dateString) {
+    return new Date(
+        `${dateString}T12:00:00`
+    )
+        .toLocaleDateString(
+            undefined,
+            {
+                weekday: "long",
+            }
+        );
+}
+
+function formatCalendarDayDate(dateString) {
+    return new Date(
+        `${dateString}T12:00:00`
+    )
+        .toLocaleDateString(
+            undefined,
+            {
+                month: "short",
+                day: "numeric",
+            }
+        );
+}
+
+function formatCalendarWeekRange(
+    startDate,
+    endDate
+) {
+    const start = new Date(
+        `${startDate}T12:00:00`
+    );
+
+    const end = new Date(
+        `${endDate}T12:00:00`
+    );
+
+    const startLabel =
+        start.toLocaleDateString(
+            undefined,
+            {
+                month: "short",
+                day: "numeric",
+            }
+        );
+
+    const endLabel =
+        end.toLocaleDateString(
+            undefined,
+            {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            }
+        );
+
+    return `${startLabel} – ${endLabel}`;
 }
 
 function getMemberName(memberId) {
@@ -67,113 +288,10 @@ function getAoForSlot(slot) {
     return state.aos.find(ao => ao.id === slot.aoId) || null;
 }
 
-function getWeatherTargetDateTime(date, ao, slot = null) {
-    const displayTime =
-        slot?.overrideTime ||
-        ao?.timeSchedule?.[String(getDayOfWeekFromDateKey(date))] ||
-        ao?.time ||
-        "";
-
-    if (!date || !displayTime) {
-        return null;
-    }
-
-    return `${date}T${displayTime}:00`;
-}
-
-function getWeatherCacheKey(date, ao, slot = null) {
-    const targetDateTime = getWeatherTargetDateTime(date, ao, slot);
-    const site = resolveSiteForQSlot(slot, ao);
-
-    if (!site?.id || !targetDateTime) {
-        return null;
-    }
-
-    return `${site.id}__${targetDateTime}`;
-}
-
-function renderWeeklyWeatherRow(weatherRow, weather) {
-    weatherRow.textContent = "";
-
-    if (!weather) {
-        weatherRow.textContent = "Loading weather...";
-        return;
-    }
-
-    if (weather.isLoading) {
-        weatherRow.textContent = "Loading weather...";
-        return;
-    }
-
-    if (weather.weatherUnavailable) {
-        weatherRow.textContent = "Weather unavailable";
-        return;
-    }
-
-    const weatherIcon = createWeatherIcon(weather.icon, {
-        size: 12,
-        className: "weekly-q-weather-icon",
-    });
-
-    const weatherText = document.createElement("span");
-    weatherText.textContent = `${weather.temp}° · ${weather.precipChance}%`;
-
-    weatherRow.append(weatherIcon, weatherText);
-}
-
-function patchWeeklyWeather(cacheKey) {
-    const weatherRow = document.querySelector(
-        `[data-weekly-weather-key="${cacheKey}"]`
-    );
-
-    if (!weatherRow) return;
-
-    renderWeeklyWeatherRow(
-        weatherRow,
-        state.weatherByAoDate?.[cacheKey]
-    );
-}
-
-async function loadWeeklyWeather(date, ao, slot = null) {
-    const targetDateTime = getWeatherTargetDateTime(date, ao, slot);
-    const cacheKey = getWeatherCacheKey(date, ao, slot);
-    const site = resolveSiteForQSlot(slot, ao);
-
-    if (!site?.id || !targetDateTime || !cacheKey) {
-        return;
-    }
-
-    state.weatherByAoDate = state.weatherByAoDate || {};
-
-    if (state.weatherByAoDate[cacheKey]) {
-        return;
-    }
-
-    state.weatherByAoDate[cacheKey] = {
-        isLoading: true,
-    };
-
-    patchWeeklyWeather(cacheKey);
-
-    try {
-        const weather = await getSiteWeather(site.id, targetDateTime);
-        state.weatherByAoDate[cacheKey] = weather;
-    } catch (error) {
-        console.error("Failed to load weekly weather:", error);
-
-        state.weatherByAoDate[cacheKey] = {
-            weatherUnavailable: true,
-        };
-    }
-
-    if (state.currentView === "weeklyQCalendar") {
-        patchWeeklyWeather(cacheKey);
-    }
-}
-
 export function renderWeeklyQCalendarView() {
     const app = document.getElementById("app");
     app.textContent = "";
+    app.className = "view-weeklyQCalendar";
 
     cleanupMainMenu();
 
@@ -187,315 +305,638 @@ export function renderWeeklyQCalendarView() {
     const today = getTodayDate();
 
     if (!state.weeklyQCalendarStartDate) {
-        state.weeklyQCalendarStartDate = getMondayForDate(today);
+        state.weeklyQCalendarStartDate =
+            getDefaultWeeklyCalendarStartDate(
+                today
+            );
     }
 
     const weekStart = state.weeklyQCalendarStartDate;
     const weekDates = getWeekDates(weekStart);
-    const weekEnd = weekDates[6];
+    const weekEnd = weekDates[weekDates.length - 1];
     
-    const title = document.createElement("h1");
-    title.textContent = "Weekly Q Schedule";
+    const title =
+        document.createElement("h1");
 
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("view-subtitle");
-    subtitle.textContent = `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+    title.textContent =
+        "Weekly Q Schedule";
 
-    const weekControls = document.createElement("div");
-    weekControls.classList.add("button-row");
+    const subtitle =
+        document.createElement("p");
 
-    const shareButton = document.createElement("button");
-    shareButton.classList.add("secondary-button");
-    shareButton.textContent = "Share Week";
+    subtitle.classList.add(
+        "weekly-q-subtitle"
+    );
 
-    shareButton.addEventListener("click", async () => {
-        try {
-            await shareWeeklyQScheduleImage({
-                weekStart,
-                weekEnd,
-                weekDates,
-            });
-        } catch (error) {
-            console.error("Failed to share weekly schedule:", error);
-            showToast("Failed to share weekly schedule.", "error");
+    subtitle.textContent =
+        "See who is leading across the region this week.";
+
+
+    /* Week navigation */
+
+    const weekNav =
+        document.createElement("div");
+
+    weekNav.classList.add(
+        "weekly-q-week-nav"
+    );
+
+    const previousButton =
+        document.createElement("button");
+
+    previousButton.type = "button";
+
+    previousButton.classList.add(
+        "weekly-q-week-arrow"
+    );
+
+    previousButton.setAttribute(
+        "aria-label",
+        "Previous week"
+    );
+
+    previousButton.textContent = "‹";
+
+    previousButton.addEventListener(
+        "click",
+        () => {
+            state.weeklyQCalendarStartDate =
+                addDays(weekStart, -7);
+
+            renderApp();
         }
-    });
+    );
 
-    weekControls.append(shareButton);
+    const weekLabel =
+        document.createElement("button");
 
-    const previousButton = document.createElement("button");
-    previousButton.classList.add("secondary-button");
-    previousButton.textContent = "← Previous";
+    weekLabel.type = "button";
 
-    previousButton.addEventListener("click", () => {
-        state.weeklyQCalendarStartDate = addDays(weekStart, -7);
-        renderApp();
-    });
+    weekLabel.classList.add(
+        "weekly-q-week-label"
+    );
 
-    const todayButton = document.createElement("button");
-    todayButton.classList.add("secondary-button");
-    todayButton.textContent = "This Week";
+    const weekLabelMain =
+        document.createElement("div");
 
-    todayButton.addEventListener("click", () => {
-        state.weeklyQCalendarStartDate = getMondayForDate(today);
-        renderApp();
-    });
+    weekLabelMain.classList.add(
+        "weekly-q-week-label-main"
+    );
 
-    const nextButton = document.createElement("button");
-    nextButton.classList.add("secondary-button");
-    nextButton.textContent = "Next →";
+    const currentWeekStart =
+        getDefaultWeeklyCalendarStartDate(
+            today
+        );
 
-    nextButton.addEventListener("click", () => {
-        state.weeklyQCalendarStartDate = addDays(weekStart, 7);
-        renderApp();
-    });
+    weekLabelMain.textContent =
+        weekStart === currentWeekStart
+            ? "This Week"
+            : "View This Week";
 
-    weekControls.append(previousButton, todayButton, nextButton);
+    const weekLabelDates =
+        document.createElement("div");
 
-    const calendar = document.createElement("div");
-    calendar.classList.add("weekly-q-calendar");
+    weekLabelDates.classList.add(
+        "weekly-q-week-label-dates"
+    );
+
+    weekLabelDates.textContent =
+        formatCalendarWeekRange(
+            weekStart,
+            weekEnd
+        );
+
+    weekLabel.append(
+        weekLabelMain,
+        weekLabelDates
+    );
+
+    weekLabel.addEventListener(
+        "click",
+        () => {
+            state.weeklyQCalendarStartDate =
+                currentWeekStart;
+
+            renderApp();
+        }
+    );
+
+    const nextButton =
+        document.createElement("button");
+
+    nextButton.type = "button";
+
+    nextButton.classList.add(
+        "weekly-q-week-arrow"
+    );
+
+    nextButton.setAttribute(
+        "aria-label",
+        "Next week"
+    );
+
+    nextButton.textContent = "›";
+
+    nextButton.addEventListener(
+        "click",
+        () => {
+            state.weeklyQCalendarStartDate =
+                addDays(weekStart, 7);
+
+            renderApp();
+        }
+    );
+
+    weekNav.append(
+        previousButton,
+        weekLabel,
+        nextButton
+    );
+
+
+    /* Share */
+
+    const shareButton =
+        document.createElement("button");
+
+    shareButton.type = "button";
+
+    shareButton.classList.add(
+        "weekly-q-share-button"
+    );
+
+    shareButton.textContent =
+        "Share Weekly Preblast";
+
+    shareButton.addEventListener(
+        "click",
+        async () => {
+            try {
+                await shareWeeklyQScheduleImage({
+                    weekStart,
+                    weekEnd,
+                    weekDates,
+                });
+            } catch (error) {
+                console.error(
+                    "Failed to share weekly schedule:",
+                    error
+                );
+
+                showToast(
+                    "Failed to share weekly schedule.",
+                    "error"
+                );
+            }
+        }
+    );
+
+
+    /* Weekly summary */
+
+    const weekSlots =
+        state.qSlots.filter(
+            slot =>
+                weekDates.includes(slot.date)
+        );
+
+    const filledCount =
+        weekSlots.filter(
+            slot => Boolean(slot.qUserId)
+        ).length;
+
+    const openCount =
+        weekSlots.length - filledCount;
+
+    const summary =
+        document.createElement("div");
+
+    summary.classList.add(
+        "weekly-q-summary"
+    );
+
+    function createSummaryItem(
+        value,
+        label,
+        extraClass = null
+    ) {
+        const item =
+            document.createElement("div");
+
+        item.classList.add(
+            "weekly-q-summary-item"
+        );
+
+        if (extraClass) {
+            item.classList.add(extraClass);
+        }
+
+        const valueElement =
+            document.createElement("div");
+
+        valueElement.classList.add(
+            "weekly-q-summary-value"
+        );
+
+        valueElement.textContent =
+            String(value);
+
+        const labelElement =
+            document.createElement("div");
+
+        labelElement.classList.add(
+            "weekly-q-summary-label"
+        );
+
+        labelElement.textContent = label;
+
+        item.append(
+            valueElement,
+            labelElement
+        );
+
+        return item;
+    }
+
+    summary.append(
+        createSummaryItem(
+            weekSlots.length,
+            "Workouts"
+        ),
+        createSummaryItem(
+            filledCount,
+            "Filled"
+        ),
+        createSummaryItem(
+            openCount,
+            "Open",
+            "weekly-q-summary-open"
+        )
+    );
+
+
+    /* Horizontal calendar */
+
+    const calendarShell =
+        document.createElement("div");
+
+    calendarShell.classList.add(
+        "weekly-q-calendar-shell"
+    );
+
+    const calendar =
+        document.createElement("div");
+
+    calendar.classList.add(
+        "weekly-q-calendar"
+    );
+
+    let todayColumn = null;
 
     weekDates.forEach(date => {
-        const dayCard = document.createElement("div");
-        dayCard.classList.add("section", "weekly-q-day-card");
+        const dayColumn =
+            document.createElement("section");
 
-        const dayTitle = document.createElement("div");
-        dayTitle.classList.add("detail-label");
-        dayTitle.textContent = formatDate(date);
+        dayColumn.classList.add(
+            "weekly-q-day-column"
+        );
 
-        const daySlots = state.qSlots
-            .filter(slot => slot.date === date)
-            .sort((a, b) => {
-                const aoA = getAoForSlot(a)?.name || "";
-                const aoB = getAoForSlot(b)?.name || "";
-                return aoA.localeCompare(aoB);
-            });
+        dayColumn.dataset.date = date;
 
-        dayCard.appendChild(dayTitle);
+        if (date === today) {
+            dayColumn.classList.add(
+                "is-today"
+            );
 
-        if (daySlots.length === 0) {
-            const empty = document.createElement("div");
-            empty.classList.add("detail-value");
-            empty.textContent = "No Q slots";
-            dayCard.appendChild(empty);
-        } else {
-            daySlots.forEach(slot => {
-                const ao = getAoForSlot(slot);
-                const emphasis = getWorkoutEmphasisForSlot(slot, ao);
-                const isMine = slot.qUserId === state.currentUserMemberId;
-                const matchingWorkout = findWorkoutForQSlot(
-                    slot,
-                    state.plannedWorkouts,
-                    state.currentUserId,
-                    state.aos
-                );
-
-                const weatherCacheKey = getWeatherCacheKey(slot.date, ao, slot);
-
-                const weather = weatherCacheKey
-                    ? state.weatherByAoDate?.[weatherCacheKey]
-                    : null;
-
-                const slotRow = document.createElement("div");
-                slotRow.classList.add("q-slot-card", "weekly-q-slot-row");
-
-                const slotMain = document.createElement("div");
-
-                const aoRow = document.createElement("div");
-                aoRow.classList.add("weekly-q-slot-ao-row");
-                
-                const aoLine = document.createElement("div");
-                aoLine.classList.add("member-name");
-                aoLine.textContent = ao?.name || "Unknown AO";
-
-                aoRow.appendChild(aoLine);
-
-                if (emphasis) {
-                    const emphasisBadge = document.createElement("span");
-                    emphasisBadge.classList.add("workout-emphasis-line");
-
-                    const icon = createIcon(emphasis.icon);
-                    icon.classList.add("workout-emphasis-icon");
-
-                    const label = document.createElement("div");
-                    label.textContent = emphasis.label;
-
-                    emphasisBadge.append(icon, label);
-                    aoRow.appendChild(emphasisBadge);
-                }
-
-                const qLine = document.createElement("div");
-                qLine.classList.add("stats-line");
-                qLine.textContent = slot.qUserId
-                    ?isMine
-                        ? "Q: You"
-                        : `Q: ${getMemberName(slot.qUserId)}`
-                    : "Q: OPEN";
-
-                const metaLine = document.createElement("div");
-                metaLine.classList.add("stats-line");
-
-                const workout = findWorkoutForQSlot(
-                    slot,
-                    state.plannedWorkouts,
-                    state.currentUserId,
-                    state.aos
-                );
-                
-                const displayTime =
-                    workout?.startTime ||
-                    slot?.overrideTime ||
-                    slot?.startTime ||
-                    ao?.timeSchedule?.[String(getDayOfWeekFromDateKey(date))] ||
-                    ao?.time ||
-                    "";
-                
-                metaLine.textContent = displayTime ? `Start: ${displayTime}` : "No time set";
-
-                slotMain.append(
-                    aoRow,
-                    qLine,
-                    metaLine
-                );
-
-                if (weatherCacheKey) {
-                    const weatherRow = document.createElement("div");
-                    weatherRow.classList.add("weekly-q-weather");
-                    weatherRow.dataset.weeklyWeatherKey = weatherCacheKey;
-
-                    renderWeeklyWeatherRow(weatherRow, weather);
-                    
-                    slotMain.appendChild(weatherRow);
-                }
-
-                const actions = document.createElement("div");
-                actions.classList.add("q-slot-actions");
-
-                const isPastSlot = slot.date < today;
-
-                if (!slot.qUserId && isPastSlot) {
-                    qLine.textContent = "Q: OPEN (past)";
-                }
-
-                if (!slot.qUserId && !isPastSlot) {
-                    const claimButton = document.createElement("button");
-                    claimButton.textContent = "Claim";
-
-                    claimButton.addEventListener("click", async () => {
-                        try {
-                            if (userAlreadyHasQOnDate(slot.date, state.currentUserMemberId, slot.id)) {
-                                showToast("You already have a Q scheduled that day.", "error");
-                                return;
-                            }
-
-                            const updatedSlot = await updateQSlotInCloud(state.currentRegionId, {
-                                ...slot,
-                                qUserId: state.currentUserMemberId,
-                            });
-
-                            const index = state.qSlots.findIndex(q => q.id === slot.id);
-                            if (index !== -1) {
-                                state.qSlots[index] = updatedSlot;
-                            }
-
-                            logAppEvent({
-                                type: APP_EVENTS.Q_SLOT_CLAIMED,
-                                metadata: {
-                                    qSlotId: slot.id,
-                                    aoId: slot.aoId || null,
-                                    aoName: ao?.name || null,
-                                    date: slot.date || null,
-                                    qUserId: state.currentUserMemberId || null,
-                                    claimSource: "weekly_calendar",
-                                },
-                            });
-
-                            renderApp();
-                        } catch (error) {
-                            console.error("Failed to claim Q slot:", error);
-                            showToast("Failed to claim Q slot.", "error");
-
-                            logActionFailure("weeklyCalendar.claimQSlot", error, {
-                                qSlotId: slot?.id || null,
-                                aoId: slot?.aoId || null,
-                                date: slot?.date || null,
-                            });
-                        }
-                    });
-
-                    actions.appendChild(claimButton);
-                }
-
-                if (isMine && (!isPastSlot || matchingWorkout)) {
-                    const workoutButton = document.createElement("button");
-                    workoutButton.textContent = matchingWorkout ? "View BD" : "Plan BD";
-
-                    workoutButton.addEventListener("click", () => {
-                        if (matchingWorkout) {
-                            state.selectedPlannedWorkoutId = matchingWorkout.id;
-                            state.plannedWorkoutLaunchMode = null;
-                            navigateTo("plannedWorkoutDetail");
-                            return;
-                        }
-
-                        const newWorkout = {
-                            id: crypto.randomUUID(),
-                            date: slot.date,
-                            aoId: ao?.id || slot.aoId || null,
-                            aoName: ao?.name || "",
-                            title: "",
-                            introduction: "",
-                            warmorama: "",
-                            thangs: "",
-                            thangSections: [
-                                {
-                                    id: crypto.randomUUID(),
-                                    title: "Thang 1",
-                                    content: "",
-                                },
-                            ],
-                            finisher: "",
-                            notes: "",
-                            sourceWorkoutId: null,
-                            sourceSessionId: null,
-                            sourceQSlotId: slot.id,
-                            createdAt: Date.now(),
-                            lastModifiedAt: null,
-                            createdByUserId: state.currentUserId,
-                            isShared: false,
-                            timers: [],
-                        };
-                        
-                        savePlannerDraft(
-                            createNewPlannerDraft(newWorkout)
-                        );
-                        
-                        navigateTo("workoutPlanner");
-                    });
-
-                    actions.appendChild(workoutButton);
-                }
-
-                loadWeeklyWeather(slot.date, ao, slot);
-
-                slotRow.append(slotMain, actions);
-                dayCard.appendChild(slotRow);
-            });
+            todayColumn = dayColumn;
         }
 
-        calendar.appendChild(dayCard);
+        const daySlots =
+            state.qSlots
+                .filter(
+                    slot =>
+                        slot.date === date
+                )
+                .sort((a, b) => {
+                    const aoA =
+                        getAoForSlot(a)?.name ||
+                        "";
+
+                    const aoB =
+                        getAoForSlot(b)?.name ||
+                        "";
+
+                    return aoA.localeCompare(
+                        aoB
+                    );
+                });
+
+
+        /* Day header */
+
+        const dayHeader =
+            document.createElement("header");
+
+        dayHeader.classList.add(
+            "weekly-q-day-header"
+        );
+
+        const dayIdentity =
+            document.createElement("div");
+
+        const dayName =
+            document.createElement("div");
+
+        dayName.classList.add(
+            "weekly-q-day-name"
+        );
+
+        dayName.textContent =
+            date === today
+                ? "Today"
+                : formatCalendarDayName(date);
+
+        const dayDate =
+            document.createElement("div");
+
+        dayDate.classList.add(
+            "weekly-q-day-date"
+        );
+
+        dayDate.textContent =
+            formatCalendarDayDate(date);
+
+        dayIdentity.append(
+            dayName,
+            dayDate
+        );
+
+        const dayCount =
+            document.createElement("div");
+
+        dayCount.classList.add(
+            "weekly-q-day-count"
+        );
+
+        dayCount.textContent =
+            String(daySlots.length);
+
+        dayHeader.append(
+            dayIdentity,
+            dayCount
+        );
+
+        dayColumn.appendChild(
+            dayHeader
+        );
+
+
+        /* Slots */
+
+        const slotList =
+            document.createElement("div");
+
+        slotList.classList.add(
+            "weekly-q-day-slots"
+        );
+
+        if (daySlots.length === 0) {
+            const empty =
+                document.createElement("div");
+
+            empty.classList.add(
+                "weekly-q-day-empty"
+            );
+
+            empty.textContent =
+                "No scheduled workouts";
+
+            slotList.appendChild(empty);
+        }
+
+        daySlots.forEach(slot => {
+            const ao =
+                getAoForSlot(slot);
+
+            const emphasis =
+                getWorkoutEmphasisForSlot(
+                    slot,
+                    ao
+                );
+
+            const matchingWorkout =
+                findWorkoutForQSlot(
+                    slot,
+                    state.plannedWorkouts,
+                    state.currentUserId,
+                    state.aos
+                );
+
+            const displayTime =
+                matchingWorkout?.startTime ||
+                getSlotDisplayTime(
+                    slot,
+                    ao
+                );
+
+            const site =
+                resolveSiteForQSlot(
+                    slot,
+                    ao
+                );
+
+            const row =
+                document.createElement("div");
+
+            row.classList.add(
+                "weekly-q-calendar-slot"
+            );
+
+            const main =
+                document.createElement("div");
+
+            main.classList.add(
+                "weekly-q-calendar-slot-main"
+            );
+
+            const heading =
+                document.createElement("div");
+
+            heading.classList.add(
+                "weekly-q-calendar-slot-heading"
+            );
+
+            const aoName =
+                document.createElement("div");
+
+            aoName.classList.add(
+                "weekly-q-calendar-slot-ao"
+            );
+
+            aoName.textContent =
+                ao?.name ||
+                "Unknown AO";
+
+            heading.appendChild(aoName);
+
+            if (emphasis) {
+                const emphasisBadge =
+                    document.createElement(
+                        "span"
+                    );
+
+                emphasisBadge.classList.add(
+                    "weekly-q-calendar-emphasis"
+                );
+
+                const icon =
+                    createIcon(
+                        emphasis.icon
+                    );
+
+                const label =
+                    document.createElement(
+                        "span"
+                    );
+
+                label.textContent =
+                    emphasis.label;
+
+                emphasisBadge.append(
+                    icon,
+                    label
+                );
+
+                heading.appendChild(
+                    emphasisBadge
+                );
+            }
+
+            const location =
+                document.createElement("div");
+
+            location.classList.add(
+                "weekly-q-calendar-location"
+            );
+
+            location.textContent =
+                site?.name ||
+                "Site not set";
+
+            main.append(
+                heading,
+                location
+            );
+
+            const side =
+                document.createElement("div");
+
+            side.classList.add(
+                "weekly-q-calendar-slot-side"
+            );
+
+            const qName =
+                document.createElement("div");
+
+            qName.classList.add(
+                "weekly-q-calendar-q"
+            );
+
+            if (slot.qUserId) {
+                qName.textContent =
+                    slot.qUserId ===
+                    state.currentUserMemberId
+                        ? "You"
+                        : getMemberName(
+                            slot.qUserId
+                        );
+            } else {
+                qName.textContent = "Open";
+
+                qName.classList.add(
+                    "is-open"
+                );
+            }
+
+            const time =
+                document.createElement("div");
+
+            time.classList.add(
+                "weekly-q-calendar-time"
+            );
+
+            time.textContent =
+                displayTime ||
+                "Time TBD";
+
+            side.append(
+                qName,
+                time
+            );
+
+            row.append(
+                main,
+                side
+            );
+
+            slotList.appendChild(row);
+        });
+
+        dayColumn.appendChild(slotList);
+        calendar.appendChild(dayColumn);
     });
 
+    calendarShell.appendChild(calendar);
+
+    const swipeHint =
+        document.createElement("p");
+
+    swipeHint.classList.add(
+        "weekly-q-swipe-hint"
+    );
+
+    swipeHint.textContent =
+        "Swipe to move through the week";
+        
     const nav = createGlobalNav();
 
     app.append(
         header,
         title,
         subtitle,
-        weekControls,
-        calendar,
-        nav,
+        weekNav,
+        shareButton,
+        summary,
+        calendarShell,
+        swipeHint,
+        nav
     );
+
+    requestAnimationFrame(() => {
+        const targetColumn =
+            todayColumn ||
+            calendar.querySelector(
+                ".weekly-q-day-column"
+            );
+    
+        if (!targetColumn) return;
+    
+        const targetLeft =
+            targetColumn.offsetLeft -
+            (
+                calendar.clientWidth -
+                targetColumn.offsetWidth
+            ) / 2;
+    
+        calendar.scrollTo({
+            left: Math.max(
+                0,
+                targetLeft
+            ),
+            behavior: "auto",
+        });
+    });
+
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());
     }

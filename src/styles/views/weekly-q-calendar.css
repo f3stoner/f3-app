@@ -1,0 +1,941 @@
+/* =========================================================
+   WEEKLY Q CALENDAR
+   ========================================================= */
+
+   .view-weeklyQCalendar {
+    --weekly-accent: #8fd3ff;
+    --weekly-accent-bright: #c9eaff;
+    --weekly-open: #58e878;
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom: 7.5rem;
+
+    overflow-x: clip;
+
+    background:
+        radial-gradient(
+            circle at 50% -7%,
+            rgba(143, 211, 255, 0.075),
+            transparent 310px
+        ),
+        var(--bg);
+}
+
+
+/* Page intro */
+
+.view-weeklyQCalendar
+.weekly-q-subtitle {
+    margin:
+        -0.1rem
+        0
+        1rem;
+
+    color: var(--muted);
+
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+
+/* Week navigation */
+
+.view-weeklyQCalendar
+.weekly-q-week-nav {
+    display: grid;
+    grid-template-columns:
+        48px
+        minmax(0, 1fr)
+        48px;
+
+    align-items: center;
+    gap: 0.75rem;
+
+    margin:
+        1.1rem
+        0
+        0.75rem;
+}
+
+.view-weeklyQCalendar
+.weekly-q-week-arrow {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+    padding: 0;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text);
+
+    box-shadow: none;
+
+    font-family: var(--font-body);
+    font-size: 1.65rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.view-weeklyQCalendar
+.weekly-q-week-arrow:hover {
+    border-color:
+        rgba(143, 211, 255, 0.32);
+
+    background:
+        rgba(143, 211, 255, 0.06);
+
+    box-shadow: none;
+}
+
+.view-weeklyQCalendar
+.weekly-q-week-arrow:active {
+    transform: scale(0.97);
+}
+
+.view-weeklyQCalendar
+.weekly-q-week-label {
+    min-width: 0;
+
+    text-align: center;
+}
+
+.view-weeklyQCalendar
+.weekly-q-week-label-main {
+    color:
+        var(--weekly-accent);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.78rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.view-weeklyQCalendar
+.weekly-q-week-label-dates {
+    margin-top: 0.35rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+
+/* Share action */
+
+.view-weeklyQCalendar
+.weekly-q-share-button {
+    width: 100%;
+    min-height: 48px;
+
+    margin:
+        0
+        0
+        0.75rem;
+
+    padding:
+        0.75rem
+        1rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.42);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(201, 234, 255, 0.98),
+            rgba(143, 211, 255, 0.88)
+        );
+
+    color: #071018;
+
+    box-shadow: none;
+
+    font-size: 0.86rem;
+    font-weight: 900;
+}
+
+.view-weeklyQCalendar
+.weekly-q-share-button:hover {
+    filter: brightness(1.04);
+    box-shadow: none;
+}
+
+.view-weeklyQCalendar
+.weekly-q-share-button:active {
+    transform: scale(0.99);
+}
+
+
+/* Summary */
+
+.view-weeklyQCalendar
+.weekly-q-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    overflow: hidden;
+
+    margin-bottom: 1rem;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-weeklyQCalendar
+.weekly-q-summary-item {
+    min-width: 0;
+
+    padding:
+        0.75rem
+        0.4rem;
+
+    text-align: center;
+}
+
+.view-weeklyQCalendar
+.weekly-q-summary-item
++
+.weekly-q-summary-item {
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-weeklyQCalendar
+.weekly-q-summary-value {
+    font-family:
+        var(--font-display);
+
+    font-size: 1.45rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-weeklyQCalendar
+.weekly-q-summary-label {
+    margin-top: 0.3rem;
+
+    color: var(--muted);
+
+    font-size: 0.58rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.view-weeklyQCalendar
+.weekly-q-summary-open
+.weekly-q-summary-value {
+    color:
+        var(--weekly-open);
+}
+
+
+/* Calendar scroller */
+
+.view-weeklyQCalendar
+.weekly-q-calendar-shell {
+    /*
+     * Break out of the page's horizontal padding so both
+     * neighboring cards can peek into view.
+     */
+    width: calc(100% + 40px);
+
+    margin-left: -20px;
+    margin-right: -20px;
+
+    overflow: hidden;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar {
+    --weekly-card-width:
+        min(
+            78vw,
+            340px
+        );
+
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns:
+        var(--weekly-card-width);
+
+    gap: 0.75rem;
+
+    overflow-x: auto;
+    overflow-y: visible;
+
+    /*
+     * Symmetrical inset lets the selected card sit in the
+     * center while previous and next cards remain visible.
+     */
+    padding:
+        0
+        calc(
+            (
+                100% -
+                var(--weekly-card-width)
+            ) /
+            2
+        )
+        0.7rem;
+
+    scroll-snap-type:
+        x mandatory;
+
+    scroll-padding-inline:
+        calc(
+            (
+                100% -
+                var(--weekly-card-width)
+            ) /
+            2
+        );
+
+    overscroll-behavior-x:
+        contain;
+
+    -webkit-overflow-scrolling:
+        touch;
+
+    scrollbar-width: none;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* Day column */
+
+.view-weeklyQCalendar
+.weekly-q-day-column {
+    min-width: 0;
+    overflow: hidden;
+
+    align-self: stretch;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.028),
+            rgba(255, 255, 255, 0.012)
+        );
+
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+}
+
+.view-weeklyQCalendar
+.weekly-q-day-column.is-today {
+    border-color:
+        rgba(88, 232, 120, 0.42);
+
+    box-shadow:
+        inset 0 3px 0
+        rgba(88, 232, 120, 0.78);
+}
+
+.view-weeklyQCalendar
+.weekly-q-day-header {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 0.75rem;
+
+    min-height: 72px;
+
+    padding:
+        0.9rem
+        0.95rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.085);
+}
+
+.view-weeklyQCalendar
+.weekly-q-day-name {
+    color:
+        var(--weekly-accent);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.view-weeklyQCalendar
+.weekly-q-day-date {
+    margin-top: 0.35rem;
+
+    color: var(--muted);
+
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.view-weeklyQCalendar
+.weekly-q-day-column.is-today
+.weekly-q-day-name {
+    color:
+        var(--weekly-open);
+}
+
+.view-weeklyQCalendar
+.weekly-q-day-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 34px;
+    height: 34px;
+
+    padding:
+        0
+        0.5rem;
+
+    border:
+        1px solid
+        var(--border-strong);
+
+    border-radius: 999px;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+
+/* Slot list */
+
+.view-weeklyQCalendar
+.weekly-q-day-slots {
+    display: flex;
+    flex-direction: column;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-slot {
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: start;
+    gap: 0.7rem;
+
+    padding:
+        0.85rem
+        0.95rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-slot:last-child {
+    border-bottom: 0;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-slot-main {
+    min-width: 0;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-slot-heading {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-slot-ao {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-emphasis {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    max-width: 100%;
+
+    padding:
+        0.22rem
+        0.45rem;
+
+    border-radius: 999px;
+
+    background:
+        rgba(143, 211, 255, 0.12);
+
+    color:
+        var(--weekly-accent);
+
+    font-size: 0.62rem;
+    font-weight: 850;
+    line-height: 1;
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-emphasis
+svg {
+    width: 12px;
+    height: 12px;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-location {
+    margin-top: 0.35rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+
+    font-size: 0.7rem;
+    font-weight: 650;
+    line-height: 1.15;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-slot-side {
+    max-width: 96px;
+
+    text-align: right;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-q {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color:
+        var(--weekly-accent-bright);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.88rem;
+    font-weight: 900;
+    line-height: 1.05;
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-q.is-open {
+    color:
+        var(--weekly-open);
+}
+
+.view-weeklyQCalendar
+.weekly-q-calendar-time {
+    margin-top: 0.35rem;
+
+    color: var(--muted);
+
+    font-size: 0.68rem;
+    font-weight: 750;
+    line-height: 1;
+}
+
+
+/* Empty day */
+
+.view-weeklyQCalendar
+.weekly-q-day-empty {
+    min-height: 170px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1.5rem;
+
+    color: var(--muted);
+
+    font-size: 0.82rem;
+    font-weight: 650;
+    text-align: center;
+}
+
+
+/* Swipe hint */
+
+.view-weeklyQCalendar
+.weekly-q-swipe-hint {
+    margin:
+        0.25rem
+        0
+        0;
+
+    color: var(--muted);
+
+    font-size: 0.66rem;
+    font-weight: 650;
+    text-align: center;
+
+    opacity: 0.72;
+}
+
+
+/* Larger screens */
+
+@media (min-width: 620px) {
+    .view-weeklyQCalendar
+    .weekly-q-calendar {
+        grid-auto-columns:
+            minmax(310px, 42%);
+    }
+}
+
+/* =========================================================
+LANDSCAPE WEEK VIEW
+========================================================= */
+
+@media (orientation: landscape)
+and (min-width: 640px) {
+    .view-weeklyQCalendar {
+        /*
+        * The landscape layout is intended to behave like
+        * the in-app version of the weekly preblast.
+        */
+        padding-bottom: 6.5rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-shell {
+        width: 100%;
+
+        margin-left: 0;
+        margin-right: 0;
+
+        overflow: visible;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar {
+        --weekly-card-width: auto;
+
+        display: grid;
+        grid-auto-flow: initial;
+        grid-auto-columns: initial;
+
+        grid-template-columns:
+            repeat(
+                6,
+                minmax(0, 1fr)
+            );
+
+        align-items: stretch;
+        gap: 0.45rem;
+
+        overflow: visible;
+
+        padding: 0;
+
+        scroll-snap-type: none;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-day-column {
+        min-width: 0;
+
+        border-radius:
+            var(--radius-md);
+
+        scroll-snap-align: none;
+        scroll-snap-stop: normal;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-day-header {
+        min-height: 58px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        gap: 0.22rem;
+
+        padding:
+            0.55rem
+            0.35rem;
+
+        text-align: center;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-day-name {
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-day-date {
+        margin-top: 0.18rem;
+
+        font-size: 0.56rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-day-count {
+        min-width: 26px;
+        height: 24px;
+
+        padding:
+            0
+            0.34rem;
+
+        font-size: 0.66rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-slot {
+        min-height: 62px;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 0.28rem;
+
+        padding:
+            0.55rem
+            0.45rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-slot-heading {
+        display: block;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-slot-ao {
+        font-size: 0.78rem;
+        line-height: 1.05;
+
+        white-space: normal;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-emphasis {
+        margin-top: 0.28rem;
+
+        padding:
+            0.17rem
+            0.3rem;
+
+        font-size: 0.48rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-emphasis svg {
+        width: 9px;
+        height: 9px;
+    }
+
+    /*
+    * The site would consume too much horizontal room in a
+    * six-column layout. AO identity already communicates the
+    * expected location to most weekly-calendar readers.
+    */
+    .view-weeklyQCalendar
+    .weekly-q-calendar-location {
+        display: none;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-slot-side {
+        max-width: none;
+
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.25rem;
+
+        width: 100%;
+
+        text-align: left;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-q {
+        min-width: 0;
+
+        font-size: 0.68rem;
+
+        text-overflow: ellipsis;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-calendar-time {
+        flex: 0 0 auto;
+
+        margin-top: 0;
+
+        font-size: 0.54rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-day-empty {
+        min-height: 110px;
+
+        padding: 0.65rem;
+
+        font-size: 0.62rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-swipe-hint {
+        display: none;
+    }
+}
+
+@media (orientation: landscape)
+and (max-height: 520px) {
+    .view-weeklyQCalendar h1 {
+        font-size: 2rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-subtitle {
+        display: none;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-week-nav {
+        margin-top: 0.45rem;
+        margin-bottom: 0.45rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-share-button {
+        min-height: 40px;
+
+        margin-bottom: 0.45rem;
+
+        padding:
+            0.5rem
+            0.75rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-summary {
+        margin-bottom: 0.55rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-summary-item {
+        padding:
+            0.45rem
+            0.3rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-summary-value {
+        font-size: 1.05rem;
+    }
+
+    .view-weeklyQCalendar
+    .weekly-q-summary-label {
+        margin-top: 0.2rem;
+
+        font-size: 0.48rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .view-weeklyQCalendar
+    .weekly-q-calendar {
+        scroll-behavior: auto;
+    }
+}
