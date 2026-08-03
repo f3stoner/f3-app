@@ -12,64 +12,760 @@ import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
 import { navigateTo, navigateToPaxProfile } from "../utils/navigation.js";
 import { addMember } from "../services/appData.js";
 
-function renderRosterList(rosterContainer, members) {
-    rosterContainer.textContent = "";
+const ROSTER_INDEX_KEYS = [
+  "#",
+  ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+];
 
-    let currentLetter = null;
+let cleanupRosterInteractions = null;
 
-    members.forEach((member) => {
-        const displayName = getMemberDisplayName(member);
-        const firstLetter = displayName.charAt(0).toUpperCase();
+function getRosterGroupKey(displayName) {
+  const firstCharacter = displayName
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
-        if (firstLetter !== currentLetter) {
-            currentLetter = firstLetter;
+  return /^[A-Z]$/.test(firstCharacter)
+    ? firstCharacter
+    : "#";
+}
 
-            const letterHeader = document.createElement("div");
-            letterHeader.classList.add("roster-letter-header");
-            letterHeader.textContent = currentLetter;
+function getRosterGroupId(groupKey) {
+  return groupKey === "#"
+    ? "roster-group-number"
+    : `roster-group-${groupKey.toLowerCase()}`;
+}
 
-            rosterContainer.appendChild(letterHeader);
-        }
-        const memberCard = document.createElement("div");
-        memberCard.classList.add("member-card");
-        if (member.status === "inactive") {
-            memberCard.classList.add("member-card-inactive");
-        }
-        const paxName = document.createElement("div");
-        paxName.classList.add("member-name");
-        paxName.textContent = displayName;
-        let statusBadge = null;
+function formatRosterLastPost(dateValue) {
+  if (!dateValue) {
+    return "No posts";
+  }
 
-        if (member.status === "inactive") {
-            statusBadge = document.createElement("div");
-            statusBadge.classList.add("member-status-badge");
-            statusBadge.textContent = "Inactive";
-        }
-        const statsLine = document.createElement("div");
-        statsLine.classList.add("stats-line");
-        const memberStats = getMemberStats(member.id);
-        const lastPost = memberStats.lastPostDate? formatDate(memberStats.lastPostDate): "-";
-        statsLine.textContent = `Posts: ${memberStats.posts} - Qs: ${memberStats.qs} - Last: ${lastPost}`;
+  const normalizedDate =
+    typeof dateValue === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
+      ? `${dateValue}T00:00:00`
+      : dateValue;
 
-        memberCard.addEventListener("click", () => {
-          navigateToPaxProfile(member.id);
-        });
+  const date = new Date(normalizedDate);
 
-        rosterContainer.appendChild(memberCard);
-        if (statusBadge) {
-            memberCard.append(paxName, statusBadge, statsLine);
-        } else {
-            memberCard.append(paxName, statsLine);
-        }
-    });
+  if (Number.isNaN(date.getTime())) {
+    return formatDate(dateValue);
+  }
 
-    if (members.length === 0) {
-        const emptyState = document.createElement("div");
-        emptyState.classList.add("detail-value");
-        emptyState.textContent = "No matching PAX found";
-        rosterContainer.appendChild(emptyState);
+  const currentYear = new Date().getFullYear();
+  const includesYear =
+    date.getFullYear() !== currentYear;
+
+  return new Intl.DateTimeFormat(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      ...(includesYear
+        ? { year: "numeric" }
+        : {}),
+    }
+  ).format(date);
+}
+
+function renderRosterIndex(
+  indexContainer,
+  availableGroups
+) {
+  indexContainer.textContent = "";
+
+  ROSTER_INDEX_KEYS.forEach((groupKey) => {
+    const button =
+      document.createElement("button");
+
+    button.type = "button";
+
+    button.classList.add(
+      "roster-index-button"
+    );
+
+    button.dataset.groupKey = groupKey;
+    button.textContent = groupKey;
+
+    const isAvailable =
+      availableGroups.has(groupKey);
+
+    if (!isAvailable) {
+      button.classList.add(
+        "roster-index-button-unavailable"
+      );
+
+      button.disabled = true;
     }
 
+    button.setAttribute(
+      "aria-label",
+      isAvailable
+        ? `Jump to ${groupKey}`
+        : `No PAX under ${groupKey}`
+    );
+
+    indexContainer.appendChild(button);
+  });
+}
+
+function setupRosterDirectoryInteractions({
+  rosterContainer,
+  indexContainer,
+}) {
+  const prefersReducedMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  let isScrubbing = false;
+  let scrubPointerId = null;
+  let lastScrubbedKey = null;
+  let didDrag = false;
+  let suppressNextClick = false;
+  let scrollFrame = null;
+
+  function getGroups() {
+    return [
+      ...rosterContainer.querySelectorAll(
+        ".roster-letter-group"
+      ),
+    ];
+  }
+
+  function getIndexButtons() {
+    return [
+      ...indexContainer.querySelectorAll(
+        ".roster-index-button"
+      ),
+    ];
+  }
+
+  function setActiveIndexLetter(groupKey) {
+    getIndexButtons().forEach((button) => {
+      const isActive =
+        button.dataset.groupKey === groupKey;
+
+      button.classList.toggle(
+        "roster-index-button-active",
+        isActive
+      );
+
+      if (isActive) {
+        button.setAttribute(
+          "aria-current",
+          "true"
+        );
+      } else {
+        button.removeAttribute(
+          "aria-current"
+        );
+      }
+    });
+  }
+
+  function highlightRosterGroup(target) {
+    target.classList.remove(
+      "roster-letter-group-highlight"
+    );
+
+    requestAnimationFrame(() => {
+      target.classList.add(
+        "roster-letter-group-highlight"
+      );
+    });
+
+    window.setTimeout(() => {
+      target.classList.remove(
+        "roster-letter-group-highlight"
+      );
+    }, 900);
+  }
+
+  function scrollToRosterGroup(
+    groupKey,
+    {
+      behavior = "smooth",
+      highlight = true,
+    } = {}
+  ) {
+    const target = document.getElementById(
+      getRosterGroupId(groupKey)
+    );
+
+    if (!target) return;
+
+    setActiveIndexLetter(groupKey);
+
+    target.scrollIntoView({
+      behavior:
+        prefersReducedMotion
+          ? "auto"
+          : behavior,
+      block: "start",
+    });
+
+    requestScrollSync();
+
+    if (highlight) {
+      highlightRosterGroup(target);
+    }
+  }
+
+  function getNearestAvailableButton(clientY) {
+    const availableButtons =
+      getIndexButtons().filter(
+        button => !button.disabled
+      );
+
+    if (availableButtons.length === 0) {
+      return null;
+    }
+
+    let nearestButton = null;
+    let nearestDistance = Infinity;
+
+    availableButtons.forEach((button) => {
+      const rect =
+        button.getBoundingClientRect();
+
+      const centerY =
+        rect.top + rect.height / 2;
+
+      const distance =
+        Math.abs(clientY - centerY);
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestButton = button;
+      }
+    });
+
+    return nearestButton;
+  }
+
+  function scrubToClientY(clientY) {
+    const button =
+      getNearestAvailableButton(clientY);
+
+    if (!button) return;
+
+    const groupKey =
+      button.dataset.groupKey;
+
+    if (
+      !groupKey ||
+      groupKey === lastScrubbedKey
+    ) {
+      return;
+    }
+
+    lastScrubbedKey = groupKey;
+
+    scrollToRosterGroup(
+      groupKey,
+      {
+        behavior: "auto",
+        highlight: false,
+      }
+    );
+  }
+
+  function syncActiveLetterToScroll() {
+    scrollFrame = null;
+
+    if (isScrubbing) return;
+
+    const groups = getGroups();
+
+    if (groups.length === 0) return;
+
+    /*
+     * The sticky letter header sits beneath the application
+     * header at roughly this viewport position.
+     */
+    const activeThreshold =
+      100 +
+      (
+        parseFloat(
+          getComputedStyle(
+            document.documentElement
+          ).getPropertyValue(
+            "--safe-area-inset-top"
+          )
+        ) || 0
+      );
+
+    let activeGroup = groups[0];
+
+    groups.forEach((group) => {
+      const rect =
+        group.getBoundingClientRect();
+
+      if (rect.top <= activeThreshold) {
+        activeGroup = group;
+      }
+    });
+
+    const groupKey =
+      activeGroup.dataset.groupKey;
+
+    if (groupKey) {
+      setActiveIndexLetter(groupKey);
+    }
+  }
+
+  function requestScrollSync() {
+    if (scrollFrame !== null) return;
+
+    scrollFrame = requestAnimationFrame(
+      syncActiveLetterToScroll
+    );
+  }
+
+  function handleIndexClick(event) {
+    const button = event.target.closest(
+      ".roster-index-button"
+    );
+
+    if (!button || button.disabled) return;
+
+    if (suppressNextClick) {
+      event.preventDefault();
+      event.stopPropagation();
+      suppressNextClick = false;
+      return;
+    }
+
+    scrollToRosterGroup(
+      button.dataset.groupKey,
+      {
+        behavior: "smooth",
+        highlight: true,
+      }
+    );
+  }
+
+  function handlePointerDown(event) {
+    if (
+      event.pointerType === "mouse" &&
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    indexContainer.classList.add(
+      "roster-index-scrubbing"
+    );
+
+    isScrubbing = true;
+    didDrag = false;
+    lastScrubbedKey = null;
+    scrubPointerId = event.pointerId;
+
+    indexContainer.setPointerCapture(
+      event.pointerId
+    );
+
+    scrubToClientY(event.clientY);
+  }
+
+  function handlePointerMove(event) {
+    if (
+      !isScrubbing ||
+      event.pointerId !== scrubPointerId
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    document.body.classList.add(
+      "roster-scrubbing"
+  );
+
+    didDrag = true;
+
+    scrubToClientY(event.clientY);
+  }
+
+  function finishScrubbing(event) {
+    if (
+      !isScrubbing ||
+      event.pointerId !== scrubPointerId
+    ) {
+      return;
+    }
+
+    indexContainer.classList.remove(
+      "roster-index-scrubbing"
+    );
+
+    document.body.classList.remove(
+      "roster-scrubbing"
+  );
+
+    if (
+      indexContainer.hasPointerCapture(
+        event.pointerId
+      )
+    ) {
+      indexContainer.releasePointerCapture(
+        event.pointerId
+      );
+    }
+
+    isScrubbing = false;
+    scrubPointerId = null;
+    lastScrubbedKey = null;
+
+    if (didDrag) {
+      /*
+       * Pointer release may produce a click. Suppress that
+       * click so it does not initiate a second smooth scroll.
+       */
+      suppressNextClick = true;
+
+      window.setTimeout(() => {
+        suppressNextClick = false;
+      }, 0);
+    }
+
+    requestScrollSync();
+  }
+
+  indexContainer.addEventListener(
+    "click",
+    handleIndexClick
+  );
+
+  indexContainer.addEventListener(
+    "pointerdown",
+    handlePointerDown
+  );
+
+  indexContainer.addEventListener(
+    "pointermove",
+    handlePointerMove
+  );
+
+  indexContainer.addEventListener(
+    "pointerup",
+    finishScrubbing
+  );
+
+  indexContainer.addEventListener(
+    "pointercancel",
+    finishScrubbing
+  );
+
+  window.addEventListener(
+    "scroll",
+    requestScrollSync,
+    {
+      passive: true,
+    }
+  );
+
+  window.addEventListener(
+    "resize",
+    requestScrollSync
+  );
+
+  requestScrollSync();
+
+  return () => {
+    indexContainer.removeEventListener(
+      "click",
+      handleIndexClick
+    );
+
+    indexContainer.removeEventListener(
+      "pointerdown",
+      handlePointerDown
+    );
+
+    indexContainer.removeEventListener(
+      "pointermove",
+      handlePointerMove
+    );
+
+    indexContainer.removeEventListener(
+      "pointerup",
+      finishScrubbing
+    );
+
+    indexContainer.removeEventListener(
+      "pointercancel",
+      finishScrubbing
+    );
+
+    window.removeEventListener(
+      "scroll",
+      requestScrollSync
+    );
+
+    window.removeEventListener(
+      "resize",
+      requestScrollSync
+    );
+
+    indexContainer.classList.remove(
+      "roster-index-scrubbing"
+    );
+    
+    document.body.classList.remove(
+      "roster-scrubbing"
+    );
+    
+    if (scrollFrame !== null) {
+      cancelAnimationFrame(scrollFrame);
+    }
+  };
+}
+
+function updateRosterResultsMeta(
+  resultsMeta,
+  visibleCount
+) {
+  const totalCount = state.members.length;
+  const hasSearch =
+    Boolean(
+      (state.rosterSearchTerm || "").trim()
+    );
+
+  if (state.rosterFilter || hasSearch) {
+    resultsMeta.textContent =
+      `${visibleCount} matching ` +
+      `${visibleCount === 1 ? "PAX" : "PAX"}`;
+
+    return;
+  }
+
+  resultsMeta.textContent =
+    `${totalCount} PAX`;
+}
+
+function renderRosterList(
+  rosterContainer,
+  members,
+  indexContainer,
+  resultsMeta
+) {
+  rosterContainer.textContent = "";
+
+  updateRosterResultsMeta(
+    resultsMeta,
+    members.length
+  );
+
+  if (members.length === 0) {
+    const emptyState =
+      document.createElement("div");
+
+    emptyState.classList.add(
+      "roster-empty-state"
+    );
+
+    emptyState.textContent =
+      "No matching PAX found";
+
+    rosterContainer.appendChild(emptyState);
+
+    renderRosterIndex(
+      indexContainer,
+      new Set()
+    );
+
+    return;
+  }
+
+  const membersByGroup = new Map();
+
+  members.forEach((member) => {
+    const displayName =
+      getMemberDisplayName(member);
+
+    const groupKey =
+      getRosterGroupKey(displayName);
+
+    if (!membersByGroup.has(groupKey)) {
+      membersByGroup.set(groupKey, []);
+    }
+
+    membersByGroup
+      .get(groupKey)
+      .push(member);
+  });
+
+  const availableGroups =
+    new Set(membersByGroup.keys());
+
+  ROSTER_INDEX_KEYS.forEach((groupKey) => {
+    const groupMembers =
+      membersByGroup.get(groupKey);
+
+    if (!groupMembers?.length) return;
+
+    const group =
+      document.createElement("section");
+
+    group.classList.add(
+      "roster-letter-group"
+    );
+
+    group.id =
+        getRosterGroupId(groupKey);
+
+    group.dataset.groupKey = groupKey;
+
+    const letterHeader =
+      document.createElement("div");
+
+    letterHeader.classList.add(
+      "roster-letter-header"
+    );
+
+    letterHeader.textContent = groupKey;
+
+    const groupList =
+      document.createElement("div");
+
+    groupList.classList.add(
+      "roster-letter-list"
+    );
+
+    groupMembers.forEach((member) => {
+      const displayName =
+        getMemberDisplayName(member);
+
+      const memberRow =
+        document.createElement("button");
+
+      memberRow.type = "button";
+
+      memberRow.classList.add(
+        "roster-member-row"
+      );
+
+      if (member.status === "inactive") {
+        memberRow.classList.add(
+          "roster-member-row-inactive"
+        );
+      }
+
+      const memberContent =
+        document.createElement("div");
+
+      memberContent.classList.add(
+        "roster-member-content"
+      );
+
+      const identityRow =
+        document.createElement("div");
+
+      identityRow.classList.add(
+        "roster-member-identity"
+      );
+
+      const paxName =
+        document.createElement("div");
+
+      paxName.classList.add(
+        "roster-member-name"
+      );
+
+      paxName.textContent = displayName;
+
+      identityRow.appendChild(paxName);
+
+      if (member.status === "inactive") {
+        const statusBadge =
+          document.createElement("span");
+
+        statusBadge.classList.add(
+          "roster-member-status"
+        );
+
+        statusBadge.textContent =
+          "Inactive";
+
+        identityRow.appendChild(
+          statusBadge
+        );
+      }
+
+      const memberStats =
+        getMemberStats(member.id);
+
+      const lastPost =
+        formatRosterLastPost(
+          memberStats.lastPostDate
+        );
+
+      const statsLine =
+        document.createElement("div");
+
+      statsLine.classList.add(
+        "roster-member-stats"
+      );
+
+      statsLine.textContent =
+        `${memberStats.posts} posts · ` +
+        `${memberStats.qs} Qs · ` +
+        `Last ${lastPost}`;
+
+      memberContent.append(
+        identityRow,
+        statsLine
+      );
+
+      const chevron =
+        document.createElement("span");
+
+      chevron.classList.add(
+        "roster-member-chevron"
+      );
+
+      chevron.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      chevron.textContent = "›";
+
+      memberRow.append(
+        memberContent,
+        chevron
+      );
+
+      memberRow.addEventListener(
+        "click",
+        () => {
+          navigateToPaxProfile(
+            member.id
+          );
+        }
+      );
+
+      groupList.appendChild(memberRow);
+    });
+
+    group.append(
+      letterHeader,
+      groupList
+    );
+
+    rosterContainer.appendChild(group);
+  });
+
+  renderRosterIndex(
+    indexContainer,
+    availableGroups
+  );
 }
 
 function memberMatchesRosterFilter(member) {
@@ -215,8 +911,14 @@ function getVisibleRosterMembers() {
 }
 
 export function renderRoster() {
-  const app = document.getElementById("app");
+  cleanupRosterInteractions?.();
+  cleanupRosterInteractions = null;
+
+  const app =
+    document.getElementById("app");
+
   app.textContent = "";
+  app.className = "view-roster";
 
   cleanupMainMenu();
 
@@ -233,10 +935,12 @@ export function renderRoster() {
   title.textContent = "Roster";
 
   const titleRow = document.createElement("div");
-  titleRow.classList.add("section-header-row");
+  titleRow.classList.add("roster-title-row");
 
   const addPaxButton = document.createElement("button");
+  addPaxButton.classList.add("roster-add-button");
   addPaxButton.textContent = "Add PAX";
+
   addPaxButton.addEventListener("click", () => {
     openAddPaxModal();
   });
@@ -247,20 +951,91 @@ export function renderRoster() {
     titleRow.appendChild(addPaxButton);
   }
 
-  const rosterContainer = document.createElement("div");
+  const searchInput =
+    document.createElement("input");
 
-  const searchInput = document.createElement("input");
-  searchInput.type = "text";
-  searchInput.placeholder = "Search PAX...";
-  searchInput.value = state.rosterSearchTerm || "";
-  searchInput.classList.add("session-search");
+  searchInput.type = "search";
+  searchInput.placeholder =
+    "Search by PAX, name, or AO";
 
-  searchInput.addEventListener("input", (event) => {
-    state.rosterSearchTerm = event.target.value;
-    renderRosterList(rosterContainer, getVisibleRosterMembers());
-  });
+  searchInput.value =
+    state.rosterSearchTerm || "";
 
-  renderRosterList(rosterContainer, getVisibleRosterMembers());
+  searchInput.classList.add(
+    "roster-search"
+  );
+
+  searchInput.setAttribute(
+    "aria-label",
+    "Search roster"
+  );
+
+  const resultsMeta =
+    document.createElement("div");
+
+  resultsMeta.classList.add(
+    "roster-results-meta"
+  );
+
+  const rosterDirectory =
+    document.createElement("div");
+
+  rosterDirectory.classList.add(
+    "roster-directory"
+  );
+
+  const rosterContainer =
+    document.createElement("div");
+
+  rosterContainer.classList.add(
+    "roster-list"
+  );
+
+  const rosterIndex =
+    document.createElement("nav");
+
+  rosterIndex.classList.add(
+    "roster-index"
+  );
+
+  rosterIndex.setAttribute(
+    "aria-label",
+    "Roster alphabet navigation"
+  );
+
+  rosterDirectory.append(
+    rosterContainer,
+    rosterIndex
+  );
+
+  function renderVisibleRoster() {
+    cleanupRosterInteractions?.();
+  
+    renderRosterList(
+      rosterContainer,
+      getVisibleRosterMembers(),
+      rosterIndex,
+      resultsMeta
+    );
+  
+    cleanupRosterInteractions =
+      setupRosterDirectoryInteractions({
+        rosterContainer,
+        indexContainer: rosterIndex,
+      });
+  }
+
+  searchInput.addEventListener(
+    "input",
+    (event) => {
+      state.rosterSearchTerm =
+        event.target.value;
+
+      renderVisibleRoster();
+    }
+  );
+
+  renderVisibleRoster();
 
   const nav = createGlobalNav();
 
@@ -268,10 +1043,10 @@ export function renderRoster() {
 
   if (state.rosterFilter) {
     activeFilterNotice = document.createElement("div");
-    activeFilterNotice.classList.add("section");
+    activeFilterNotice.classList.add("roster-filter-notice");
 
     const filterText = document.createElement("div");
-    filterText.classList.add("detail-value");
+    filterText.classList.add("roster-filter-copy");
 
     if (state.rosterFilter.type === "region-fng-pipeline") {
       filterText.textContent =
@@ -305,7 +1080,7 @@ export function renderRoster() {
   }
 
     const clearButton = document.createElement("button");
-    clearButton.classList.add("secondary-button");
+    clearButton.classList.add("roster-filter-clear");
     clearButton.textContent = "Clear Filter";
 
     clearButton.addEventListener("click", () => {
@@ -322,17 +1097,19 @@ export function renderRoster() {
       titleRow,
       activeFilterNotice,
       searchInput,
-      rosterContainer,
+      resultsMeta,
+      rosterDirectory,
       nav
-    );
+  );
   } else {
     app.append(
       header,
       titleRow,
       searchInput,
-      rosterContainer,
+      resultsMeta,
+      rosterDirectory,
       nav
-    );
+  );
   }
   if (state.isMainMenuOpen) {
     document.body.appendChild(createMainMenu());
@@ -345,6 +1122,7 @@ function openAddPaxModal() {
 
   const modal = document.createElement("div");
   modal.classList.add("modal");
+  modal.classList.add("roster-add-modal");
 
   const heading = document.createElement("h2");
   heading.textContent = "Add PAX";
@@ -384,6 +1162,7 @@ function openAddPaxModal() {
 
   const saveButton = document.createElement("button");
   saveButton.textContent = "Save PAX";
+  saveButton.classList.add("primary-button");
 
   saveButton.addEventListener("click", async () => {
     const paxName = paxInput.value.trim();
