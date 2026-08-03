@@ -1,0 +1,720 @@
+/* =========================================================
+   MY PLANNER
+   ========================================================= */
+
+   #app.view-myPlanner {
+    --my-planner-accent: #8fd3ff;
+    --my-planner-accent-bright: #c9eaff;
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            7.5rem +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-title-row {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin:
+        0
+        0
+        0.75rem;
+}
+
+.view-myPlanner
+.my-planner-title {
+    min-width: 0;
+
+    margin: 0;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size:
+        clamp(
+            2.15rem,
+            8.5vw,
+            3.45rem
+        );
+
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+}
+
+.view-myPlanner
+.my-planner-new-button {
+    flex: 0 0 auto;
+
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
+
+    margin: 0;
+    padding:
+        0.65rem
+        0.9rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.3);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.07);
+
+    color:
+        var(--my-planner-accent-bright);
+
+    box-shadow: none;
+
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.view-myPlanner
+.my-planner-new-button:hover {
+    border-color:
+        rgba(143, 211, 255, 0.46);
+
+    background:
+        rgba(143, 211, 255, 0.12);
+
+    box-shadow: none;
+}
+
+.view-myPlanner
+.my-planner-new-button:active {
+    transform: scale(0.98);
+}
+
+.view-myPlanner
+.my-planner-subtitle {
+    max-width: 34rem;
+
+    margin:
+        0
+        0
+        1.35rem;
+
+    color: var(--muted);
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-section {
+    min-width: 0;
+
+    margin-bottom: 1.6rem;
+}
+
+.view-myPlanner
+.my-planner-section-title {
+    margin:
+        0
+        0
+        0.7rem;
+
+    color:
+        rgba(245, 245, 242, 0.52);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.75rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   DIVIDED LIST SURFACES
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-list {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.012);
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.18);
+
+    box-sizing: border-box;
+}
+
+.view-myPlanner
+.my-planner-row {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 84px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 0.8rem;
+
+    margin: 0;
+    padding:
+        0.85rem
+        0.95rem;
+
+    border: 0;
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--text);
+
+    box-shadow: none;
+
+    text-align: left;
+    box-sizing: border-box;
+
+    transition:
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+.view-myPlanner
+.my-planner-row:last-child {
+    border-bottom: 0;
+}
+
+.view-myPlanner
+.my-planner-row:hover {
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    box-shadow: none;
+}
+
+.view-myPlanner
+.my-planner-row:active {
+    transform: none;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+}
+
+.view-myPlanner
+.my-planner-row:focus-visible {
+    outline:
+        2px solid
+        var(--my-planner-accent);
+
+    outline-offset: -2px;
+}
+
+
+/* =========================================================
+   ROW CONTENT
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-row-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.view-myPlanner
+.my-planner-row-meta {
+    width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color:
+        rgba(245, 245, 242, 0.52);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.68rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.view-myPlanner
+.my-planner-row-title {
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 0.35rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.03rem;
+    font-weight: 900;
+    line-height: 1.05;
+}
+
+.view-myPlanner
+.my-planner-row-helper,
+.view-myPlanner
+.my-planner-row-preview {
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 0.28rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+
+    font-size: 0.74rem;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.view-myPlanner
+.my-planner-row-chevron {
+    flex: 0 0 auto;
+
+    color:
+        rgba(245, 245, 242, 0.35);
+
+    font-family:
+        var(--font-body);
+
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1;
+
+    transition:
+        transform 150ms ease,
+        color 150ms ease;
+}
+
+.view-myPlanner
+.my-planner-row:hover
+.my-planner-row-chevron {
+    color:
+        var(--my-planner-accent);
+
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   UPCOMING Q READINESS
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-upcoming-row::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0.7rem;
+    bottom: 0.7rem;
+    left: 0;
+
+    width: 3px;
+
+    border-radius:
+        0
+        999px
+        999px
+        0;
+}
+
+.view-myPlanner
+.my-planner-upcoming-row.needs-plan::before {
+    background:
+        rgba(245, 158, 11, 0.78);
+}
+
+.view-myPlanner
+.my-planner-upcoming-row.is-draft::before {
+    background:
+        rgba(143, 211, 255, 0.72);
+}
+
+.view-myPlanner
+.my-planner-upcoming-row.is-ready::before {
+    background:
+        rgba(111, 209, 131, 0.78);
+}
+
+.view-myPlanner
+.my-planner-upcoming-row.needs-plan
+.my-planner-row-title {
+    color: #f2ba57;
+}
+
+.view-myPlanner
+.my-planner-upcoming-row.is-draft
+.my-planner-row-title {
+    color:
+        var(--my-planner-accent-bright);
+}
+
+.view-myPlanner
+.my-planner-upcoming-row.is-ready
+.my-planner-row-title {
+    color: #7fd28f;
+}
+
+
+/* =========================================================
+   SAVED WORKOUT STATUS
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-row-status {
+    display: inline-flex;
+    align-items: center;
+
+    width: fit-content;
+
+    margin-top: 0.45rem;
+    padding:
+        0.22rem
+        0.45rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: var(--muted);
+
+    font-size: 0.6rem;
+    font-weight: 850;
+    line-height: 1;
+
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.view-myPlanner
+.my-planner-row-status.is-shared {
+    border-color:
+        rgba(143, 211, 255, 0.25);
+
+    background:
+        rgba(143, 211, 255, 0.065);
+
+    color:
+        rgba(143, 211, 255, 0.86);
+}
+
+
+/* =========================================================
+   EMPTY STATES
+   ========================================================= */
+
+.view-myPlanner
+.my-planner-list
+.detail-value {
+    margin: 0;
+
+    padding:
+        1.8rem
+        1.1rem;
+
+    color: var(--muted);
+
+    font-size: 0.84rem;
+    font-weight: 650;
+    line-height: 1.4;
+
+    text-align: center;
+}
+
+/* =========================================================
+   UPCOMING Q HERO
+   ========================================================= */
+
+   .view-myPlanner
+   .my-planner-upcoming-section {
+       overflow: hidden;
+   
+       margin-bottom: 1.35rem;
+   
+       border:
+           1px solid
+           rgba(143, 211, 255, 0.18);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           radial-gradient(
+               circle at 100% 0%,
+               rgba(143, 211, 255, 0.065),
+               transparent 40%
+           ),
+           rgba(255, 255, 255, 0.014);
+   
+       box-shadow:
+           0 16px 38px
+           rgba(0, 0, 0, 0.22);
+   }
+   
+   .view-myPlanner
+   .my-planner-upcoming-header {
+       display: flex;
+       align-items: flex-end;
+       justify-content: space-between;
+       gap: 1rem;
+   
+       padding:
+           1rem
+           1rem
+           0.85rem;
+   
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.085);
+   }
+   
+   .view-myPlanner
+   .my-planner-upcoming-eyebrow {
+       color:
+           rgba(143, 211, 255, 0.72);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.63rem;
+       font-weight: 900;
+       line-height: 1;
+   
+       letter-spacing: 0.1em;
+       text-transform: uppercase;
+   }
+   
+   .view-myPlanner
+   .my-planner-upcoming-title {
+       margin:
+           0.25rem
+           0
+           0;
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 1.5rem;
+       font-weight: 900;
+       line-height: 0.95;
+   
+       letter-spacing: -0.025em;
+       text-transform: uppercase;
+   }
+   
+   .view-myPlanner
+   .my-planner-upcoming-summary {
+       flex: 0 0 auto;
+   
+       color: var(--muted);
+   
+       font-size: 0.7rem;
+       font-weight: 700;
+       line-height: 1;
+   
+       white-space: nowrap;
+   }
+   
+   .view-myPlanner
+   .my-planner-upcoming-list {
+       border: 0;
+       border-radius: 0;
+   
+       background: transparent;
+   
+       box-shadow: none;
+   }
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+   @media (max-width: 520px) {
+    .view-myPlanner
+    .my-planner-title-row {
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 0.65rem;
+    }
+
+    .view-myPlanner
+    .my-planner-title {
+        flex: 1 1 auto;
+
+        font-size:
+            clamp(
+                1.9rem,
+                8.2vw,
+                2.45rem
+            );
+
+        white-space: nowrap;
+    }
+
+    .view-myPlanner
+    .my-planner-new-button {
+        align-self: auto;
+        flex: 0 0 auto;
+
+        min-height: 40px;
+
+        padding:
+            0.58rem
+            0.7rem;
+
+        font-size: 0.66rem;
+    }
+
+    .view-myPlanner
+    .my-planner-row {
+        min-height: 80px;
+
+        gap: 0.55rem;
+
+        padding:
+            0.8rem
+            0.78rem;
+    }
+
+    .view-myPlanner
+    .my-planner-upcoming-row {
+        padding-left: 0.9rem;
+    }
+
+    .view-myPlanner
+    .my-planner-row-title {
+        font-size: 0.97rem;
+    }
+    
+    .view-myPlanner
+    .my-planner-upcoming-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.4rem;
+
+        padding:
+            0.9rem
+            0.85rem
+            0.8rem;
+    }
+
+    .view-myPlanner
+    .my-planner-upcoming-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 365px) {
+    .view-myPlanner
+    .my-planner-title {
+        font-size: 1.75rem;
+    }
+
+    .view-myPlanner
+    .my-planner-new-button {
+        padding:
+            0.54rem
+            0.58rem;
+
+        font-size: 0.61rem;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .view-myPlanner
+    .my-planner-row,
+    .view-myPlanner
+    .my-planner-row-chevron,
+    .view-myPlanner
+    .my-planner-new-button {
+        transition: none;
+    }
+}
