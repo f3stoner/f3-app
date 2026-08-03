@@ -22,6 +22,7 @@ export async function renderLeadershipView() {
 
     const app = document.getElementById("app");
     app.replaceChildren();
+    app.className = "view-leadership";
 
     const header = createAppHeader({
         title: "",
@@ -31,12 +32,23 @@ export async function renderLeadershipView() {
     });
 
     const title = document.createElement("h1");
+
+    title.classList.add(
+        "leadership-page-title"
+    );
+    
     title.textContent = "Leadership";
 
-    const content = document.createElement("div");
-    content.textContent = "Loading leadership...";
+    const content =
+        document.createElement("div");
 
-    app.append(header, title, content);
+    content.classList.add(
+        "leadership-content"
+    );
+
+    content.textContent =
+        "Loading leadership...";
+        app.append(header, title, content);
 
     try {
         const requestedRegionId =
@@ -122,6 +134,10 @@ function createRegionalLeadershipSection(rows) {
         createSection(
             "Regional Shared Leadership Team"
         );
+
+    section.classList.add(
+        "leadership-regional-section"
+    );
 
     if (!rows.length) {
         section.appendChild(

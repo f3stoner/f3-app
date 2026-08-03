@@ -1,0 +1,485 @@
+/* =========================================================
+   LEADERSHIP DIRECTORY
+   ========================================================= */
+
+   #app.view-leadership {
+    --leadership-accent: #8fd3ff;
+    --leadership-accent-bright: #c9eaff;
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            120px +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+}
+
+.view-leadership
+.leadership-page-title {
+    margin:
+        0
+        0
+        1.1rem;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size:
+        clamp(
+            2.2rem,
+            8.5vw,
+            3.5rem
+        );
+
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+}
+
+.view-leadership
+.leadership-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1.55rem;
+}
+
+.view-leadership
+.leadership-section {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.view-leadership
+.leadership-section-title,
+.view-leadership
+.leadership-ao-directory > h2 {
+    margin:
+        0
+        0
+        0.7rem;
+
+    color:
+        rgba(245, 245, 242, 0.52);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   REGIONAL LEADERSHIP SURFACE
+   ========================================================= */
+
+   .view-leadership
+   .leadership-regional-section {
+       overflow: hidden;
+   
+       border:
+           1px solid
+           rgba(255, 255, 255, 0.14);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           radial-gradient(
+               circle at 100% 0%,
+               rgba(143, 211, 255, 0.045),
+               transparent 42%
+           ),
+           rgba(255, 255, 255, 0.014);
+   
+       box-shadow:
+           0 12px 30px
+           rgba(0, 0, 0, 0.18);
+   }
+   
+   .view-leadership
+   .leadership-section:first-child
+   .leadership-section-title {
+       margin: 0;
+   
+       padding:
+           0.85rem
+           1rem;
+   
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.09);
+   
+       color:
+           var(--leadership-accent);
+   }
+   
+   .view-leadership
+   .leadership-position-group {
+       min-width: 0;
+   
+       display: flex;
+       flex-direction: column;
+       gap: 0;
+   
+       padding:
+           0.8rem
+           1rem
+           0;
+   }
+   
+   .view-leadership
+   .leadership-position-group
+   +
+   .leadership-position-group {
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   }
+   
+   .view-leadership
+   .leadership-position-label {
+       margin: 0;
+   
+       color:
+           rgba(245, 245, 242, 0.48);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.68rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: 0.08em;
+       text-transform: uppercase;
+   }
+   
+   .view-leadership
+   .leadership-member-list {
+       display: flex;
+       flex-direction: column;
+       gap: 0;
+   
+       margin-top: 0.35rem;
+   }
+   
+   .view-leadership
+   .leadership-member-button {
+       position: relative;
+   
+       width: 100%;
+       min-height: 48px;
+   
+       display: flex;
+       align-items: center;
+   
+       margin: 0;
+       padding:
+           0.7rem
+           1.35rem
+           0.7rem
+           0;
+   
+       border: 0;
+       border-radius: 0;
+   
+       background: transparent;
+       color: var(--text);
+   
+       box-shadow: none;
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.98rem;
+       font-weight: 900;
+       line-height: 1.1;
+       text-align: left;
+   }
+   
+   .view-leadership
+   .leadership-member-button::after {
+       content: "›";
+   
+       position: absolute;
+       right: 0;
+   
+       color:
+           rgba(245, 245, 242, 0.36);
+   
+       font-family:
+           var(--font-body);
+   
+       font-size: 1.35rem;
+       font-weight: 500;
+       line-height: 1;
+   }
+   
+   .view-leadership
+   .leadership-member-button:hover {
+       background:
+           linear-gradient(
+               110deg,
+               rgba(143, 211, 255, 0.055),
+               transparent 68%
+           );
+   
+       box-shadow: none;
+   }
+   
+   .view-leadership
+   .leadership-member-button:active {
+       transform: none;
+   }
+
+   /* =========================================================
+        AO ACCORDION SURFACE
+   ========================================================= */
+
+   .view-leadership
+.leadership-ao-directory {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.012);
+
+    box-shadow:
+        0 10px 28px
+        rgba(0, 0, 0, 0.16);
+}
+
+.view-leadership
+.leadership-ao-directory > h2 {
+    margin: 0;
+
+    padding:
+        0.85rem
+        1rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+}
+
+.view-leadership
+.leadership-ao-section {
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+
+    border: 0;
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    border-radius: 0;
+
+    background: transparent;
+}
+
+.view-leadership
+.leadership-ao-section:last-child {
+    border-bottom: 0;
+}
+
+.view-leadership
+.leadership-ao-toggle {
+    width: 100%;
+    min-height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin: 0;
+    padding:
+        0.82rem
+        1rem;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--text);
+
+    box-shadow: none;
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: left;
+}
+
+.view-leadership
+.leadership-ao-toggle:hover {
+    background:
+        rgba(143, 211, 255, 0.045);
+
+    box-shadow: none;
+}
+
+.view-leadership
+.leadership-ao-toggle:active {
+    transform: none;
+}
+
+.view-leadership
+.leadership-ao-chevron {
+    color:
+        rgba(245, 245, 242, 0.4);
+
+    transition:
+        transform 180ms ease,
+        color 150ms ease;
+}
+
+.view-leadership
+.leadership-ao-section.open
+.leadership-ao-chevron {
+    color:
+        var(--leadership-accent-bright);
+
+    transform: rotate(90deg);
+}
+
+.view-leadership
+.leadership-ao-panel-inner {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    margin:
+        0
+        0.75rem
+        0.75rem;
+
+    padding:
+        0.2rem
+        0.85rem
+        0.35rem
+        1rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.12);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.045),
+            transparent 65%
+        ),
+        rgba(255, 255, 255, 0.012);
+}
+
+.view-leadership
+.leadership-ao-panel-inner::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0.75rem;
+    bottom: 0.75rem;
+    left: 0;
+
+    width: 3px;
+
+    border-radius:
+        0
+        999px
+        999px
+        0;
+
+    background:
+        rgba(143, 211, 255, 0.58);
+}
+
+.view-leadership
+.leadership-ao-panel-inner
+.leadership-position-group {
+    padding:
+        0.62rem
+        0
+        0;
+}
+
+.view-leadership
+.leadership-ao-panel-inner
+.leadership-position-group
++
+.leadership-position-group {
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+}
+
+.view-leadership
+.leadership-ao-section.open
+.leadership-ao-toggle {
+    background:
+        linear-gradient(
+            110deg,
+            rgba(143, 211, 255, 0.09),
+            transparent 72%
+        );
+
+    color:
+        var(--leadership-accent-bright);
+}
+
+.view-leadership
+.leadership-ao-panel-inner
+.leadership-member-button {
+    min-height: 42px;
+
+    padding:
+        0.58rem
+        1.35rem
+        0.58rem
+        0;
+}
+
+.view-leadership
+.leadership-section-title,
+.view-leadership
+.leadership-ao-directory > h2 {
+    color:
+        var(--leadership-accent);
+}
