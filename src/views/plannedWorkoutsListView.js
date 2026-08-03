@@ -39,7 +39,9 @@ function createBlankWorkout() {
 
 export function renderPlannedWorkoutsList () {
     const app = document.getElementById("app");
-    app.textContent = "";
+
+    app.replaceChildren();
+    app.className = "view-plannedWorkouts";
 
     cleanupMainMenu();
 
@@ -50,8 +52,56 @@ export function renderPlannedWorkoutsList () {
         showMenu: true,
     })
 
-    const title = document.createElement("h1");
-    title.textContent = "Workout Library";
+    const title =
+        document.createElement("h1");
+
+    title.textContent =
+        "Workout Library";
+
+    title.classList.add(
+        "workout-library-title"
+    );
+
+    const newWorkoutButton =
+        document.createElement("button");
+
+    newWorkoutButton.type = "button";
+    newWorkoutButton.textContent =
+        "Plan New Workout";
+
+    newWorkoutButton.classList.add(
+        "workout-library-new-button"
+    );
+
+    newWorkoutButton.addEventListener(
+        "click",
+        () => {
+            const newWorkout =
+                createBlankWorkout();
+
+            savePlannerDraft(
+                createNewPlannerDraft(
+                    newWorkout
+                )
+            );
+
+            navigateTo(
+                "workoutPlanner"
+            );
+        }
+    );
+
+    const titleRow =
+        document.createElement("div");
+
+    titleRow.classList.add(
+        "workout-library-title-row"
+    );
+
+    titleRow.append(
+        title,
+        newWorkoutButton
+    );
 
     const subtitle = document.createElement("div");
     subtitle.classList.add("view-subtitle");
@@ -69,24 +119,40 @@ export function renderPlannedWorkoutsList () {
         renderApp();
     })
 
-    const newWorkoutButton = document.createElement("button");
-    newWorkoutButton.textContent = "Plan New Workout";
+    const controls =
+        document.createElement("div");
 
-    newWorkoutButton.addEventListener("click", () => {
-        const newWorkout = createBlankWorkout();
-    
-        savePlannerDraft(
-            createNewPlannerDraft(newWorkout)
+    controls.classList.add(
+        "workout-library-controls"
+    );
+
+    subtitle.classList.add(
+        "workout-library-subtitle"
+    );
+
+    myWorkoutsToggle.classList.add(
+        "workout-library-filter"
+    );
+
+    if (state.showMyPlannedWorkoutsOnly) {
+        myWorkoutsToggle.classList.add(
+            "active"
         );
-    
-        navigateTo("workoutPlanner");
-    });
+    }
+
+    controls.append(
+        subtitle,
+        myWorkoutsToggle
+    );
 
     const listContainer = document.createElement("div");
+    listContainer.classList.add(
+        "workout-library-list"
+    );
 
-    const sharedWorkouts = state.plannedWorkouts.filter(
+    const sharedWorkouts = (state.plannedWorkouts || []).filter(
         workout => workout.isShared
-        )
+    );
 
     const visibleWorkouts = state.showMyPlannedWorkoutsOnly
         ? sharedWorkouts.filter(
@@ -96,12 +162,19 @@ export function renderPlannedWorkoutsList () {
 
     const sortedWorkouts = [...visibleWorkouts].sort((a, b) => {
         if (a.date !== b.date) {
-            return a.date.localeCompare(b.date);
+            return b.date.localeCompare(a.date);
         }
-
-        const aModified = a.lastModifiedAt || a.createdAt || 0;
-        const bModified = b.lastModifiedAt || b.createdAt || 0;
-
+    
+        const aModified =
+            a.lastModifiedAt ||
+            a.createdAt ||
+            0;
+    
+        const bModified =
+            b.lastModifiedAt ||
+            b.createdAt ||
+            0;
+    
         return bModified - aModified;
     });
 
@@ -115,31 +188,62 @@ export function renderPlannedWorkoutsList () {
         listContainer.appendChild(empty);
     } else {
         sortedWorkouts.forEach(workout => {
-            const card = document.createElement("div");
-            card.classList.add("member-card", "planner-card");
+            const card = document.createElement("button");
+
+            card.type = "button";
+
+            card.classList.add(
+                "workout-library-row"
+            );
 
             const cardContent = document.createElement("div");
-            cardContent.classList.add("planner-card-content");
+            cardContent.classList.add(
+                "workout-library-row-content"
+            );
 
             const topLine = document.createElement("div");
-            topLine.classList.add("member-name");
+            topLine.classList.add(
+                "workout-library-row-meta"
+            );
             topLine.textContent = `${formatDate(workout.date)} - ${workout.aoName || "AO"}`;
 
             const titleLine = document.createElement("div");
-            titleLine.classList.add("stats-line", "planner-title-line");
+            titleLine.classList.add(
+                "workout-library-row-title"
+            );
             titleLine.textContent = workout.title || "(No Title)";
 
             const previewLine = document.createElement("div");
-            previewLine.classList.add("stats-line", "planner-preview-line");
+            previewLine.classList.add(
+                "workout-library-row-preview"
+            );
             previewLine.textContent = workout.thangs
                 ? workout.thangs.split("\n")[0]
                 : (workout.notes ? workout.notes.split("\n")[0] : "No workout details");
 
             if (workout.date === getTodayDate()) {
-                card.classList.add("today-workout");
+                card.classList.add("is-today");
             }
             cardContent.append(topLine, titleLine, previewLine);
-            card.append(cardContent);
+
+            const chevron =
+                document.createElement("span");
+
+            chevron.classList.add(
+                "workout-library-row-chevron"
+            );
+
+            chevron.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            chevron.textContent = "›";
+
+            card.append(
+                cardContent,
+                chevron
+            );
 
             card.addEventListener("click", () => {
                 state.selectedPlannedWorkoutId = workout.id;
@@ -154,10 +258,8 @@ export function renderPlannedWorkoutsList () {
 
     app.append(
         header,
-        title,
-        subtitle,
-        myWorkoutsToggle,
-        newWorkoutButton,
+        titleRow,
+        controls,
         listContainer,
         nav
     );

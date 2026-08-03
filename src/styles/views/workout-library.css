@@ -1,0 +1,601 @@
+/* =========================================================
+   WORKOUT LIBRARY
+   ========================================================= */
+
+   #app.view-plannedWorkouts {
+    --workout-library-accent: #8fd3ff;
+    --workout-library-accent-bright: #c9eaff;
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            7.5rem +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.view-plannedWorkouts
+.workout-library-title-row {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin:
+        0
+        0
+        0.9rem;
+}
+
+.view-plannedWorkouts
+.workout-library-title {
+    min-width: 0;
+
+    margin: 0;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size:
+        clamp(
+            2.15rem,
+            8.5vw,
+            3.45rem
+        );
+
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+}
+
+.view-plannedWorkouts
+.workout-library-new-button {
+    flex: 0 0 auto;
+
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
+
+    margin: 0;
+    padding:
+        0.65rem
+        0.9rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.3);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.07);
+
+    color:
+        var(--workout-library-accent-bright);
+
+    box-shadow: none;
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.015em;
+    white-space: nowrap;
+}
+
+.view-plannedWorkouts
+.workout-library-new-button:hover {
+    border-color:
+        rgba(143, 211, 255, 0.46);
+
+    background:
+        rgba(143, 211, 255, 0.12);
+
+    box-shadow: none;
+}
+
+.view-plannedWorkouts
+.workout-library-new-button:active {
+    transform: scale(0.98);
+}
+
+
+/* =========================================================
+   INTRODUCTION + FILTER
+   ========================================================= */
+
+.view-plannedWorkouts
+.workout-library-controls {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin:
+        0
+        0
+        0.75rem;
+}
+
+.view-plannedWorkouts
+.workout-library-subtitle {
+    min-width: 0;
+    max-width: 29rem;
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.view-plannedWorkouts
+.workout-library-filter {
+    flex: 0 0 auto;
+
+    width: auto;
+    min-width: 0;
+    min-height: 38px;
+
+    margin: 0;
+    padding:
+        0.55rem
+        0.72rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color:
+        rgba(245, 245, 242, 0.68);
+
+    box-shadow: none;
+
+    font-size: 0.69rem;
+    font-weight: 850;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.view-plannedWorkouts
+.workout-library-filter:hover {
+    border-color:
+        rgba(255, 255, 255, 0.22);
+
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    box-shadow: none;
+}
+
+.view-plannedWorkouts
+.workout-library-filter.active {
+    border-color:
+        rgba(143, 211, 255, 0.34);
+
+    background:
+        rgba(143, 211, 255, 0.08);
+
+    color:
+        var(--workout-library-accent-bright);
+}
+
+.view-plannedWorkouts
+.workout-library-filter:active {
+    transform: scale(0.98);
+}
+
+
+/* =========================================================
+   WORKOUT LIST
+   ========================================================= */
+
+.view-plannedWorkouts
+.workout-library-list {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.035),
+            transparent 34%
+        ),
+        rgba(255, 255, 255, 0.012);
+
+    box-shadow:
+        0 12px 32px
+        rgba(0, 0, 0, 0.2);
+
+    box-sizing: border-box;
+}
+
+.view-plannedWorkouts
+.workout-library-row {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 88px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 0.8rem;
+
+    margin: 0;
+    padding:
+        0.88rem
+        0.95rem;
+
+    border: 0;
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    border-radius: 0;
+
+    background: transparent;
+
+    color: var(--text);
+
+    box-shadow: none;
+
+    text-align: left;
+
+    box-sizing: border-box;
+    cursor: pointer;
+
+    transition:
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+.view-plannedWorkouts
+.workout-library-row:last-child {
+    border-bottom: 0;
+}
+
+.view-plannedWorkouts
+.workout-library-row:hover {
+    background:
+        linear-gradient(
+            110deg,
+            rgba(143, 211, 255, 0.055),
+            transparent 68%
+        );
+
+    box-shadow: none;
+}
+
+.view-plannedWorkouts
+.workout-library-row:active {
+    transform: none;
+
+    background:
+        rgba(143, 211, 255, 0.065);
+}
+
+.view-plannedWorkouts
+.workout-library-row:focus-visible {
+    outline:
+        2px solid
+        var(--workout-library-accent);
+
+    outline-offset: -2px;
+}
+
+
+/* =========================================================
+   TODAY STATE
+   ========================================================= */
+
+.view-plannedWorkouts
+.workout-library-row.is-today {
+    background:
+        linear-gradient(
+            110deg,
+            rgba(143, 211, 255, 0.065),
+            transparent 66%
+        );
+}
+
+.view-plannedWorkouts
+.workout-library-row.is-today::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0.75rem;
+    bottom: 0.75rem;
+    left: 0;
+
+    width: 3px;
+
+    border-radius:
+        0
+        999px
+        999px
+        0;
+
+    background:
+        rgba(143, 211, 255, 0.72);
+}
+
+
+/* =========================================================
+   ROW CONTENT
+   ========================================================= */
+
+.view-plannedWorkouts
+.workout-library-row-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.view-plannedWorkouts
+.workout-library-row-meta {
+    width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color:
+        rgba(143, 211, 255, 0.82);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.7rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.view-plannedWorkouts
+.workout-library-row-title {
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 0.37rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.04rem;
+    font-weight: 900;
+    line-height: 1.05;
+}
+
+.view-plannedWorkouts
+.workout-library-row-preview {
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 0.28rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+
+    font-size: 0.75rem;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.view-plannedWorkouts
+.workout-library-row-chevron {
+    flex: 0 0 auto;
+
+    color:
+        rgba(245, 245, 242, 0.35);
+
+    font-family:
+        var(--font-body);
+
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1;
+
+    transition:
+        transform 150ms ease,
+        color 150ms ease;
+}
+
+.view-plannedWorkouts
+.workout-library-row:hover
+.workout-library-row-chevron {
+    color:
+        var(--workout-library-accent);
+
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.view-plannedWorkouts
+.workout-library-list
+.detail-value {
+    margin: 0;
+
+    padding:
+        2rem
+        1.2rem;
+
+    color: var(--muted);
+
+    font-size: 0.86rem;
+    font-weight: 650;
+    line-height: 1.4;
+    text-align: center;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+   @media (max-width: 520px) {
+    .view-plannedWorkouts
+    .workout-library-title-row {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-title {
+        font-size:
+            clamp(
+                2rem,
+                10vw,
+                2.75rem
+            );
+
+        white-space: normal;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-new-button {
+        align-self: flex-start;
+
+        min-height: 42px;
+
+        padding:
+            0.62rem
+            0.85rem;
+
+        font-size: 0.7rem;
+    }
+    
+    .view-plannedWorkouts
+    .workout-library-controls {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-filter {
+        align-self: flex-start;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-row {
+        min-height: 84px;
+
+        gap: 0.55rem;
+
+        padding:
+            0.82rem
+            0.78rem;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-row.is-today {
+        padding-left: 0.9rem;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-row-meta {
+        font-size: 0.65rem;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-row-title {
+        font-size: 0.98rem;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-row-preview {
+        font-size: 0.71rem;
+    }
+}
+
+@media (max-width: 365px) {
+    .view-plannedWorkouts
+    .workout-library-title-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .view-plannedWorkouts
+    .workout-library-new-button {
+        align-self: flex-start;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .view-plannedWorkouts
+    .workout-library-row,
+    .view-plannedWorkouts
+    .workout-library-row-chevron,
+    .view-plannedWorkouts
+    .workout-library-new-button,
+    .view-plannedWorkouts
+    .workout-library-filter {
+        transition: none;
+    }
+}
