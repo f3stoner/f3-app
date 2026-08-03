@@ -125,6 +125,36 @@ function setupRosterDirectoryInteractions({
   let didDrag = false;
   let suppressNextClick = false;
   let scrollFrame = null;
+  let scrubIndicator = null;
+
+  function showScrubIndicator(groupKey) {
+    if (!scrubIndicator) {
+      scrubIndicator =
+        document.createElement("div");
+  
+      scrubIndicator.classList.add(
+        "roster-scrub-indicator"
+      );
+  
+      document.body.appendChild(
+        scrubIndicator
+      );
+    }
+  
+    scrubIndicator.textContent = groupKey;
+  
+    scrubIndicator.classList.add(
+      "roster-scrub-indicator-visible"
+    );
+  }
+  
+  function hideScrubIndicator() {
+    if (!scrubIndicator) return;
+  
+    scrubIndicator.classList.remove(
+      "roster-scrub-indicator-visible"
+    );
+  }
 
   function getGroups() {
     return [
@@ -262,6 +292,7 @@ function setupRosterDirectoryInteractions({
     }
 
     lastScrubbedKey = groupKey;
+    showScrubIndicator(groupKey);
 
     scrollToRosterGroup(
       groupKey,
@@ -421,6 +452,7 @@ function setupRosterDirectoryInteractions({
     isScrubbing = false;
     scrubPointerId = null;
     lastScrubbedKey = null;
+    hideScrubIndicator();
 
     if (didDrag) {
       /*
@@ -520,6 +552,11 @@ function setupRosterDirectoryInteractions({
     document.body.classList.remove(
       "roster-scrubbing"
     );
+
+    hideScrubIndicator();
+
+    scrubIndicator?.remove();
+    scrubIndicator = null;
     
     if (scrollFrame !== null) {
       cancelAnimationFrame(scrollFrame);
