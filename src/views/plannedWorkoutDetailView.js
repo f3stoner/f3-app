@@ -336,8 +336,12 @@ export function renderPlannedWorkoutDetail() {
         }
     }
 
-    const app = document.getElementById("app");
-    app.textContent = "";
+    const app =
+        document.getElementById("app");
+
+    app.replaceChildren();
+    app.className =
+        "view-plannedWorkoutDetail";
 
     const liveWorkout =
         state.plannedWorkoutLaunchMode ===
@@ -371,10 +375,30 @@ export function renderPlannedWorkoutDetail() {
         state.currentUserMember;
 
     const isExecutionMode =
-    state.plannedWorkoutLaunchMode === "execution" ||
-    state.plannedWorkoutLaunchMode === "preview";
+        state.plannedWorkoutLaunchMode === "execution" ||
+        state.plannedWorkoutLaunchMode === "preview";
 
-    const isPreviewMode = state.plannedWorkoutLaunchMode === "preview";    
+    const isPreviewMode = state.plannedWorkoutLaunchMode === "preview";
+
+    if (isExecutionMode) {
+        app.classList.add(
+            "view-plannedWorkoutExecution"
+        );
+    }
+    
+    if (isPreviewMode) {
+        app.classList.add(
+            "is-preview-mode"
+        );
+    } else if (isExecutionMode) {
+        app.classList.add(
+            "is-live-execution"
+        );
+    } else {
+        app.classList.add(
+            "is-detail-mode"
+        );
+    }
 
     app.classList.remove(
         "execution-text-size-normal",
@@ -503,6 +527,10 @@ export function renderPlannedWorkoutDetail() {
     
         backButton.classList.add(
             "secondary-button"
+        );
+
+        backButton.classList.add(
+            "planned-workout-back-button"
         );
     
         backButton.textContent =
@@ -633,10 +661,16 @@ export function renderPlannedWorkoutDetail() {
             }
         });
 
-    const backButton = document.createElement("button");
-    backButton.classList.add("secondary-button");
+    const backButton =
+        document.createElement("button");
     
-    backButton.textContent = "← Back";
+    backButton.classList.add(
+        "secondary-button",
+        "planned-workout-back-button"
+    );
+    
+    backButton.textContent =
+        "← Back";
     
     backButton.addEventListener("click", () => {
         if (state.sharedWorkoutViewMode) {
@@ -668,20 +702,42 @@ export function renderPlannedWorkoutDetail() {
         goBack(workout.isShared ? "plannedWorkoutList" : "myPlanner");
     });
 
-    const title = document.createElement("h1");
-    title.textContent = workout.title || "Planned Workout";
+    const title =
+        document.createElement("h1");
+
+    title.textContent =
+        workout.title ||
+        "Planned Workout";
+
+    title.classList.add(
+        "planned-workout-title"
+    );
+
     if (isExecutionMode) {
-        title.classList.add("execution-title");
+        title.classList.add(
+            "execution-title",
+            "planned-workout-execution-title"
+        );
     }
 
     let executionBanner = null;
 
     if (isExecutionMode) {
         executionBanner = document.createElement("div");
-        executionBanner.classList.add("loaded-workout-banner");
+        executionBanner.classList.add(
+            "loaded-workout-banner",
+            "planned-workout-mode-banner"
+        );
+
         executionBanner.textContent = isPreviewMode
             ? `Previewing workout at ${workout.aoName || "AO"}`
-            : `Running workout at ${workout.aoName || "AO"}`; 
+            : `Running workout at ${workout.aoName || "AO"}`;
+        
+        executionBanner.classList.add(
+            isPreviewMode
+                ? "is-preview"
+                : "is-running"
+        );
     }
 
     let offlineStatusBanner = null;
@@ -704,7 +760,8 @@ export function renderPlannedWorkoutDetail() {
                 document.createElement("div");
 
             offlineStatusBanner.classList.add(
-                "loaded-workout-banner"
+                "loaded-workout-banner",
+                "planned-workout-offline-banner"
             );
 
             if (offlineStatus.status === "waiting") {
@@ -731,14 +788,21 @@ export function renderPlannedWorkoutDetail() {
         if (!isExecutionMode) return null;
     
         const wrapper = document.createElement("div");
-        wrapper.classList.add("execution-text-size-controls");
+        wrapper.classList.add(
+            "execution-text-size-controls",
+            "planned-workout-text-size-controls"
+        );
     
         const label = document.createElement("div");
         label.classList.add("detail-label");
         label.textContent = "Text Size";
     
         const buttonRow = document.createElement("div");
-        buttonRow.classList.add("button-row", "execution-text-size-row");
+        buttonRow.classList.add(
+            "button-row",
+            "execution-text-size-row",
+            "planned-workout-text-size-row"
+        );
     
         ["normal", "large", "xl"].forEach(size => {
             const button = document.createElement("button");
@@ -773,7 +837,11 @@ export function renderPlannedWorkoutDetail() {
 
         return timers.map(timer => {
             const button = document.createElement("button");
-            button.classList.add("secondary-button", "workout-timer-button");
+            button.classList.add(
+                "secondary-button",
+                "workout-timer-button",
+                "planned-workout-timer-button"
+            );
             const timerName = timer.label || "Timer";
             button.textContent = `▶ ${timerName} · ${formatTimerSummary(timer)}`;
 
@@ -1386,35 +1454,89 @@ export function renderPlannedWorkoutDetail() {
         return panel;
     }
 
-    function createDetailSection (labelText, valueText, { hideIfEmpty = false} = {}) {
-        const isEmpty = !valueText || valueText === "-";
-
-        if (hideIfEmpty && isEmpty) {
+    function createDetailSection(
+        labelText,
+        valueText,
+        {
+            hideIfEmpty = false,
+            sectionClass = null,
+        } = {}
+    ) {
+        const isEmpty =
+            !valueText ||
+            valueText === "-";
+    
+        if (
+            hideIfEmpty &&
+            isEmpty
+        ) {
             return null;
         }
-        
-        const section = document.createElement("div");
-        section.classList.add("section");
-        if (isExecutionMode) {
-            section.classList.add("execution-section");
+    
+        const section =
+            document.createElement(
+                "section"
+            );
+    
+        section.classList.add(
+            "section",
+            "planned-workout-section"
+        );
+    
+        if (sectionClass) {
+            section.classList.add(
+                sectionClass
+            );
         }
-
-        const label = document.createElement("div");
-        label.textContent = labelText;
-        label.classList.add("detail-label");
+    
         if (isExecutionMode) {
-            label.classList.add("execution-label");
+            section.classList.add(
+                "execution-section",
+                "planned-workout-execution-section"
+            );
         }
-
-        const value = document.createElement("div");
-        value.textContent = valueText;
-        value.classList.add("detail-value");
+    
+        const label =
+            document.createElement("div");
+    
+        label.textContent =
+            labelText;
+    
+        label.classList.add(
+            "detail-label",
+            "planned-workout-section-label"
+        );
+    
         if (isExecutionMode) {
-            value.classList.add("execution-text");
+            label.classList.add(
+                "execution-label",
+                "planned-workout-execution-label"
+            );
         }
-
-        section.append(label, value);
-
+    
+        const value =
+            document.createElement("div");
+    
+        value.textContent =
+            valueText;
+    
+        value.classList.add(
+            "detail-value",
+            "planned-workout-section-value"
+        );
+    
+        if (isExecutionMode) {
+            value.classList.add(
+                "execution-text",
+                "planned-workout-execution-text"
+            );
+        }
+    
+        section.append(
+            label,
+            value
+        );
+    
         return section;
     }
 
@@ -1434,8 +1556,31 @@ export function renderPlannedWorkoutDetail() {
             .join("\n\n");
     }
 
-    const dateSection = isExecutionMode ? null : createDetailSection("Date", formatDate(workout.date));
-    const aoSection = isExecutionMode ? null :createDetailSection("AO", workout.aoName || "-");
+    const dateSection =
+        isExecutionMode
+            ? null
+            : createDetailSection(
+                "Date",
+                formatDate(
+                    workout.date
+                ),
+                {
+                    sectionClass:
+                        "planned-workout-date-section",
+                }
+            );
+
+    const aoSection =
+        isExecutionMode
+            ? null
+            : createDetailSection(
+                "AO",
+                workout.aoName || "-",
+                {
+                    sectionClass:
+                        "planned-workout-ao-section",
+                }
+            );
 
     let sourceSection = null;
 
@@ -1446,7 +1591,15 @@ export function renderPlannedWorkoutDetail() {
 
         if (sourceWorkout) {
             const sourceLabel = sourceWorkout.title || `${formatDate(sourceWorkout.date)} - ${sourceWorkout.aoName || "AO"}`;
-            sourceSection = createDetailSection("Copied From Workout", sourceLabel);
+            sourceSection =
+                createDetailSection(
+                    "Copied From Workout",
+                    sourceLabel,
+                    {
+                        sectionClass:
+                            "planned-workout-source-section",
+                    }
+                );
         }
     }
 
@@ -1457,48 +1610,179 @@ export function renderPlannedWorkoutDetail() {
 
         if (sourceSession) {
             const sourceLabel = `${formatDate(sourceSession.date)} = ${sourceSession.aoName || "AO"}`;
-            sourceSection = createDetailSection("Copied From Session", sourceLabel);
+            sourceSection =
+                createDetailSection(
+                    "Copied From Session",
+                    sourceLabel,
+                    {
+                        sectionClass:
+                            "planned-workout-source-section",
+                    }
+                );
         }
     }
 
-    const introductionSection = createDetailSection(
-        getWorkoutFieldLabel(state, "introduction"),
-        resolvedIntroduction || "",
-        { hideIfEmpty: isExecutionMode }
+    const introductionSection =
+        createDetailSection(
+            getWorkoutFieldLabel(
+                state,
+                "introduction"
+            ),
+            resolvedIntroduction || "",
+            {
+                hideIfEmpty:
+                    isExecutionMode,
+
+                sectionClass:
+                    "planned-workout-introduction-section",
+            }
         );
-    const warmoramaSection = createDetailSection(getWorkoutFieldLabel(state, "warmorama"), workout.warmorama || "-", { hideIfEmpty: isExecutionMode });
-    const thangSections = normalizeThangSections(workout)
-        .map(section => createDetailSection(
-            section.title || getWorkoutFieldLabel(state, "thangs"),
-            section.content || "-",
-            { hideIfEmpty: isExecutionMode }
-        ))
-        .filter(Boolean);
-    const finisherSection = createDetailSection(getWorkoutFieldLabel(state, "finisher"), workout.finisher || "-", { hideIfEmpty: isExecutionMode });
-    const notesSection = createDetailSection(isExecutionMode ? "Closing / Notes" : getWorkoutFieldLabel(state, "notes"), workout.notes || "-", { hideIfEmpty: isExecutionMode });
-    const announcementSection = createDetailSection(
-        "Announcements",
-        effectiveAnnouncements.text || "-",
-        { hideIfEmpty: isExecutionMode }
-    );
+
+    const warmoramaSection =
+        createDetailSection(
+            getWorkoutFieldLabel(
+                state,
+                "warmorama"
+            ),
+            workout.warmorama || "-",
+            {
+                hideIfEmpty:
+                    isExecutionMode,
+
+                sectionClass:
+                    "planned-workout-warmorama-section",
+            }
+        );
+
+    const normalizedThangSections =
+        normalizeThangSections(
+            workout
+        );
+    
+    const thangSectionEntries =
+        normalizedThangSections
+            .map(section => {
+                const sectionElement =
+                    createDetailSection(
+                        section.title ||
+                            getWorkoutFieldLabel(
+                                state,
+                                "thangs"
+                            ),
+    
+                        section.content ||
+                            "-",
+    
+                        {
+                            hideIfEmpty:
+                                isExecutionMode,
+    
+                            sectionClass:
+                                "planned-workout-thang-section",
+                        }
+                    );
+    
+                if (!sectionElement) {
+                    return null;
+                }
+    
+                return {
+                    thang:
+                        section,
+    
+                    sectionElement,
+                };
+            })
+            .filter(Boolean);
+    
+    const finisherSection =
+        createDetailSection(
+            getWorkoutFieldLabel(
+                state,
+                "finisher"
+            ),
+            workout.finisher || "-",
+            {
+                hideIfEmpty:
+                    isExecutionMode,
+
+                sectionClass:
+                    "planned-workout-finisher-section",
+            }
+        );
+
+    const notesSection =
+        createDetailSection(
+            isExecutionMode
+                ? "Closing / Notes"
+                : getWorkoutFieldLabel(
+                    state,
+                    "notes"
+                ),
+
+            workout.notes || "-",
+
+            {
+                hideIfEmpty:
+                    isExecutionMode,
+
+                sectionClass:
+                    "planned-workout-notes-section",
+            }
+        );
+
+    const announcementSection =
+        createDetailSection(
+            "Announcements",
+            effectiveAnnouncements.text ||
+                "-",
+            {
+                hideIfEmpty:
+                    isExecutionMode,
+
+                sectionClass:
+                    "planned-workout-announcement-section",
+            }
+        );
     
     announcementSection?.classList.add("workout-announcement-section");
 
-    const thirdFSection = createDetailSection(
-        "Third F",
-        effectiveThirdF.text || "-",
-        {
-            hideIfEmpty: isExecutionMode,
-        }
-    );
+    const thirdFSection =
+        createDetailSection(
+            "Third F",
+            effectiveThirdF.text ||
+                "-",
+            {
+                hideIfEmpty:
+                    isExecutionMode,
 
-    const visibilitySection = createDetailSection(
-        "Visibility",
-        workout.isShared ? "Workout Library" : "My Planner"
-    );
+                sectionClass:
+                    "planned-workout-third-f-section",
+            }
+        );
 
-    const editButton = document.createElement("button");
-    editButton.textContent = "Edit Workout";
+    const visibilitySection =
+        createDetailSection(
+            "Visibility",
+            workout.isShared
+                ? "Workout Library"
+                : "My Planner",
+            {
+                sectionClass:
+                    "planned-workout-visibility-section",
+            }
+        );
+
+    const editButton =
+        document.createElement("button");
+    
+    editButton.classList.add(
+        "planned-workout-edit-button"
+    );
+    
+    editButton.textContent =
+        "Edit Workout";
+    
     editButton.addEventListener("click", () => {
         if (isPreviewMode) {
             endWorkoutExecution();
@@ -1530,8 +1814,18 @@ export function renderPlannedWorkoutDetail() {
         navigateTo("workoutPlanner");
     });
 
-    const logButton = document.createElement("button");
-    logButton.textContent = isExecutionMode ? "Log This Session" : "Log This Workout";
+    const logButton =
+        document.createElement("button");
+
+    logButton.classList.add(
+        "planned-workout-log-button"
+    );
+
+    logButton.textContent =
+        isExecutionMode
+            ? "Log This Session"
+            : "Log This Workout";
+
     logButton.addEventListener("click", () => {
         if (isExecutionMode && !isPreviewMode) {
             endWorkoutExecution();
@@ -1589,7 +1883,9 @@ export function renderPlannedWorkoutDetail() {
     });
 
     const runWorkoutButton = document.createElement("button");
-    runWorkoutButton.classList.add("primary-button");
+    runWorkoutButton.classList.add(
+        "planned-workout-run-button"
+    );
     runWorkoutButton.textContent = "Run Workout";
 
     runWorkoutButton.addEventListener("click", () => {
@@ -1634,6 +1930,9 @@ export function renderPlannedWorkoutDetail() {
     }
 
     const copyButton = document.createElement("button");
+    copyButton.classList.add(
+        "planned-workout-copy-button"
+    );
     copyButton.textContent = "Copy to New Plan";
 
     copyButton.addEventListener("click", () => {
@@ -1724,7 +2023,10 @@ export function renderPlannedWorkoutDetail() {
     if (canDeleteWorkout) {
         deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete Workout";
-        deleteButton.classList.add("danger-button");
+        deleteButton.classList.add(
+            "danger-button",
+            "planned-workout-delete-button"
+        );
 
         deleteButton.addEventListener("click", async () => {
             const confirmed = confirm("Are you sure you want to delete this workout?");
@@ -1747,6 +2049,9 @@ export function renderPlannedWorkoutDetail() {
 
     const preblastButton = document.createElement("button");
     preblastButton.textContent = "Create Preblast";
+    preblastButton.classList.add(
+        "planned-workout-preblast-button"
+    );
 
     preblastButton.addEventListener("click", () => {
         const matchingQSlot = findMatchingQSlotForWorkout(workout);
@@ -1789,6 +2094,9 @@ export function renderPlannedWorkoutDetail() {
     });
 
     const shareButton = document.createElement("button");
+    shareButton.classList.add(
+        "planned-workout-share-button"
+    );
     shareButton.textContent = "Share Workout";
 
     shareButton.addEventListener("click", async () => {
@@ -1824,21 +2132,32 @@ export function renderPlannedWorkoutDetail() {
         }
     });
 
-    const primaryActionsRow = document.createElement("div");
-    primaryActionsRow.classList.add("button-row", "primary-actions-row");
+    const primaryActionsRow =
+        document.createElement("div");
 
-    const secondaryActionsRow = document.createElement("div");
-    secondaryActionsRow.classList.add("button-row", "secondary-actions-row");
+    primaryActionsRow.classList.add(
+        "button-row",
+        "primary-actions-row",
+        "planned-workout-primary-actions"
+    );
+
+    const secondaryActionsRow =
+        document.createElement("div");
+
+    secondaryActionsRow.classList.add(
+        "button-row",
+        "secondary-actions-row",
+        "planned-workout-secondary-actions"
+    );
 
     if (isExecutionMode) {
         editButton.textContent = isPreviewMode ? "Back to Edit" : "Edit Workout";
-        editButton.classList.add("secondary-button");
     
         if (isPreviewMode) {
             primaryActionsRow.append(editButton);
         } else {
             logButton.textContent = "Finish & Log Session";
-            logButton.classList.add("primary-button");
+
             primaryActionsRow.append(logButton);
     
             if (canEditWorkout) {
@@ -1864,19 +2183,38 @@ export function renderPlannedWorkoutDetail() {
         }
     }
 
-    const header = document.createElement("div");
-    header.classList.add("view-header", "workout-detail-header");
+    const header =
+        document.createElement("header");
 
-    const headerTopRow = document.createElement("div");
-    headerTopRow.classList.add("view-header-top-row");
+    header.classList.add(
+        "view-header",
+        "workout-detail-header",
+        "planned-workout-header"
+    );
 
-    const headerActions = document.createElement("div");
-    headerActions.classList.add("view-header-actions");
+    const headerTopRow =
+        document.createElement("div");
+
+    headerTopRow.classList.add(
+        "view-header-top-row",
+        "planned-workout-header-top-row"
+    );
+
+    const headerActions =
+        document.createElement("div");
+
+    headerActions.classList.add(
+        "view-header-actions",
+        "planned-workout-header-actions"
+    );
 
     if (canEditWorkout && !isPreviewMode) {
         const headerEditButton = document.createElement("button");
         headerEditButton.type = "button";
-        headerEditButton.classList.add("secondary-button");
+        headerEditButton.classList.add(
+            "secondary-button",
+            "planned-workout-header-edit-button"
+        );
         headerEditButton.textContent = "Edit";
 
         headerEditButton.addEventListener("click", () => {
@@ -1889,37 +2227,138 @@ export function renderPlannedWorkoutDetail() {
     headerTopRow.append(backButton, headerActions)
     header.append(headerTopRow, title);
 
+    const workoutMeta =
+        document.createElement("div");
+
+    workoutMeta.classList.add(
+        "planned-workout-meta"
+    );
+
+    workoutMeta.append(
+        ...(dateSection
+            ? [dateSection]
+            : []),
+
+        ...(aoSection
+            ? [aoSection]
+            : []),
+
+        ...(
+            !isExecutionMode
+                ? [visibilitySection]
+                : []
+        ),
+
+        ...(
+            !isExecutionMode &&
+            sourceSection
+                ? [sourceSection]
+                : []
+        )
+    );
+
+    const workoutContent =
+        document.createElement("main");
+
+    workoutContent.classList.add(
+        "planned-workout-content"
+    );
+
+    workoutContent.append(
+        ...(introductionSection
+            ? [introductionSection]
+            : []),
+
+        ...(warmoramaSection
+            ? [warmoramaSection]
+            : []),
+
+        ...createTimerButtonsForSection(
+            "warmorama"
+        ),
+
+        ...thangSectionEntries.flatMap(
+            ({
+                thang,
+                sectionElement,
+            }) => {
+                return [
+                    sectionElement,
+        
+                    ...createTimerButtonsForSection(
+                        thang.id
+                    ),
+                ];
+            }
+        ),
+
+        ...(finisherSection
+            ? [finisherSection]
+            : []),
+
+        ...createTimerButtonsForSection(
+            "finisher"
+        ),
+
+        ...(notesSection
+            ? [notesSection]
+            : []),
+
+        ...(thirdFSection
+            ? [thirdFSection]
+            : []),
+
+        ...(announcementSection
+            ? [announcementSection]
+            : [])
+    );
+
+    const workoutActions =
+        document.createElement("div");
+
+    workoutActions.classList.add(
+        "planned-workout-actions"
+    );
+
+    workoutActions.append(
+        primaryActionsRow,
+
+        ...(
+            secondaryActionsRow
+                .childElementCount > 0
+                ? [secondaryActionsRow]
+                : []
+        )
+    );
+
     const activeTimerPanel = createActiveTimerPanel();
 
     const executionTextSizeControls = createExecutionTextSizeControls();
 
     app.append(
         header,
-        ...(executionBanner ? [executionBanner] : []),
-        ...(offlineStatusBanner ? [offlineStatusBanner] : []),
-        ...(executionTextSizeControls ? [executionTextSizeControls] : []),
-        ...(dateSection ? [dateSection] : []),
-        ...(aoSection ? [aoSection] : []),
-        ...(!isExecutionMode ? [visibilitySection] : []),
-        ...(!isExecutionMode && sourceSection ? [sourceSection] : []),
-        ...(introductionSection ? [introductionSection] : []),
-        ...(warmoramaSection ? [warmoramaSection] : []),
-        ...createTimerButtonsForSection("warmorama"),
-        ...thangSections.flatMap((sectionEl, index) => {
-            const thang = normalizeThangSections(workout)[index];
-        
-            return [
-                sectionEl,
-                ...createTimerButtonsForSection(thang.id),
-            ];
-        }),
-        ...(finisherSection ? [finisherSection] : []),
-        ...createTimerButtonsForSection("finisher"),
-        ...(notesSection ? [notesSection] : []),
-        ...(thirdFSection ? [thirdFSection] : []),
-        ...(announcementSection ? [announcementSection] : []),
-        primaryActionsRow,
-        ...(secondaryActionsRow.childElementCount > 0 ? [secondaryActionsRow] : []),
+    
+        ...(executionBanner
+            ? [executionBanner]
+            : []),
+    
+        ...(offlineStatusBanner
+            ? [offlineStatusBanner]
+            : []),
+    
+        ...(executionTextSizeControls
+            ? [executionTextSizeControls]
+            : []),
+    
+        ...(
+            workoutMeta
+                .childElementCount > 0
+                ? [workoutMeta]
+                : []
+        ),
+    
+        workoutContent,
+        workoutActions
     );
 
     if (activeTimerPanel) {
