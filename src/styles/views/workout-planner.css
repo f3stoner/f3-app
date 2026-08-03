@@ -1,0 +1,1168 @@
+/* =========================================================
+   WORKOUT PLANNER
+   ========================================================= */
+
+   #app.view-workoutPlanner {
+    --workout-planner-accent: #8fd3ff;
+    --workout-planner-accent-bright: #c9eaff;
+    --workout-planner-accent-soft:
+        rgba(143, 211, 255, 0.08);
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            8.5rem +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+}
+
+
+/* =========================================================
+   PAGE IDENTITY
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-title {
+    margin:
+        0
+        0
+        0.6rem;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size:
+        clamp(
+            2.35rem,
+            9vw,
+            3.55rem
+        );
+
+    font-weight: 900;
+    line-height: 0.9;
+
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+}
+
+.view-workoutPlanner
+.workout-planner-subtitle {
+    max-width: 35rem;
+
+    margin:
+        0
+        0
+        1.3rem;
+
+    color: var(--muted);
+
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.view-workoutPlanner
+.planner-emphasis-badge {
+    margin:
+        0
+        0
+        1rem;
+}
+
+
+/* =========================================================
+   BROWSE / COPY ENTRY POINT
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-browse-row {
+    margin:
+        0
+        0
+        1.7rem;
+}
+
+.view-workoutPlanner
+.browse-workout-button {
+    width: 100%;
+    min-height: 48px;
+
+    margin: 0;
+    padding:
+        0.8rem
+        1rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.28);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.055);
+
+    color:
+        var(--workout-planner-accent-bright);
+
+    box-shadow: none;
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.84rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.035em;
+}
+
+.view-workoutPlanner
+.browse-workout-button:hover {
+    border-color:
+        rgba(143, 211, 255, 0.42);
+
+    background:
+        rgba(143, 211, 255, 0.1);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   SECTION RHYTHM
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-section {
+    width: 100%;
+    min-width: 0;
+
+    margin-bottom: 1.8rem;
+
+    box-sizing: border-box;
+}
+
+.view-workoutPlanner
+.workout-planner-section-title {
+    margin:
+        0
+        0
+        0.85rem;
+
+    color:
+        rgba(245, 245, 242, 0.56);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.75rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.view-workoutPlanner
+.workout-planner-writing-section {
+    padding-top: 0.2rem;
+}
+
+.view-workoutPlanner
+.workout-planner-writing-section
+> .detail-label,
+.view-workoutPlanner
+.workout-planner-thangs-section
+> .detail-label,
+.view-workoutPlanner
+.workout-planner-visibility-section
+> .detail-label {
+    margin:
+        0
+        0
+        0.55rem;
+
+    color:
+        rgba(245, 245, 242, 0.62);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   WORKOUT DETAILS
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-setup-section {
+    padding:
+        1rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.17);
+}
+
+.view-workoutPlanner
+.workout-planner-setup-section
+.detail-label {
+    margin:
+        0.9rem
+        0
+        0.4rem;
+
+    color:
+        rgba(245, 245, 242, 0.5);
+
+    font-size: 0.67rem;
+    font-weight: 900;
+    letter-spacing: 0.09em;
+}
+
+.view-workoutPlanner
+.workout-planner-setup-section
+.workout-planner-section-title
++ .detail-label {
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+.view-workoutPlanner
+input,
+.view-workoutPlanner
+select,
+.view-workoutPlanner
+textarea.notes,
+.view-workoutPlanner
+.fake-date-display {
+    width: 100%;
+    max-width: 100%;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.17);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: var(--text);
+
+    box-shadow: none;
+
+    box-sizing: border-box;
+}
+
+.view-workoutPlanner
+input,
+.view-workoutPlanner
+select,
+.view-workoutPlanner
+.fake-date-display {
+    min-height: 48px;
+
+    margin-bottom: 0;
+    padding:
+        0.78rem
+        0.9rem;
+
+    font-size: 0.95rem;
+    font-weight: 650;
+}
+
+.view-workoutPlanner
+textarea.notes {
+    min-height: 190px;
+
+    margin:
+        0
+        0
+        0.55rem;
+
+    padding:
+        1rem;
+
+    font-family:
+        var(--font-body);
+
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.55;
+
+    resize: vertical;
+}
+
+.view-workoutPlanner
+input::placeholder,
+.view-workoutPlanner
+textarea::placeholder {
+    color:
+        rgba(154, 154, 146, 0.72);
+}
+
+.view-workoutPlanner
+input:focus,
+.view-workoutPlanner
+select:focus,
+.view-workoutPlanner
+textarea.notes:focus,
+.view-workoutPlanner
+.fake-date-field:focus-within
+.fake-date-display {
+    outline: none;
+
+    border-color:
+        rgba(143, 211, 255, 0.6);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(143, 211, 255, 0.1);
+}
+
+
+/* =========================================================
+   SECTION HEADER + LIBRARY ACTION
+   ========================================================= */
+
+.view-workoutPlanner
+.planner-section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    margin:
+        0
+        0
+        0.55rem;
+}
+
+.view-workoutPlanner
+.planner-section-header-row
+.detail-label {
+    margin: 0;
+
+    color:
+        rgba(245, 245, 242, 0.62);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.view-workoutPlanner
+.planner-ideas-button {
+    flex: 0 0 auto;
+
+    width: auto;
+    min-height: 32px;
+
+    margin: 0;
+    padding:
+        0.4rem
+        0.58rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.18);
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(143, 211, 255, 0.045);
+
+    color:
+        rgba(201, 234, 255, 0.8);
+
+    box-shadow: none;
+
+    font-size: 0.67rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.view-workoutPlanner
+.planner-ideas-button:hover {
+    border-color:
+        rgba(143, 211, 255, 0.35);
+
+    background:
+        rgba(143, 211, 255, 0.09);
+
+    color:
+        var(--workout-planner-accent-bright);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   TEMPLATE / TIMER TOOLING
+   ========================================================= */
+
+.view-workoutPlanner
+.section-template-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+
+    margin:
+        0
+        0
+        0.35rem;
+}
+
+.view-workoutPlanner
+.section-template-controls
+button,
+.view-workoutPlanner
+.timer-list
+> button {
+    flex: 0 0 auto;
+
+    width: auto;
+    min-height: 32px;
+
+    margin: 0;
+    padding:
+        0.4rem
+        0.55rem;
+
+    border: 0;
+    border-radius:
+        var(--radius-sm);
+
+    background: transparent;
+    color: var(--muted);
+
+    box-shadow: none;
+
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.view-workoutPlanner
+.section-template-controls
+button:hover,
+.view-workoutPlanner
+.timer-list
+> button:hover {
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    color: var(--text);
+
+    box-shadow: none;
+}
+
+.view-workoutPlanner
+.timer-list {
+    margin-top: 0.25rem;
+}
+
+.view-workoutPlanner
+.timer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    padding:
+        0.65rem
+        0;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+}
+
+.view-workoutPlanner
+.timer-row
+.stats-line {
+    min-width: 0;
+
+    color: var(--muted);
+
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.view-workoutPlanner
+.timer-row
+button {
+    flex: 0 0 auto;
+
+    margin: 0;
+    padding:
+        0.35rem
+        0.5rem;
+
+    border: 0;
+
+    background: transparent;
+    color: var(--muted);
+
+    box-shadow: none;
+
+    font-size: 0.68rem;
+}
+
+.view-workoutPlanner
+.section-template-controls,
+.view-workoutPlanner
+.timer-list {
+    margin-top: 0.15rem;
+}
+
+.view-workoutPlanner
+.timer-list > button {
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   BUILDING BLOCKS PROMO
+   ========================================================= */
+
+.view-workoutPlanner
+.building-blocks-promo {
+    margin:
+        0.8rem
+        0
+        0;
+
+    padding:
+        0.9rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-workoutPlanner
+.building-blocks-promo
+.detail-label {
+    margin: 0;
+
+    color:
+        rgba(245, 245, 242, 0.52);
+}
+
+.view-workoutPlanner
+.building-blocks-promo
+.stats-line {
+    margin-top: 0.35rem;
+
+    color: var(--muted);
+
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.view-workoutPlanner
+.building-blocks-promo
+button {
+    width: auto;
+
+    margin:
+        0.55rem
+        0
+        0;
+
+    padding:
+        0.4rem
+        0;
+
+    border: 0;
+
+    background: transparent;
+    color:
+        var(--workout-planner-accent-bright);
+
+    box-shadow: none;
+
+    font-size: 0.72rem;
+}
+
+
+/* =========================================================
+   THANGS
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-thangs-section {
+    margin-top: 0.25rem;
+}
+
+.view-workoutPlanner
+.thang-sections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.view-workoutPlanner
+.thang-section-card {
+    margin: 0;
+    padding:
+        0.9rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    box-shadow: none;
+}
+
+.view-workoutPlanner
+.thang-section-title-row {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        auto;
+
+    align-items: center;
+    gap: 0.45rem;
+
+    margin-bottom: 0.65rem;
+}
+
+.view-workoutPlanner
+.thang-section-title-row
+input {
+    min-width: 0;
+    min-height: 42px;
+
+    margin: 0;
+    padding:
+        0.65rem
+        0.75rem;
+
+    border-color:
+        rgba(255, 255, 255, 0.12);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.view-workoutPlanner
+.thang-section-title-row
+button {
+    width: auto;
+    min-height: 38px;
+
+    margin: 0;
+    padding:
+        0.55rem
+        0.62rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius:
+        var(--radius-sm);
+
+    background: transparent;
+    color: var(--muted);
+
+    box-shadow: none;
+
+    font-size: 0.67rem;
+    font-weight: 800;
+}
+
+.view-workoutPlanner
+.thang-section-title-row
+button:hover {
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    color: var(--text);
+
+    box-shadow: none;
+}
+
+.view-workoutPlanner
+.thang-section-card
+textarea.notes {
+    min-height: 190px;
+}
+
+.view-workoutPlanner
+.thang-add-button {
+    width: 100%;
+    min-height: 46px;
+
+    margin: 0;
+    padding:
+        0.75rem;
+
+    border:
+        1px dashed
+        rgba(143, 211, 255, 0.28);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.035);
+
+    color:
+        var(--workout-planner-accent-bright);
+
+    box-shadow: none;
+
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.view-workoutPlanner
+.thang-add-button:hover {
+    border-style: solid;
+
+    background:
+        rgba(143, 211, 255, 0.08);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   AUTOCOMPLETE RESULTS
+   ========================================================= */
+
+.view-workoutPlanner
+.exercise-suggestions {
+    overflow: hidden;
+
+    margin:
+        -0.2rem
+        0
+        0.55rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        var(--surface);
+
+    box-shadow:
+        0 16px 34px
+        rgba(0, 0, 0, 0.32);
+}
+
+.view-workoutPlanner
+.exercise-suggestion-button {
+    width: 100%;
+    min-height: 52px;
+
+    display: block;
+
+    margin: 0;
+    padding:
+        0.7rem
+        0.8rem;
+
+    border: 0;
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--text);
+
+    box-shadow: none;
+
+    text-align: left;
+}
+
+.view-workoutPlanner
+.exercise-suggestion-button:last-child {
+    border-bottom: 0;
+}
+
+.view-workoutPlanner
+.exercise-suggestion-button:hover {
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   VISIBILITY
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-visibility-section {
+    padding:
+        1rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.11);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.015);
+}
+
+.view-workoutPlanner
+.workout-planner-visibility-section
+select {
+    margin: 0;
+}
+
+
+/* =========================================================
+   RESET ACTIONS
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-third-f-section
+> .secondary-button,
+.view-workoutPlanner
+.workout-planner-announcements-section
+> .secondary-button {
+    width: auto;
+
+    margin:
+        0.2rem
+        0
+        0;
+
+    padding:
+        0.4rem
+        0;
+
+    border: 0;
+
+    background: transparent;
+    color:
+        var(--workout-planner-accent-bright);
+
+    box-shadow: none;
+
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   STICKY ACTIONS
+   ========================================================= */
+
+.view-workoutPlanner
+.workout-planner-sticky-actions {
+    position: sticky;
+
+    bottom: 0;
+    z-index: 40;
+
+    display: grid;
+    grid-template-columns:
+        0.8fr
+        1fr
+        1.25fr;
+
+    gap: 0.55rem;
+
+    margin:
+        2rem
+        -20px
+        -20px;
+
+    padding:
+        0.75rem
+        20px
+        calc(
+            0.75rem +
+            env(safe-area-inset-bottom)
+        );
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    background:
+        rgba(0, 0, 0, 0.94);
+
+    backdrop-filter:
+        blur(14px);
+}
+
+.view-workoutPlanner
+.workout-planner-sticky-actions
+button {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+
+    margin: 0;
+    padding:
+        0.7rem
+        0.65rem;
+
+    border-radius:
+        var(--radius-sm);
+
+    box-shadow: none;
+
+    font-size: 0.75rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-workoutPlanner
+.workout-planner-sticky-actions
+button:first-child {
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    background: transparent;
+    color: var(--muted);
+}
+
+.view-workoutPlanner
+.workout-planner-sticky-actions
+button:nth-child(2) {
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.24);
+
+    background:
+        rgba(143, 211, 255, 0.07);
+
+    color:
+        var(--workout-planner-accent-bright);
+}
+
+.view-workoutPlanner
+.workout-planner-sticky-actions
+button:last-child {
+    border-color:
+        var(--primary);
+
+    background:
+        var(--primary);
+
+    color:
+        var(--text-inverse);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+    .view-workoutPlanner
+    .workout-planner-title {
+        font-size:
+            clamp(
+                2.15rem,
+                10vw,
+                2.8rem
+            );
+    }
+
+    .view-workoutPlanner
+    .workout-planner-subtitle {
+        font-size: 0.86rem;
+    }
+
+    .view-workoutPlanner
+    .workout-planner-section {
+        margin-bottom: 1.55rem;
+    }
+
+    .view-workoutPlanner
+    .workout-planner-setup-section,
+    .view-workoutPlanner
+    .thang-section-card,
+    .view-workoutPlanner
+    .workout-planner-visibility-section {
+        padding: 0.85rem;
+    }
+
+    .view-workoutPlanner
+    textarea.notes {
+        min-height: 180px;
+
+        padding: 0.9rem;
+
+        font-size: 0.97rem;
+    }
+
+    .view-workoutPlanner
+    .thang-section-title-row {
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto
+            auto;
+    }
+
+    .view-workoutPlanner
+    .thang-section-title-row
+    .planner-ideas-button {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .view-workoutPlanner
+    .thang-section-title-row
+    button:last-child {
+        grid-column: auto;
+        grid-row: auto;
+
+        justify-self: auto;
+
+        min-height: 38px;
+        padding: 0.5rem;
+
+        border:
+            1px solid
+            rgba(239, 68, 68, 0.16);
+
+        color:
+            rgba(239, 68, 68, 0.72);
+    }
+
+    .view-workoutPlanner
+    .workout-planner-sticky-actions {
+        grid-template-columns:
+            0.78fr
+            0.95fr
+            1.2fr;
+
+        gap: 0.4rem;
+    }
+
+    .view-workoutPlanner
+    .workout-planner-sticky-actions
+    button {
+        min-height: 46px;
+
+        padding:
+            0.65rem
+            0.4rem;
+
+        font-size: 0.68rem;
+    }
+}
+
+
+/* =========================================================
+   VERY NARROW PHONES
+   ========================================================= */
+
+@media (max-width: 365px) {
+    .view-workoutPlanner
+    .workout-planner-sticky-actions {
+        grid-template-columns:
+            0.72fr
+            0.9fr
+            1.15fr;
+
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .view-workoutPlanner
+    .workout-planner-sticky-actions
+    button {
+        font-size: 0.62rem;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .view-workoutPlanner
+    button,
+    .view-workoutPlanner
+    input,
+    .view-workoutPlanner
+    select,
+    .view-workoutPlanner
+    textarea {
+        transition: none;
+    }
+}

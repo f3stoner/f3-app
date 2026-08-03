@@ -27,8 +27,12 @@ import { getPlannerDraft, savePlannerDraft, clearPlannerDraft, createNewPlannerD
 let persistDraftTimeout = null;
 
 export function renderWorkoutPlanner() {
-    const app = document.getElementById("app");
-    app.textContent = "";
+    const app =
+        document.getElementById("app");
+
+    app.replaceChildren();
+    app.className =
+        "view-workoutPlanner";
 
     cleanupMainMenu();
 
@@ -130,6 +134,56 @@ export function renderWorkoutPlanner() {
         plannerDraft = savePlannerDraft(
             createNewPlannerDraft(draftWorkout)
         );
+    }
+
+    function createPlannerWritingSection({
+        className,
+        header,
+        input,
+        suggestions = null,
+        templateControls = null,
+        timers = null,
+        extraContent = null,
+    }) {
+        const section =
+            document.createElement("section");
+    
+        section.classList.add(
+            "workout-planner-section",
+            "workout-planner-writing-section",
+            className
+        );
+    
+        section.append(
+            header,
+            input
+        );
+    
+        if (suggestions) {
+            section.appendChild(
+                suggestions
+            );
+        }
+    
+        if (templateControls) {
+            section.appendChild(
+                templateControls
+            );
+        }
+    
+        if (timers) {
+            section.appendChild(
+                timers
+            );
+        }
+    
+        if (extraContent) {
+            section.appendChild(
+                extraContent
+            );
+        }
+    
+        return section;
     }
 
     function buildCurrentPlannerDraft() {
@@ -582,6 +636,19 @@ export function renderWorkoutPlanner() {
 
     const title = document.createElement("h1");
     title.textContent = isEditing ? "Edit Workout" : "Plan Workout";
+    title.classList.add(
+        "workout-planner-title"
+    );
+    
+    const plannerSubtitle =
+        document.createElement("div");
+    
+    plannerSubtitle.classList.add(
+        "workout-planner-subtitle"
+    );
+    
+    plannerSubtitle.textContent =
+        "Build your beatdown from top to bottom. Your draft saves as you work.";
 
     function findMatchingQSlotForDraftWorkout() {
         if (draftWorkout.sourceQSlotId) {
@@ -628,16 +695,10 @@ export function renderWorkoutPlanner() {
         renderApp();
     });
 
-    const divider = document.createElement("div");
-    divider.classList.add("divider");
-
-    const text = document.createElement("span");
-    text.textContent = "OR";
-
-    divider.appendChild(text);
-
     const browseRow = document.createElement("div");
-    browseRow.classList.add("button-row");
+    browseRow.classList.add(
+        "workout-planner-browse-row"
+    );
 
     browseRow.append(browseWorkoutsButton);
 
@@ -768,6 +829,34 @@ export function renderWorkoutPlanner() {
         persistDraft();
     });
 
+    const setupSection =
+        document.createElement("section");
+
+    setupSection.classList.add(
+        "workout-planner-section",
+        "workout-planner-setup-section"
+    );
+
+    const setupSectionTitle =
+        document.createElement("div");
+
+    setupSectionTitle.classList.add(
+        "workout-planner-section-title"
+    );
+
+    setupSectionTitle.textContent =
+        "Workout Details";
+
+    setupSection.append(
+        setupSectionTitle,
+        dateLabel,
+        dateInputWrap,
+        aoLabel,
+        aoSelect,
+        workoutTitleLabel,
+        workoutTitleInput
+    );
+
     const introductionLabel = document.createElement("div");
     introductionLabel.textContent = getWorkoutFieldLabel(state, "introduction");
     introductionLabel.classList.add("detail-label");
@@ -786,6 +875,21 @@ export function renderWorkoutPlanner() {
         introductionInput,
         getWorkoutFieldLabel(state, "introduction")
     );
+
+    const introductionSection =
+        createPlannerWritingSection({
+            className:
+                "workout-planner-introduction-section",
+
+            header:
+                introductionLabel,
+
+            input:
+                introductionInput,
+
+            templateControls:
+                introductionTemplateControls,
+        });
     
     function getCurrentLineText(textarea) {
         const value = textarea.value || "";
@@ -1037,6 +1141,64 @@ export function renderWorkoutPlanner() {
     const warmoramaTimers = renderTimerList("warmorama");
     const finisherTimers = renderTimerList("finisher");
 
+    const warmoramaSection =
+        createPlannerWritingSection({
+            className:
+                "workout-planner-warmorama-section",
+
+            header:
+                warmoramaLabel,
+
+            input:
+                warmoramaInput,
+
+            suggestions:
+                warmoramaSuggestions,
+
+            templateControls:
+                warmoramaTemplateControls,
+
+            timers:
+                warmoramaTimers,
+
+            extraContent:
+                buildingBlocksPromo,
+        });
+
+    const thangsSection =
+        document.createElement("section");
+
+    thangsSection.classList.add(
+        "workout-planner-section",
+        "workout-planner-thangs-section"
+    );
+
+    thangsSection.append(
+        thangsLabel,
+        thangSectionsList
+    );
+
+    const finisherSection =
+        createPlannerWritingSection({
+            className:
+                "workout-planner-finisher-section",
+
+            header:
+                finisherLabel,
+
+            input:
+                finisherInput,
+
+            suggestions:
+                finisherSuggestions,
+
+            templateControls:
+                finisherTemplateControls,
+
+            timers:
+                finisherTimers,
+        });
+
     const effectiveThirdF = getEffectiveWorkoutThirdF({
         workout: draftWorkout,
         thirdFItems: state.plannerThirdFDiscussions || [],
@@ -1060,6 +1222,21 @@ export function renderWorkoutPlanner() {
         notesInput,
         getWorkoutFieldLabel(state, "notes")
     );
+
+    const notesSection =
+        createPlannerWritingSection({
+            className:
+                "workout-planner-notes-section",
+
+            header:
+                notesLabel,
+
+            input:
+                notesInput,
+
+            templateControls:
+                notesTemplateControls,
+        });
 
     const thirdFLabel = document.createElement("div");
     thirdFLabel.textContent = "Third F";
@@ -1100,6 +1277,21 @@ export function renderWorkoutPlanner() {
         renderApp();
     });
 
+    const thirdFSection =
+        createPlannerWritingSection({
+            className:
+                "workout-planner-third-f-section",
+
+            header:
+                thirdFLabel,
+
+            input:
+                thirdFInput,
+
+            extraContent:
+                resetThirdFButton,
+        });
+
     const shareLabel = document.createElement("div");
     shareLabel.textContent = "Visibility";
     shareLabel.classList.add("detail-label");
@@ -1121,6 +1313,19 @@ export function renderWorkoutPlanner() {
         draftWorkout.isShared = event.target.value === "shared";
         persistDraft();
     });
+
+    const visibilitySection =
+        document.createElement("section");
+
+    visibilitySection.classList.add(
+        "workout-planner-section",
+        "workout-planner-visibility-section"
+    );
+
+    visibilitySection.append(
+        shareLabel,
+        shareSelect
+    );
     
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save Draft";
@@ -1333,46 +1538,39 @@ export function renderWorkoutPlanner() {
         renderApp();
     });
 
+    const announcementsSection =
+        createPlannerWritingSection({
+            className:
+                "workout-planner-announcements-section",
+
+            header:
+                announcementsLabel,
+
+            input:
+                announcementsInput,
+
+            extraContent:
+                resetAnnouncementsButton,
+        });
+
     app.append(
         header,
         title,
-        ...(plannerEmphasisBadge ? [plannerEmphasisBadge] : []),
+        plannerSubtitle,
+        ...(plannerEmphasisBadge
+            ? [plannerEmphasisBadge]
+            : []),
         browseRow,
-        divider,
-        dateLabel,
-        dateInputWrap,
-        aoLabel,
-        aoSelect,
-        workoutTitleLabel,
-        workoutTitleInput,
-        introductionLabel,
-        introductionInput,
-        introductionTemplateControls,
-        warmoramaLabel,
-        warmoramaInput,
-        warmoramaSuggestions,
-        warmoramaTemplateControls,
-        warmoramaTimers,
-        buildingBlocksPromo,
-        thangsLabel,
-        thangSectionsList,
-        finisherLabel,
-        finisherInput,
-        finisherSuggestions,
-        finisherTemplateControls,
-        finisherTimers,
-        notesLabel,
-        notesInput,
-        notesTemplateControls,
-        thirdFLabel,
-        thirdFInput,
-        resetThirdFButton,
-        announcementsLabel,
-        announcementsInput,
-        resetAnnouncementsButton,
-        shareLabel,
-        shareSelect,
-        primaryActionsRow,
+        setupSection,
+        introductionSection,
+        warmoramaSection,
+        thangsSection,
+        finisherSection,
+        notesSection,
+        thirdFSection,
+        announcementsSection,
+        visibilitySection,
+        primaryActionsRow
     );
 
     if (state.workoutBrowseModalOpen) {
