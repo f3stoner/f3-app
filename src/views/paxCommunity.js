@@ -7,6 +7,9 @@ import { loadMemberCommunityData } from "../services/cloudData.js";
 import { createPaxProfileNav } from "../components/paxProfileNav.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { getMemberById } from "../utils/memberLookup.js";
+import {
+    createPaxProfileIdentity,
+} from "../components/paxProfileIdentity.js";
 
 function getSelectedMember() {
     return getMemberById(
@@ -44,53 +47,121 @@ function createSummaryMetric(label, value) {
     return card;
 }
 
-function createMostPostedWithRow(buddy, rank) {
+function createMostPostedWithRow(
+    buddy,
+    rank
+) {
     const member =
         getMemberById(
             buddy.memberId
         );
 
-    const row = document.createElement("button");
+    const row =
+        document.createElement("button");
+
     row.type = "button";
+
     row.classList.add(
         "pax-community-row",
-        "pax-most-posted-with-row"
+        "pax-buddy-row"
     );
 
-    const rankEl = document.createElement("div");
-    rankEl.classList.add("pax-community-rank");
-    rankEl.textContent = String(rank);
+    const rankEl =
+        document.createElement("div");
 
-    const content = document.createElement("div");
-    content.classList.add("pax-community-row-content");
+    rankEl.classList.add(
+        "pax-community-rank"
+    );
 
-    const name = document.createElement("div");
-    name.classList.add("pax-community-row-title");
+    rankEl.textContent =
+        String(rank);
+
+    const content =
+        document.createElement("div");
+
+    content.classList.add(
+        "pax-community-row-content"
+    );
+
+    const name =
+        document.createElement("div");
+
+    name.classList.add(
+        "pax-community-row-title"
+    );
+
     name.textContent =
         member?.paxName ||
         member?.displayName ||
         "Unknown PAX";
 
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("pax-community-row-subtitle");
-    subtitle.textContent = buddy.lastSharedDate
-        ? `Most recent: ${formatDate(buddy.lastSharedDate)}`
-        : "No recent post available";
+    const sharedPosts =
+        document.createElement("div");
 
-    content.append(name, subtitle);
+    sharedPosts.classList.add(
+        "pax-community-row-meta"
+    );
 
-    const value = document.createElement("div");
-    value.classList.add("pax-community-row-value");
-    value.textContent =
-        `${buddy.sharedPosts} workout${buddy.sharedPosts === 1 ? "" : "s"} together`;
+    sharedPosts.textContent =
+        `${buddy.sharedPosts} shared ` +
+        `workout${
+            buddy.sharedPosts === 1
+                ? ""
+                : "s"
+        }`;
 
-    row.append(rankEl, content, value);
+    const lastShared =
+        document.createElement("div");
+
+    lastShared.classList.add(
+        "pax-community-row-subtitle"
+    );
+
+    lastShared.textContent =
+        buddy.lastSharedDate
+            ? `Last shared ${formatDate(
+                buddy.lastSharedDate
+            )}`
+            : "No recent shared workout";
+
+    content.append(
+        name,
+        sharedPosts,
+        lastShared
+    );
+
+    const chevron =
+        document.createElement("span");
+
+    chevron.classList.add(
+        "pax-community-chevron"
+    );
+
+    chevron.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    chevron.textContent = "›";
+
+    row.append(
+        rankEl,
+        content,
+        chevron
+    );
 
     if (member) {
-        row.addEventListener("click", () => {
-            state.selectedPaxId = member.id;
-            navigateTo("paxCommunity");
-        });
+        row.addEventListener(
+            "click",
+            () => {
+                state.selectedPaxId =
+                    member.id;
+
+                navigateTo(
+                    "paxCommunity"
+                );
+            }
+        );
     } else {
         row.disabled = true;
     }
@@ -134,29 +205,69 @@ function createEhdPaxRow(member) {
 }
 
 function createAoRow(ao) {
-    const row = document.createElement("div");
-    row.classList.add("pax-community-row");
+    const row =
+        document.createElement("div");
 
-    const content = document.createElement("div");
-    content.classList.add("pax-community-row-content");
+    row.classList.add(
+        "pax-community-row",
+        "pax-ao-footprint-row"
+    );
 
-    const title = document.createElement("div");
-    title.classList.add("pax-community-row-title");
-    title.textContent = ao.aoName || "Unknown AO";
+    const content =
+        document.createElement("div");
 
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("pax-community-row-subtitle");
-    subtitle.textContent = ao.lastPostDate
-        ? `Last post ${formatDate(ao.lastPostDate)}`
-        : "";
+    content.classList.add(
+        "pax-community-row-content"
+    );
 
-    content.append(title, subtitle);
+    const title =
+        document.createElement("div");
 
-    const value = document.createElement("div");
-    value.classList.add("pax-community-row-value");
-    value.textContent = `${ao.posts} post${ao.posts === 1 ? "" : "s"}`;
+    title.classList.add(
+        "pax-community-row-title"
+    );
 
-    row.append(content, value);
+    title.textContent =
+        ao.aoName ||
+        "Unknown AO";
+
+    const subtitle =
+        document.createElement("div");
+
+    subtitle.classList.add(
+        "pax-community-row-subtitle"
+    );
+
+    subtitle.textContent =
+        ao.lastPostDate
+            ? `Last post ${formatDate(
+                ao.lastPostDate
+            )}`
+            : "No recent post";
+
+    content.append(
+        title,
+        subtitle
+    );
+
+    const value =
+        document.createElement("div");
+
+    value.classList.add(
+        "pax-community-row-value"
+    );
+
+    value.textContent =
+        `${ao.posts} post${
+            ao.posts === 1
+                ? ""
+                : "s"
+        }`;
+
+    row.append(
+        content,
+        value
+    );
 
     return row;
 }
@@ -194,7 +305,10 @@ function createRelationshipRow(label, value, onClick = null) {
 
 export async function renderPaxCommunityView() {
     const app = document.getElementById("app");
+
     app.textContent = "";
+    app.className =
+        "view-paxProfile view-paxCommunity";
 
     cleanupMainMenu();
 
@@ -223,16 +337,8 @@ export async function renderPaxCommunityView() {
         return;
     }
 
-    const identity = document.createElement("div");
-    identity.classList.add("pax-profile-identity");
-
-    const name = document.createElement("h1");
-    name.textContent =
-        member.paxName ||
-        member.displayName ||
-        "Unnamed PAX";
-
-    identity.appendChild(name);
+    const identity =
+        createPaxProfileIdentity(member);
 
     const profileNav = createPaxProfileNav("paxCommunity");
 
@@ -283,8 +389,12 @@ export async function renderPaxCommunityView() {
 
         loading.remove();
 
-        const summaryGrid = document.createElement("div");
-        summaryGrid.classList.add("pax-overall-grid");
+        const summaryGrid =
+            document.createElement("div");
+        
+        summaryGrid.classList.add(
+            "pax-community-summary-grid"
+        );
 
         summaryGrid.append(
             createSummaryMetric(
@@ -298,7 +408,10 @@ export async function renderPaxCommunityView() {
         );
 
         const summarySection =
-            createSection("Community", summaryGrid);
+            createSection(
+                "Community Summary",
+                summaryGrid
+            );
 
         const buddyList = document.createElement("div");
         buddyList.classList.add(
@@ -500,7 +613,7 @@ export async function renderPaxCommunityView() {
         );
         
         const relationshipsSection =
-            createSection("F3 Family", relationships);
+            createSection("Family", relationships);
             
         const aoList = document.createElement("div");
         aoList.classList.add("pax-community-list");

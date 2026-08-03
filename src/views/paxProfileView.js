@@ -7,6 +7,9 @@ import { createPaxProfileNav } from "../components/paxProfileNav.js";
 import { canViewPaxOverview } from "../utils/permissions.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { getMemberById } from "../utils/memberLookup.js";
+import {
+    createPaxProfileIdentity,
+} from "../components/paxProfileIdentity.js";
 
 function getSelectedMember() {
     return getMemberById(
@@ -144,51 +147,112 @@ function createMetricCard(label, value, modifier = "") {
 }
 
 function createLeadershipCard(insight, stats) {
-    const card = document.createElement("div");
+    const card =
+        document.createElement("div");
+
     card.classList.add(
         "pax-leadership-card",
-        `pax-leadership-card-${insight.tone || "neutral"}`
+        `pax-leadership-card-${
+            insight.tone || "neutral"
+        }`
     );
 
-    const eyebrow = document.createElement("div");
-    eyebrow.classList.add("detail-label");
-    eyebrow.textContent = "Leadership Rhythm";
+    const eyebrow =
+        document.createElement("div");
 
-    const title = document.createElement("div");
-    title.classList.add("pax-leadership-title");
-    title.textContent = insight.title;
+    eyebrow.classList.add(
+        "pax-leadership-eyebrow"
+    );
 
-    const body = document.createElement("div");
-    body.classList.add("pax-leadership-message");
-    body.textContent = insight.message;
+    eyebrow.textContent =
+        "Leadership Rhythm";
 
-    const grid = document.createElement("div");
-    grid.classList.add("pax-recent-grid");
+    const title =
+        document.createElement("div");
 
-    grid.append(
-        createMetricCard(
-            "Posts · 30 Days",
-            stats?.posts30Days ?? "-",
-            "compact"
+    title.classList.add(
+        "pax-leadership-title"
+    );
+
+    title.textContent =
+        insight.title;
+
+    const body =
+        document.createElement("div");
+
+    body.classList.add(
+        "pax-leadership-message"
+    );
+
+    body.textContent =
+        insight.message;
+
+    const recentActivity =
+        document.createElement("div");
+
+    recentActivity.classList.add(
+        "pax-leadership-recent"
+    );
+
+    function createRecentRow(
+        label,
+        posts,
+        qs
+    ) {
+        const row =
+            document.createElement("div");
+
+        row.classList.add(
+            "pax-leadership-recent-row"
+        );
+
+        const labelEl =
+            document.createElement("div");
+
+        labelEl.classList.add(
+            "pax-leadership-recent-label"
+        );
+
+        labelEl.textContent = label;
+
+        const valueEl =
+            document.createElement("div");
+
+        valueEl.classList.add(
+            "pax-leadership-recent-value"
+        );
+
+        valueEl.textContent =
+            `${posts ?? 0} posts · ` +
+            `${qs ?? 0} Qs`;
+
+        row.append(
+            labelEl,
+            valueEl
+        );
+
+        return row;
+    }
+
+    recentActivity.append(
+        createRecentRow(
+            "Last 30 Days",
+            stats?.posts30Days,
+            stats?.qs30Days
         ),
-        createMetricCard(
-            "Qs · 30 Days",
-            stats?.qs30Days ?? "-",
-            "compact"
-        ),
-        createMetricCard(
-            "Posts · 90 Days",
-            stats?.posts90Days ?? "-",
-            "compact"
-        ),
-        createMetricCard(
-            "Qs · 90 Days",
-            stats?.qs90Days ?? "-",
-            "compact"
+        createRecentRow(
+            "Last 90 Days",
+            stats?.posts90Days,
+            stats?.qs90Days
         )
     );
 
-    card.append(eyebrow, title, body, grid);
+    card.append(
+        eyebrow,
+        title,
+        body,
+        recentActivity
+    );
 
     return card;
 }
@@ -223,48 +287,146 @@ function createSection(title, content) {
     return section;
 }
 
-function createActivityRow(session, memberId) {
-    const row = document.createElement("div");
-    row.classList.add("insights-row", "clickable-row");
+function createActivityRow(
+    session,
+    memberId
+) {
+    const row =
+        document.createElement("button");
 
-    const left = document.createElement("div");
-    left.classList.add("insights-row-left");
+    row.type = "button";
 
-    const title = document.createElement("div");
-    title.classList.add("insights-row-title");
-    title.textContent = formatDate(session.date);
+    row.classList.add(
+        "pax-activity-row"
+    );
 
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("insights-row-subtitle");
-    subtitle.textContent = session.aoName || "Unknown AO";
+    const date =
+        document.createElement("div");
 
-    left.append(title, subtitle);
+    date.classList.add(
+        "pax-activity-date"
+    );
 
-    const value = document.createElement("div");
-    value.classList.add("insights-row-value");
-    const qIds = Array.isArray(session.qIds)
-        ? session.qIds
-        : session.qId
-            ? [session.qId]
-            : [];
+    date.textContent =
+        new Intl.DateTimeFormat(
+            undefined,
+            {
+                month: "short",
+                day: "numeric",
+            }
+        ).format(
+            new Date(
+                /^\d{4}-\d{2}-\d{2}$/.test(
+                    session.date
+                )
+                    ? `${session.date}T00:00:00`
+                    : session.date
+            )
+        );
 
-    value.textContent = qIds.includes(memberId)
-        ? "Q"
-        : "Post";
+    const content =
+        document.createElement("div");
 
-    row.append(left, value);
+    content.classList.add(
+        "pax-activity-content"
+    );
 
-    row.addEventListener("click", () => {
-        state.selectedSessionId = session.id;
-        navigateTo("sessionDetail");
-    });
+    const aoName =
+        document.createElement("div");
+
+    aoName.classList.add(
+        "pax-activity-ao"
+    );
+
+    aoName.textContent =
+        session.aoName ||
+        "Unknown AO";
+
+    const sessionTitle =
+        document.createElement("div");
+
+    sessionTitle.classList.add(
+        "pax-activity-subtitle"
+    );
+
+    sessionTitle.textContent =
+        session.title ||
+        session.workoutTitle ||
+        "";
+
+    content.appendChild(aoName);
+
+    if (sessionTitle.textContent) {
+        content.appendChild(sessionTitle);
+    }
+
+    const qIds =
+        Array.isArray(session.qIds)
+            ? session.qIds
+            : session.qId
+                ? [session.qId]
+                : [];
+
+    const role =
+        document.createElement("div");
+
+    role.classList.add(
+        "pax-activity-role"
+    );
+
+    role.textContent =
+        qIds.includes(memberId)
+            ? "Q"
+            : "Post";
+
+    if (qIds.includes(memberId)) {
+        role.classList.add(
+            "pax-activity-role-q"
+        );
+    }
+
+    const chevron =
+        document.createElement("span");
+
+    chevron.classList.add(
+        "pax-activity-chevron"
+    );
+
+    chevron.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    chevron.textContent = "›";
+
+    row.append(
+        date,
+        content,
+        role,
+        chevron
+    );
+
+    row.addEventListener(
+        "click",
+        () => {
+            state.selectedSessionId =
+                session.id;
+
+            navigateTo(
+                "sessionDetail"
+            );
+        }
+    );
 
     return row;
 }
 
 export function renderPaxProfileView() {
     const app = document.getElementById("app");
+
     app.textContent = "";
+    app.className =
+        "view-paxProfile view-paxOverview";
     
     cleanupMainMenu();
 
@@ -301,26 +463,35 @@ export function renderPaxProfileView() {
     const stats = getMemberStats(member.id);
     const sessions = getMemberSessions(member.id);
 
-    const titleSection = document.createElement("div");
-    titleSection.classList.add("pax-profile-identity");
-    
-    const name = document.createElement("h1");
-    name.textContent = member.paxName || member.displayName || "Unnamed PAX";
-    
-    const subtitleParts = [
-        member.regionName,
-        member.aoName,
-    ].filter(Boolean);
-    
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("pax-profile-subtitle");
-    subtitle.textContent = subtitleParts.join(" · ");
-    
-    titleSection.append(name);
-    
-    if (subtitle.textContent) {
-        titleSection.appendChild(subtitle);
-    }
+    const profileMemberSince =
+        stats?.firstPostDate ||
+        sessions.at(-1)?.date ||
+        null;
+
+    const titleSection =
+        createPaxProfileIdentity(
+            member,
+            {
+                memberSince:
+                    profileMemberSince
+                        ? new Intl.DateTimeFormat(
+                            undefined,
+                            {
+                                month: "short",
+                                year: "numeric",
+                            }
+                        ).format(
+                            new Date(
+                                /^\d{4}-\d{2}-\d{2}$/.test(
+                                    profileMemberSince
+                                )
+                                    ? `${profileMemberSince}T00:00:00`
+                                    : profileMemberSince
+                            )
+                        )
+                        : null,
+            }
+        );
     
     const totalPosts = stats?.posts ?? sessions.length;
     const totalQs = stats?.qs ?? 0;
@@ -340,7 +511,11 @@ export function renderPaxProfileView() {
         createMetricCard("FNGs EH’d", stats?.fngsEh ?? 0)
     );
     
-    const overallSection = createSection("Overall", overallGrid);
+    const overallSection =
+    createSection(
+        "Performance",
+        overallGrid
+    );
     
     const leadershipInsight = getLeadershipInsight({
         posts: totalPosts,
@@ -365,20 +540,31 @@ export function renderPaxProfileView() {
     
     profileFacts.append(
         createProfileFact(
+            "Home AO",
+            member.aoName ||
+                member.homeAo ||
+                member.homeAoName ||
+                "-"
+        ),
+        createProfileFact(
             "First Post",
             formatOptionalDate(
-                stats?.firstPostDate || sessions.at(-1)?.date
+                stats?.firstPostDate ||
+                sessions.at(-1)?.date
             )
         ),
         createProfileFact(
             "Last Post",
             formatOptionalDate(
-                stats?.lastPostDate || sessions[0]?.date
+                stats?.lastPostDate ||
+                sessions[0]?.date
             )
         ),
         createProfileFact(
             "Last Q",
-            formatOptionalDate(stats?.lastQDate)
+            formatOptionalDate(
+                stats?.lastQDate
+            )
         ),
         createProfileFact(
             "Favorite AO",
@@ -388,8 +574,12 @@ export function renderPaxProfileView() {
     
     const profileSection = createSection("Profile", profileFacts);
 
-    const recentList = document.createElement("div");
-    recentList.classList.add("insights-list");
+    const recentList =
+        document.createElement("div");
+
+    recentList.classList.add(
+        "pax-activity-list"
+    );
 
     if (!sessions.length) {
         const empty = document.createElement("div");

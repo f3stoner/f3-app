@@ -1,0 +1,1769 @@
+/* =========================================================
+   PAX PROFILE
+   Shared by Profile and Community views
+   ========================================================= */
+
+   #app.view-paxProfile {
+    --pax-profile-accent: #8fd3ff;
+    --pax-profile-accent-bright: #c9eaff;
+    --pax-profile-accent-soft:
+        rgba(143, 211, 255, 0.1);
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            120px +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+
+    background:
+        radial-gradient(
+            circle at 50% 4rem,
+            rgba(48, 151, 255, 0.12),
+            transparent 260px
+        ),
+        radial-gradient(
+            circle at 50% -4rem,
+            rgba(143, 211, 255, 0.08),
+            transparent 320px
+        ),
+        var(--bg);
+}
+
+
+/* =========================================================
+   IDENTITY HERO
+   ========================================================= */
+
+.view-paxProfile
+.pax-profile-identity {
+    position: relative;
+
+    min-width: 0;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin:
+        0
+        -20px
+        0;
+
+    padding:
+        1.15rem
+        20px
+        1.35rem;
+
+    text-align: center;
+}
+
+.view-paxProfile
+.pax-profile-identity-glow {
+    position: absolute;
+
+    top: -4.5rem;
+    left: 50%;
+
+    width: 19rem;
+    height: 19rem;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(35, 151, 255, 0.22),
+            rgba(35, 151, 255, 0.08) 38%,
+            transparent 68%
+        );
+
+    filter: blur(4px);
+
+    pointer-events: none;
+
+    transform:
+        translateX(-50%);
+}
+
+.view-paxProfile
+.pax-profile-avatar {
+    position: relative;
+    z-index: 1;
+
+    width: 4.5rem;
+    height: 4.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 0.9rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.42);
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(143, 211, 255, 0.15),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    box-shadow:
+        0 0 0 5px
+        rgba(143, 211, 255, 0.045),
+        0 12px 32px
+        rgba(0, 0, 0, 0.34);
+}
+
+.view-paxProfile
+.pax-profile-avatar-inner {
+    width: 3.65rem;
+    height: 3.65rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.18);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 25%,
+            rgba(255, 255, 255, 0.1),
+            transparent 48%
+        ),
+        rgba(8, 12, 16, 0.88);
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.65rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.view-paxProfile
+.pax-profile-name {
+    position: relative;
+    z-index: 1;
+
+    max-width: 100%;
+
+    margin: 0;
+
+    overflow-wrap: anywhere;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size:
+        clamp(
+            2.6rem,
+            11vw,
+            4.2rem
+        );
+
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+}
+
+.view-paxProfile
+.pax-profile-subtitle {
+    position: relative;
+    z-index: 1;
+
+    margin-top: 0.72rem;
+
+    color:
+        var(--pax-profile-accent);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.88rem;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.view-paxProfile
+.pax-profile-member-since {
+    position: relative;
+    z-index: 1;
+
+    margin-top: 0.42rem;
+
+    color:
+        rgba(245, 245, 242, 0.55);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   PROFILE NAVIGATION
+   ========================================================= */
+
+.view-paxProfile
+.pax-profile-nav {
+    position: relative;
+
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 0;
+
+    margin:
+        0
+        -20px
+        1.5rem;
+
+    padding:
+        0
+        20px;
+
+    border: 0;
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 0;
+
+    background:
+        rgba(0, 0, 0, 0.58);
+}
+
+.view-paxProfile
+.pax-profile-nav-item {
+    position: relative;
+
+    width: 100%;
+    min-height: 48px;
+
+    margin: 0;
+    padding:
+        0.75rem
+        0.5rem;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+
+    color:
+        rgba(245, 245, 242, 0.48);
+
+    box-shadow: none;
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.8rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.view-paxProfile
+.pax-profile-nav-item::after {
+    content: "";
+
+    position: absolute;
+
+    right: 0;
+    bottom: -1px;
+    left: 0;
+
+    height: 3px;
+
+    border-radius:
+        999px
+        999px
+        0
+        0;
+
+    background: transparent;
+}
+
+.view-paxProfile
+.pax-profile-nav-item:hover {
+    background:
+        rgba(143, 211, 255, 0.04);
+
+    color:
+        rgba(245, 245, 242, 0.76);
+
+    box-shadow: none;
+}
+
+.view-paxProfile
+.pax-profile-nav-item:active {
+    transform: none;
+}
+
+.view-paxProfile
+.pax-profile-nav-item.active {
+    background: transparent;
+
+    color:
+        var(--pax-profile-accent-bright);
+}
+
+.view-paxProfile
+.pax-profile-nav-item.active::after {
+    background:
+        var(--pax-profile-accent);
+}
+
+
+/* =========================================================
+   SHARED SECTION RHYTHM
+   ========================================================= */
+
+.view-paxProfile
+.section {
+    margin-bottom: 1.55rem;
+}
+
+.view-paxProfile
+.insights-section-title {
+    margin:
+        0
+        0
+        0.7rem;
+
+    color:
+        rgba(245, 245, 242, 0.52);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.view-paxOverview
+.pax-profile-nav {
+    margin-bottom: 1.15rem;
+}
+
+.view-paxOverview
+.section {
+    margin-bottom: 1.35rem;
+}
+
+.view-paxOverview
+.pax-leadership-title {
+    font-size: 1.4rem;
+}
+
+/* =========================================================
+   GLOBAL PROFILE ACTIONS
+   ========================================================= */
+
+   .view-paxProfile
+   .global-fab {
+       display: none;
+   }
+   
+   
+   /* =========================================================
+      PERFORMANCE PANEL
+      ========================================================= */
+   
+   .view-paxOverview
+   .pax-overall-grid {
+       min-width: 0;
+       overflow: hidden;
+   
+       display: grid;
+       grid-template-columns:
+           repeat(
+               2,
+               minmax(0, 1fr)
+           );
+   
+       gap: 0;
+   
+       border:
+           1px solid
+           rgba(255, 255, 255, 0.14);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           radial-gradient(
+               circle at 100% 0%,
+               rgba(143, 211, 255, 0.045),
+               transparent 42%
+           ),
+           rgba(255, 255, 255, 0.018);
+   
+       box-shadow:
+           0 12px 30px
+           rgba(0, 0, 0, 0.18);
+   }
+   
+   .view-paxOverview
+   .pax-overall-grid
+   .pax-metric-card {
+       min-width: 0;
+   
+       padding:
+           1rem
+           1.05rem;
+   
+       border: 0;
+       border-radius: 0;
+   
+       background: transparent;
+   
+       box-shadow: none;
+   }
+   
+   .view-paxOverview
+   .pax-overall-grid
+   .pax-metric-card:nth-child(even) {
+       border-left:
+           1px solid
+           rgba(255, 255, 255, 0.09);
+   }
+   
+   .view-paxOverview
+   .pax-overall-grid
+   .pax-metric-card:nth-child(n + 3) {
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.09);
+   }
+   
+   .view-paxOverview
+   .pax-overall-grid
+   .pax-metric-value {
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 2rem;
+       font-weight: 900;
+       line-height: 0.95;
+   }
+   
+   .view-paxOverview
+   .pax-overall-grid
+   .pax-metric-label {
+       margin-top: 0.45rem;
+   
+       color:
+           rgba(245, 245, 242, 0.58);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.72rem;
+       font-weight: 850;
+       line-height: 1.1;
+       letter-spacing: 0.04em;
+       text-transform: uppercase;
+   }
+   
+   
+   /* =========================================================
+      LEADERSHIP RHYTHM
+      ========================================================= */
+   
+   .view-paxOverview
+   .pax-leadership-card {
+       position: relative;
+   
+       overflow: hidden;
+   
+       padding:
+           1.2rem
+           1.2rem
+           0;
+   
+       border-radius:
+           var(--radius-lg);
+   
+       box-shadow:
+           0 14px 34px
+           rgba(0, 0, 0, 0.2);
+   }
+   
+   .view-paxOverview
+   .pax-leadership-card::before {
+       content: "";
+   
+       position: absolute;
+   
+       top: 0;
+       bottom: 0;
+       left: 0;
+   
+       width: 3px;
+   
+       background:
+           currentColor;
+   
+       opacity: 0.8;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-eyebrow {
+       color:
+           rgba(245, 245, 242, 0.55);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.72rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: 0.11em;
+       text-transform: uppercase;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-title {
+       margin-top: 0.55rem;
+   
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 1.55rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: -0.02em;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-message {
+       max-width: 36rem;
+   
+       margin:
+           0.75rem
+           0
+           1rem;
+   
+       color:
+           rgba(245, 245, 242, 0.9);
+   
+       font-size: 0.94rem;
+       font-weight: 550;
+       line-height: 1.48;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-recent {
+       margin:
+           0
+           -1.2rem;
+   
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.11);
+   }
+   
+   .view-paxOverview
+   .pax-leadership-recent-row {
+       display: grid;
+       grid-template-columns:
+           minmax(0, 1fr)
+           auto;
+   
+       align-items: center;
+       gap: 1rem;
+   
+       min-height: 52px;
+   
+       padding:
+           0.7rem
+           1.2rem;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-recent-row
+   +
+   .pax-leadership-recent-row {
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.08);
+   }
+   
+   .view-paxOverview
+   .pax-leadership-recent-label {
+       color:
+           rgba(245, 245, 242, 0.58);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.72rem;
+       font-weight: 850;
+       letter-spacing: 0.04em;
+       text-transform: uppercase;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-recent-value {
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.86rem;
+       font-weight: 900;
+   
+       white-space: nowrap;
+   }
+   
+   
+   /* Tone colors */
+   
+   .view-paxOverview
+   .pax-leadership-card-neutral {
+       color:
+           var(--muted);
+   }
+   
+   .view-paxOverview
+   .pax-leadership-card-encourage {
+       color:
+           var(--pax-profile-accent);
+   }
+   
+   .view-paxOverview
+   .pax-leadership-card-positive {
+       color:
+           #7fd28f;
+   }
+   
+   .view-paxOverview
+   .pax-leadership-card-watch {
+       color:
+           #f4b63f;
+   }
+
+/* =========================================================
+   PROFILE FACTS
+   ========================================================= */
+
+   .view-paxOverview
+   .pax-profile-facts {
+       min-width: 0;
+       overflow: hidden;
+   
+       border:
+           1px solid
+           rgba(255, 255, 255, 0.14);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           radial-gradient(
+               circle at 100% 0%,
+               rgba(143, 211, 255, 0.035),
+               transparent 42%
+           ),
+           rgba(255, 255, 255, 0.014);
+   
+       box-shadow:
+           0 10px 28px
+           rgba(0, 0, 0, 0.16);
+   }
+   
+   .view-paxOverview
+   .pax-profile-fact {
+       width: 100%;
+       min-height: 54px;
+   
+       display: grid;
+       grid-template-columns:
+           minmax(0, 1fr)
+           auto;
+   
+       align-items: center;
+       gap: 1rem;
+   
+       margin: 0;
+       padding:
+           0.78rem
+           1rem;
+   
+       border: 0;
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.08);
+   
+       border-radius: 0;
+   
+       background: transparent;
+   
+       box-shadow: none;
+   
+       box-sizing: border-box;
+   }
+   
+   .view-paxOverview
+   .pax-profile-fact:last-child {
+       border-bottom: 0;
+   }
+   
+   .view-paxOverview
+   .pax-profile-fact-label {
+       color:
+           rgba(245, 245, 242, 0.5);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.7rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: 0.07em;
+       text-transform: uppercase;
+   }
+   
+   .view-paxOverview
+   .pax-profile-fact-value {
+       min-width: 0;
+   
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.88rem;
+       font-weight: 900;
+       line-height: 1.15;
+   
+       text-align: right;
+   }
+   
+   
+   /* =========================================================
+      RECENT ACTIVITY
+      ========================================================= */
+   
+   .view-paxOverview
+   .pax-activity-list {
+       min-width: 0;
+       overflow: hidden;
+   
+       border:
+           1px solid
+           rgba(255, 255, 255, 0.14);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           rgba(255, 255, 255, 0.012);
+   
+       box-shadow:
+           0 10px 28px
+           rgba(0, 0, 0, 0.16);
+   }
+   
+   .view-paxOverview
+   .pax-activity-row {
+       width: 100%;
+       min-width: 0;
+       min-height: 64px;
+   
+       display: grid;
+       grid-template-columns:
+           4.1rem
+           minmax(0, 1fr)
+           auto
+           auto;
+   
+       align-items: center;
+       gap: 0.7rem;
+   
+       margin: 0;
+       padding:
+           0.72rem
+           0.9rem;
+   
+       border: 0;
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   
+       border-radius: 0;
+   
+       background: transparent;
+   
+       color: var(--text);
+   
+       box-shadow: none;
+   
+       text-align: left;
+   }
+   
+   .view-paxOverview
+   .pax-activity-row:last-child {
+       border-bottom: 0;
+   }
+   
+   .view-paxOverview
+   .pax-activity-row:hover {
+       background:
+           linear-gradient(
+               110deg,
+               rgba(143, 211, 255, 0.055),
+               transparent 65%
+           );
+   
+       box-shadow: none;
+   }
+   
+   .view-paxOverview
+   .pax-activity-row:active {
+       transform: none;
+   
+       background:
+           rgba(143, 211, 255, 0.065);
+   }
+   
+   .view-paxOverview
+   .pax-activity-date {
+       color:
+           rgba(245, 245, 242, 0.52);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.76rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: 0.04em;
+       text-transform: uppercase;
+   }
+   
+   .view-paxOverview
+   .pax-activity-content {
+       min-width: 0;
+   }
+   
+   .view-paxOverview
+   .pax-activity-ao {
+       overflow: hidden;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+   
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.96rem;
+       font-weight: 900;
+       line-height: 1.05;
+   }
+   
+   .view-paxOverview
+   .pax-activity-subtitle {
+       margin-top: 0.25rem;
+   
+       overflow: hidden;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+   
+       color: var(--muted);
+   
+       font-size: 0.72rem;
+       font-weight: 650;
+       line-height: 1.15;
+   }
+   
+   .view-paxOverview
+   .pax-activity-role {
+       color:
+           rgba(245, 245, 242, 0.5);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.75rem;
+       font-weight: 900;
+       line-height: 1;
+       letter-spacing: 0.04em;
+       text-transform: uppercase;
+   
+       white-space: nowrap;
+   }
+   
+   .view-paxOverview
+   .pax-activity-role-q {
+       color:
+           var(--pax-profile-accent);
+   }
+   
+   .view-paxOverview
+   .pax-activity-chevron {
+       color:
+           rgba(245, 245, 242, 0.35);
+   
+       font-family:
+           var(--font-body);
+   
+       font-size: 1.35rem;
+       font-weight: 500;
+       line-height: 1;
+   
+       transition:
+           transform 150ms ease,
+           color 150ms ease;
+   }
+   
+   .view-paxOverview
+   .pax-activity-row:hover
+   .pax-activity-chevron {
+       color:
+           var(--pax-profile-accent);
+   
+       transform:
+           translateX(2px);
+   }
+
+
+/* =========================================================
+   LOADING / EMPTY STATES
+   ========================================================= */
+
+.view-paxProfile
+.pax-community-loading,
+.view-paxProfile
+.detail-value {
+    color: var(--muted);
+
+    font-size: 0.86rem;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.view-paxProfile
+.pax-community-loading {
+    min-height: 9rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        2rem
+        1rem;
+
+    text-align: center;
+}
+
+
+
+
+/* =========================================================
+   COMMUNITY SUMMARY
+   ========================================================= */
+
+   .view-paxCommunity
+   .pax-community-summary-grid {
+       min-width: 0;
+       overflow: hidden;
+   
+       display: grid;
+       grid-template-columns:
+           repeat(
+               2,
+               minmax(0, 1fr)
+           );
+   
+       border:
+           1px solid
+           rgba(255, 255, 255, 0.14);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           radial-gradient(
+               circle at 100% 0%,
+               rgba(143, 211, 255, 0.05),
+               transparent 44%
+           ),
+           rgba(255, 255, 255, 0.016);
+   
+       box-shadow:
+           0 12px 30px
+           rgba(0, 0, 0, 0.18);
+   }
+   
+   .view-paxCommunity
+   .pax-community-summary-grid
+   .pax-metric-card {
+       min-width: 0;
+   
+       padding:
+           1.1rem
+           1rem;
+   
+       border: 0;
+       border-radius: 0;
+   
+       background: transparent;
+   
+       box-shadow: none;
+   }
+   
+   .view-paxCommunity
+   .pax-community-summary-grid
+   .pax-metric-card
+   +
+   .pax-metric-card {
+       border-left:
+           1px solid
+           rgba(255, 255, 255, 0.09);
+   }
+   
+   .view-paxCommunity
+   .pax-community-summary-grid
+   .pax-metric-value {
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 2rem;
+       font-weight: 900;
+       line-height: 0.95;
+   }
+   
+   .view-paxCommunity
+   .pax-community-summary-grid
+   .pax-metric-label {
+       margin-top: 0.45rem;
+   
+       color:
+           rgba(245, 245, 242, 0.56);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.7rem;
+       font-weight: 900;
+       line-height: 1.15;
+       letter-spacing: 0.04em;
+       text-transform: uppercase;
+   }
+   
+   
+   /* =========================================================
+      COMMUNITY LIST SURFACES
+      ========================================================= */
+   
+   .view-paxCommunity
+   .pax-community-list {
+       width: 100%;
+       min-width: 0;
+       overflow: hidden;
+
+       box-sizing: border-box;
+   
+       display: flex;
+       flex-direction: column;
+   
+       border:
+           1px solid
+           rgba(255, 255, 255, 0.14);
+   
+       border-radius:
+           var(--radius-lg);
+   
+       background:
+           rgba(255, 255, 255, 0.012);
+   
+       box-shadow:
+           0 10px 28px
+           rgba(0, 0, 0, 0.16);
+   }
+   
+   .view-paxCommunity
+   .pax-community-row {
+       width: 100%;
+       min-width: 0;
+   
+       box-sizing: border-box;
+       min-height: 66px;
+   
+       display: grid;
+       grid-template-columns:
+           minmax(0, 1fr)
+           auto;
+   
+       align-items: center;
+       gap: 0.75rem;
+   
+       margin: 0;
+       padding:
+           0.78rem
+           0.9rem;
+   
+       border: 0;
+       border-bottom:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   
+       border-radius: 0;
+   
+       background: transparent;
+   
+       color: var(--text);
+   
+       box-shadow: none;
+   
+       text-align: left;
+   }
+   
+   .view-paxCommunity
+   .pax-community-row:last-child {
+       border-bottom: 0;
+   }
+   
+   .view-paxCommunity
+   button.pax-community-row:hover {
+       background:
+           linear-gradient(
+               110deg,
+               rgba(143, 211, 255, 0.06),
+               transparent 68%
+           );
+   
+       box-shadow: none;
+   }
+   
+   .view-paxCommunity
+   button.pax-community-row:active {
+       transform: none;
+   
+       background:
+           rgba(143, 211, 255, 0.07);
+   }
+   
+   .view-paxCommunity
+   .pax-community-row-content {
+       min-width: 0;
+   }
+   
+   .view-paxCommunity
+   .pax-community-row-title {
+       overflow: hidden;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+   
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.98rem;
+       font-weight: 900;
+       line-height: 1.05;
+   }
+   
+   .view-paxCommunity
+   .pax-community-row-meta {
+       margin-top: 0.24rem;
+   
+       color:
+           rgba(245, 245, 242, 0.78);
+   
+       font-size: 0.76rem;
+       font-weight: 700;
+       line-height: 1.15;
+   }
+   
+   .view-paxCommunity
+   .pax-community-row-subtitle {
+       margin-top: 0.18rem;
+   
+       color: var(--muted);
+   
+       font-size: 0.7rem;
+       font-weight: 650;
+       line-height: 1.15;
+   }
+   
+   .view-paxCommunity
+   .pax-community-row-value {
+       min-width: 0;
+       width: 100%;
+       max-width: none;
+   
+       overflow: hidden;
+       text-overflow: ellipsis;
+   
+       color:
+           var(--pax-profile-accent);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.82rem;
+       font-weight: 900;
+       line-height: 1;
+   
+       text-align: right;
+       white-space: nowrap;
+   }
+   
+   
+   /* =========================================================
+      BATTLE BUDDIES
+      ========================================================= */
+   
+   .view-paxCommunity
+   .pax-buddy-row {
+       position: relative;
+   
+       grid-template-columns:
+           2rem
+           minmax(0, 1fr)
+           auto;
+   
+       padding-left: 1rem;
+   }
+   
+   .view-paxCommunity
+   .pax-buddy-row::before {
+       content: "";
+   
+       position: absolute;
+   
+       top: 0;
+       bottom: 0;
+       left: 0;
+   
+       width: 3px;
+   
+       background:
+           var(--pax-profile-accent);
+   
+       opacity: 0.78;
+   }
+   
+   .view-paxCommunity
+   .pax-community-rank {
+       display: flex;
+       align-items: center;
+       justify-content: center;
+   
+       width: 1.75rem;
+       height: 1.75rem;
+   
+       border:
+           1px solid
+           rgba(143, 211, 255, 0.38);
+   
+       border-radius: 50%;
+   
+       background:
+           rgba(143, 211, 255, 0.07);
+   
+       color:
+           var(--pax-profile-accent);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.82rem;
+       font-weight: 900;
+       line-height: 1;
+   }
+   
+   .view-paxCommunity
+   .pax-community-chevron {
+       color:
+           rgba(245, 245, 242, 0.35);
+   
+       font-family:
+           var(--font-body);
+   
+       font-size: 1.35rem;
+       font-weight: 500;
+       line-height: 1;
+   
+       transition:
+           transform 150ms ease,
+           color 150ms ease;
+   }
+   
+   .view-paxCommunity
+   .pax-buddy-row:hover
+   .pax-community-chevron {
+       color:
+           var(--pax-profile-accent);
+   
+       transform:
+           translateX(2px);
+   }
+   
+   
+   /* =========================================================
+      F3 FAMILY
+      ========================================================= */
+   
+    .view-paxCommunity
+    .pax-family-card {
+        min-width: 0;
+        overflow: hidden;
+    
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.14);
+    
+        border-radius:
+            var(--radius-lg);
+    
+        background:
+            radial-gradient(
+                circle at 100% 0%,
+                rgba(255, 255, 255, 0.035),
+                transparent 42%
+            ),
+            rgba(255, 255, 255, 0.018);
+    
+        box-shadow:
+            0 10px 28px
+            rgba(0, 0, 0, 0.16);
+    }
+   
+   .view-paxCommunity
+   .pax-family-block {
+       padding:
+           0.95rem
+           1rem;
+   }
+   
+   .view-paxCommunity
+   .pax-family-block
+   +
+   .pax-family-block {
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.085);
+   }
+   
+   .view-paxCommunity
+   .pax-family-label {
+        color:
+            rgba(143, 211, 255, 0.78);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.7rem;
+       font-weight: 900;
+       letter-spacing: 0.08em;
+       text-transform: uppercase;
+   }
+   
+   .view-paxCommunity
+   .pax-family-heading-row {
+       margin-bottom: 0.55rem;
+   }
+   
+   .view-paxCommunity
+   .pax-family-count {
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.9rem;
+       font-weight: 900;
+   }
+   
+   .view-paxCommunity
+   .pax-family-person-row {
+       width: 100%;
+       min-height: 48px;
+   
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 1rem;
+   
+       margin: 0;
+       padding:
+           0.66rem
+           0;
+   
+       border: 0;
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   
+       border-radius: 0;
+   
+       background: transparent;
+   
+       box-shadow: none;
+   
+       text-align: left;
+   }
+   
+   .view-paxCommunity
+   .pax-family-person-row:hover {
+       background: transparent;
+   
+       color:
+           var(--pax-profile-accent-bright);
+   
+       box-shadow: none;
+   }
+   
+   .view-paxCommunity
+   .pax-family-person-row:active {
+       transform: none;
+   }
+   
+   .view-paxCommunity
+   .pax-family-person-name {
+       color: var(--text);
+   
+       font-family:
+           var(--font-display);
+   
+       font-size: 0.9rem;
+       font-weight: 900;
+   }
+   
+   .view-paxCommunity
+   .pax-family-person-date {
+       color: var(--muted);
+   
+       font-size: 0.72rem;
+       font-weight: 650;
+   }
+   
+   .view-paxCommunity
+   .pax-family-toggle {
+       width: 100%;
+   
+       margin: 0;
+       padding:
+           0.72rem
+           0
+           0;
+   
+       border: 0;
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   
+       border-radius: 0;
+   
+       background: transparent;
+   
+       color:
+        rgba(143, 211, 255, 0.78);
+   
+       box-shadow: none;
+   
+       font-size: 0.76rem;
+       font-weight: 850;
+   }
+   
+   .view-paxCommunity
+   .pax-family-empty {
+       margin-top: 0.55rem;
+   
+       color: var(--muted);
+   
+       font-size: 0.8rem;
+       line-height: 1.35;
+   }
+
+   .view-paxCommunity
+   .pax-family-block:first-child {
+        background:
+            linear-gradient(
+                110deg,
+                rgba(143, 211, 255, 0.035),
+                transparent 65%
+            );
+}
+   
+   
+   /* =========================================================
+      AO FOOTPRINT
+      ========================================================= */
+   
+    .view-paxCommunity
+    .pax-ao-footprint-row {
+        grid-template-columns:
+            minmax(0, 1fr)
+            5.25rem;
+    }
+
+    /* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 420px) {
+    .view-paxProfile
+    .pax-profile-identity {
+        padding-top: 0.9rem;
+        padding-bottom: 1.15rem;
+    }
+
+    .view-paxProfile
+    .pax-profile-avatar {
+        width: 4rem;
+        height: 4rem;
+
+        margin-bottom: 0.75rem;
+    }
+
+    .view-paxProfile
+    .pax-profile-avatar-inner {
+        width: 3.25rem;
+        height: 3.25rem;
+
+        font-size: 1.45rem;
+    }
+
+    .view-paxProfile
+    .pax-profile-name {
+        font-size:
+            clamp(
+                2.4rem,
+                12vw,
+                3.35rem
+            );
+    }
+
+    .view-paxProfile
+    .pax-profile-nav-item {
+        min-height: 44px;
+
+        font-size: 0.74rem;
+    }
+
+    .view-paxOverview
+    .pax-overall-grid
+    .pax-metric-card {
+        padding:
+            0.9rem
+            0.95rem;
+    }
+
+    .view-paxOverview
+    .pax-overall-grid
+    .pax-metric-value {
+        font-size: 1.75rem;
+    }
+
+    .view-paxOverview
+    .pax-leadership-card {
+        padding:
+            1rem
+            1rem
+            0;
+    }
+
+    .view-paxOverview
+    .pax-leadership-title {
+        font-size: 1.4rem;
+    }
+
+    .view-paxOverview
+    .pax-leadership-message {
+        font-size: 0.9rem;
+    }
+
+    .view-paxOverview
+    .pax-leadership-recent {
+        margin:
+            0
+            -1rem;
+    }
+
+    .view-paxOverview
+    .pax-leadership-recent-row {
+        padding:
+            0.68rem
+            1rem;
+    }
+
+    .view-paxOverview
+    .pax-profile-fact {
+        min-height: 50px;
+
+        padding:
+            0.72rem
+            0.85rem;
+    }
+
+    .view-paxOverview
+    .pax-activity-row {
+        grid-template-columns:
+            3.55rem
+            minmax(0, 1fr)
+            auto
+            auto;
+
+        gap: 0.5rem;
+
+        min-height: 60px;
+
+        padding:
+            0.68rem
+            0.75rem;
+    }
+
+    .view-paxOverview
+    .pax-activity-date {
+        font-size: 0.7rem;
+    }
+
+    .view-paxOverview
+    .pax-activity-ao {
+        font-size: 0.9rem;
+    }
+
+    .view-paxOverview
+    .pax-activity-role {
+        font-size: 0.68rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-summary-grid
+    .pax-metric-card {
+        padding:
+            0.95rem
+            0.85rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-summary-grid
+    .pax-metric-value {
+        font-size: 1.75rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-summary-grid
+    .pax-metric-label {
+        font-size: 0.64rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-row {
+        min-height: 62px;
+
+        padding:
+            0.72rem
+            0.75rem;
+    }
+
+    .view-paxCommunity
+    .pax-buddy-row {
+        grid-template-columns:
+            1.8rem
+            minmax(0, 1fr)
+            auto;
+
+        gap: 0.6rem;
+
+        padding-left: 0.85rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-rank {
+        width: 1.55rem;
+        height: 1.55rem;
+
+        font-size: 0.72rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-row-title {
+        font-size: 0.92rem;
+    }
+
+    .view-paxCommunity
+    .pax-family-block {
+        padding:
+            0.85rem
+            0.9rem;
+    }
+
+    .view-paxCommunity
+    .pax-ao-footprint-row {
+        grid-template-columns:
+            minmax(0, 1fr)
+            4.75rem;
+    }
+
+    .view-paxCommunity
+    .pax-community-row-value {
+        max-width: 4.75rem;
+
+        font-size: 0.76rem;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .view-paxProfile
+    .pax-profile-nav-item,
+    .view-paxOverview
+    .pax-activity-chevron,
+    .view-paxCommunity
+    .pax-community-chevron {
+        transition: none;
+    }
+}
