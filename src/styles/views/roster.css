@@ -358,7 +358,7 @@
         font-weight: 900;
         line-height: 1;
     
-        touch-action: manipulation;
+        touch-action: none;
 
         pointer-events: auto;
         -webkit-tap-highlight-color: transparent;

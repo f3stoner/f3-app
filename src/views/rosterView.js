@@ -392,6 +392,10 @@ function setupRosterDirectoryInteractions({
       "roster-index-scrubbing"
     );
 
+    document.body.classList.add(
+      "roster-scrubbing"
+    );
+
     isScrubbing = true;
     didDrag = false;
     lastScrubbedKey = null;
@@ -401,7 +405,28 @@ function setupRosterDirectoryInteractions({
       event.pointerId
     );
 
-    scrubToClientY(event.clientY);
+    const pressedButton = event.target.closest(
+      ".roster-index-button"
+    );
+    
+    if (pressedButton && !pressedButton.disabled) {
+      const groupKey =
+        pressedButton.dataset.groupKey;
+    
+      lastScrubbedKey = groupKey;
+    
+      showScrubIndicator(groupKey);
+    
+      scrollToRosterGroup(
+        groupKey,
+        {
+          behavior: "auto",
+          highlight: false,
+        }
+      );
+    } else {
+      scrubToClientY(event.clientY);
+    }
   }
 
   function handlePointerMove(event) {
@@ -413,10 +438,6 @@ function setupRosterDirectoryInteractions({
     }
 
     event.preventDefault();
-
-    document.body.classList.add(
-      "roster-scrubbing"
-  );
 
     didDrag = true;
 
