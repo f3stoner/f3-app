@@ -31,11 +31,16 @@ import {
     getMemberDirectory,
 } from "../utils/memberLookup.js";
 
-export function renderSession() { 
-const app = document.getElementById("app");
-app.textContent = "";
+export function renderSession() {
+    const app =
+        document.getElementById("app");
 
-cleanupMainMenu();
+    app.replaceChildren();
+
+    app.className =
+        "view-session";
+
+    cleanupMainMenu();
 
 if (!state.editingSessionId && !state.selectedSessionId) {
     state.sessionShowAllRecent = false;
@@ -268,8 +273,29 @@ const isScopedSessionEditor =
 
 console.log("sessionView draftSession on open:", draftSession);
 
-const title = document.createElement("h1");
-title.textContent = isEditing ? "Edit Session" : "Start Session";
+const title =
+    document.createElement("h1");
+
+title.textContent =
+    isEditing
+        ? "Edit Session"
+        : "Start Session";
+
+title.classList.add(
+    "session-title"
+);
+
+const subtitle =
+    document.createElement("div");
+
+subtitle.classList.add(
+    "session-subtitle"
+);
+
+subtitle.textContent =
+    isEditing
+        ? "Review attendance and session details."
+        : "Build today’s attendance.";
 
 const dateLabel = document.createElement("div");
 dateLabel.textContent = isEditing ? "Edit Date" : "Date";
@@ -295,8 +321,15 @@ dateInput.min = min;
 dateInput.max = today;
 
 function updateDraftDate(event) {
-    draftSession.date = event.target.value;
-    dateDisplay.textContent = formatDate(draftSession.date);
+    draftSession.date =
+        event.target.value;
+
+    dateDisplay.textContent =
+        formatDate(
+            draftSession.date
+        );
+
+    updateSessionContextSummary();
 }
 
 dateInput.addEventListener("change", updateDraftDate);
@@ -436,7 +469,11 @@ aoSelect.addEventListener("change", (event) => {
 
     draftSession.aoId = selectedAo?.id || null;
     draftSession.aoName = selectedAo?.name || "";
-    draftSession.siteId = selectedAo?.defaultSiteId || null;
+    draftSession.siteId =
+        selectedAo?.defaultSiteId ||
+        null;
+
+    updateSessionContextSummary();
 
     cachedLastPostMapByAoKey.clear();
 
@@ -444,13 +481,74 @@ aoSelect.addEventListener("change", (event) => {
     renderSessionSearchResults();
 });
 
+const sessionContext =
+    document.createElement("section");
+
+sessionContext.classList.add(
+    "session-context"
+);
+
+const sessionContextSummary =
+    document.createElement("button");
+
+sessionContextSummary.type =
+    "button";
+
+sessionContextSummary.classList.add(
+    "session-context-summary"
+);
+
+const sessionContextPrimary =
+    document.createElement("span");
+
+sessionContextPrimary.classList.add(
+    "session-context-primary"
+);
+
+const sessionContextEdit =
+    document.createElement("span");
+
+sessionContextEdit.classList.add(
+    "session-context-edit"
+);
+
+sessionContextEdit.textContent =
+    "Edit";
+
+function updateSessionContextSummary() {
+    sessionContextPrimary.textContent =
+        `${formatDate(
+            draftSession.date
+        )} • ${
+            draftSession.aoName ||
+            "Select AO"
+        }`;
+}
+
+updateSessionContextSummary();
+
+sessionContextSummary.append(
+    sessionContextPrimary,
+    sessionContextEdit
+);
+
+sessionContext.append(
+    sessionContextSummary
+);
+
 const searchWrap = document.createElement("div");
-searchWrap.classList.add("session-search-wrap");
+searchWrap.classList.add(
+    "session-search-wrap",
+    "session-search-shell"
+);
 
 const searchInput = document.createElement("input");
 searchInput.type = "text";
 searchInput.placeholder = "Search PAX to add...";
-searchInput.classList.add("session-search");
+searchInput.classList.add(
+    "session-search",
+    "session-search-input"
+);
 searchInput.value = state.sessionSearchTerm || "";
 searchInput.autocomplete = "off";
 searchInput.setAttribute("role", "combobox");
@@ -960,7 +1058,12 @@ searchWrap.addEventListener("focusout", () => {
     });
 });
 
-const memberList = document.createElement("div");
+const memberList =
+    document.createElement("main");
+
+memberList.classList.add(
+    "session-member-directory"
+);
 
 function isRecentDate(dateString, days = 45) {
     if (!dateString) return false;
@@ -1118,9 +1221,17 @@ async function maybePromptForFngName(member) {
     cachedSelectableMembers = null;
 }
 
-function createMemberCard(member, options = {}) {
-    const card = document.createElement("div");
-    card.classList.add("member-card");
+function createMemberCard(
+    member,
+    options = {}
+) {
+    const card =
+        document.createElement("div");
+
+    card.classList.add(
+        "member-card",
+        "session-member-row"
+    );
     card.dataset.memberId = member.id;
 
     const name = document.createElement("span");
@@ -1166,7 +1277,10 @@ function createMemberCard(member, options = {}) {
     }
 
     const qButton = document.createElement("button");
-    qButton.classList.add("q-button");
+    qButton.classList.add(
+        "q-button",
+        "session-member-q-button"
+    );
     qButton.textContent = "Q";
     if ((draftSession.qIds || []).includes(member.id)) {
         qButton.classList.add("q-selected");
@@ -1192,7 +1306,10 @@ function createMemberCard(member, options = {}) {
     });
 
     const addIndicator = document.createElement("span");
-    addIndicator.classList.add("member-card-add-indicator");
+    addIndicator.classList.add(
+        "member-card-add-indicator",
+        "session-member-add"
+    );
     addIndicator.textContent = "+";
     addIndicator.setAttribute("aria-hidden", "true");
 
@@ -1258,13 +1375,34 @@ function createMemberCard(member, options = {}) {
         return card;
     }
 
-function createMemberSection(titleText, members, options = {}) {
-    const section = document.createElement("div");
-    section.classList.add("section");
+function createMemberSection(
+    titleText,
+    members,
+    options = {}
+) {
+    const section =
+        document.createElement("section");
 
-    const title = document.createElement("div");
-    title.classList.add("detail-label");
+    section.classList.add(
+        "section",
+        "session-member-section"
+    );
+
+    const title =
+        document.createElement("div");
+
+    title.classList.add(
+        "detail-label",
+        "session-member-section-title"
+    );
+
     title.textContent = titleText;
+
+    if (options.sectionClass) {
+        section.classList.add(
+            options.sectionClass
+        );
+    }
 
     section.appendChild(title);
 
@@ -1294,23 +1432,85 @@ function getDraftAttendeeCount() {
     ]).size;
 }
 
-function createSelectedSection(qMembers, selectedMembers) {
-    const section = document.createElement("div");
-    section.classList.add("section");
+function createSelectedSection(
+    qMembers,
+    selectedMembers
+) {
+    const section =
+        document.createElement("section");
 
-    const heading = document.createElement("div");
-    heading.classList.add("detail-label");
-    heading.textContent = state.sessionSelectedExpanded
-        ? `Selected PAX (${getDraftAttendeeCount()}) • Tap to collapse`
-        : `Selected PAX (${getDraftAttendeeCount()}) • Tap to review/edit`;
+    section.classList.add(
+        "section",
+        "session-selected-section"
+    );
+
+    const heading =
+        document.createElement("button");
+
+    heading.type = "button";
+
+    heading.classList.add(
+        "detail-label",
+        "session-selected-heading"
+    );
+    const selectedCount =
+        getDraftAttendeeCount();
+
+        const headingLabel =
+        document.createElement("span");
     
-    heading.style.cursor = "pointer";
+    headingLabel.classList.add(
+        "session-selected-heading-label"
+    );
+    
+    headingLabel.textContent =
+        `Selected PAX (${selectedCount})`;
+    
+    const headingAction =
+        document.createElement("span");
+    
+    headingAction.classList.add(
+        "session-selected-heading-action"
+    );
+    
+    headingAction.textContent =
+        state.sessionSelectedExpanded
+            ? "Collapse"
+            : selectedCount > 0
+                ? "Review"
+                : "";
+    
+    const headingChevron =
+        document.createElement("span");
+    
+    headingChevron.classList.add(
+        "session-selected-heading-chevron"
+    );
+    
+    headingChevron.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+    
+    headingChevron.textContent =
+        state.sessionSelectedExpanded
+            ? "⌃"
+            : "⌄";
+    
+    heading.append(
+        headingLabel,
+        headingAction,
+        headingChevron
+    );
 
     section.appendChild(heading);
 
     section.appendChild(createSelectedPillStrip(qMembers, selectedMembers));
 
-    if (selectedMembers.length === 0) {
+    if (
+        qMembers.length === 0 &&
+        selectedMembers.length === 0
+    ) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
         empty.textContent = "None selected yet";
@@ -1327,8 +1527,13 @@ function createSelectedSection(qMembers, selectedMembers) {
         return section;
     }
 
-    const selectedList = document.createElement("div");
-    selectedList.classList.add("selected-summary-list");
+    const selectedList =
+        document.createElement("div");
+
+    selectedList.classList.add(
+        "selected-summary-list",
+        "session-selected-list"
+    );
 
     const reviewMembers = [
         ...qMembers.map(member => ({...member, isQ: true})),
@@ -1336,16 +1541,35 @@ function createSelectedSection(qMembers, selectedMembers) {
     ];
 
     reviewMembers.forEach(member => {
-        const row = document.createElement("div");
-        row.classList.add("selected-summary-row");
-
-        const name = document.createElement("span");
+    const row =
+        document.createElement("div");
+    
+    row.classList.add(
+        "selected-summary-row",
+        "session-selected-row"
+    );
+    
+    const name =
+        document.createElement("span");
+    
+    name.classList.add(
+        "session-selected-name"
+    );
         name.textContent = member.isQ
             ? `Q: ${getCachedMemberDisplayName(member)}`
             : getCachedMemberDisplayName(member);
 
-        const removeButton = document.createElement("button");
-        removeButton.textContent = "Remove";
+        const removeButton =
+            document.createElement("button");
+        
+        removeButton.type = "button";
+        
+        removeButton.classList.add(
+            "session-selected-remove"
+        );
+        
+        removeButton.textContent =
+            "Remove";
         removeButton.addEventListener("click", () => {
             if (member.isQ && preventRemovingOnlyQ(member.id)) {
                 return;
@@ -1364,28 +1588,91 @@ function createSelectedSection(qMembers, selectedMembers) {
     return section;
 }
 
-const stickyHeader = document.createElement("div");
-stickyHeader.classList.add("sticky-header");
+const stickyHeader =
+    document.createElement("section");
 
-const sessionHelperText = document.createElement("div");
-sessionHelperText.classList.add("session-helper-text");
+stickyHeader.classList.add(
+    "sticky-header",
+    "session-attendance-console"
+);
 
-const helperLineOne = document.createElement("div");
-helperLineOne.textContent = "Search or tap card to add PAX";
+const attendanceHeader =
+    document.createElement("div");
 
-const helperLineTwo = document.createElement("div");
-helperLineTwo.textContent = "Tap Q to assign Q";
+attendanceHeader.classList.add(
+    "session-attendance-header"
+);
 
-sessionHelperText.append(helperLineOne, helperLineTwo);
+const attendanceIdentity =
+    document.createElement("div");
 
-const selectedHeaderSlot = document.createElement("div");
-selectedHeaderSlot.classList.add("session-summary-strip");
+attendanceIdentity.classList.add(
+    "session-attendance-identity"
+);
 
-stickyHeader.append(searchWrap, sessionHelperText, selectedHeaderSlot);
+const attendanceEyebrow =
+    document.createElement("div");
 
-const sessionControls = document.createElement("div");
-sessionControls.classList.add("section");
-sessionControls.append(aoLabel, aoSelect);
+attendanceEyebrow.classList.add(
+    "session-attendance-eyebrow"
+);
+
+attendanceEyebrow.textContent =
+    "Session Roster";
+
+const attendanceTitle =
+    document.createElement("div");
+
+attendanceTitle.classList.add(
+    "session-attendance-title"
+);
+
+attendanceTitle.textContent =
+    "Attendance";
+
+attendanceIdentity.append(
+    attendanceEyebrow,
+    attendanceTitle
+);
+
+const attendanceCount =
+    document.createElement("div");
+
+attendanceCount.classList.add(
+    "session-attendance-count"
+);
+
+attendanceHeader.append(
+    attendanceIdentity,
+    attendanceCount
+);
+
+const selectedHeaderSlot =
+    document.createElement("div");
+
+selectedHeaderSlot.classList.add(
+    "session-summary-strip",
+    "session-selected-slot"
+);
+
+stickyHeader.append(
+    attendanceHeader,
+    searchWrap,
+    selectedHeaderSlot,
+);
+
+const sessionControls =
+    document.createElement("div");
+
+sessionControls.classList.add(
+    "section",
+    "session-ao-control"
+);
+
+sessionControls.append(
+    aoLabel,
+    aoSelect
+);
 
 function getSortedSelectableMembers() {
     const selectableById = new Map();
@@ -1476,6 +1763,21 @@ function renderMemberList() {
     console.time("renderMemberList");
     memberList.textContent = "";
 
+    const attendeeCount =
+    getDraftAttendeeCount();
+
+const qCount =
+    getUniqueQIds().length;
+
+attendanceCount.textContent =
+    `${attendeeCount} selected`;
+
+attendanceCount.classList.toggle(
+    "is-ready",
+    attendeeCount > 0 &&
+    qCount > 0
+);
+
     const lastPostMap = getCachedLastPostMapForAo(
         draftSession.aoId,
         draftSession.aoName
@@ -1544,7 +1846,7 @@ function renderMemberList() {
 
     const visibleRecentMembers = state.sessionShowAllRecent
         ? recentMembers
-        : recentMembers.slice(0, 12);
+        : recentMembers.slice(0, 6);
 
     const otherMembers = selectableMembers.filter(member => {
         if (draftSession.attendeeIds.includes(member.id)) {
@@ -1562,7 +1864,7 @@ function renderMemberList() {
 
     const visibleOtherMembers = state.sessionShowAllOthers
         ? otherMembers
-        : otherMembers.slice(0, 10);
+        : [];
 
     selectedHeaderSlot.textContent = "";
     selectedHeaderSlot.appendChild(
@@ -1608,6 +1910,8 @@ function renderMemberList() {
                 {
                     commitmentType: "hc",
                     emptyText: "No hard commits",
+                    sectionClass:
+                        "session-hard-commit-section",
                 }
             )
         );
@@ -1621,6 +1925,8 @@ function renderMemberList() {
                 {
                     commitmentType: "sc",
                     emptyText: "No soft commits",
+                    sectionClass:
+                        "session-soft-commit-section",
                 }
             )
         );
@@ -1630,15 +1936,19 @@ function renderMemberList() {
         `Recent at ${draftSession.aoName || "AO"}`,
         visibleRecentMembers,
         {
-            emptyText: "No recent posters at this AO",
+            emptyText:
+                "No recent posters at this AO",
+        
+            sectionClass:
+                "session-recent-section",
         }
     );
 
-    if (recentMembers.length > 12) {
+    if (recentMembers.length > 6) {
         const toggleButton = document.createElement("button");
         toggleButton.textContent = state.sessionShowAllRecent
             ? "Show Less"
-            : "Show More";
+            : `Show ${recentMembers.length - 6} More`;
 
         toggleButton.addEventListener("click", () => {
             state.sessionShowAllRecent =
@@ -1652,34 +1962,62 @@ function renderMemberList() {
 
     memberList.appendChild(recentSection);
 
-    const othersSection = createMemberSection(
-        "More PAX",
-        visibleOtherMembers,
-        {
-            emptyText: "No other active PAX",
-        }
-    );
+    const othersSection =
+        createMemberSection(
+            "PAX Directory",
+            visibleOtherMembers,
+            {
+                emptyText:
+                    state.sessionShowAllOthers
+                        ? "No other active PAX"
+                        : "Search above or browse the full directory.",
 
-    if (otherMembers.length > 10) {
-        const toggleButton = document.createElement("button");
-        toggleButton.textContent = state.sessionShowAllOthers
-            ? "Show Less"
-            : "Show More";
+                sectionClass:
+                    "session-more-pax-section",
+            }
+        );
 
-        toggleButton.addEventListener("click", () => {
-            state.sessionShowAllOthers =
-                !state.sessionShowAllOthers;
+    if (otherMembers.length > 0) {
+        const toggleButton =
+            document.createElement("button");
 
-            renderMemberList();
-        });
+        toggleButton.type = "button";
 
-        othersSection.appendChild(toggleButton);
+        toggleButton.textContent =
+            state.sessionShowAllOthers
+                ? "Hide PAX Directory"
+                : `Browse ${otherMembers.length} PAX`;
+
+        toggleButton.addEventListener(
+            "click",
+            () => {
+                state.sessionShowAllOthers =
+                    !state.sessionShowAllOthers;
+
+                renderMemberList();
+            }
+        );
+
+        othersSection.appendChild(
+            toggleButton
+        );
     }
 
-    memberList.appendChild(othersSection);
+    memberList.appendChild(
+        othersSection
+    );
+
+    updateSessionSaveStatus();
 
     console.timeEnd("renderMemberList");
 }
+
+const saveStatus =
+    document.createElement("div");
+
+saveStatus.classList.add(
+    "session-save-status"
+);
 
 async function loadDraftQSlotCommitments() {
     const qSlotId = draftSession.sourceQSlotId;
@@ -1724,6 +2062,116 @@ async function loadDraftQSlotCommitments() {
 renderMemberList();
 loadDraftQSlotCommitments();
 
+function createEntryActions({
+    row,
+    fields,
+    summary,
+    removeButton,
+    getSummaryLines,
+}) {
+    const actions =
+        document.createElement("div");
+
+    actions.classList.add(
+        "session-entry-actions"
+    );
+
+    const cancelButton =
+        document.createElement("button");
+
+    cancelButton.type = "button";
+    cancelButton.textContent = "Cancel";
+
+    cancelButton.classList.add(
+        "session-entry-cancel"
+    );
+
+    const doneButton =
+        document.createElement("button");
+
+    doneButton.type = "button";
+    doneButton.textContent = "Done";
+
+    doneButton.classList.add(
+        "session-entry-done"
+    );
+
+    const editButton =
+        document.createElement("button");
+
+    editButton.type = "button";
+    editButton.textContent = "Edit";
+
+    editButton.classList.add(
+        "session-entry-edit"
+    );
+
+    function setEditing(isEditing) {
+        row.classList.toggle(
+            "is-complete",
+            !isEditing
+        );
+
+        fields.forEach(field => {
+            field.hidden = !isEditing;
+        });
+
+        summary.hidden = isEditing;
+        doneButton.hidden = !isEditing;
+        cancelButton.hidden = !isEditing;
+        editButton.hidden = isEditing;
+        removeButton.hidden = isEditing;
+    }
+
+    doneButton.addEventListener("click", () => {
+        const lines =
+            getSummaryLines()
+                .filter(Boolean);
+
+        if (lines.length === 0) {
+            return;
+        }
+
+        summary.replaceChildren();
+
+        lines.forEach((line, index) => {
+            const item =
+                document.createElement("div");
+
+            item.classList.add(
+                index === 0
+                    ? "session-entry-summary-primary"
+                    : "session-entry-summary-secondary"
+            );
+
+            item.textContent = line;
+
+            summary.appendChild(item);
+        });
+
+        setEditing(false);
+    });
+
+    editButton.addEventListener("click", () => {
+        setEditing(true);
+    });
+
+    cancelButton.addEventListener("click", () => {
+        row.remove();
+    });
+
+    actions.append(
+        cancelButton,
+        doneButton,
+        editButton,
+        removeButton
+    );
+
+    setEditing(true);
+
+    return actions;
+}
+
 const visitorHeading = document.createElement("div");
 visitorHeading.classList.add("fng-heading");
 visitorHeading.textContent = "Visiting PAX";
@@ -1742,6 +2190,13 @@ function addVisitorRow(visitor = null) {
     const visitorRow = document.createElement("div");
     visitorRow.classList.add("visitor-row");
     visitorRow.dataset.id = visitor?.id || "";
+
+    const visitorSummary =
+        document.createElement("div");
+
+    visitorSummary.classList.add(
+        "session-entry-summary"
+    );
 
     const f3Name = document.createElement("input");
     f3Name.type = "text";
@@ -1768,7 +2223,36 @@ function addVisitorRow(visitor = null) {
         visitorRow.remove();
     });
 
-    visitorRow.append(f3Name, homeRegion, realName, removeButton);
+    const visitorActions =
+    createEntryActions({
+        row: visitorRow,
+
+        fields: [
+            f3Name,
+            homeRegion,
+            realName,
+        ],
+
+        summary:
+            visitorSummary,
+
+        removeButton,
+
+        getSummaryLines: () => [
+            f3Name.value.trim(),
+            homeRegion.value.trim(),
+            realName.value.trim(),
+        ],
+    });
+
+    visitorRow.append(
+        f3Name,
+        homeRegion,
+        realName,
+        visitorSummary,
+        visitorActions
+    );
+
     visitorContainer.appendChild(visitorRow);
 }
 
@@ -1811,6 +2295,13 @@ function addFngRow(fng = null) {
 
     const invitedByField = createInvitedByField(initialInviterIds);
 
+    const fngSummary =
+        document.createElement("div");
+
+    fngSummary.classList.add(
+        "session-entry-summary"
+    );
+
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.textContent = "Remove";
@@ -1819,7 +2310,60 @@ function addFngRow(fng = null) {
         updateFngButtonText();
     });
 
-    fngRow.append(realName, paxName, invitedByField.wrapper, removeButton);
+    const fngActions =
+    createEntryActions({
+        row: fngRow,
+
+        fields: [
+            realName,
+            paxName,
+            invitedByField.wrapper,
+        ],
+
+        summary:
+            fngSummary,
+
+        removeButton,
+
+        getSummaryLines: () => [
+            realName.value.trim(),
+            paxName.value.trim()
+                ? `F3 Name: ${paxName.value.trim()}`
+                : "",
+                [
+                    ...invitedByField.wrapper.querySelectorAll(
+                        ".invited-by-chip"
+                    ),
+                ]
+                    .map(chip => {
+                        const chipClone =
+                            chip.cloneNode(true);
+                
+                        chipClone
+                            .querySelectorAll(
+                                "button, .remove-button"
+                            )
+                            .forEach(element => {
+                                element.remove();
+                            });
+                
+                        return chipClone
+                            .textContent
+                            .trim();
+                    })
+                    .filter(Boolean)
+                    .join(", "),
+        ],
+    });
+
+    fngRow.append(
+        realName,
+        paxName,
+        invitedByField.wrapper,
+        fngSummary,
+        fngActions
+    );
+
     fngContainer.appendChild(fngRow);
     updateFngButtonText();
 }
@@ -1837,6 +2381,47 @@ if (draftSession.fngs.length > 0) {
 }
 
 updateFngButtonText();
+
+const additionalAttendanceSection =
+    document.createElement("section");
+
+additionalAttendanceSection.classList.add(
+    "session-additional-attendance"
+);
+
+const visitorSection =
+    document.createElement("div");
+
+visitorSection.classList.add(
+    "session-additional-group",
+    "session-visitor-group"
+);
+
+visitorSection.append(
+    visitorHeading,
+    addVisitorButton,
+    visitorContainer
+);
+
+const fngSection =
+    document.createElement("div");
+
+fngSection.classList.add(
+    "session-additional-group",
+    "session-fng-group"
+);
+
+fngSection.append(
+    fngHeading,
+    addFngButton,
+    fngContainer
+);
+
+additionalAttendanceSection.append(
+    visitorSection,
+    fngSection
+);
+
 
 function normalizeSessionForSave(session) {
     const qIds = [...new Set(session.qIds || (session.qId ? [session.qId] : []))]
@@ -2030,7 +2615,40 @@ let visitorLoadStatus =
         ? "loading"
         : "ready";
 
+function updateSessionSaveStatus() {
+    const attendeeCount =
+        getDraftAttendeeCount();
+
+    const qCount =
+        getUniqueQIds().length;
+
+    if (attendeeCount === 0) {
+        saveStatus.textContent =
+            "No PAX selected";
+
+        saveStatus.className =
+            "session-save-status";
+        return;
+    }
+
+    if (qCount === 0) {
+        saveStatus.textContent =
+            `${attendeeCount} PAX • Q needed`;
+
+        saveStatus.className =
+            "session-save-status needs-attention";
+        return;
+    }
+
+    saveStatus.textContent =
+        `${attendeeCount} PAX • Ready`;
+
+    saveStatus.className =
+        "session-save-status is-ready";
+}
+
 function updateSaveButtonState() {
+    updateSessionSaveStatus();
     const visitorsUnavailable =
         visitorLoadStatus === "loading" ||
         visitorLoadStatus === "failed";
@@ -2547,15 +3165,32 @@ saveButton.addEventListener("click", async () => {
 updateSaveButtonState();
 loadExistingSessionVisitors();
 
-const notes = document.createElement("textarea");
-notes.classList.add("notes");
+const notes =
+    document.createElement("textarea");
+
+notes.classList.add(
+    "notes",
+    "session-notes"
+);
 notes.placeholder = "Notes...";
 notes.value = draftSession.notes || "";
 
-const actionBar = document.createElement("div");
-actionBar.classList.add("sticky-action-bar");
+const actionBar =
+    document.createElement("div");
 
-actionBar.append(saveButton);
+actionBar.classList.add(
+    "sticky-action-bar",
+    "session-save-bar"
+);
+
+saveButton.classList.add(
+    "session-save-button"
+);
+
+actionBar.append(
+    saveStatus,
+    saveButton
+);
 
 const dateInputWrap = document.createElement("label");
 dateInputWrap.classList.add("fake-date-field");
@@ -2566,26 +3201,68 @@ dateDisplay.textContent = formatDate(draftSession.date);
 
 dateInputWrap.append(dateDisplay, dateInput);
 
-const topSection = document.createElement("div");
-topSection.classList.add("session-top-section");
-topSection.append(dateLabel, dateInputWrap, ...(loadedWorkoutBanner ? [loadedWorkoutBanner] : []), sessionControls);
+const topSection =
+    document.createElement("section");
 
+topSection.classList.add(
+    "session-top-section",
+    "session-setup"
+);
 
+topSection.append(
+    dateLabel,
+    dateInputWrap,
+
+    ...(
+        loadedWorkoutBanner
+            ? [loadedWorkoutBanner]
+            : []
+    ),
+
+    sessionControls
+);
+
+let sessionSetupExpanded =
+    isEditing;
+
+function updateSessionSetupVisibility() {
+    topSection.hidden =
+        !sessionSetupExpanded;
+
+    sessionContext.classList.toggle(
+        "is-expanded",
+        sessionSetupExpanded
+    );
+
+    sessionContextEdit.textContent =
+        sessionSetupExpanded
+            ? "Done"
+            : "Edit";
+}
+
+sessionContextSummary.addEventListener(
+    "click",
+    () => {
+        sessionSetupExpanded =
+            !sessionSetupExpanded;
+
+        updateSessionSetupVisibility();
+    }
+);
+
+updateSessionSetupVisibility();
 
 app.append(
     header,
-    title, 
-    topSection, 
+    title,
+    subtitle,
+    sessionContext,
+    topSection,
     stickyHeader,
     memberList,
-    visitorHeading,
-    addVisitorButton,
-    visitorContainer,
-    fngHeading,
-    addFngButton,
-    fngContainer,
-    notes, 
-    actionBar,
+    additionalAttendanceSection,
+    notes,
+    actionBar
 );
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());
