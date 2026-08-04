@@ -684,6 +684,17 @@ function createAuditRow(row) {
         ? `Q: ${row.qName}`
         : "No Q assigned";
 
+    const loggedBy =
+        document.createElement("p");
+    
+    loggedBy.classList.add(
+        "detail-value",
+        "session-audit-logged-by"
+    );
+    
+    loggedBy.textContent =
+        `Logged by: ${row.loggedByName}`;
+    
     const status = document.createElement("p");
     status.classList.add("detail-value");
     status.textContent = getStatusLabel(row);
@@ -798,7 +809,23 @@ function createAuditRow(row) {
         actions.appendChild(viewButton);
     }
 
-    rowElement.append(date, ao, q, status);
+    rowElement.append(
+        date,
+        ao,
+        q
+    );
+    
+    if (
+        row.status === "logged" &&
+        row.loggedBySomeoneElse &&
+        row.loggedByName
+    ) {
+        rowElement.appendChild(
+            loggedBy
+        );
+    }
+    
+    rowElement.appendChild(status);
 
     if (actions.childElementCount > 0) {
         rowElement.appendChild(actions);

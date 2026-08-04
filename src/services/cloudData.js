@@ -4205,6 +4205,92 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
 
     if (sessionsError) throw sessionsError;
 
+    const creatorUserIds = [
+        ...new Set(
+            (sessions || [])
+                .map(
+                    session =>
+                        session.created_by_user_id
+                )
+                .filter(Boolean)
+        ),
+    ];
+
+    let profileByUserId = new Map();
+    let memberById = new Map();
+
+    if (creatorUserIds.length > 0) {
+        const {
+            data: profiles,
+            error: profilesError,
+        } = await supabase.rpc(
+            "load_region_profiles_for_admin",
+            {
+                target_region_id: regionId,
+            }
+        );
+
+        if (profilesError) {
+            throw profilesError;
+        }
+
+        const creatorProfiles =
+            (profiles || []).filter(
+                profile =>
+                    creatorUserIds.includes(
+                        profile.id
+                    )
+            );
+
+        profileByUserId = new Map(
+            creatorProfiles.map(profile => [
+                profile.id,
+                profile,
+            ])
+        );
+
+        const creatorMemberIds = [
+            ...new Set(
+                creatorProfiles
+                    .map(
+                        profile =>
+                            profile.member_id ||
+                            profile.memberId ||
+                            null
+                    )
+                    .filter(Boolean)
+            ),
+        ];
+
+        if (creatorMemberIds.length > 0) {
+            const {
+                data: members,
+                error: membersError,
+            } = await supabase
+                .from("members")
+                .select(`
+                    id,
+                    pax_name,
+                    real_name
+                `)
+                .in(
+                    "id",
+                    creatorMemberIds
+                );
+
+            if (membersError) {
+                throw membersError;
+            }
+
+            memberById = new Map(
+                (members || []).map(member => [
+                    member.id,
+                    member,
+                ])
+            );
+        }
+    }
+
     const duplicateGroups = createPotentialSessionDuplicateGroups(
         sessions || []
     );
@@ -4246,7 +4332,49 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
             sessionBySlotId.get(slot.id) ||
             legacySessionByAoDate.get(legacyKey) ||
             null;
-    
+
+        const sessionQIds =
+            session?.q_ids ||
+            (
+                session?.q_id
+                    ? [session.q_id]
+                    : []
+            );
+
+        const loggerProfile =
+            session?.created_by_user_id
+                ? profileByUserId.get(
+                    session.created_by_user_id
+                )
+                : null;
+
+        const loggedByMemberId =
+            loggerProfile?.member_id ||
+            loggerProfile?.memberId ||
+            null;
+
+        const loggerMember =
+            loggedByMemberId
+                ? memberById.get(
+                    loggedByMemberId
+                )
+                : null;
+
+        const loggedByName =
+            loggerMember?.pax_name ||
+            loggerMember?.real_name ||
+            loggerProfile?.display_name ||
+            "";
+
+        const loggedBySomeoneElse =
+            Boolean(
+                session &&
+                loggedByMemberId &&
+                !sessionQIds.includes(
+                    loggedByMemberId
+                )
+            );
+
         let status = "unclaimed";
     
         if (session) {
@@ -4277,9 +4405,17 @@ export async function loadSessionAudit(regionId, startDate, endDate) {
             sessionId: session?.id || null,
             ignoredAt: slot.session_audit_ignored_at || null,
             ignoredByUserId: slot.session_audit_ignored_by || null,
-            sessionQIds:
-                session?.q_ids ||
-                (session?.q_id ? [session.q_id] : []),
+            sessionQIds,
+
+            createdByUserId:
+                session?.created_by_user_id ||
+                null,
+            
+            loggedByMemberId,
+            
+            loggedByName,
+            
+            loggedBySomeoneElse,
             matchedBy: session
                 ? session.source_q_slot_id
                     ? "q_slot_id"
