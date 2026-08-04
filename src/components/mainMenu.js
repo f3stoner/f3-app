@@ -111,7 +111,8 @@ function getDefaultAoInsightsSelection() {
 export function openMainMenu() {
     state.isMainMenuOpen = true;
     document.body.classList.add("menu-open");
-    renderApp();
+
+    document.body.appendChild(createMainMenu());
 }
 
 export function closeMainMenu() {
@@ -149,7 +150,6 @@ export function createMainMenu() {
 
     closeButton.addEventListener("click", () => {
         closeMainMenu();
-        renderApp();
     });
 
     header.append(heading, closeButton);
@@ -606,7 +606,6 @@ export function createMainMenu() {
 
     overlay.addEventListener("click", () => {
         closeMainMenu();
-        renderApp();
     });
 
     drawer.addEventListener("click", event => {

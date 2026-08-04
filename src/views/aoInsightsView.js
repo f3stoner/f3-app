@@ -3,7 +3,11 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { formatDate } from "../utils/date.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { loadAoInsightMonths, loadAoInsightSessions } from "../services/cloudData.js";
+import {
+    loadAoInsightMonths,
+    loadAoInsightSessions,
+    loadRegionMilestoneCrossings,
+} from "../services/cloudData.js";
 import { goBack } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { canViewAoInsights, canViewAnyAoInsights } from "../utils/permissions.js";
@@ -16,19 +20,45 @@ import {
     getTotalAttendanceCount,
 } from "../utils/sessionAttendance.js";
 import { createHorizontalBarChartSection } from "../components/regionInsights/charts.js";
+import { buildRegionInsights } from "../modules/insights.js";
 
 const AO_INSIGHT_LOOKBACK_DAYS = 180;
 
+const REGION_POST_MILESTONES = [
+    10,
+    25,
+    50,
+    75,
+    100,
+    150,
+    200,
+    250,
+    300,
+    400,
+    500,
+    750,
+    1000,
+];
+
 function createMetricCard(label, value) {
     const card = document.createElement("div");
-    card.classList.add("stat-tile");
+    card.classList.add(
+        "stat-tile",
+        "ao-insights-metric-card"
+    );
 
     const valueEl = document.createElement("div");
-    valueEl.classList.add("stat-value");
+    valueEl.classList.add(
+        "stat-value",
+        "ao-insights-metric-value"
+    );
     valueEl.textContent = value;
 
     const labelEl = document.createElement("div");
-    labelEl.classList.add("stat-label");
+    labelEl.classList.add(
+        "stat-label",
+        "ao-insights-metric-label"
+    );
     labelEl.textContent = label;
 
     card.append(valueEl, labelEl);
@@ -38,7 +68,11 @@ function createMetricCard(label, value) {
 
 function createInsightCard({ title, headline, story, tone, onClick }) {
     const card = document.createElement("div");
-    card.classList.add("section", "insight-briefing-card");
+    card.classList.add(
+        "section",
+        "insight-briefing-card",
+        "ao-insights-briefing-card"
+    );
 
     if (tone) {
         card.classList.add(`insight-briefing-${tone}`);
@@ -68,27 +102,42 @@ function createInsightCard({ title, headline, story, tone, onClick }) {
 
 function createInsightsRow({ title, subtitle, value, onClick, tone }) {
     const row = document.createElement("div");
-    row.classList.add("insights-row");
+    row.classList.add(
+        "insights-row",
+        "ao-insights-row"
+    );
 
     if (tone) {
         row.classList.add(`insights-row-${tone}`);
     }
 
     const left = document.createElement("div");
-    left.classList.add("insights-row-left");
+    left.classList.add(
+        "insights-row-left",
+        "ao-insights-row-content"
+    );
 
     const titleEl = document.createElement("div");
-    titleEl.classList.add("insights-row-title");
+    titleEl.classList.add(
+        "insights-row-title",
+        "ao-insights-row-title"
+    );
     titleEl.textContent = title;
 
     const subtitleEl = document.createElement("div");
-    subtitleEl.classList.add("insights-row-subtitle");
+    subtitleEl.classList.add(
+        "insights-row-subtitle",
+        "ao-insights-row-subtitle"
+    );
     subtitleEl.textContent = subtitle;
 
     left.append(titleEl, subtitleEl);
 
     const valueEl = document.createElement("div");
-    valueEl.classList.add("insights-row-value");
+    valueEl.classList.add(
+        "insights-row-value",
+        "ao-insights-row-value"
+    );
     valueEl.textContent = value;
 
     if (onClick) {
@@ -106,6 +155,7 @@ function createHealthSummary(insights) {
     card.classList.add(
         "section",
         "insights-summary-card",
+        "ao-insights-health-summary",
         `insights-summary-${insights.healthStatus.toLowerCase().replace(/\s+/g, "-")}`
     );
 
@@ -135,32 +185,32 @@ function getMemberName(memberId) {
     return member?.paxName || "Unknown";
 }
 
+function normalizeAoName(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase();
+}
+
+function memberBelongsToAo(memberId, aoName) {
+    const member = state.members.find(item => item.id === memberId);
+
+    const memberStats =
+        state.memberStatsByMemberId?.[memberId] ||
+        state.memberStats.find(stats => stats.memberId === memberId);
+
+    const targetAo = normalizeAoName(aoName);
+    const favoriteAo = normalizeAoName(memberStats?.favoriteAo);
+    const homeAo = normalizeAoName(member?.homeAo);
+
+    return favoriteAo === targetAo || homeAo === targetAo;
+}
+
 function getSessionQIds(session) {
     return Array.isArray(session.qIds)
         ? session.qIds
         : session.qId
             ? [session.qId]
             : [];
-}
-
-function getUniqueAttendeeIds(sessions) {
-    const ids = new Set();
-
-    sessions.forEach(session => {
-        (session.attendeeIds || []).forEach(id => ids.add(id));
-    });
-
-    return ids;
-}
-
-function getAverageAttendance(sessions) {
-    if (!sessions.length) return 0;
-
-    const total = sessions.reduce((sum, session) => {
-        return sum + (session.attendeeIds?.length || 0);
-    }, 0);
-
-    return Math.round((total / sessions.length) * 10) / 10;
 }
 
 function getAttendanceStability(sessions) {
@@ -256,6 +306,35 @@ function shiftMonth(dateString, offset) {
     return `${year}-${month}-01`;
 }
 
+function formatDateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function getLastCompletedWeekRange(referenceDate = new Date()) {
+    const date = new Date(referenceDate);
+    date.setHours(0, 0, 0, 0);
+
+    // F3 reporting week: Monday through Saturday.
+    const daysBackToSaturday = date.getDay() === 0
+        ? 1
+        : date.getDay() + 1;
+
+    const end = new Date(date);
+    end.setDate(end.getDate() - daysBackToSaturday);
+
+    const start = new Date(end);
+    start.setDate(start.getDate() - 5);
+
+    return {
+        startDate: formatDateKey(start),
+        endDate: formatDateKey(end),
+    };
+}
+
 function formatMonthLabel(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
     return date.toLocaleDateString(undefined, {
@@ -291,20 +370,6 @@ function getAdjacentAo(currentAoId, offset) {
         availableAos.length;
 
     return availableAos[nextIndex];
-}
-
-function getAvailableMonthsForAo(aoId) {
-    const monthKeys = new Set();
-
-    state.sessions.forEach(session => {
-        if (!session.date || !session.aoId) return;
-        if (session.aoId !== aoId) return;
-
-        monthKeys.add(session.date.slice(0, 7));
-    });
-
-    return [...monthKeys]
-        .sort((a, b) => b.localeCompare(a));
 }
 
 function formatMonthKey(monthKey) {
@@ -445,17 +510,24 @@ function openAoPicker(currentAoId) {
 
 function createInsightsNav(insights) {
     const nav = document.createElement("div");
-    nav.classList.add("insights-nav");
+    nav.classList.add(
+        "insights-nav",
+        "ao-insights-nav"
+    );
 
     const availableAos = getAvailableAos();
     const showAoNavigation = availableAos.length > 1;
 
     const aoRow = document.createElement("div");
-    aoRow.classList.add("insights-nav-row");
+    aoRow.classList.add(
+        "insights-nav-row",
+        "ao-insights-nav-row",
+        "ao-insights-ao-row"
+    );
 
     const previousAoButton = document.createElement("button");
     previousAoButton.type = "button";
-    previousAoButton.classList.add("insights-nav-arrow");
+    previousAoButton.classList.add("insights-nav-arrow", "ao-insights-nav-arrow");
     previousAoButton.textContent = "‹";
     previousAoButton.addEventListener("click", () => {
         const previousAo = getAdjacentAo(insights.aoId, -1);
@@ -473,7 +545,11 @@ function createInsightsNav(insights) {
 
     const aoTitle = document.createElement("button");
     aoTitle.type = "button";
-    aoTitle.classList.add("insights-nav-title");
+    aoTitle.classList.add(
+        "insights-nav-title",
+        "ao-insights-nav-title",
+        "ao-insights-ao-title"
+    );
     aoTitle.textContent = insights.aoName.toUpperCase();
     aoTitle.addEventListener("click", () => {
         openAoPicker(insights.aoId);
@@ -481,7 +557,7 @@ function createInsightsNav(insights) {
 
     const nextAoButton = document.createElement("button");
     nextAoButton.type = "button";
-    nextAoButton.classList.add("insights-nav-arrow");
+    nextAoButton.classList.add("insights-nav-arrow", "ao-insights-nav-arrow");
     nextAoButton.textContent = "›";
     nextAoButton.addEventListener("click", () => {
         const nextAo = getAdjacentAo(insights.aoId, 1);
@@ -500,11 +576,16 @@ function createInsightsNav(insights) {
     aoRow.append(previousAoButton, aoTitle, nextAoButton);
 
     const monthRow = document.createElement("div");
-    monthRow.classList.add("insights-nav-row", "insights-nav-row-secondary");
+    monthRow.classList.add(
+        "insights-nav-row",
+        "insights-nav-row-secondary",
+        "ao-insights-nav-row",
+        "ao-insights-month-row"
+    );
 
     const previousMonthButton = document.createElement("button");
     previousMonthButton.type = "button";
-    previousMonthButton.classList.add("insights-nav-arrow");
+    previousMonthButton.classList.add("insights-nav-arrow", "ao-insights-nav-arrow");
     previousMonthButton.textContent = "‹";
     previousMonthButton.addEventListener("click", () => {
         const newStartDate = shiftMonth(insights.startDate, -1);
@@ -520,7 +601,12 @@ function createInsightsNav(insights) {
 
     const monthTitle = document.createElement("button");
     monthTitle.type = "button";
-    monthTitle.classList.add("insights-nav-title", "insights-nav-title-secondary");
+    monthTitle.classList.add(
+        "insights-nav-title",
+        "insights-nav-title-secondary",
+        "ao-insights-nav-title",
+        "ao-insights-month-title"
+    );
     monthTitle.textContent = formatMonthLabel(insights.startDate);
     monthTitle.addEventListener("click", () => {
         openMonthPicker(insights);
@@ -528,7 +614,7 @@ function createInsightsNav(insights) {
 
     const nextMonthButton = document.createElement("button");
     nextMonthButton.type = "button";
-    nextMonthButton.classList.add("insights-nav-arrow");
+    nextMonthButton.classList.add("insights-nav-arrow", "ao-insights-nav-arrow");
     nextMonthButton.textContent = "›";
     nextMonthButton.addEventListener("click", () => {
         const newStartDate = shiftMonth(insights.startDate, 1);
@@ -840,7 +926,11 @@ function createCollapsibleSection({
     badge = null,
 }) {
     const section = document.createElement("div");
-    section.classList.add("section");
+    section.classList.add(
+        "section",
+        "ao-insights-section",
+        "ao-insights-collapsible-section"
+    );
 
     const header = document.createElement("button");
     header.type = "button";
@@ -850,7 +940,10 @@ function createCollapsibleSection({
     left.classList.add("collapsible-header-left");
 
     const titleEl = document.createElement("div");
-    titleEl.classList.add("insights-section-title");
+    titleEl.classList.add(
+        "insights-section-title",
+        "ao-insights-section-title"
+    );
     titleEl.textContent = title;
 
     left.appendChild(titleEl);
@@ -891,10 +984,16 @@ function createCollapsibleSection({
 
 function createSection(title, content) {
     const section = document.createElement("div");
-    section.classList.add("section");
+    section.classList.add(
+        "section",
+        "ao-insights-section"
+    );
 
     const heading = document.createElement("div");
-    heading.classList.add("insights-section-title");
+    heading.classList.add(
+        "insights-section-title",
+        "ao-insights-section-title"
+    );
     heading.textContent = title;
 
     section.append(heading, content);
@@ -902,8 +1001,208 @@ function createSection(title, content) {
     return section;
 }
 
+function createLeadershipActionSection({
+    title,
+    description,
+    groups,
+    onGroupClick,
+    emptyMessage = "No leadership action data available.",
+}) {
+    const section = document.createElement("section");
+    section.classList.add(
+        "section",
+        "ao-insights-section",
+        "ao-insights-leadership-action-section",
+        "leadership-action-section"
+    );
+
+    const heading = document.createElement("div");
+    heading.classList.add(
+        "insights-section-title",
+        "ao-insights-section-title"
+    );
+    heading.textContent = title;
+
+    const descriptionEl = document.createElement("div");
+    descriptionEl.classList.add("leadership-action-description");
+    descriptionEl.textContent = description;
+
+    if (!groups.length) {
+        const empty = document.createElement("div");
+        empty.classList.add("empty-state");
+        empty.textContent = emptyMessage;
+
+        section.append(heading, descriptionEl, empty);
+        return section;
+    }
+
+    const groupList = document.createElement("div");
+    groupList.classList.add("leadership-action-groups");
+
+    groups.forEach(group => {
+        const hasMembers = group.count > 0;
+
+        const card = document.createElement("button");
+        card.type = "button";
+        card.disabled = !hasMembers || !onGroupClick;
+        card.classList.add(
+            "leadership-action-card",
+            `leadership-action-${group.tone || "neutral"}`
+        );
+
+        if (!hasMembers) {
+            card.classList.add("empty");
+        }
+
+        if (hasMembers && onGroupClick) {
+            card.addEventListener("click", () => {
+                onGroupClick(group);
+            });
+        }
+
+        const main = document.createElement("div");
+        main.classList.add("leadership-action-main");
+
+        const symbol = document.createElement("div");
+        symbol.classList.add("leadership-action-symbol");
+        symbol.textContent = group.symbol || "→";
+
+        const text = document.createElement("div");
+        text.classList.add("leadership-action-text");
+
+        const label = document.createElement("div");
+        label.classList.add("leadership-action-label");
+        label.textContent = group.label;
+
+        const groupDescription = document.createElement("div");
+        groupDescription.classList.add("leadership-action-group-description");
+        groupDescription.textContent = group.description || "";
+
+        const count = document.createElement("div");
+        count.classList.add("leadership-action-count");
+        count.textContent = group.count;
+
+        text.append(label, groupDescription);
+        main.append(symbol, text, count);
+        card.appendChild(main);
+        groupList.appendChild(card);
+    });
+
+    section.append(heading, descriptionEl, groupList);
+
+    return section;
+}
+
+function createAoMilestoneSection({
+    crossings,
+    startDate,
+    endDate,
+    onMemberClick,
+}) {
+    const section = document.createElement("section");
+    section.classList.add(
+        "section",
+        "ao-insights-section",
+        "ao-insights-leadership-action-section"
+    );
+
+    const startLabel = new Date(`${startDate}T00:00:00`).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    });
+
+    const endLabel = new Date(`${endDate}T00:00:00`).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    });
+
+    const heading = document.createElement("div");
+    heading.classList.add(
+        "insights-section-title",
+        "ao-insights-section-title"
+    );
+    heading.textContent = `Weekly Post Milestones • ${startLabel}–${endLabel}`;
+
+    const list = document.createElement("div");
+    list.classList.add("insights-list");
+
+    if (!crossings.length) {
+        const empty = document.createElement("div");
+        empty.classList.add("empty-state");
+        empty.textContent =
+            "No PAX who posted at this AO crossed a regional milestone during the week.";
+
+        list.appendChild(empty);
+    } else {
+        crossings
+            .sort((a, b) => {
+                if (b.milestone !== a.milestone) {
+                    return b.milestone - a.milestone;
+                }
+
+                return a.paxName.localeCompare(b.paxName);
+            })
+            .forEach(crossing => {
+                const postLabel = crossing.postsInPeriod === 1
+                    ? "post"
+                    : "posts";
+
+                list.appendChild(createInsightsRow({
+                    title: `${crossing.paxName} reached ${crossing.milestone} posts`,
+                    subtitle:
+                        `${crossing.postsInPeriod} ${postLabel} during the week • ` +
+                        `${crossing.startingTotal} → ${crossing.endingTotal}`,
+                    value: crossing.milestone,
+                    onClick: () => onMemberClick(crossing),
+                }));
+            });
+    }
+
+    section.append(heading, list);
+
+    return section;
+}
+
+function createAoInsightsSectionSelector({ selectedSection, onSelect }) {
+    const selector = document.createElement("div");
+    selector.classList.add(
+        "region-trend-selector",
+        "ao-insights-section-selector",
+        "ao-insights-primary-tabs"
+    );
+
+    [
+        { id: "overview", label: "Overview" },
+        { id: "leadership", label: "Leadership" },
+    ].forEach(section => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.classList.add(
+            "region-trend-button",
+            "ao-insights-primary-tab"
+        );
+        button.textContent = section.label;
+
+        if (selectedSection === section.id) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => {
+            if (selectedSection === section.id) return;
+            onSelect(section.id);
+        });
+
+        selector.appendChild(button);
+    });
+
+    return selector;
+}
+
 export async function renderAoInsightsView() {
     const app = document.getElementById("app");
+
+    app.replaceChildren();
+    app.className = "view-aoInsights";
 
     cleanupMainMenu();
 
@@ -919,14 +1218,25 @@ export async function renderAoInsightsView() {
         fallbackView: hasPermission(PERMISSIONS.VIEW_REGION_INSIGHTS)
             ? "regionInsights"
             : "dashboard",
-    })
+    });
+
+    const pageTitle = document.createElement("h1");
+    pageTitle.classList.add("ao-insights-title");
+    pageTitle.textContent = "AO Insights";
+
+    const pageSubtitle = document.createElement("div");
+    pageSubtitle.classList.add(
+        "view-subtitle",
+        "ao-insights-subtitle"
+    );
+    pageSubtitle.textContent =
+        "AO-scoped performance and leadership intelligence.";
 
     const selected = state.selectedAoInsights;
 
-    if (!selected) {
-        const title = document.createElement("h1");
-        title.textContent = "AO Insights";
+    const selectedSection = state.aoInsightsSection || "overview";
 
+    if (!selected) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
         empty.textContent = "No AO selected.";
@@ -943,8 +1253,15 @@ export async function renderAoInsightsView() {
 
         const nav = createGlobalNav();
 
-        app.textContent = "";
-        app.append(header, title, empty, backButton, nav);
+        app.replaceChildren(
+            header,
+            pageTitle,
+            pageSubtitle,
+            empty,
+            backButton,
+            nav
+        );
+
         return;
     }
 
@@ -965,20 +1282,35 @@ export async function renderAoInsightsView() {
         return renderAoInsightsView();
     }
 
+    if (!selectedAo) {
+        showToast("No available AO was found.", "error");
+        navigateTo("dashboard");
+        return;
+    }
+
     if (!canViewAoInsights(selectedAo.id)) {
         showToast("You do not have permission to view this AO.", "error");
         navigateTo("dashboard");
         return;
     }
     
-    app.textContent = "";
-    app.appendChild(header);
-    
+    app.replaceChildren(
+        header,
+        pageTitle,
+        pageSubtitle
+    );
+
     const loading = document.createElement("div");
-    loading.classList.add("section");
+    loading.classList.add(
+        "section",
+        "ao-insights-loading"
+    );
     
     const loadingLabel = document.createElement("div");
-    loadingLabel.classList.add("insights-section-title");
+    loadingLabel.classList.add(
+        "insights-section-title",
+        "ao-insights-section-title"
+    );
     loadingLabel.textContent = "AO Insights";
     
     const loadingMessage = document.createElement("div");
@@ -992,29 +1324,60 @@ export async function renderAoInsightsView() {
     );
     
     app.appendChild(loading);
+
+    if (state.isMainMenuOpen) {
+        document.body.appendChild(createMainMenu());
+    }
     
     let selectedSessions;
     let insightHistorySessions;
+    let milestoneWeekSessions;
+    let regionalMilestoneCrossings;
+
+    const milestoneWeek = getLastCompletedWeekRange();
+
+    const historyEndDate = new Date(`${selected.endDate}T00:00:00`);
+    const historyStartDate = new Date(historyEndDate);
+
+    historyStartDate.setDate(
+        historyStartDate.getDate() - AO_INSIGHT_LOOKBACK_DAYS
+    );
     
     try {
-        selectedSessions = await loadAoInsightSessions({
-            regionId: state.currentRegionId,
-            aoId: selected.aoId,
-            startDate: selected.startDate,
-            endDate: selected.endDate,
-        });
-
-        const historyEndDate = new Date(`${selected.endDate}T00:00:00`);
-        const historyStartDate = new Date(historyEndDate);
-
-        historyStartDate.setDate(historyStartDate.getDate() - AO_INSIGHT_LOOKBACK_DAYS);
-
-        insightHistorySessions = await loadAoInsightSessions({
-            regionId: state.currentRegionId,
-            aoId: selected.aoId,
-            startDate: historyStartDate.toISOString().slice(0, 10),
-            endDate: selected.endDate,
-        });
+        [
+            selectedSessions,
+            insightHistorySessions,
+            milestoneWeekSessions,
+            regionalMilestoneCrossings,
+        ] = await Promise.all([
+            loadAoInsightSessions({
+                regionId: state.currentRegionId,
+                aoId: selected.aoId,
+                startDate: selected.startDate,
+                endDate: selected.endDate,
+            }),
+    
+            loadAoInsightSessions({
+                regionId: state.currentRegionId,
+                aoId: selected.aoId,
+                startDate: historyStartDate.toISOString().slice(0, 10),
+                endDate: selected.endDate,
+            }),
+    
+            loadAoInsightSessions({
+                regionId: state.currentRegionId,
+                aoId: selected.aoId,
+                startDate: milestoneWeek.startDate,
+                endDate: milestoneWeek.endDate,
+            }),
+    
+            loadRegionMilestoneCrossings({
+                regionId: state.currentRegionId,
+                startDate: milestoneWeek.startDate,
+                endDate: milestoneWeek.endDate,
+                milestones: REGION_POST_MILESTONES,
+            }),
+        ]);
     } catch (error) {
         console.error("Failed to load AO insights", error);
         showToast("Failed to load AO insights.", "error");
@@ -1029,10 +1392,200 @@ export async function renderAoInsightsView() {
         sessions: selectedSessions,
         insightHistorySessions,
     });
+
+    const selectedMonthIsCurrent =
+        selected.startDate.slice(0, 7) ===
+        formatDateKey(new Date()).slice(0, 7);
+
+    const accelerationEndDate = selectedMonthIsCurrent
+        ? formatDateKey(new Date())
+        : selected.endDate;
+
+    const aoLeadershipInsights = buildRegionInsights({
+        sessions: insightHistorySessions,
+        members: state.members,
+        memberStats: state.memberStats,
+        aos: [selectedAo],
+        startDate: selected.startDate,
+        endDate: selected.endDate,
+        accelerationEndDate,
+    });
+
+    const aoVqGroups = aoLeadershipInsights.readyToVq.map(group => {
+        const members = group.members.filter(member => {
+            return memberBelongsToAo(member.memberId, selectedAo.name);
+        });
+    
+        return {
+            ...group,
+            members,
+            count: members.length,
+        };
+    });
+
+    const milestoneWeekAoMemberIds = new Set();
+
+    milestoneWeekSessions.forEach(session => {
+        getRosteredAttendanceIdSet(session).forEach(memberId => {
+            milestoneWeekAoMemberIds.add(memberId);
+        });
+
+        getSessionQIds(session).forEach(memberId => {
+            milestoneWeekAoMemberIds.add(memberId);
+        });
+    });
+
+    const aoMilestoneCrossings = regionalMilestoneCrossings.filter(crossing => {
+        return milestoneWeekAoMemberIds.has(crossing.memberId);
+    });
     
     const stickyInsightsNav = document.createElement("div");
     stickyInsightsNav.classList.add("sticky-insights-nav");
     stickyInsightsNav.appendChild(createInsightsNav(insights));
+
+    stickyInsightsNav.classList.add(
+        "ao-insights-sticky-nav"
+    );
+    
+    const sectionSelector = createAoInsightsSectionSelector({
+        selectedSection,
+        onSelect: sectionId => {
+            state.aoInsightsSection = sectionId;
+            renderAoInsightsView();
+        },
+    });
+    
+    const overviewPanel = document.createElement("div");
+    overviewPanel.classList.add(
+        "ao-insights-panel",
+        "ao-insights-overview-panel"
+    );
+    overviewPanel.hidden = selectedSection !== "overview";
+    
+    const leadershipPanel = document.createElement("div");
+    leadershipPanel.classList.add(
+        "ao-insights-panel",
+        "ao-insights-leadership-panel"
+    );
+    leadershipPanel.hidden = selectedSection !== "leadership";
+
+    const leadershipAnchorLabel = new Date(
+        `${accelerationEndDate}T00:00:00`
+    ).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+    
+    const leadershipDate = document.createElement("div");
+    leadershipDate.classList.add(
+        "section",
+        "ao-insights-leadership-date",
+        "leadership-action-description"
+    );
+    leadershipDate.textContent =
+        `${selectedAo.name} leadership signals updated through ${leadershipAnchorLabel}.`;
+
+    const milestoneSection = createAoMilestoneSection({
+        crossings: aoMilestoneCrossings,
+        startDate: milestoneWeek.startDate,
+        endDate: milestoneWeek.endDate,
+        onMemberClick: crossing => {
+            state.selectedMemberId = crossing.memberId;
+            navigateTo("memberDetail");
+        },
+    });
+    
+    const accelerationSection = createLeadershipActionSection({
+        title: "PAX Acceleration",
+        description:
+            `Posting at ${selectedAo.name} during the last 60 days compared with ` +
+            `the previous 60 days, ending ${leadershipAnchorLabel}.`,
+        groups: aoLeadershipInsights.paxAcceleration,
+        onGroupClick: group => {
+            state.rosterFilter = {
+                type: "pax-acceleration",
+                label: group.label,
+                memberIds: group.members
+                    .map(member => member.memberId)
+                    .filter(Boolean),
+                startDate: selected.startDate,
+                endDate: accelerationEndDate,
+                sourceView: "aoInsights",
+                aoId: selectedAo.id,
+            };
+    
+            navigateTo("roster");
+        },
+        emptyMessage:
+            "No PAX posted at this AO during either comparison window.",
+    });
+    
+    const checkTheSixSection = createLeadershipActionSection({
+        title: "Check the Six",
+        description:
+            `PAX with meaningful ${selectedAo.name} history who have not posted here recently.`,
+        groups: aoLeadershipInsights.checkTheSix,
+        onGroupClick: group => {
+            state.rosterFilter = {
+                type: "check-the-six",
+                label: group.label,
+                memberIds: group.members
+                    .map(member => member.memberId)
+                    .filter(Boolean),
+                sourceView: "aoInsights",
+                aoId: selectedAo.id,
+            };
+    
+            navigateTo("roster");
+        },
+        emptyMessage:
+            "No established AO participants have gone 30 or more days without posting here.",
+    });
+    
+    const readyToVqSection = createLeadershipActionSection({
+        title: "Ready to VQ",
+        description:
+            `VQs whose favorite or home AO is ${selectedAo.name}.`,
+        groups: aoVqGroups,
+        onGroupClick: group => {
+            state.rosterFilter = {
+                type: "ready-to-vq",
+                label: group.label,
+                memberIds: group.members
+                    .map(member => member.memberId)
+                    .filter(Boolean),
+                sourceView: "aoInsights",
+                aoId: selectedAo.id,
+            };
+    
+            navigateTo("roster");
+        },
+        emptyMessage:
+            `No VQs currently associated with ${selectedAo.name} meet the readiness criteria.`,
+    });
+    
+    const readyToQAgainSection = createLeadershipActionSection({
+        title: "Ready to Q Again",
+        description:
+            `Active former ${selectedAo.name} Qs who may be ready to lead here again.`,
+        groups: aoLeadershipInsights.readyToQAgain,
+        onGroupClick: group => {
+            state.rosterFilter = {
+                type: "ready-to-q-again",
+                label: group.label,
+                memberIds: group.members
+                    .map(member => member.memberId)
+                    .filter(Boolean),
+                sourceView: "aoInsights",
+                aoId: selectedAo.id,
+            };
+    
+            navigateTo("roster");
+        },
+        emptyMessage:
+            "No active former AO Qs currently meet these criteria.",
+    });
 
     const healthSummary = createHealthSummary(insights);
 
@@ -1109,54 +1662,6 @@ export async function renderAoInsightsView() {
             },
     });
 
-    const leadershipList = document.createElement("div");
-    leadershipList.classList.add("insights-list");
-
-    leadershipList.appendChild(createInsightsRow({
-        title: "Leadership Risk",
-        subtitle: insights.leadershipRiskSubtitle,
-        value: insights.leadershipRisk,
-        tone: insights.leadershipRisk.toLowerCase(),
-    }));
-
-    if (insights.topQ) {
-        leadershipList.appendChild(createInsightsRow({
-            title: "Top Q Share",
-            subtitle: `${insights.topQ.paxName} led ${insights.topQ.qCount} of ${insights.totalSessions} sessions`,
-            value: `${insights.topQ.share}%`,
-            onClick: () => {
-                state.selectedMemberId = insights.topQ.memberId;
-                navigateTo("memberDetail");
-            },
-        }));
-    }
-
-    leadershipList.appendChild(createInsightsRow({
-        title: "Top 3 Q Share",
-        subtitle: "Share of sessions led by the three most frequent Qs",
-        value: `${insights.topThreeQShare}%`,
-    }));
-    
-    leadershipList.appendChild(createInsightsRow({
-        title: "Attendance Stability",
-        subtitle: insights.attendanceStability.subtitle,
-        value: insights.attendanceStability.label,
-    }));
-
-    leadershipList.appendChild(createInsightsRow({
-        title: "Emerging Qs",
-        subtitle: insights.strongEmergingQs.length
-            ? "Regular PAX who may be ready to step into Qing"
-            : "No strong emerging Q candidates identified this month.",
-        value: insights.strongEmergingQs.length,
-    }));
-
-    const leadershipSection = createCollapsibleSection({
-        title: "Leadership Health",
-        content: leadershipList,
-        defaultExpanded: true,
-    });
-
     const qRotationList = document.createElement("div");
     qRotationList.classList.add("insights-list");
 
@@ -1183,34 +1688,6 @@ export async function renderAoInsightsView() {
         title: "Q Rotation",
         content: qRotationList,
         badge: insights.qRotation.length,
-    });
-
-    const pipelineList = document.createElement("div");
-    pipelineList.classList.add("insights-list");
-
-    if (insights.potentialNewQs.length === 0) {
-        const empty = document.createElement("div");
-        empty.classList.add("detail-value");
-        empty.textContent = "No obvious new Q candidates found for this month.";
-        pipelineList.appendChild(empty);
-    } else {
-        insights.potentialNewQs.slice(0, 5).forEach(member => {
-            pipelineList.appendChild(createInsightsRow({
-                title: member.paxName,
-                subtitle: `${member.postCount} posts this month and no recorded Qs at this AO`,
-                value: "Potential Q",
-                onClick: () => {
-                    state.selectedMemberId = member.memberId;
-                    navigateTo("memberDetail");
-                },
-            }));
-        });
-    }
-
-    const pipelineSection = createCollapsibleSection({
-        title: "Emerging Q Candidates",
-        content: pipelineList,
-        badge: insights.potentialNewQs.length,
     });
 
     const recentList = document.createElement("div");
@@ -1245,23 +1722,36 @@ export async function renderAoInsightsView() {
         badge: insights.recentSessions.length,
     });
 
-    const nav = createGlobalNav();
-
-    app.textContent = "";
-
-    app.append(
-        header,
-        stickyInsightsNav,
+    overviewPanel.append(
         healthSummary,
         attendanceBriefing,
         newPaxPipelineBriefing,
         overviewSection,
         weekdayAttendanceSection,
-        leadershipSection,
-        qRotationSection,
-        pipelineSection,
-        recentSection,
-        nav,
+        recentSection
+    );
+    
+    leadershipPanel.append(
+        leadershipDate,
+        milestoneSection,
+        accelerationSection,
+        checkTheSixSection,
+        readyToVqSection,
+        readyToQAgainSection,
+        qRotationSection
+    );
+
+    const nav = createGlobalNav();
+
+    app.replaceChildren(
+        header,
+        pageTitle,
+        pageSubtitle,
+        sectionSelector,
+        stickyInsightsNav,
+        overviewPanel,
+        leadershipPanel,
+        nav
     );
 
     if (state.isMainMenuOpen) {
