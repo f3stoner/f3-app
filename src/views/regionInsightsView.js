@@ -179,7 +179,8 @@ function createRegionInsightsSectionSelector({
     const selector = document.createElement("div");
     selector.classList.add(
         "region-trend-selector",
-        "region-insights-section-selector"
+        "region-insights-section-selector",
+        "region-insights-primary-tabs"
     );
 
     const sections = [
@@ -197,7 +198,10 @@ function createRegionInsightsSectionSelector({
         const button = document.createElement("button");
 
         button.type = "button";
-        button.classList.add("region-trend-button");
+        button.classList.add(
+            "region-trend-button",
+            "region-insights-primary-tab"
+        );
         button.dataset.sectionKey = section.key;
         button.textContent = section.label;
 
@@ -309,14 +313,23 @@ function getMonthLabel(monthKey) {
 
 function createMetricCard(label, value, onClick) {
     const card = document.createElement("div");
-    card.classList.add("stat-tile");
+    card.classList.add(
+        "stat-tile",
+        "region-insights-metric-card"
+    );
 
     const valueEl = document.createElement("div");
-    valueEl.classList.add("stat-value");
+    valueEl.classList.add(
+        "stat-value",
+        "region-insights-metric-value"
+    );
     valueEl.textContent = value;
 
     const labelEl = document.createElement("div");
-    labelEl.classList.add("stat-label");
+    labelEl.classList.add(
+        "stat-label",
+        "region-insights-metric-label"
+    );
     labelEl.textContent = label;
 
     if (onClick) {
@@ -335,14 +348,21 @@ function createExpandableListSection({
     initialCount = 8,
     renderRow,
 }) {
-    const section = document.createElement("div");
-    section.classList.add("section");
+    const section = document.createElement("section");
+    section.classList.add(
+        "section",
+        "region-insights-list-section",
+        "region-insights-expandable-section"
+    );
 
     const heading = document.createElement("div");
     heading.classList.add("insights-section-header");
 
     const headingText = document.createElement("div");
-    headingText.classList.add("insights-section-title");
+    headingText.classList.add(
+        "insights-section-title",
+        "region-insights-section-title"
+    );
     headingText.textContent = title;
 
     const toggleButton = document.createElement("button");
@@ -387,23 +407,39 @@ function createExpandableListSection({
 
 function createInsightsRow({ title, subtitle, value, onClick }) {
     const row = document.createElement("div");
-    row.classList.add("insights-row");
+    row.classList.add(
+        "insights-row",
+        "region-insights-row"
+    );
 
     const left = document.createElement("div");
-    left.classList.add("insights-row-left");
+    left.classList.add(
+        "insights-row-left",
+        "region-insights-row-content"
+    );
 
     const titleEl = document.createElement("div");
-    titleEl.classList.add("insights-row-title");
+    titleEl.classList.add(
+        "insights-row-title",
+        "region-insights-row-title"
+    );
     titleEl.textContent = title;
 
     const subtitleEl = document.createElement("div");
-    subtitleEl.classList.add("insights-row-subtitle");
+    subtitleEl.classList.add(
+        "insights-row-subtitle",
+        "region-insights-row-subtitle"
+    );
+    
     subtitleEl.textContent = subtitle;
 
     left.append(titleEl, subtitleEl);
 
     const valueEl = document.createElement("div");
-    valueEl.classList.add("insights-row-value");
+    valueEl.classList.add(
+        "insights-row-value",
+        "region-insights-row-value"
+    );
     valueEl.textContent = value;
 
     if (onClick) {
@@ -488,14 +524,18 @@ function createLeadershipActionSection({
     onGroupClick,
     emptyMessage = "No leadership action data available.",
 }) {
-    const section = document.createElement("div");
+    const section = document.createElement("section");
     section.classList.add(
         "section",
-        "leadership-action-section"
+        "leadership-action-section",
+        "region-insights-leadership-section"
     );
 
     const heading = document.createElement("div");
-    heading.classList.add("insights-section-title");
+    heading.classList.add(
+        "insights-section-title",
+        "region-insights-section-title"
+    );
     heading.textContent = title;
 
     const descriptionEl = document.createElement("div");
@@ -609,11 +649,17 @@ function createLeadershipActionSection({
 }
 
 function createSimpleListSection(title, items, emptyMessage = "Nothing to show yet.") {
-    const section = document.createElement("div");
-    section.classList.add("section");
+    const section = document.createElement("section");
+    section.classList.add(
+        "section",
+        "region-insights-list-section"
+    );
 
     const heading = document.createElement("div");
-    heading.classList.add("insights-section-title");
+    heading.classList.add(
+        "insights-section-title",
+        "region-insights-section-title"
+    );
     heading.textContent = title;
 
     const list = document.createElement("div");
@@ -710,7 +756,9 @@ function createMilestoneSection({
 
 export async function renderRegionInsightsView() {
     const app = document.getElementById("app");
-    app.textContent = "";
+
+    app.replaceChildren();
+    app.className = "view-regionInsights";
 
     cleanupMainMenu();
 
@@ -727,10 +775,14 @@ export async function renderRegionInsightsView() {
     });
 
     const title = document.createElement("h1");
+    title.classList.add("region-insights-title");
     title.textContent = "Region Insights";
-
+    
     const subtitle = document.createElement("div");
-    subtitle.classList.add("view-subtitle");
+    subtitle.classList.add(
+        "view-subtitle",
+        "region-insights-subtitle"
+    );
     subtitle.textContent =
         "Regional performance and leadership intelligence.";
 
@@ -772,7 +824,10 @@ export async function renderRegionInsightsView() {
     const historyStartDate = formatDateKey(historyStart);
 
     const loading = document.createElement("div");
-    loading.classList.add("section");
+    loading.classList.add(
+        "section",
+        "region-insights-loading"
+    );
 
     const loadingMessage = document.createElement("div");
     loadingMessage.classList.add("detail-value");
@@ -818,10 +873,16 @@ export async function renderRegionInsightsView() {
     }
 
     const monthNavRow = document.createElement("div");
-    monthNavRow.classList.add("q-signup-month-row");
+    monthNavRow.classList.add(
+        "q-signup-month-row",
+        "region-insights-month-nav"
+    );
 
     const previousMonthButton = document.createElement("button");
-    previousMonthButton.classList.add("month-nav-button");
+    previousMonthButton.classList.add(
+        "month-nav-button",
+        "region-insights-month-button"
+    );
     previousMonthButton.textContent = "←";
 
     previousMonthButton.addEventListener("click", () => {
@@ -830,11 +891,17 @@ export async function renderRegionInsightsView() {
     });
 
     const monthLabel = document.createElement("div");
-    monthLabel.classList.add("q-signup-month-label");
+    monthLabel.classList.add(
+        "q-signup-month-label",
+        "region-insights-month-label"
+    );
     monthLabel.textContent = getMonthLabel(selectedMonth);
 
     const nextMonthButton = document.createElement("button");
-    nextMonthButton.classList.add("month-nav-button");
+    nextMonthButton.classList.add(
+        "month-nav-button",
+        "region-insights-month-button"
+    );
     nextMonthButton.textContent = "→";
 
     nextMonthButton.addEventListener("click", () => {
@@ -876,15 +943,24 @@ export async function renderRegionInsightsView() {
         },
     });
 
-    const overviewSection = document.createElement("div");
-    overviewSection.classList.add("section");
+    const overviewSection = document.createElement("section");
+    overviewSection.classList.add(
+        "section",
+        "region-insights-overview"
+    );
 
     const overviewHeading = document.createElement("div");
-    overviewHeading.classList.add("insights-section-title");
+    overviewHeading.classList.add(
+        "insights-section-title",
+        "region-insights-section-title"
+    );
     overviewHeading.textContent = "Region Activity";
 
     const overviewGrid = document.createElement("div");
-    overviewGrid.classList.add("stats-grid");
+    overviewGrid.classList.add(
+        "stats-grid",
+        "region-insights-metric-grid"
+    );
 
     overviewGrid.append(
         createMetricCard("Total Posts", snapshot.summary.totalAttendance),
@@ -951,7 +1027,8 @@ export async function renderRegionInsightsView() {
     trendSectionHost.classList.add(
         "section",
         "insights-chart-section",
-        "insights-line-chart-section"
+        "insights-line-chart-section",
+        "region-insights-chart-section"
     );
     
     const trendHeading = document.createElement("div");
@@ -1201,7 +1278,8 @@ export async function renderRegionInsightsView() {
     aoTrendSectionHost.classList.add(
         "section",
         "insights-chart-section",
-        "insights-line-chart-section"
+        "insights-line-chart-section",
+        "region-insights-chart-section"
     );
 
     const aoTrendHeading =
@@ -1451,7 +1529,8 @@ const aoAttendanceHeatMap =
     document.createElement("div");
 
     overviewPanel.classList.add(
-        "region-insights-panel"
+        "region-insights-panel",
+        "region-insights-overview-panel"
     );
 
     overviewPanel.append(
@@ -1468,19 +1547,19 @@ const aoAttendanceHeatMap =
         postingFrequencySection,
     );
 
-    const leadershipPanel =
-        document.createElement("div");
+    const leadershipPanel = document.createElement("div");
 
     leadershipPanel.classList.add(
-        "region-insights-panel"
+        "region-insights-panel",
+        "region-insights-leadership-panel"
     );
 
-    const leadershipDate =
-        document.createElement("div");
+    const leadershipDate = document.createElement("div");
 
     leadershipDate.classList.add(
         "section",
-        "leadership-action-description"
+        "leadership-action-description",
+        "region-insights-leadership-date"
     );
 
     leadershipDate.textContent =
