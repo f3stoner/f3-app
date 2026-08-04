@@ -1023,19 +1023,32 @@ div + div::before {
 
     border:
         1px solid
-        rgba(255, 255, 255, 0.11);
+        rgba(143, 211, 255, 0.28);
 
     border-radius: 999px;
 
-    background: transparent;
+    background:rgba(143, 211, 255, 0.045);
 
-    color:
-        rgba(245, 245, 242, 0.35);
+    color: rgba(201, 234, 255, 0.8);
 
     box-shadow: none;
 
     font-size: 0.68rem;
     font-weight: 900;
+}
+
+.view-session
+.session-member-q-button:hover {
+    border-color:
+        rgba(143, 211, 255, 0.48);
+
+    background:
+        rgba(143, 211, 255, 0.09);
+
+    color:
+        var(--session-accent-bright);
+
+    box-shadow: none;
 }
 
 .view-session
@@ -1180,6 +1193,97 @@ div + div::before {
     font-size: 0.7rem;
     font-weight: 850;
 }
+
+/* =========================================================
+   PAX DIRECTORY PAGINATION
+   ========================================================= */
+
+   .view-session
+   .session-directory-pagination {
+       display: grid;
+       grid-template-columns:
+           minmax(0, 1fr)
+           auto
+           minmax(0, 1fr);
+   
+       align-items: center;
+       gap: 0.65rem;
+   
+       padding:
+           0.65rem
+           0.75rem;
+   
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.08);
+   }
+   
+   .view-session
+   .session-directory-pagination
+   button {
+       width: 100%;
+       min-height: 40px;
+   
+       margin: 0;
+       padding:
+           0.5rem
+           0.65rem;
+   
+       border:
+           1px solid
+           rgba(143, 211, 255, 0.2);
+   
+       border-radius:
+           var(--radius-sm);
+   
+       background:
+           rgba(143, 211, 255, 0.035);
+   
+       color:
+           var(--session-accent-bright);
+   
+       box-shadow: none;
+   
+       font-size: 0.68rem;
+       font-weight: 850;
+   }
+   
+   .view-session
+   .session-directory-pagination
+   button:disabled {
+       border-color:
+           rgba(255, 255, 255, 0.08);
+   
+       background:
+           rgba(255, 255, 255, 0.02);
+   
+       color:
+           rgba(245, 245, 242, 0.28);
+   }
+   
+   .view-session
+   .session-directory-page-status {
+       min-width: 5.5rem;
+   
+       color: var(--muted);
+   
+       font-size: 0.66rem;
+       font-weight: 800;
+       line-height: 1;
+   
+       text-align: center;
+       white-space: nowrap;
+   }
+   
+   .view-session
+   .session-directory-hide-button {
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.08) !important;
+   
+       color:
+           var(--muted) !important;
+   }
 
 
 /* =========================================================

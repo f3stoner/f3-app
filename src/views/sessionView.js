@@ -42,10 +42,18 @@ export function renderSession() {
 
     cleanupMainMenu();
 
-if (!state.editingSessionId && !state.selectedSessionId) {
+if (
+    !state.editingSessionId &&
+    !state.selectedSessionId
+) {
     state.sessionShowAllRecent = false;
+
     state.sessionShowAllOthers = false;
+
+    state.sessionOtherPage = 1;
+
     state.sessionSelectedExpanded = false;
+
     state.sessionQExpanded = false;
 }
 
@@ -353,9 +361,15 @@ if (draftSession.workout) {
 
 function resetSessionUiState() {
     state.sessionSearchTerm = "";
+
     state.sessionShowAllOthers = false;
+
+    state.sessionOtherPage = 1;
+
     state.sessionShowAllRecent = false;
+
     state.sessionSelectedExpanded = false;
+
     state.sessionQExpanded = false;
 }
 
@@ -1862,9 +1876,40 @@ attendanceCount.classList.toggle(
         return !isRecentDate(lastAoPost, 20);
     });
 
-    const visibleOtherMembers = state.sessionShowAllOthers
-        ? otherMembers
-        : [];
+        const PAX_DIRECTORY_PAGE_SIZE = 20;
+
+    const totalOtherPages =
+        Math.max(
+            1,
+            Math.ceil(
+                otherMembers.length /
+                PAX_DIRECTORY_PAGE_SIZE
+            )
+        );
+
+    const currentOtherPage =
+        Math.min(
+            Math.max(
+                Number(
+                    state.sessionOtherPage ||
+                    1
+                ),
+                1
+            ),
+            totalOtherPages
+        );
+
+    state.sessionOtherPage = currentOtherPage;
+
+    const otherPageStart = (currentOtherPage - 1) * PAX_DIRECTORY_PAGE_SIZE;
+
+    const visibleOtherMembers =
+        state.sessionShowAllOthers
+            ? otherMembers.slice(
+                otherPageStart,
+                otherPageStart + PAX_DIRECTORY_PAGE_SIZE
+            )
+            : [];
 
     selectedHeaderSlot.textContent = "";
     selectedHeaderSlot.appendChild(
@@ -1962,9 +2007,12 @@ attendanceCount.classList.toggle(
 
     memberList.appendChild(recentSection);
 
-    const othersSection =
-        createMemberSection(
-            "PAX Directory",
+    const directoryTitle = state.sessionShowAllOthers
+            ? `PAX Directory • Page ${currentOtherPage} of ${totalOtherPages}`
+            : "PAX Directory";
+
+    const othersSection = createMemberSection(
+            directoryTitle,
             visibleOtherMembers,
             {
                 emptyText:
@@ -1977,29 +2025,155 @@ attendanceCount.classList.toggle(
             }
         );
 
-    if (otherMembers.length > 0) {
-        const toggleButton =
+    if (
+        !state.sessionShowAllOthers &&
+        otherMembers.length > 0
+    ) {
+        const browseButton = document.createElement("button");
+
+        browseButton.type = "button";
+
+        browseButton.textContent = `Browse ${otherMembers.length} PAX`;
+
+        browseButton.addEventListener("click", () => {
+            state.sessionShowAllOthers = true;
+
+            state.sessionOtherPage = 1;
+            renderMemberList();
+            }
+        );
+
+        othersSection.appendChild(browseButton);
+    }
+
+    if (
+        state.sessionShowAllOthers &&
+        otherMembers.length > 0
+    ) {
+        const pagination =
+            document.createElement("div");
+
+        pagination.classList.add(
+            "session-directory-pagination"
+        );
+
+        const previousButton =
             document.createElement("button");
 
-        toggleButton.type = "button";
+        previousButton.type =
+            "button";
 
-        toggleButton.textContent =
-            state.sessionShowAllOthers
-                ? "Hide PAX Directory"
-                : `Browse ${otherMembers.length} PAX`;
+        previousButton.textContent =
+            "Previous";
 
-        toggleButton.addEventListener(
+        previousButton.disabled =
+            currentOtherPage <= 1;
+
+        previousButton.addEventListener(
             "click",
             () => {
-                state.sessionShowAllOthers =
-                    !state.sessionShowAllOthers;
+                if (
+                    currentOtherPage <= 1
+                ) {
+                    return;
+                }
+
+                state.sessionOtherPage =
+                    currentOtherPage - 1;
 
                 renderMemberList();
             }
         );
 
-        othersSection.appendChild(
-            toggleButton
+        const pageStatus =
+            document.createElement("div");
+
+        pageStatus.classList.add(
+            "session-directory-page-status"
+        );
+
+        const firstVisibleNumber =
+            otherMembers.length === 0
+                ? 0
+                : otherPageStart + 1;
+
+        const lastVisibleNumber =
+            Math.min(
+                otherPageStart +
+                    PAX_DIRECTORY_PAGE_SIZE,
+                otherMembers.length
+            );
+
+        pageStatus.textContent =
+            `${firstVisibleNumber}–${lastVisibleNumber} of ${
+                otherMembers.length
+            }`;
+
+        const nextButton =
+            document.createElement("button");
+
+        nextButton.type =
+            "button";
+
+        nextButton.textContent =
+            "Next";
+
+        nextButton.disabled =
+            currentOtherPage >=
+            totalOtherPages;
+
+        nextButton.addEventListener(
+            "click",
+            () => {
+                if (
+                    currentOtherPage >=
+                    totalOtherPages
+                ) {
+                    return;
+                }
+
+                state.sessionOtherPage =
+                    currentOtherPage + 1;
+
+                renderMemberList();
+            }
+        );
+
+        pagination.append(
+            previousButton,
+            pageStatus,
+            nextButton
+        );
+
+        const hideButton =
+            document.createElement("button");
+
+        hideButton.type =
+            "button";
+
+        hideButton.classList.add(
+            "session-directory-hide-button"
+        );
+
+        hideButton.textContent =
+            "Hide PAX Directory";
+
+        hideButton.addEventListener(
+            "click",
+            () => {
+                state.sessionShowAllOthers =
+                    false;
+
+                state.sessionOtherPage =
+                    1;
+
+                renderMemberList();
+            }
+        );
+
+        othersSection.append(
+            pagination,
+            hideButton
         );
     }
 
