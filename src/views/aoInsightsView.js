@@ -150,35 +150,6 @@ function createInsightsRow({ title, subtitle, value, onClick, tone }) {
     return row;
 }
 
-function createHealthSummary(insights) {
-    const card = document.createElement("div");
-    card.classList.add(
-        "section",
-        "insights-summary-card",
-        "ao-insights-health-summary",
-        `insights-summary-${insights.healthStatus.toLowerCase().replace(/\s+/g, "-")}`
-    );
-
-    const eyebrow = document.createElement("div");
-    eyebrow.classList.add("stat-label");
-    eyebrow.textContent = "AO Health";
-
-    const title = document.createElement("div");
-    title.classList.add("stat-value");
-    title.textContent = insights.healthStatus;
-
-    const subtitle = document.createElement("div");
-    subtitle.classList.add("detail-value");
-    subtitle.textContent = insights.healthSubtitle;
-
-    card.append(
-        eyebrow,
-        title,
-        subtitle
-    );
-
-    return card;
-}
 
 function getMemberName(memberId) {
     const member = state.members.find(m => m.id === memberId);
@@ -868,23 +839,6 @@ function buildAoInsights({
         return bCreatedAt - aCreatedAt;
     });
 
-    let healthStatus = "Healthy";
-    let healthSubtitle = "This AO looks healthy for the selected month.";
-
-    if (totalSessions === 0) {
-        healthStatus = "No Data";
-        healthSubtitle = "No sessions were found for this AO in the selected month.";
-    } else if (leadershipRisk === "Critical") {
-        healthStatus = "Critical";
-        healthSubtitle = "Leadership rotation needs immediate attention.";
-    } else if (leadershipRisk === "High") {
-        healthStatus = "At Risk";
-        healthSubtitle = "Leadership is concentrated and may create burnout risk.";
-    } else if (strongEmergingQs.length >= 2) {
-        healthStatus = "Opportunity";
-        healthSubtitle = "Multiple regular PAX may be ready to step into Qing.";
-    }
-
     const weekdayAttendanceComparison =
         buildWeekdayAttendanceComparison({
             currentSessions: sessions,
@@ -909,8 +863,6 @@ function buildAoInsights({
         attendanceStability,
         leadershipRisk,
         leadershipRiskSubtitle,
-        healthStatus,
-        healthSubtitle,
         recentSessions,
         strongEmergingQs,
         attendanceInsight,
@@ -1587,8 +1539,6 @@ export async function renderAoInsightsView() {
             "No active former AO Qs currently meet these criteria.",
     });
 
-    const healthSummary = createHealthSummary(insights);
-
     const attendanceBriefing = createInsightCard({
         title: insights.attendanceInsight.title,
         headline: insights.attendanceInsight.headline,
@@ -1723,7 +1673,6 @@ export async function renderAoInsightsView() {
     });
 
     overviewPanel.append(
-        healthSummary,
         attendanceBriefing,
         newPaxPipelineBriefing,
         overviewSection,

@@ -323,7 +323,6 @@
 
 .view-aoInsights .ao-insights-section,
 .view-aoInsights .insights-chart-section,
-.view-aoInsights .ao-insights-health-summary,
 .view-aoInsights .ao-insights-briefing-card {
     min-width: 0;
 
@@ -358,80 +357,6 @@
 
     letter-spacing: 0.11em;
     text-transform: uppercase;
-}
-
-
-/* =========================================================
-   AO HEALTH
-   ========================================================= */
-
-.view-aoInsights .ao-insights-health-summary {
-    position: relative;
-
-    overflow: hidden;
-}
-
-.view-aoInsights .ao-insights-health-summary::before {
-    content: "";
-
-    position: absolute;
-    inset: 0 auto 0 0;
-
-    width: 3px;
-
-    background: rgba(143, 211, 255, 0.7);
-}
-
-.view-aoInsights .ao-insights-health-summary .stat-label {
-    margin: 0;
-
-    color: rgba(245, 245, 242, 0.52);
-
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    font-weight: 900;
-    line-height: 1;
-
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-}
-
-.view-aoInsights .ao-insights-health-summary .stat-value {
-    margin-top: 0.45rem;
-
-    color: var(--text);
-
-    font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 900;
-    line-height: 0.95;
-}
-
-.view-aoInsights .ao-insights-health-summary .detail-value {
-    max-width: 36rem;
-
-    margin-top: 0.55rem;
-
-    color: rgba(245, 245, 242, 0.78);
-
-    font-size: 0.88rem;
-    font-weight: 650;
-    line-height: 1.4;
-}
-
-.view-aoInsights .insights-summary-healthy::before {
-    background: var(--ao-insights-success);
-}
-
-.view-aoInsights .insights-summary-opportunity::before,
-.view-aoInsights .insights-summary-watch::before {
-    background: var(--ao-insights-warning);
-}
-
-.view-aoInsights .insights-summary-at-risk::before,
-.view-aoInsights .insights-summary-high::before,
-.view-aoInsights .insights-summary-critical::before {
-    background: var(--ao-insights-danger);
 }
 
 
@@ -1202,7 +1127,6 @@
 
     .view-aoInsights .ao-insights-section,
     .view-aoInsights .insights-chart-section,
-    .view-aoInsights .ao-insights-health-summary,
     .view-aoInsights .ao-insights-briefing-card {
         padding: 0.85rem;
     }
