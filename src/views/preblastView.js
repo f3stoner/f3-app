@@ -58,6 +58,8 @@ export function renderPreblastView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    app.className = "view-preblast";
+
     cleanupMainMenu();
 
     function returnToDashboardAfterShare() {
@@ -100,12 +102,17 @@ export function renderPreblastView() {
         onBack: exitPreblastView,
     });
 
+    const intro = document.createElement("div");
+    intro.classList.add("preblast-intro");
+    
     const title = document.createElement("h1");
     title.textContent = "Preblast";
-
+    
     const subtitle = document.createElement("div");
-    subtitle.classList.add("view-subtitle");
-    subtitle.textContent = "Write and refine your preblast.";
+    subtitle.classList.add("preblast-subtitle");
+    subtitle.textContent = "Write, review, and share your preblast.";
+    
+    intro.append(title, subtitle);
 
     function getPreblastQSlot() {
         return state.qSlots.find(
@@ -123,6 +130,22 @@ export function renderPreblastView() {
     textInput.addEventListener("input", (event) => {
         state.draftPreblastText = event.target.value;
     });
+
+    const editorSection = document.createElement("section");
+    editorSection.classList.add("preblast-editor-section");
+
+    const editorLabel = document.createElement("div");
+    editorLabel.classList.add("preblast-section-label");
+    editorLabel.textContent = "Preblast Message";
+
+    const editorShell = document.createElement("div");
+    editorShell.classList.add("preblast-editor-shell");
+
+    editorShell.appendChild(textInput);
+    editorSection.append(
+        editorLabel,
+        editorShell
+    );
 
     function getPreblastAo(qSlot, workout) {
         if (qSlot?.aoId) {
@@ -268,9 +291,14 @@ export function renderPreblastView() {
     });
 
     const templateDetails = document.createElement("details");
-    templateDetails.classList.add("section");
+    templateDetails.classList.add(
+        "preblast-template-panel"
+    );
 
     const templateSummary = document.createElement("summary");
+    templateSummary.classList.add(
+        "preblast-template-summary"
+    );
     templateSummary.textContent = "Preblast Templates";
 
     const templateContent = document.createElement("div");
@@ -476,24 +504,43 @@ export function renderPreblastView() {
 
     const mediaFiles = state.draftPreblastMediaFiles || [];
 
-    const mediaDetails = document.createElement("details");
-    mediaDetails.classList.add("section");
-    mediaDetails.open = mediaFiles.length > 0;
-
-    const mediaSummary = document.createElement("summary");
-    mediaSummary.textContent = "Attachments";
-
-    mediaDetails.append(mediaSummary, mediaSection);
+    const mediaPanel = document.createElement("section");
+    mediaPanel.classList.add("preblast-media-panel");
+    
+    const mediaHeader = document.createElement("div");
+    mediaHeader.classList.add("preblast-section-header");
+    
+    const mediaLabel = document.createElement("div");
+    mediaLabel.classList.add("preblast-section-label");
+    mediaLabel.textContent = "Attachments";
+    
+    const mediaCount = document.createElement("div");
+    mediaCount.classList.add("preblast-section-count");
+    mediaCount.textContent = mediaFiles.length;
+    
+    mediaHeader.append(
+        mediaLabel,
+        mediaCount
+    );
+    
+    mediaPanel.append(
+        mediaHeader,
+        mediaSection
+    );
 
     const mediaHelperText = document.createElement("div");
     mediaHelperText.classList.add("preblast-media-helper");
-    mediaHelperText.textContent = "BAND heads up: GIFs/videos may upload slowly, @tags may not carry over, and text after links may get cut off or hidden by BAND.";
+    mediaHelperText.textContent = "Add photos or short videos to share with your preblast. BAND may process larger files slowly.";
 
     const mediaInput = document.createElement("input");
     mediaInput.classList.add("media-input");
     mediaInput.type = "file";
     mediaInput.accept = "image/*,video/*";
     mediaInput.multiple = true;
+    mediaInput.setAttribute(
+        "aria-label",
+        "Add photos or video"
+    );
 
     mediaInput.addEventListener("change", (event) => {
         const files = Array.from(event.target.files || []);
@@ -568,6 +615,9 @@ export function renderPreblastView() {
     }
 
     const saveButton = document.createElement("button");
+    saveButton.classList.add(
+        "preblast-secondary-action"
+    );
     saveButton.textContent = "Save Draft";
 
     saveButton.addEventListener("click", async () => {
@@ -590,6 +640,9 @@ export function renderPreblastView() {
     });
 
     const copyButton = document.createElement("button");
+    copyButton.classList.add(
+        "preblast-secondary-action"
+    );
     copyButton.textContent = "Copy Preblast";
 
     copyButton.addEventListener("click", async () => {
@@ -624,6 +677,10 @@ export function renderPreblastView() {
         }
     });
     const shareButton = document.createElement("button");
+    shareButton.classList.add(
+        "preblast-share-button",
+        "primary-button"
+    );
     shareButton.textContent = "Share Preblast";
 
     if (typeof navigator.share !== "function") {
@@ -684,19 +741,33 @@ export function renderPreblastView() {
 
     doneButton.addEventListener("click", exitPreblastView);*/
 
-    const actionRow = document.createElement("div");
-    actionRow.classList.add("button-row");
-    actionRow.append(saveButton, shareButton, copyButton);
+    const actionSection = document.createElement("div");
+    actionSection.classList.add("preblast-actions");
+    
+    const secondaryActionRow = document.createElement("div");
+    secondaryActionRow.classList.add(
+        "preblast-secondary-actions"
+    );
+    
+    secondaryActionRow.append(
+        copyButton,
+        saveButton
+    );
+    
+    actionSection.append(
+        shareButton,
+        secondaryActionRow
+    );
 
     app.append(
         header,
-        title,
-        subtitle,
-        textInput,
-        actionRow,
+        intro,
+        editorSection,
+        actionSection,
+        mediaPanel,
         templateDetails,
-        mediaDetails,
     );
+    
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());
     }

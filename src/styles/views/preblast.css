@@ -1,0 +1,745 @@
+/* =========================================================
+   PREBLAST
+   ========================================================= */
+
+   .view-preblast {
+    --preblast-accent: #8fd3ff;
+    --preblast-accent-bright: #c9eaff;
+    --preblast-accent-soft:
+        rgba(143, 211, 255, 0.1);
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            120px +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+    box-sizing: border-box;
+
+    background:
+        radial-gradient(
+            circle at 45% -8%,
+            rgba(143, 211, 255, 0.08),
+            transparent 320px
+        ),
+        var(--bg);
+}
+
+
+/* =========================================================
+   PAGE INTRO
+   ========================================================= */
+
+.view-preblast
+.preblast-intro {
+    margin:
+        0
+        0
+        1.15rem;
+}
+
+.view-preblast
+.preblast-intro h1 {
+    margin: 0;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size:
+        clamp(
+            2.35rem,
+            9vw,
+            3.4rem
+        );
+
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+}
+
+.view-preblast
+.preblast-subtitle {
+    max-width: 32rem;
+
+    margin-top: 0.65rem;
+
+    color: var(--muted);
+
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   SHARED SECTION IDENTITY
+   ========================================================= */
+
+.view-preblast
+.preblast-section-label {
+    color:
+        rgba(194, 202, 211, 0.72);
+
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.view-preblast
+.preblast-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-bottom: 0.8rem;
+}
+
+.view-preblast
+.preblast-section-count {
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 32px;
+    height: 28px;
+
+    padding:
+        0
+        0.5rem;
+
+    border:
+        1px solid
+        var(--border-strong);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   EDITOR
+   ========================================================= */
+
+.view-preblast
+.preblast-editor-section {
+    width: 100%;
+    min-width: 0;
+
+    margin-bottom: 1rem;
+}
+
+.view-preblast
+.preblast-editor-shell {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 0.65rem;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.20);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.055),
+            transparent 38%
+        ),
+        rgba(255, 255, 255, 0.018);
+
+    box-shadow:
+        0 14px 36px
+        rgba(0, 0, 0, 0.24);
+
+    transition:
+        border-color 150ms ease,
+        background 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.view-preblast
+.preblast-editor-shell:focus-within {
+    border-color:
+        rgba(143, 211, 255, 0.42);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.08),
+            transparent 42%
+        ),
+        rgba(255, 255, 255, 0.022);
+
+    box-shadow:
+        0 14px 36px
+        rgba(0, 0, 0, 0.24),
+        inset 3px 0 0
+        var(--preblast-accent);
+}
+
+.view-preblast
+.preblast-textarea {
+    display: block;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 25rem;
+    max-height: 68vh;
+
+    margin: 0;
+    padding: 1rem;
+
+    overflow-y: auto;
+
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+
+    resize: vertical;
+
+    background: transparent;
+    color: var(--text);
+
+    box-shadow: none;
+
+    box-sizing: border-box;
+
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.55;
+
+    caret-color:
+        var(--preblast-accent-bright);
+
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(143, 211, 255, 0.32)
+        transparent;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.view-preblast
+.preblast-textarea:hover {
+    background:
+        rgba(255, 255, 255, 0.012);
+}
+
+.view-preblast
+.preblast-textarea:focus {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.view-preblast
+.preblast-textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+.view-preblast
+.preblast-textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.view-preblast
+.preblast-textarea::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(143, 211, 255, 0.3);
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.view-preblast
+.preblast-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    margin-bottom: 1rem;
+}
+
+.view-preblast
+.preblast-actions button {
+    width: 100%;
+    min-height: 48px;
+
+    margin: 0;
+    padding:
+        0.75rem
+        0.7rem;
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow: none;
+
+    font-size: 0.83rem;
+    font-weight: 900;
+}
+
+.view-preblast
+.preblast-share-button {
+    border-color:
+        rgba(143, 211, 255, 0.72);
+
+    background:
+        linear-gradient(
+            135deg,
+            #f5f5f2,
+            #c9eaff
+        );
+
+    color: #071018;
+
+    box-shadow:
+        0 10px 26px
+        rgba(143, 211, 255, 0.14);
+}
+
+.view-preblast
+.preblast-share-button:hover {
+    filter: brightness(1.06);
+}
+
+.view-preblast
+.preblast-share-button:disabled {
+    border-color: var(--border);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--muted);
+
+    box-shadow: none;
+    filter: none;
+
+    opacity: 0.55;
+}
+
+.view-preblast
+.preblast-secondary-actions {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 0.65rem;
+}
+
+.view-preblast
+.preblast-secondary-action {
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    color: var(--text);
+}
+
+.view-preblast
+.preblast-secondary-action:hover {
+    border-color:
+        var(--border-strong);
+
+    background:
+        var(--surface-raised);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   ATTACHMENTS
+   ========================================================= */
+
+.view-preblast
+.preblast-media-panel {
+    width: 100%;
+    min-width: 0;
+
+    margin:
+        0
+        0
+        1rem;
+
+    padding: 1rem;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(143, 211, 255, 0.045),
+            transparent 42%
+        ),
+        rgba(255, 255, 255, 0.016);
+
+    box-sizing: border-box;
+}
+
+.view-preblast
+.preblast-media-section {
+    margin: 0;
+}
+
+.view-preblast
+.media-input {
+    width: 100%;
+
+    margin: 0;
+    padding: 0.75rem;
+
+    border:
+        1px dashed
+        rgba(143, 211, 255, 0.32);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.025);
+
+    color: var(--text);
+}
+
+.view-preblast
+.media-input:hover {
+    border-color:
+        rgba(143, 211, 255, 0.48);
+
+    background:
+        rgba(143, 211, 255, 0.045);
+}
+
+.view-preblast
+.media-input::file-selector-button {
+    margin-right: 0.75rem;
+    padding:
+        0.55rem
+        0.75rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.28);
+
+    border-radius:
+        var(--radius-sm);
+
+    background:
+        rgba(143, 211, 255, 0.07);
+
+    color:
+        var(--preblast-accent-bright);
+
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.view-preblast
+.media-input::file-selector-button:hover {
+    border-color:
+        rgba(143, 211, 255, 0.45);
+
+    background:
+        rgba(143, 211, 255, 0.11);
+
+    color:
+        var(--preblast-accent-bright);
+}
+
+.view-preblast
+.preblast-media-helper {
+    margin-top: 0.65rem;
+
+    color: var(--muted);
+
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+
+    opacity: 1;
+}
+
+.view-preblast
+.preblast-media-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 0.75rem;
+}
+
+.view-preblast
+.preblast-media-item {
+    width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        var(--surface);
+
+    box-sizing: border-box;
+}
+
+.view-preblast
+.preblast-media-preview {
+    display: block;
+
+    width: 100%;
+    max-height: 22rem;
+
+    margin: 0;
+
+    object-fit: contain;
+
+    border-radius: 0;
+
+    background:
+        rgba(0, 0, 0, 0.3);
+}
+
+.view-preblast
+.preblast-media-item
+button {
+    width: 100%;
+    min-height: 42px;
+
+    margin: 0;
+    padding:
+        0.6rem
+        0.75rem;
+
+    border: 0;
+    border-top:
+        1px solid
+        var(--border);
+
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--danger);
+
+    box-shadow: none;
+
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+
+.view-preblast
+.preblast-media-item
+button:hover {
+    background:
+        rgba(239, 68, 68, 0.04);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   TEMPLATES
+   ========================================================= */
+
+.view-preblast
+.preblast-template-panel {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.016);
+}
+
+.view-preblast
+.preblast-template-summary {
+    min-height: 54px;
+
+    display: flex;
+    align-items: center;
+
+    padding:
+        0
+        1rem;
+
+    color:
+        rgba(194, 202, 211, 0.76);
+
+    cursor: pointer;
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+
+    list-style-position: inside;
+}
+
+.view-preblast
+.preblast-template-summary:hover {
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text);
+}
+
+.view-preblast
+.preblast-template-summary::marker {
+    color:
+        var(--preblast-accent);
+}
+
+.view-preblast
+.preblast-template-panel[open]
+.preblast-template-summary {
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    color:
+        var(--preblast-accent-bright);
+}
+
+.view-preblast
+.template-tools-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    margin: 0;
+    padding: 1rem;
+}
+
+.view-preblast
+.template-tools-content select,
+.view-preblast
+.template-tools-content button {
+    width: 100%;
+    min-height: 44px;
+
+    margin: 0;
+}
+
+.view-preblast
+.template-tools-content button {
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+    .view-preblast
+    .preblast-textarea {
+        min-height: 23rem;
+
+        padding:
+            0.9rem
+            0.85rem;
+
+        font-size: 0.94rem;
+    }
+
+    .view-preblast
+    .preblast-secondary-actions {
+        gap: 0.6rem;
+    }
+
+    .view-preblast
+    .preblast-actions button {
+        font-size: 0.78rem;
+    }
+
+    .view-preblast
+    .preblast-media-panel {
+        padding:
+            0.9rem
+            0.85rem;
+    }
+}
+
+@media (max-width: 390px) {
+    .view-preblast
+    .preblast-secondary-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .view-preblast
+    .preblast-editor-shell {
+        transition: none;
+    }
+}

@@ -11,6 +11,8 @@ import {
     createPaxProfileIdentity,
 } from "../components/paxProfileIdentity.js";
 
+let paxCommunityRenderSequence = 0;
+
 function getSelectedMember() {
     return getMemberById(
         state.selectedPaxId
@@ -305,6 +307,7 @@ function createRelationshipRow(label, value, onClick = null) {
 
 export async function renderPaxCommunityView() {
     const app = document.getElementById("app");
+    const renderSequence = ++paxCommunityRenderSequence;
 
     app.textContent = "";
     app.className =
@@ -313,6 +316,16 @@ export async function renderPaxCommunityView() {
     cleanupMainMenu();
 
     const member = getSelectedMember();
+    const expectedRegionId = state.currentRegionId;
+    const expectedMemberId = member?.id;
+
+    const isCurrentRender = () =>
+        renderSequence === paxCommunityRenderSequence &&
+        state.currentView === "paxCommunity" &&
+        state.currentRegionId === expectedRegionId &&
+        state.selectedPaxId === expectedMemberId &&
+        document.getElementById("app") === app &&
+        app.classList.contains("view-paxCommunity");
 
     const isCurrentUser =
         member?.id === state.currentUserMemberId;
@@ -362,7 +375,7 @@ export async function renderPaxCommunityView() {
 
     try {
         const cacheKey =
-            `${state.currentRegionId}__${member.id}`;
+            `${expectedRegionId}__${expectedMemberId}`;
 
         state.memberCommunityByMemberId =
             state.memberCommunityByMemberId || {};
@@ -372,18 +385,15 @@ export async function renderPaxCommunityView() {
 
         if (!community) {
             community = await loadMemberCommunityData(
-                state.currentRegionId,
-                member.id
+                expectedRegionId,
+                expectedMemberId
             );
 
             state.memberCommunityByMemberId[cacheKey] =
                 community;
         }
 
-        if (
-            state.currentView !== "paxCommunity" ||
-            state.selectedPaxId !== member.id
-        ) {
+        if (!isCurrentRender()) {
             return;
         }
 
@@ -648,6 +658,10 @@ export async function renderPaxCommunityView() {
             "Failed to load PAX community:",
             error
         );
+
+        if (!isCurrentRender()) {
+            return;
+        }
 
         loading.textContent =
             "Unable to load community history.";
