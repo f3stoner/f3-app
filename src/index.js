@@ -502,6 +502,7 @@ void registerServiceWorker();
 
 const RESTORABLE_VIEWS = new Set([
     "dashboard",
+    "regionFeed",
     "myPlanner",
     "plannedWorkoutDetail",
     "plannedWorkoutList",
@@ -581,6 +582,15 @@ const lazyRouteLoaders = {
                 module.renderRosterManagementView
         ),
 
+    regionFeed: () =>
+        import(
+            /* webpackChunkName: "route-region-feed" */
+            "./views/regionFeedView.js"
+        ).then(
+            module =>
+                module.renderRegionFeedView
+        ),
+
     weeklyQCalendar: () =>
         import(
             /* webpackChunkName: "route-weekly-q-calendar" */
@@ -614,6 +624,7 @@ function getLazyRouteLabel(viewName) {
         operationsCenter: "Operations Center",
         libraryWorkbench: "Library Workbench",
         rosterManagement: "Roster Management",
+        regionFeed: "Regional Activity",
         weeklyQCalendar: "Weekly Q Calendar",
         leadership: "Leadership",
         siteManagement: "Site Management",
@@ -804,6 +815,11 @@ function renderApp() {
     
     if (state.currentView === "dashboard") { 
         renderDashboard();
+    } else if (state.currentView === "regionFeed") {
+        renderLazyRoute(
+            "regionFeed",
+            currentRenderSequence
+        );
     } else if (state.currentView === "auth") {
         renderAuthView();
     } else if (state.currentView === "roster") {

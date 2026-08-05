@@ -161,6 +161,12 @@ export function createMainMenu() {
             items: [
                 { label: "Dashboard", view: "dashboard" },
                 {
+                    label: "Activity",
+                    view: "regionFeed",
+                    isVisible: () =>
+                        state.currentUserRole === "superadmin",
+                },
+                {
                     label: "Double Down Tracker",
                     externalUrl: DOUBLE_DOWN_TRACKER_URL,
                     isVisible: isAggielandRegion,

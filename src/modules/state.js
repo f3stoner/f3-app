@@ -158,6 +158,17 @@ export const state = {
     isWorkspaceMenuOpen: false,
     announcements: [],
     allAnnouncements: [],
+
+    regionFeed: {
+        regionId: null,
+        items: [],
+        nextCursor: null,
+        isLoading: false,
+        hasLoaded: false,
+        error: null,
+        hasMore: true,
+    },
+
     memberStats: [],
     memberStatsByMemberId: {},
     libraryWorkbenchItems: [],
