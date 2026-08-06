@@ -127,8 +127,121 @@
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.view-regionFeed .region-feed-card::before {
-    content: "";
+/* =========================================================
+   EVENT ROW BACKGROUNDS
+   ========================================================= */
+
+   .view-regionFeed .region-feed-session-card {
+    background:
+        radial-gradient(
+            circle at 88% 50%,
+            rgba(143, 211, 255, 0.075),
+            transparent 42%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(143, 211, 255, 0.032),
+            transparent 62%
+        );
+}
+
+.view-regionFeed .region-feed-milestone-card {
+    background:
+        radial-gradient(
+            circle at 88% 50%,
+            rgba(240, 190, 72, 0.085),
+            transparent 42%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(240, 190, 72, 0.035),
+            transparent 62%
+        );
+}
+
+.view-regionFeed .region-feed-fng-card {
+    background:
+        radial-gradient(
+            circle at 88% 50%,
+            rgba(88, 214, 141, 0.085),
+            transparent 42%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(88, 214, 141, 0.035),
+            transparent 62%
+        );
+}
+
+.view-regionFeed .region-feed-vq-card {
+    background:
+        radial-gradient(
+            circle at 88% 50%,
+            rgba(88, 214, 141, 0.13),
+            transparent 42%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(88, 214, 141, 0.055),
+            transparent 62%
+        );
+}
+
+/* =========================================================
+   FEED EVENT ICONS
+   ========================================================= */
+
+.view-regionFeed .region-feed-event-icon {
+    grid-column: 1;
+    grid-row: 1;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    align-self: start;
+    border: 1px solid rgba(143, 211, 255, 0.18);
+    border-radius: 11px;
+    background: rgba(143, 211, 255, 0.06);
+    color: var(--feed-accent);
+    box-sizing: border-box;
+}
+
+.view-regionFeed .region-feed-event-icon-svg {
+    display: block;
+    width: 21px;
+    height: 21px;
+    color: currentColor;
+}
+
+.view-regionFeed .region-feed-session-icon {
+    border-color: rgba(143, 211, 255, 0.22);
+    background: rgba(143, 211, 255, 0.08);
+    color: #8fd3ff;
+}
+
+.view-regionFeed .region-feed-fng-icon {
+    border-color: rgba(88, 214, 141, 0.28);
+    background: rgba(88, 214, 141, 0.09);
+    color: #69dc98;
+}
+
+.view-regionFeed .region-feed-vq-icon {
+    border-color: rgba(88, 214, 141, 0.36);
+    background:
+        radial-gradient(
+            circle at 40% 25%,
+            rgba(121, 230, 165, 0.18),
+            transparent 60%
+        ),
+        rgba(88, 214, 141, 0.11);
+    color: #79e6a5;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 14px rgba(88, 214, 141, 0.1);
+}
+
+.view-regionFeed .region-feed-milestone-card::before,
+.view-regionFeed .region-feed-announcement-card::before {
     position: absolute;
     top: 1rem;
     left: 1rem;
@@ -136,31 +249,25 @@
     height: 38px;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(143, 211, 255, 0.18);
     border-radius: 11px;
-    background: rgba(143, 211, 255, 0.06);
-    color: var(--feed-accent);
     font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 900;
     line-height: 1;
 }
 
-.view-regionFeed .region-feed-session-card::before {
-    content: "↗";
-}
-
 .view-regionFeed .region-feed-milestone-card::before {
     content: "★";
-    border-color: rgba(240, 190, 72, 0.25);
+    border: 1px solid rgba(240, 190, 72, 0.25);
     background: rgba(240, 190, 72, 0.09);
     color: #f0be48;
 }
 
 .view-regionFeed .region-feed-announcement-card::before {
     content: "!";
-    border-color: rgba(143, 211, 255, 0.22);
+    border: 1px solid rgba(143, 211, 255, 0.22);
     background: rgba(143, 211, 255, 0.09);
+    color: var(--feed-accent);
 }
 
 .view-regionFeed .region-feed-card-button,
@@ -360,6 +467,261 @@
     text-transform: uppercase;
 }
 
+/* =========================================================
+   FNG WELCOME EVENT
+   ========================================================= */
+
+.view-regionFeed .region-feed-fng-button {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 50px minmax(0, 1fr) 64px;
+    grid-template-rows: auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    margin: 0;
+    padding: 0.9rem 1.8rem 0.9rem 1rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    box-shadow: none;
+    text-align: left;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.view-regionFeed .region-feed-fng-button:hover {
+    background: rgba(88, 214, 141, 0.025);
+    box-shadow: none;
+}
+
+.view-regionFeed .region-feed-fng-button:active {
+    transform: none;
+    background: rgba(88, 214, 141, 0.05);
+}
+
+.view-regionFeed .region-feed-fng-button:disabled {
+    opacity: 0.65;
+}
+
+.view-regionFeed .region-feed-fng-card .region-feed-card-eyebrow {
+    color: #58d68d;
+}
+
+.view-regionFeed .region-feed-fng-visual {
+    position: relative;
+    grid-column: 3;
+    grid-row: 1;
+    width: 58px;
+    height: 64px;
+    min-width: 58px;
+    min-height: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    padding: 0.45rem 0.35rem 0.65rem;
+    border: 1px solid rgba(88, 214, 141, 0.34);
+    border-radius: 16px 16px 20px 20px;
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(88, 214, 141, 0.18),
+            transparent 58%
+        ),
+        linear-gradient(
+            155deg,
+            rgba(88, 214, 141, 0.12),
+            rgba(88, 214, 141, 0.02)
+        );
+    color: #79e6a5;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 20px rgba(0, 0, 0, 0.18);
+    box-sizing: border-box;
+}
+
+.view-regionFeed .region-feed-fng-visual::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.065);
+    border-radius: 11px 11px 15px 15px;
+    pointer-events: none;
+}
+
+.view-regionFeed .region-feed-fng-visual::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    width: 20px;
+    height: 5px;
+    border-radius: 5px 5px 0 0;
+    background: currentColor;
+    opacity: 0.45;
+    transform: translateX(-50%);
+}
+
+.view-regionFeed .region-feed-fng-mark {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.04em;
+}
+
+.view-regionFeed .region-feed-fng-label {
+    position: relative;
+    z-index: 1;
+    margin-top: 0.2rem;
+    font-family: var(--font-display);
+    font-size: 0.5rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   VQ EARNED EVENT
+   ========================================================= */
+
+   .view-regionFeed .region-feed-vq-card {
+    background:
+        radial-gradient(
+            circle at 90% 50%,
+            rgba(88, 214, 141, 0.09),
+            transparent 40%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(88, 214, 141, 0.045),
+            rgba(88, 214, 141, 0.012) 60%,
+            transparent
+        );
+}
+
+.view-regionFeed .region-feed-vq-button {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 50px minmax(0, 1fr) 64px;
+    grid-template-rows: auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    margin: 0;
+    padding: 0.95rem 1.8rem 0.95rem 1rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    box-shadow: none;
+    text-align: left;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.view-regionFeed .region-feed-vq-button:hover {
+    background: rgba(88, 214, 141, 0.03);
+    box-shadow: none;
+}
+
+.view-regionFeed .region-feed-vq-button:active {
+    transform: none;
+    background: rgba(88, 214, 141, 0.055);
+}
+
+.view-regionFeed .region-feed-vq-button:disabled {
+    opacity: 0.65;
+}
+
+.view-regionFeed .region-feed-vq-card .region-feed-card-eyebrow {
+    margin-bottom: 0.34rem;
+    color: #69dc98;
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+}
+
+.view-regionFeed .region-feed-vq-card .region-feed-card-title {
+    font-size: 1.12rem;
+    line-height: 1.06;
+}
+
+.view-regionFeed .region-feed-vq-card .region-feed-card-subtitle {
+    color: rgba(220, 238, 228, 0.76);
+}
+
+.view-regionFeed .region-feed-vq-visual {
+    position: relative;
+    grid-column: 3;
+    grid-row: 1;
+    width: 58px;
+    height: 64px;
+    min-width: 58px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    border: 1px solid rgba(88, 214, 141, 0.42);
+    border-radius: 16px 16px 20px 20px;
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(121, 230, 165, 0.2),
+            transparent 58%
+        ),
+        linear-gradient(
+            155deg,
+            rgba(88, 214, 141, 0.15),
+            rgba(88, 214, 141, 0.025)
+        );
+    color: #79e6a5;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        0 7px 18px rgba(0, 0, 0, 0.18);
+    box-sizing: border-box;
+}
+
+.view-regionFeed .region-feed-vq-visual::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 11px 11px 15px 15px;
+    pointer-events: none;
+}
+
+.view-regionFeed .region-feed-vq-visual::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    width: 20px;
+    height: 5px;
+    border-radius: 5px 5px 0 0;
+    background: currentColor;
+    opacity: 0.5;
+    transform: translateX(-50%);
+}
+
+.view-regionFeed .region-feed-vq-mark {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.08em;
+}
+
+/*----*/
+
 .view-regionFeed .region-feed-card-action {
     position: absolute;
     top: 50%;
@@ -399,7 +761,21 @@
         padding: 0.82rem 1.65rem 0.82rem 0.85rem;
     }
 
-    .view-regionFeed .region-feed-card::before {
+    /* Feed event icons mobile */
+
+    .view-regionFeed .region-feed-event-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+    }
+
+    .view-regionFeed .region-feed-event-icon-svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .view-regionFeed .region-feed-milestone-card::before,
+    .view-regionFeed .region-feed-announcement-card::before {
         top: 0.85rem;
         left: 0.85rem;
         width: 34px;
@@ -426,6 +802,46 @@
 
     .view-regionFeed .region-feed-card-action {
         right: 0.22rem;
+    }
+
+    /* FNG welcome mobile layout */
+
+    .view-regionFeed .region-feed-fng-button {
+        grid-template-columns: 46px minmax(0, 1fr) 56px;
+        column-gap: 0.65rem;
+        padding: 0.82rem 1.65rem 0.82rem 0.85rem;
+    }
+
+    .view-regionFeed .region-feed-fng-visual {
+        width: 52px;
+        height: 58px;
+        min-width: 52px;
+        min-height: 58px;
+        border-radius: 14px 14px 18px 18px;
+    }
+
+    /* VQ earned mobile layout */
+
+    .view-regionFeed .region-feed-vq-button {
+        grid-template-columns: 46px minmax(0, 1fr) 56px;
+        column-gap: 0.65rem;
+        padding: 0.88rem 1.65rem 0.88rem 0.85rem;
+    }
+
+    .view-regionFeed .region-feed-vq-card .region-feed-card-title {
+        font-size: 1.04rem;
+    }
+
+    .view-regionFeed .region-feed-vq-visual {
+        width: 52px;
+        height: 58px;
+        min-width: 52px;
+        min-height: 58px;
+        border-radius: 14px 14px 18px 18px;
+    }
+
+    .view-regionFeed .region-feed-vq-mark {
+        font-size: 1rem;
     }
 }
 

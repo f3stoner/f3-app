@@ -6,6 +6,8 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { renderMemberMilestoneRow } from "../components/regionFeed/memberMilestoneRow.js";
 import { renderAnnouncementPublishedRow } from "../components/regionFeed/announcementPublishedRow.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { renderFngWelcomedRow } from "../components/regionFeed/fngWelcomedRow.js";
+import { renderVqEarnedRow } from "../components/regionFeed/vqEarnedRow.js";
 
 let regionFeedRenderSequence = 0;
 
@@ -13,6 +15,8 @@ const eventRenderers = {
     session_completed: renderSessionCompletedCard,
     member_milestone: renderMemberMilestoneRow,
     announcement_published: renderAnnouncementPublishedRow,
+    fng_welcomed: renderFngWelcomedRow,
+    vq_earned: renderVqEarnedRow,
 };
 
 function resetRegionFeed(regionId) {

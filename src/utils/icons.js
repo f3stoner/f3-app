@@ -43,6 +43,7 @@ import {
     Megaphone,
     Menu,
     ExternalLink,
+    Award,
 } from "lucide";
 
 const ICONS = {
@@ -63,6 +64,11 @@ const ICONS = {
     trendingUp: TrendingUp,
     circle: Circle,
     clipboardList: ClipboardList,
+
+    // Regional feed event icons
+    feedWorkoutComplete: Dumbbell,
+    feedFngWelcome: UserPlus,
+    feedVqEarned: Award,
 
     chevronRight: ChevronRight,
     chevronUp: ChevronUp,
@@ -104,15 +110,15 @@ const weatherIconMap = {
     unknown: Cloud,
 };
 
-export function createIcon(name, className = "stat-icon") {
+export function createIcon(name, className = "stat-icon", options = {}) {
     const iconNode = ICONS[name];
 
     if (!iconNode) return document.createElement("span");
 
     return createElement(iconNode, {
-        width: 20,
-        height: 20,
-        strokeWidth: 2,
+        width: options.size || 20,
+        height: options.size || 20,
+        strokeWidth: options.strokeWidth || 2,
         class: className,
     });
 }

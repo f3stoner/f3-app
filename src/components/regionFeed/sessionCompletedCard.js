@@ -1,6 +1,7 @@
 import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
 import { loadSessionsByIds } from "../../services/cloudData.js";
+import { createIcon } from "../../utils/icons.js";
 
 function getMemberName(memberId) {
     const member =
@@ -158,6 +159,21 @@ export function renderSessionCompletedCard(event) {
     button.className = "region-feed-card-button region-feed-session-button";
     button.setAttribute("aria-label", `View session at ${aoName}`);
 
+    const icon = document.createElement("div");
+    icon.className = "region-feed-event-icon region-feed-session-icon";
+    icon.setAttribute("aria-hidden", "true");
+
+    icon.appendChild(
+        createIcon(
+            "feedWorkoutComplete",
+            "region-feed-event-icon-svg",
+            {
+                size: 21,
+                strokeWidth: 2.3,
+            }
+        )
+    );
+
     const content = document.createElement("div");
     content.className = "region-feed-card-content";
 
@@ -222,7 +238,7 @@ export function renderSessionCompletedCard(event) {
         }
     });
 
-    button.append(content, visual, action);
+    button.append(icon, content, visual, action);
     card.appendChild(button);
 
     return card;
