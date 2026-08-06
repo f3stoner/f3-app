@@ -1,6 +1,7 @@
 import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
 import { createIcon } from "../../utils/icons.js";
+import { createRegionFeedReactions } from "./regionFeedReactions.js";
 
 function formatEventTime(timestamp) {
     if (!timestamp) return "";
@@ -86,6 +87,8 @@ export function renderFngWelcomedRow(event) {
     action.className = "region-feed-card-action";
     action.textContent = "View Profile →";
 
+    const reactions = createRegionFeedReactions(event);
+
     button.addEventListener("click", () => {
         if (!event.memberId) return;
 
@@ -93,7 +96,7 @@ export function renderFngWelcomedRow(event) {
         navigateTo("memberDetail");
     });
 
-    button.append(icon, content, visual, action);
+    button.append(icon, content, visual, action, reactions);
     row.appendChild(button);
 
     return row;

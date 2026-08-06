@@ -1,5 +1,6 @@
 import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
+import { createRegionFeedReactions } from "./regionFeedReactions.js";
 
 function formatEventTime(timestamp) {
     if (!timestamp) return "";
@@ -62,6 +63,8 @@ export function renderMemberMilestoneRow(event) {
     action.className = "region-feed-card-action";
     action.textContent = "View Profile →";
 
+    const reactions = createRegionFeedReactions(event);
+
     button.addEventListener("click", () => {
         if (!event.memberId) return;
 
@@ -69,7 +72,7 @@ export function renderMemberMilestoneRow(event) {
         navigateTo("memberDetail");
     });
 
-    button.append(content, visual, action);
+    button.append(content, visual, action, reactions);
     row.appendChild(button);
 
     return row;

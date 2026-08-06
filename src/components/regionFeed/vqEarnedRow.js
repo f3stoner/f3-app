@@ -2,6 +2,7 @@ import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
 import { loadSessionsByIds } from "../../services/cloudData.js";
 import { createIcon } from "../../utils/icons.js";
+import { createRegionFeedReactions } from "./regionFeedReactions.js";
 
 function formatEventTime(timestamp) {
     if (!timestamp) return "";
@@ -110,6 +111,8 @@ export function renderVqEarnedRow(event) {
     action.className = "region-feed-card-action";
     action.textContent = "View Session →";
 
+    const reactions = createRegionFeedReactions(event);
+
     button.addEventListener("click", async () => {
         button.disabled = true;
 
@@ -121,7 +124,7 @@ export function renderVqEarnedRow(event) {
         }
     });
 
-    button.append(icon, content, visual, action);
+    button.append(icon, content, visual, action, reactions);
     row.appendChild(button);
 
     return row;

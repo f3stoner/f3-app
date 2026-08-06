@@ -69,6 +69,7 @@ const ICONS = {
     feedWorkoutComplete: Dumbbell,
     feedFngWelcome: UserPlus,
     feedVqEarned: Award,
+    feedAnnouncement: Megaphone,
 
     chevronRight: ChevronRight,
     chevronUp: ChevronUp,

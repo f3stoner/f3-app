@@ -1,9 +1,39 @@
 import { supabase } from "./supabaseClient.js";
 import { mapSessionFromDb } from "./cloudData.js";
+import { state } from "../modules/state.js";
 
 const DEFAULT_PAGE_SIZE = 25;
 
+export const REGION_FEED_REACTION_TYPES = [
+    "like",
+    "strong",
+    "fire",
+    "applause",
+    "heart",
+];
+
+function createEmptyReactionCounts() {
+    return Object.fromEntries(
+        REGION_FEED_REACTION_TYPES.map(type => [type, 0])
+    );
+}
+
 function mapRegionFeedEventFromDb(row) {
+    const reactions = row.region_feed_reactions || [];
+    const reactionCounts = createEmptyReactionCounts();
+
+    reactions.forEach(reaction => {
+        if (!(reaction.reaction_type in reactionCounts)) return;
+
+        reactionCounts[reaction.reaction_type] += 1;
+    });
+
+    const currentMemberReaction = reactions.find(
+        reaction =>
+            reaction.member_id ===
+            state.currentUserMemberId
+    );
+
     return {
         id: row.id,
         regionId: row.region_id,
@@ -14,6 +44,9 @@ function mapRegionFeedEventFromDb(row) {
         memberId: row.member_id,
         payload: row.payload || {},
         sourceKey: row.source_key,
+        reactionCounts,
+        reactionTotal: reactions.length,
+        currentReaction: currentMemberReaction?.reaction_type || null,
         member: row.members
             ? {
                 id: row.members.id,
@@ -88,6 +121,10 @@ export async function loadRegionFeedPage({
             session_id,
             member_id,
             payload,
+            region_feed_reactions (
+                member_id,
+                reaction_type
+            ),
             members (
                 id,
                 pax_name,
@@ -202,4 +239,44 @@ export async function loadRegionFeedPage({
                 }
                 : null,
     };
+}
+
+export async function setRegionFeedReaction({
+    feedEventId,
+    reactionType,
+}) {
+    if (!feedEventId) {
+        throw new Error(
+            "Feed event id is required to set a reaction."
+        );
+    }
+
+    if (!REGION_FEED_REACTION_TYPES.includes(reactionType)) {
+        throw new Error(
+            "A valid reaction type is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_region_feed_reaction",
+        {
+            p_feed_event_id: feedEventId,
+            p_reaction_type: reactionType,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to set regional feed reaction:",
+            {
+                feedEventId,
+                reactionType,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return data;
 }
