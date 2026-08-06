@@ -31,7 +31,10 @@ export async function renderSessionAuditView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
-    if (!canViewAnySessionAudit()) {
+    if (
+        !canViewAnySessionAudit() &&
+        !canEditAnySessions()
+    ) {
         app.textContent = "You do not have permission to view session audit.";
         return;
     }
@@ -93,13 +96,17 @@ export async function renderSessionAuditView() {
         );
 
         const permittedRows = rows
-            .filter(row => canViewSessionAudit(row.aoId))
+            .filter(row =>
+                canViewSessionAudit(row.aoId) ||
+                canEditAoSession(row.aoId)
+            )
             .sort(compareAuditRows);
 
         const permittedDuplicateGroups =
             (duplicateGroups || [])
                 .filter(group =>
-                    canViewSessionAudit(group.aoId)
+                    canViewSessionAudit(group.aoId) ||
+                    canEditAoSession(group.aoId)
                 );
 
         const summaryRows = permittedRows.filter(
