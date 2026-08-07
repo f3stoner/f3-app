@@ -122,16 +122,15 @@ function createReactionPill({
         button.classList.add("is-selected");
     }
 
-    button.appendChild(
-        createIcon(
-            "feedReactionAdd",
-            "region-feed-reaction-add-icon",
-            {
-                size: 17,
-                strokeWidth: 2,
-            }
-        )
-    );
+    const emoji = document.createElement("span");
+    emoji.className = "region-feed-reaction-pill-emoji";
+    emoji.textContent = reaction.emoji;
+    
+    const value = document.createElement("span");
+    value.className = "region-feed-reaction-pill-count";
+    value.textContent = count;
+    
+    button.append(emoji, value);
 
     button.addEventListener("click", clickEvent => {
         stopCardNavigation(clickEvent);
@@ -160,15 +159,16 @@ function createReactionTrigger({
     button.setAttribute("aria-label", "Add reaction");
     button.setAttribute("aria-expanded", "false");
 
-    const emoji = document.createElement("span");
-    emoji.className = "region-feed-reaction-add-emoji";
-    emoji.textContent = "☺";
-
-    const plus = document.createElement("span");
-    plus.className = "region-feed-reaction-add-plus";
-    plus.textContent = "+";
-
-    button.append(emoji, plus);
+    button.appendChild(
+        createIcon(
+            "feedReactionAdd",
+            "region-feed-reaction-add-icon",
+            {
+                size: 17,
+                strokeWidth: 2,
+            }
+        )
+    );
 
     button.addEventListener("click", clickEvent => {
         stopCardNavigation(clickEvent);
