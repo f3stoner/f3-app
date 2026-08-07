@@ -1,6 +1,5 @@
 import { supabase } from "./supabaseClient.js";
 import { mapSessionFromDb } from "./cloudData.js";
-import { state } from "../modules/state.js";
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -18,22 +17,29 @@ function createEmptyReactionCounts() {
     );
 }
 
+/*
+ * Map one regional feed comment from its database shape.
+ */
+function mapRegionFeedCommentFromDb(row) {
+    return {
+        id: row.id,
+        feedEventId: row.feed_event_id,
+        memberId: row.member_id,
+        body: row.body || "",
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        member: row.members
+            ? {
+                id: row.members.id,
+                paxName: row.members.pax_name || "",
+                realName: row.members.real_name || "",
+            }
+            : null,
+    };
+}
+
+
 function mapRegionFeedEventFromDb(row) {
-    const reactions = row.region_feed_reactions || [];
-    const reactionCounts = createEmptyReactionCounts();
-
-    reactions.forEach(reaction => {
-        if (!(reaction.reaction_type in reactionCounts)) return;
-
-        reactionCounts[reaction.reaction_type] += 1;
-    });
-
-    const currentMemberReaction = reactions.find(
-        reaction =>
-            reaction.member_id ===
-            state.currentUserMemberId
-    );
-
     return {
         id: row.id,
         regionId: row.region_id,
@@ -44,9 +50,10 @@ function mapRegionFeedEventFromDb(row) {
         memberId: row.member_id,
         payload: row.payload || {},
         sourceKey: row.source_key,
-        reactionCounts,
-        reactionTotal: reactions.length,
-        currentReaction: currentMemberReaction?.reaction_type || null,
+        reactionCounts: createEmptyReactionCounts(),
+        reactionTotal: 0,
+        currentReaction: null,
+        commentCount: 0,
         member: row.members
             ? {
                 id: row.members.id,
@@ -94,11 +101,87 @@ function createCursorFilter(cursor) {
     ].join(",");
 }
 
+/*
+ * Load compact social metadata for one page of feed events.
+ *
+ * Reaction rows and comment bodies stay off the feed's
+ * primary event payload.
+ */
+async function loadRegionFeedSocialSummary(feedEventIds) {
+    const summaryByEventId = new Map();
+
+    if (!feedEventIds.length) {
+        return summaryByEventId;
+    }
+
+    console.log(
+        "regionFeed:socialSummaryRpc:start",
+        {
+            eventCount:
+                feedEventIds.length,
+        }
+    );
+    
+    const socialSummaryStartedAt =
+        performance.now();
+
+    const { data, error } = await supabase.rpc(
+        "get_region_feed_social_summary",
+        {
+            p_feed_event_ids: feedEventIds,
+        }
+    );
+
+    console.log(
+        "regionFeed:socialSummaryRpc:complete",
+        {
+            durationMs:
+                Math.round(
+                    performance.now() -
+                        socialSummaryStartedAt
+                ),
+            rowCount:
+                data?.length || 0,
+            error,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to load regional feed social summary:",
+            {
+                feedEventIds,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    (data || []).forEach(summary => {
+        summaryByEventId.set(
+            summary.feed_event_id,
+            summary
+        );
+    });
+
+    return summaryByEventId;
+}
+
 export async function loadRegionFeedPage({
     regionId,
     cursor = null,
     limit = DEFAULT_PAGE_SIZE,
 }) {
+    console.log(
+        "regionFeed:loadPage:start",
+        {
+            regionId,
+            cursor,
+            limit,
+        }
+    );
+
     if (!regionId) {
         throw new Error(
             "Region id is required to load the feed."
@@ -121,10 +204,6 @@ export async function loadRegionFeedPage({
             session_id,
             member_id,
             payload,
-            region_feed_reactions (
-                member_id,
-                reaction_type
-            ),
             members (
                 id,
                 pax_name,
@@ -194,7 +273,32 @@ export async function loadRegionFeedPage({
         query = query.or(cursorFilter);
     }
 
+    console.log(
+        "regionFeed:eventQuery:start",
+        {
+            regionId,
+            cursor,
+        }
+    );
+    
+    const eventQueryStartedAt =
+        performance.now();
+    
     const { data, error } = await query;
+    
+    console.log(
+        "regionFeed:eventQuery:complete",
+        {
+            durationMs:
+                Math.round(
+                    performance.now() -
+                        eventQueryStartedAt
+                ),
+            rowCount:
+                data?.length || 0,
+            error,
+        }
+    );
 
     if (error) {
         console.error(
@@ -217,14 +321,79 @@ export async function loadRegionFeedPage({
         hasMore
             ? rows.slice(0, safeLimit)
             : rows;
-
+    
     const items =
         pageRows.map(
             mapRegionFeedEventFromDb
         );
 
+    const feedEventIds =
+        items
+            .map(item => item.id)
+            .filter(Boolean);
+
+        console.log(
+            "regionFeed:socialSummary:aboutToLoad",
+            {
+                itemCount:
+                    items.length,
+                idCount:
+                    feedEventIds.length,
+                feedEventIds,
+            }
+        );
+    
+    const socialSummary =
+        await loadRegionFeedSocialSummary(
+            feedEventIds
+        );
+    
+    items.forEach(item => {
+        const summary =
+            socialSummary.get(item.id);
+    
+        if (!summary) return;
+    
+        item.reactionCounts = {
+            like:
+                Number(summary.like_count) || 0,
+            strong:
+                Number(summary.strong_count) || 0,
+            fire:
+                Number(summary.fire_count) || 0,
+            applause:
+                Number(summary.applause_count) || 0,
+            heart:
+                Number(summary.heart_count) || 0,
+        };
+    
+        item.reactionTotal =
+            Object.values(
+                item.reactionCounts
+            ).reduce(
+                (total, count) =>
+                    total + count,
+                0
+            );
+    
+        item.currentReaction =
+            summary.current_reaction || null;
+    
+        item.commentCount =
+            Number(summary.comment_count) || 0;
+    });
+    
     const finalItem =
         items[items.length - 1];
+
+        console.log(
+            "regionFeed:loadPage:complete",
+            {
+                itemCount:
+                    items.length,
+                hasMore,
+            }
+        );
 
     return {
         items,
@@ -279,4 +448,128 @@ export async function setRegionFeedReaction({
     }
 
     return data;
+}
+
+/*
+ * Load one feed event's active comments only when its
+ * discussion is opened.
+ */
+export async function loadRegionFeedComments(
+    feedEventId
+) {
+    if (!feedEventId) {
+        throw new Error(
+            "Feed event id is required to load comments."
+        );
+    }
+
+    const { data, error } = await supabase
+        .from("region_feed_comments")
+        .select(`
+            id,
+            feed_event_id,
+            member_id,
+            body,
+            created_at,
+            updated_at,
+            members (
+                id,
+                pax_name,
+                real_name
+            )
+        `)
+        .eq("feed_event_id", feedEventId)
+        .order("created_at", {
+            ascending: true,
+        })
+        .order("id", {
+            ascending: true,
+        });
+
+    if (error) {
+        console.error(
+            "Failed to load regional feed comments:",
+            {
+                feedEventId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return (data || []).map(
+        mapRegionFeedCommentFromDb
+    );
+}
+
+export async function addRegionFeedComment({
+    feedEventId,
+    body,
+}) {
+    const cleanBody =
+        String(body || "").trim();
+
+    if (!feedEventId) {
+        throw new Error(
+            "Feed event id is required to add a comment."
+        );
+    }
+
+    if (!cleanBody) {
+        throw new Error(
+            "Comment body is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "add_region_feed_comment",
+        {
+            p_feed_event_id: feedEventId,
+            p_body: cleanBody,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to add regional feed comment:",
+            {
+                feedEventId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function deleteRegionFeedComment(
+    commentId
+) {
+    if (!commentId) {
+        throw new Error(
+            "Comment id is required to delete a comment."
+        );
+    }
+
+    const { error } = await supabase.rpc(
+        "delete_region_feed_comment",
+        {
+            p_comment_id: commentId,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to delete regional feed comment:",
+            {
+                commentId,
+                error,
+            }
+        );
+
+        throw error;
+    }
 }

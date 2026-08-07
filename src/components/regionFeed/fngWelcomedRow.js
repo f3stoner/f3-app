@@ -96,8 +96,17 @@ export function renderFngWelcomedRow(event) {
         navigateTo("memberDetail");
     });
 
-    button.append(icon, content, visual, action, reactions);
-    row.appendChild(button);
+    button.append(
+        icon,
+        content,
+        visual,
+        action
+    );
+    
+    row.append(
+        button,
+        reactions
+    );
 
     return row;
 }

@@ -9,7 +9,7 @@ import { createAppHeader } from "../components/appHeader.js";
 import { renderFngWelcomedRow } from "../components/regionFeed/fngWelcomedRow.js";
 import { renderVqEarnedRow } from "../components/regionFeed/vqEarnedRow.js";
 
-let regionFeedRenderSequence = 0;
+let regionFeedRequestSequence = 0;
 
 const eventRenderers = {
     session_completed: renderSessionCompletedCard,
@@ -238,9 +238,9 @@ function renderFeedItems(items) {
 }
 
 async function loadInitialFeed({
-    renderSequence,
     regionId,
 }) {
+    const requestSequence = ++regionFeedRequestSequence;
     state.regionFeed.isLoading = true;
     state.regionFeed.error = null;
 
@@ -251,8 +251,8 @@ async function loadInitialFeed({
             });
 
         if (
-            renderSequence !==
-                regionFeedRenderSequence ||
+            requestSequence !==
+                regionFeedRequestSequence ||
             state.currentView !==
                 "regionFeed" ||
             state.currentRegionId !==
@@ -274,8 +274,8 @@ async function loadInitialFeed({
             true;
     } catch (error) {
         if (
-            renderSequence !==
-                regionFeedRenderSequence ||
+            requestSequence !==
+                regionFeedRequestSequence ||
             state.currentView !==
                 "regionFeed" ||
             state.currentRegionId !==
@@ -288,8 +288,8 @@ async function loadInitialFeed({
             error;
     } finally {
         if (
-            renderSequence ===
-                regionFeedRenderSequence &&
+            requestSequence ===
+                regionFeedRequestSequence &&
             state.currentView ===
                 "regionFeed" &&
             state.currentRegionId ===
@@ -382,8 +382,6 @@ async function loadMoreFeed({
 export function renderRegionFeedView() {
     const app = document.getElementById("app");
 
-    const renderSequence = ++regionFeedRenderSequence;
-
     const regionId = state.currentRegionId;
 
     app.textContent = "";
@@ -431,7 +429,6 @@ export function renderRegionFeedView() {
         content.appendChild(createLoadingState());
     
         void loadInitialFeed({
-            renderSequence,
             regionId,
         });
     

@@ -842,13 +842,13 @@
    FEED REACTIONS
    ========================================================= */
 
-   .view-regionFeed .region-feed-reactions {
-    grid-column: 2 / -1;
-    grid-row: 2;
-    width: 100%;
+/* Social footer lives outside the event navigation button */
+
+.view-regionFeed .region-feed-reactions {
+    width: auto;
     min-width: 0;
-    margin-top: 0.62rem;
-    padding-top: 0.52rem;
+    margin: -0.2rem 1.8rem 0.72rem 4.75rem;
+    padding-top: 0.45rem;
     border-top: 1px solid rgba(255, 255, 255, 0.045);
     box-sizing: border-box;
 }
@@ -862,13 +862,13 @@
 
 .view-regionFeed .region-feed-reaction-pill,
 .view-regionFeed .region-feed-reaction-add {
-    min-height: 28px;
+    min-height: 25px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.24rem;
     margin: 0;
-    padding: 0.2rem 0.48rem;
+    padding: 0.15rem 0.42rem;
     border: 1px solid rgba(255, 255, 255, 0.075);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.025);
@@ -917,6 +917,40 @@
     width: 17px;
     height: 17px;
     color: currentColor;
+}
+
+/* Comment thread trigger */
+
+.view-regionFeed .region-feed-comments-trigger {
+    min-height: 25px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 0.15rem 0;
+    border: 0;
+    background: transparent;
+    color: rgba(194, 202, 211, 0.58);
+    box-shadow: none;
+    font-size: 0.62rem;
+    font-weight: 750;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.view-regionFeed .region-feed-comments-trigger:hover {
+    background: transparent;
+    color: rgba(225, 229, 234, 0.82);
+    box-shadow: none;
+}
+
+.view-regionFeed .region-feed-comments-trigger:active {
+    transform: none;
+    color: var(--feed-accent-bright);
+}
+
+.view-regionFeed .region-feed-comments-trigger[aria-expanded="true"] {
+    color: var(--feed-accent);
 }
 
 .view-regionFeed .region-feed-reaction-picker {
@@ -972,6 +1006,180 @@
 .view-regionFeed .region-feed-reactions.is-updating {
     pointer-events: none;
     opacity: 0.68;
+}
+
+/* =========================================================
+   FEED COMMENTS
+   ========================================================= */
+
+.view-regionFeed .region-feed-comments-thread {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    box-sizing: border-box;
+}
+
+.view-regionFeed .region-feed-comments-thread[hidden] {
+    display: none;
+}
+
+.view-regionFeed .region-feed-comments-thread.is-loading::before {
+    content: "Loading comments…";
+    display: block;
+    padding: 0.15rem 0;
+    color: rgba(194, 202, 211, 0.55);
+    font-size: 0.68rem;
+    font-weight: 650;
+}
+
+.view-regionFeed .region-feed-comments-thread.has-error {
+    color: #d98a8a;
+    font-size: 0.7rem;
+    font-weight: 650;
+}
+
+
+/* Comment list */
+
+.view-regionFeed .region-feed-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.view-regionFeed .region-feed-comment {
+    position: relative;
+    min-width: 0;
+}
+
+.view-regionFeed .region-feed-comment-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+}
+
+.view-regionFeed .region-feed-comment-author {
+    min-width: 0;
+    overflow: hidden;
+    color: rgba(238, 242, 246, 0.9);
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.view-regionFeed .region-feed-comment-time {
+    flex: 0 0 auto;
+    color: rgba(194, 202, 211, 0.42);
+    font-size: 0.58rem;
+    font-weight: 650;
+    line-height: 1;
+}
+
+.view-regionFeed .region-feed-comment-body {
+    margin-top: 0.18rem;
+    color: rgba(225, 229, 234, 0.78);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.view-regionFeed .region-feed-comments-empty {
+    padding: 0.1rem 0 0.2rem;
+    color: rgba(194, 202, 211, 0.48);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* Comment composer */
+
+.view-regionFeed .region-feed-comment-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.45rem;
+    align-items: end;
+    margin-top: 0.55rem;
+}
+
+.view-regionFeed .region-feed-comment-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    max-height: 110px;
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    resize: vertical;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 11px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 500;
+    line-height: 1.35;
+    box-sizing: border-box;
+}
+
+.view-regionFeed .region-feed-comment-input::placeholder {
+    color: rgba(194, 202, 211, 0.4);
+}
+
+.view-regionFeed .region-feed-comment-input:focus {
+    border-color: rgba(143, 211, 255, 0.28);
+    background: rgba(143, 211, 255, 0.045);
+}
+
+.view-regionFeed .region-feed-comment-submit {
+    min-height: 38px;
+    margin: 0;
+    padding: 0 0.7rem;
+    border: 1px solid rgba(143, 211, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(143, 211, 255, 0.065);
+    color: var(--feed-accent-bright);
+    box-shadow: none;
+    font-size: 0.67rem;
+    font-weight: 850;
+}
+
+.view-regionFeed .region-feed-comment-submit:hover {
+    background: rgba(143, 211, 255, 0.1);
+    box-shadow: none;
+}
+
+.view-regionFeed .region-feed-comment-submit:active {
+    transform: scale(0.97);
+}
+
+.view-regionFeed .region-feed-comment-submit:disabled,
+.view-regionFeed .region-feed-comment-input:disabled {
+    opacity: 0.55;
+}
+
+/* Temporary V1 own-comment delete affordance */
+
+.view-regionFeed .region-feed-comment-delete {
+    margin: 0.28rem 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: rgba(217, 138, 138, 0.52);
+    box-shadow: none;
+    font-size: 0.58rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.view-regionFeed .region-feed-comment-delete:hover {
+    background: transparent;
+    color: #d98a8a;
+    box-shadow: none;
 }
 
 /* MOBILE MEDIA */
@@ -1094,8 +1302,8 @@
     /* Feed reactions mobile */
 
     .view-regionFeed .region-feed-reactions {
-        margin-top: 0.55rem;
-        padding-top: 0.48rem;
+        margin: -0.15rem 1.65rem 0.65rem 3.9rem;
+        padding-top: 0.42rem;
     }
 
     .view-regionFeed .region-feed-reaction-pill,
@@ -1116,6 +1324,46 @@
         padding: 0;
         border-radius: 999px;
         font-size: 1rem;
+    }
+
+    /* Feed comments mobile */
+
+    .view-regionFeed .region-feed-comments-trigger {
+        min-height: 27px;
+        font-size: 0.63rem;
+    }
+
+    .view-regionFeed .region-feed-comments-thread {
+        margin-top: 0.6rem;
+        padding-top: 0.62rem;
+    }
+
+    .view-regionFeed .region-feed-comments-list {
+        gap: 0.68rem;
+    }
+
+    .view-regionFeed .region-feed-comment-author {
+        font-size: 0.74rem;
+    }
+
+    .view-regionFeed .region-feed-comment-body {
+        font-size: 0.73rem;
+    }
+
+    .view-regionFeed .region-feed-comment-form {
+        gap: 0.38rem;
+        margin-top: 0.72rem;
+    }
+
+    .view-regionFeed .region-feed-comment-input {
+        min-height: 36px;
+        padding: 0.5rem 0.62rem;
+        font-size: 0.72rem;
+    }
+
+    .view-regionFeed .region-feed-comment-submit {
+        min-height: 36px;
+        padding: 0 0.62rem;
     }
 }
 

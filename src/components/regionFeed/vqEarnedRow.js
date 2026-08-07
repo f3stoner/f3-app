@@ -124,8 +124,17 @@ export function renderVqEarnedRow(event) {
         }
     });
 
-    button.append(icon, content, visual, action, reactions);
-    row.appendChild(button);
+    button.append(
+        icon,
+        content,
+        visual,
+        action
+    );
+    
+    row.append(
+        button,
+        reactions
+    );
 
     return row;
 }

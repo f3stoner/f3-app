@@ -72,8 +72,16 @@ export function renderMemberMilestoneRow(event) {
         navigateTo("memberDetail");
     });
 
-    button.append(content, visual, action, reactions);
-    row.appendChild(button);
+    button.append(
+        content,
+        visual,
+        action
+    );
+    
+    row.append(
+        button,
+        reactions
+    );
 
     return row;
 }

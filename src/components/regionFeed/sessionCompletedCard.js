@@ -241,8 +241,17 @@ export function renderSessionCompletedCard(event) {
         }
     });
 
-    button.append(icon, content, visual, action, reactions);
-    card.appendChild(button);
+    button.append(
+        icon,
+        content,
+        visual,
+        action
+    );
+    
+    card.append(
+        button,
+        reactions
+    );
 
     return card;
 }
