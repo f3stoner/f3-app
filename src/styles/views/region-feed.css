@@ -907,21 +907,16 @@
 
 .view-regionFeed .region-feed-reaction-add {
     position: relative;
-    min-width: 34px;
-    padding: 0.2rem 0.42rem;
+    min-width: 32px;
+    padding: 0.2rem 0.4rem;
     color: rgba(194, 202, 211, 0.48);
 }
 
-.view-regionFeed .region-feed-reaction-add-emoji {
-    font-size: 0.9rem;
-    line-height: 1;
-}
-
-.view-regionFeed .region-feed-reaction-add-plus {
-    margin-left: -0.08rem;
-    font-size: 0.72rem;
-    font-weight: 900;
-    line-height: 1;
+.view-regionFeed .region-feed-reaction-add-icon {
+    display: block;
+    width: 17px;
+    height: 17px;
+    color: currentColor;
 }
 
 .view-regionFeed .region-feed-reaction-picker {

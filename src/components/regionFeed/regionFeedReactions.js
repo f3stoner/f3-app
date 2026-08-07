@@ -1,4 +1,5 @@
 import { setRegionFeedReaction } from "../../services/regionFeedService.js";
+import { createIcon } from "../../utils/icons.js";
 
 const REACTIONS = [
     {
@@ -121,15 +122,16 @@ function createReactionPill({
         button.classList.add("is-selected");
     }
 
-    const emoji = document.createElement("span");
-    emoji.className = "region-feed-reaction-pill-emoji";
-    emoji.textContent = reaction.emoji;
-
-    const value = document.createElement("span");
-    value.className = "region-feed-reaction-pill-count";
-    value.textContent = count;
-
-    button.append(emoji, value);
+    button.appendChild(
+        createIcon(
+            "feedReactionAdd",
+            "region-feed-reaction-add-icon",
+            {
+                size: 17,
+                strokeWidth: 2,
+            }
+        )
+    );
 
     button.addEventListener("click", clickEvent => {
         stopCardNavigation(clickEvent);

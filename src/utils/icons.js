@@ -44,6 +44,7 @@ import {
     Menu,
     ExternalLink,
     Award,
+    SmilePlus,
 } from "lucide";
 
 const ICONS = {
@@ -70,6 +71,7 @@ const ICONS = {
     feedFngWelcome: UserPlus,
     feedVqEarned: Award,
     feedAnnouncement: Megaphone,
+    feedReactionAdd: SmilePlus,
 
     chevronRight: ChevronRight,
     chevronUp: ChevronUp,
