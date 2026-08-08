@@ -24,6 +24,7 @@ function mapRegionFeedCommentFromDb(row) {
     return {
         id: row.id,
         feedEventId: row.feed_event_id,
+        qSlotId: row.q_slot_id || null,
         memberId: row.member_id,
         body: row.body || "",
         createdAt: row.created_at,
@@ -38,6 +39,93 @@ function mapRegionFeedCommentFromDb(row) {
     };
 }
 
+export async function loadWorkoutComments(qSlotId) {
+    if (!qSlotId) {
+        throw new Error(
+            "Q slot id is required to load workout comments."
+        );
+    }
+
+    const { data, error } = await supabase
+        .from("region_feed_comments")
+        .select(`
+            id,
+            feed_event_id,
+            q_slot_id,
+            member_id,
+            body,
+            created_at,
+            updated_at,
+            members (
+                id,
+                pax_name,
+                real_name
+            )
+        `)
+        .eq("q_slot_id", qSlotId)
+        .is("deleted_at", null)
+        .order("created_at", {
+            ascending: true,
+        });
+
+    if (error) {
+        console.error(
+            "Failed to load workout comments:",
+            {
+                qSlotId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return (data || []).map(
+        mapRegionFeedCommentFromDb
+    );
+}
+
+export async function addWorkoutComment({
+    qSlotId,
+    body,
+}) {
+    const cleanBody =
+        String(body || "").trim();
+
+    if (!qSlotId) {
+        throw new Error(
+            "Q slot id is required to add a workout comment."
+        );
+    }
+
+    if (!cleanBody) {
+        throw new Error(
+            "Comment body is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "add_workout_comment",
+        {
+            p_q_slot_id: qSlotId,
+            p_body: cleanBody,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to add workout comment:",
+            {
+                qSlotId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return data;
+}
 
 function mapRegionFeedEventFromDb(row) {
     return {
@@ -343,46 +431,60 @@ export async function loadRegionFeedPage({
             }
         );
     
-    const socialSummary =
-        await loadRegionFeedSocialSummary(
-            feedEventIds
-        );
-    
-    items.forEach(item => {
-        const summary =
-            socialSummary.get(item.id);
-    
-        if (!summary) return;
-    
-        item.reactionCounts = {
-            like:
-                Number(summary.like_count) || 0,
-            strong:
-                Number(summary.strong_count) || 0,
-            fire:
-                Number(summary.fire_count) || 0,
-            applause:
-                Number(summary.applause_count) || 0,
-            heart:
-                Number(summary.heart_count) || 0,
-        };
-    
-        item.reactionTotal =
-            Object.values(
-                item.reactionCounts
-            ).reduce(
-                (total, count) =>
-                    total + count,
+        const socialSummary = await loadRegionFeedSocialSummary(feedEventIds);
+
+        const workoutQSlotIds = [
+            ...new Set(
+                items
+                    .filter(item => item.eventType === "session_completed")
+                    .map(item => item.session?.sourceQSlotId)
+                    .filter(Boolean)
+            ),
+        ];
+        
+        const workoutSocialSummary = await loadWorkoutSocialSummaries(workoutQSlotIds);
+        
+        items.forEach(item => {
+            const qSlotId =
+                item.eventType === "session_completed"
+                    ? item.session?.sourceQSlotId || null
+                    : null;
+        
+            const workoutSummary = qSlotId
+                ? workoutSocialSummary.get(qSlotId)
+                : null;
+        
+            if (workoutSummary) {
+                item.reactionCounts = workoutSummary.reactionCounts;
+                item.reactionTotal = Object.values(item.reactionCounts).reduce(
+                    (total, count) => total + count,
+                    0
+                );
+                item.currentReaction = workoutSummary.currentReaction;
+                item.commentCount = workoutSummary.commentCount;
+                return;
+            }
+        
+            const summary = socialSummary.get(item.id);
+            if (!summary) return;
+        
+            item.reactionCounts = {
+                like: Number(summary.like_count) || 0,
+                strong: Number(summary.strong_count) || 0,
+                fire: Number(summary.fire_count) || 0,
+                applause: Number(summary.applause_count) || 0,
+                heart: Number(summary.heart_count) || 0,
+            };
+        
+            item.reactionTotal = Object.values(item.reactionCounts).reduce(
+                (total, count) => total + count,
                 0
             );
-    
-        item.currentReaction =
-            summary.current_reaction || null;
-    
-        item.commentCount =
-            Number(summary.comment_count) || 0;
-    });
-    
+        
+            item.currentReaction = summary.current_reaction || null;
+            item.commentCount = Number(summary.comment_count) || 0;
+        });
+        
     const finalItem =
         items[items.length - 1];
 
@@ -408,6 +510,46 @@ export async function loadRegionFeedPage({
                 }
                 : null,
     };
+}
+
+export async function setWorkoutReaction({
+    qSlotId,
+    reactionType,
+}) {
+    if (!qSlotId) {
+        throw new Error(
+            "Q slot id is required to set a workout reaction."
+        );
+    }
+
+    if (!REGION_FEED_REACTION_TYPES.includes(reactionType)) {
+        throw new Error(
+            "A valid reaction type is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_workout_reaction",
+        {
+            p_q_slot_id: qSlotId,
+            p_reaction_type: reactionType,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to set workout reaction:",
+            {
+                qSlotId,
+                reactionType,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return data;
 }
 
 export async function setRegionFeedReaction({
@@ -572,4 +714,62 @@ export async function deleteRegionFeedComment(
 
         throw error;
     }
+}
+
+export async function loadWorkoutSocialSummaries(
+    qSlotIds
+) {
+    if (!Array.isArray(qSlotIds) || qSlotIds.length === 0) {
+        return new Map();
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_workout_social_summary",
+        {
+            p_q_slot_ids: qSlotIds,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to load workout social summaries:",
+            {
+                qSlotIds,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    const summariesBySlotId =
+        new Map();
+
+    (data || []).forEach(summary => {
+        summariesBySlotId.set(
+            summary.q_slot_id,
+            {
+                reactionCounts: {
+                    like:
+                        Number(summary.like_count) || 0,
+                    strong:
+                        Number(summary.strong_count) || 0,
+                    fire:
+                        Number(summary.fire_count) || 0,
+                    applause:
+                        Number(summary.applause_count) || 0,
+                    heart:
+                        Number(summary.heart_count) || 0,
+                },
+
+                currentReaction:
+                    summary.current_reaction || null,
+
+                commentCount:
+                    Number(summary.comment_count) || 0,
+            }
+        );
+    });
+
+    return summariesBySlotId;
 }

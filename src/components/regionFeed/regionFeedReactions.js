@@ -1,8 +1,11 @@
 import { state } from "../../modules/state.js";
 import {
     setRegionFeedReaction,
+    setWorkoutReaction,
     loadRegionFeedComments,
+    loadWorkoutComments,
     addRegionFeedComment,
+    addWorkoutComment,
     deleteRegionFeedComment,
 } from "../../services/regionFeedService.js";
 import { createIcon } from "../../utils/icons.js";
@@ -39,55 +42,136 @@ function stopCardNavigation(event) {
     event.stopPropagation();
 }
 
-function applyReactionResult(feedEvent, reactionType, result) {
-    const previousReaction = feedEvent.currentReaction;
+function applyReactionResult(
+    socialState,
+    reactionType,
+    result
+) {
+    const previousReaction =
+        socialState.currentReaction;
 
     if (previousReaction) {
-        feedEvent.reactionCounts[previousReaction] = Math.max(
-            (feedEvent.reactionCounts[previousReaction] || 0) - 1,
+        socialState.reactionCounts[
+            previousReaction
+        ] = Math.max(
+            (
+                socialState.reactionCounts[
+                    previousReaction
+                ] || 0
+            ) - 1,
             0
         );
     }
 
     if (result.action === "removed") {
-        feedEvent.currentReaction = null;
+        socialState.currentReaction =
+            null;
     } else {
-        feedEvent.currentReaction = reactionType;
-        feedEvent.reactionCounts[reactionType] =
-            (feedEvent.reactionCounts[reactionType] || 0) + 1;
+        socialState.currentReaction =
+            reactionType;
+
+        socialState.reactionCounts[
+            reactionType
+        ] =
+            (
+                socialState.reactionCounts[
+                    reactionType
+                ] || 0
+            ) + 1;
     }
 
-    feedEvent.reactionTotal = Object.values(
-        feedEvent.reactionCounts
-    ).reduce(
-        (total, count) => total + count,
-        0
+    socialState.reactionTotal =
+        Object.values(
+            socialState.reactionCounts
+        ).reduce(
+            (total, count) =>
+                total + count,
+            0
+        );
+}
+
+async function setReaction({
+    feedEventId,
+    qSlotId,
+    reactionType,
+}) {
+    if (qSlotId) {
+        return setWorkoutReaction({
+            qSlotId,
+            reactionType,
+        });
+    }
+
+    return setRegionFeedReaction({
+        feedEventId,
+        reactionType,
+    });
+}
+
+async function loadComments({
+    feedEventId,
+    qSlotId,
+}) {
+    if (qSlotId) {
+        return loadWorkoutComments(
+            qSlotId
+        );
+    }
+
+    return loadRegionFeedComments(
+        feedEventId
     );
 }
 
+async function addComment({
+    feedEventId,
+    qSlotId,
+    body,
+}) {
+    if (qSlotId) {
+        return addWorkoutComment({
+            qSlotId,
+            body,
+        });
+    }
+
+    return addRegionFeedComment({
+        feedEventId,
+        body,
+    });
+}
+
 async function updateReaction({
-    feedEvent,
+    socialState,
+    feedEventId,
+    qSlotId,
     reactionType,
     reactions,
     picker,
     thread,
 }) {
-    reactions.classList.add("is-updating");
+    reactions.classList.add(
+        "is-updating"
+    );
 
     try {
-        const result = await setRegionFeedReaction({
-            feedEventId: feedEvent.id,
-            reactionType,
-        });
+        const result =
+            await setReaction({
+                feedEventId,
+                qSlotId,
+                reactionType,
+            });
 
         applyReactionResult(
-            feedEvent,
+            socialState,
             reactionType,
             result
         );
 
         renderReactionBar({
-            feedEvent,
+            socialState,
+            feedEventId,
+            qSlotId,
             reactions,
             picker,
             thread,
@@ -96,77 +180,129 @@ async function updateReaction({
         picker.hidden = true;
     } catch (error) {
         console.error(
-            "Failed to update feed reaction:",
+            "Failed to update regional social reaction:",
             error
         );
     } finally {
-        reactions.classList.remove("is-updating");
+        reactions.classList.remove(
+            "is-updating"
+        );
     }
 }
 
 function createReactionPill({
-    feedEvent,
+    socialState,
+    feedEventId,
+    qSlotId,
     reaction,
     count,
     reactions,
     picker,
     thread,
 }) {
-    const button = document.createElement("button");
+    const button =
+        document.createElement("button");
+
     button.type = "button";
-    button.className = "region-feed-reaction-pill";
+    button.className =
+        "region-feed-reaction-pill";
+
     button.setAttribute(
         "aria-label",
         `${reaction.label}: ${count}`
     );
+
     button.setAttribute(
         "aria-pressed",
-        feedEvent.currentReaction === reaction.type
+        socialState.currentReaction ===
+            reaction.type
             ? "true"
             : "false"
     );
 
-    if (feedEvent.currentReaction === reaction.type) {
-        button.classList.add("is-selected");
+    if (
+        socialState.currentReaction ===
+        reaction.type
+    ) {
+        button.classList.add(
+            "is-selected"
+        );
     }
 
-    const emoji = document.createElement("span");
-    emoji.className = "region-feed-reaction-pill-emoji";
-    emoji.textContent = reaction.emoji;
+    const emoji =
+        document.createElement("span");
 
-    const value = document.createElement("span");
-    value.className = "region-feed-reaction-pill-count";
-    value.textContent = count;
+    emoji.className =
+        "region-feed-reaction-pill-emoji";
 
-    button.append(emoji, value);
+    emoji.textContent =
+        reaction.emoji;
 
-    button.addEventListener("click", clickEvent => {
-        stopCardNavigation(clickEvent);
+    const value =
+        document.createElement("span");
 
-        if (reactions.classList.contains("is-updating")) return;
+    value.className =
+        "region-feed-reaction-pill-count";
 
-        void updateReaction({
-            feedEvent,
-            reactionType: reaction.type,
-            reactions,
-            picker,
-            thread,
-        });
-    });
+    value.textContent =
+        count;
+
+    button.append(
+        emoji,
+        value
+    );
+
+    button.addEventListener(
+        "click",
+        clickEvent => {
+            stopCardNavigation(
+                clickEvent
+            );
+
+            if (
+                reactions.classList.contains(
+                    "is-updating"
+                )
+            ) {
+                return;
+            }
+
+            void updateReaction({
+                socialState,
+                feedEventId,
+                qSlotId,
+                reactionType:
+                    reaction.type,
+                reactions,
+                picker,
+                thread,
+            });
+        }
+    );
 
     return button;
 }
 
 function createReactionTrigger({
-    feedEvent,
-    reactions,
     picker,
 }) {
-    const button = document.createElement("button");
+    const button =
+        document.createElement("button");
+
     button.type = "button";
-    button.className = "region-feed-reaction-add";
-    button.setAttribute("aria-label", "Add reaction");
-    button.setAttribute("aria-expanded", "false");
+
+    button.className =
+        "region-feed-reaction-add";
+
+    button.setAttribute(
+        "aria-label",
+        "Add reaction"
+    );
+
+    button.setAttribute(
+        "aria-expanded",
+        "false"
+    );
 
     button.appendChild(
         createIcon(
@@ -179,104 +315,34 @@ function createReactionTrigger({
         )
     );
 
-    button.addEventListener("click", clickEvent => {
-        stopCardNavigation(clickEvent);
+    button.addEventListener(
+        "click",
+        clickEvent => {
+            stopCardNavigation(
+                clickEvent
+            );
 
-        const shouldOpen = picker.hidden;
+            const shouldOpen =
+                picker.hidden;
 
-        picker.hidden = !shouldOpen;
-        button.setAttribute(
-            "aria-expanded",
-            shouldOpen ? "true" : "false"
-        );
-    });
+            picker.hidden =
+                !shouldOpen;
 
-    return button;
-}
-
-function createCommentsTrigger({
-    feedEvent,
-    thread,
-    reactions,
-}) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "region-feed-comments-trigger";
-    button.setAttribute(
-        "aria-expanded",
-        "false"
-    );
-
-    function updateLabel() {
-        const count = Number(feedEvent.commentCount) || 0;
-
-        button.textContent =
-            count === 0
-                ? "Add comment"
-                : `${count} comment${count === 1 ? "" : "s"}`;
-    }
-
-    updateLabel();
-
-    button.addEventListener("click", async clickEvent => {
-        stopCardNavigation(clickEvent);
-
-        const shouldOpen = thread.hidden;
-
-        if (!shouldOpen) {
-            thread.hidden = true;
             button.setAttribute(
                 "aria-expanded",
-                "false"
+                shouldOpen
+                    ? "true"
+                    : "false"
             );
-            return;
         }
-
-        thread.hidden = false;
-        button.setAttribute(
-            "aria-expanded",
-            "true"
-        );
-
-        if (thread.dataset.loaded === "true") {
-            return;
-        }
-
-        thread.classList.add("is-loading");
-
-        try {
-            const comments =
-                await loadRegionFeedComments(
-                    feedEvent.id
-                );
-
-            thread.dataset.loaded = "true";
-
-            renderCommentsThread({
-                feedEvent,
-                comments,
-                thread,
-                reactions,
-                updateTriggerLabel: updateLabel,
-            });
-        } catch (error) {
-            console.error(
-                "Failed to load feed comments:",
-                error
-            );
-
-            thread.textContent =
-                "Comments could not be loaded.";
-            thread.classList.add("has-error");
-        } finally {
-            thread.classList.remove("is-loading");
-        }
-    });
+    );
 
     return button;
 }
 
-function getCommentMemberName(comment) {
+function getCommentMemberName(
+    comment
+) {
     return (
         comment.member?.paxName ||
         comment.member?.realName ||
@@ -284,48 +350,85 @@ function getCommentMemberName(comment) {
     );
 }
 
-function formatCommentTime(timestamp) {
+function formatCommentTime(
+    timestamp
+) {
     if (!timestamp) return "";
 
-    return new Intl.DateTimeFormat(undefined, {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-    }).format(new Date(timestamp));
+    return new Intl.DateTimeFormat(
+        undefined,
+        {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+        }
+    ).format(
+        new Date(timestamp)
+    );
 }
 
 function createCommentRow({
-    feedEvent,
+    socialState,
+    feedEventId,
+    qSlotId,
     comment,
     comments,
     thread,
-    reactions,
     updateTriggerLabel,
 }) {
-    const row = document.createElement("div");
-    row.className = "region-feed-comment";
+    const row =
+        document.createElement("div");
 
-    const header = document.createElement("div");
-    header.className = "region-feed-comment-header";
+    row.className =
+        "region-feed-comment";
 
-    const name = document.createElement("strong");
-    name.className = "region-feed-comment-author";
-    name.textContent = getCommentMemberName(comment);
+    const header =
+        document.createElement("div");
 
-    const time = document.createElement("span");
-    time.className = "region-feed-comment-time";
-    time.textContent = formatCommentTime(
-        comment.createdAt
+    header.className =
+        "region-feed-comment-header";
+
+    const name =
+        document.createElement("strong");
+
+    name.className =
+        "region-feed-comment-author";
+
+    name.textContent =
+        getCommentMemberName(
+            comment
+        );
+
+    const time =
+        document.createElement("span");
+
+    time.className =
+        "region-feed-comment-time";
+
+    time.textContent =
+        formatCommentTime(
+            comment.createdAt
+        );
+
+    header.append(
+        name,
+        time
     );
 
-    header.append(name, time);
+    const body =
+        document.createElement("div");
 
-    const body = document.createElement("div");
-    body.className = "region-feed-comment-body";
-    body.textContent = comment.body;
+    body.className =
+        "region-feed-comment-body";
 
-    row.append(header, body);
+    body.textContent =
+        comment.body;
+
+    row.append(
+        header,
+        body
+    );
 
     if (
         comment.memberId ===
@@ -334,18 +437,24 @@ function createCommentRow({
         const deleteButton =
             document.createElement("button");
 
-        deleteButton.type = "button";
+        deleteButton.type =
+            "button";
+
         deleteButton.className =
             "region-feed-comment-delete";
 
-        deleteButton.textContent = "Delete";
+        deleteButton.textContent =
+            "Delete";
 
         deleteButton.addEventListener(
             "click",
             async clickEvent => {
-                stopCardNavigation(clickEvent);
+                stopCardNavigation(
+                    clickEvent
+                );
 
-                deleteButton.disabled = true;
+                deleteButton.disabled =
+                    true;
 
                 try {
                     await deleteRegionFeedComment(
@@ -359,90 +468,123 @@ function createCommentRow({
                                 comment.id
                         );
 
-                    if (commentIndex >= 0) {
+                    if (
+                        commentIndex >= 0
+                    ) {
                         comments.splice(
                             commentIndex,
                             1
                         );
                     }
 
-                    feedEvent.commentCount =
+                    socialState.commentCount =
                         Math.max(
-                            (Number(
-                                feedEvent.commentCount
-                            ) || 0) - 1,
+                            (
+                                Number(
+                                    socialState.commentCount
+                                ) || 0
+                            ) - 1,
                             0
                         );
 
                     updateTriggerLabel();
 
                     renderCommentsThread({
-                        feedEvent,
+                        socialState,
+                        feedEventId,
+                        qSlotId,
                         comments,
                         thread,
-                        reactions,
                         updateTriggerLabel,
                     });
                 } catch (error) {
                     console.error(
-                        "Failed to delete feed comment:",
+                        "Failed to delete comment:",
                         error
                     );
 
-                    deleteButton.disabled = false;
+                    deleteButton.disabled =
+                        false;
                 }
             }
         );
 
-        row.appendChild(deleteButton);
+        row.appendChild(
+            deleteButton
+        );
     }
 
     return row;
 }
 
 function renderCommentsThread({
-    feedEvent,
+    socialState,
+    feedEventId,
+    qSlotId,
     comments,
     thread,
-    reactions,
     updateTriggerLabel,
 }) {
     thread.textContent = "";
-    thread.classList.remove("has-error");
 
-    const list = document.createElement("div");
-    list.className = "region-feed-comments-list";
+    thread.classList.remove(
+        "has-error"
+    );
+
+    const list =
+        document.createElement("div");
+
+    list.className =
+        "region-feed-comments-list";
 
     comments.forEach(comment => {
         list.appendChild(
             createCommentRow({
-                feedEvent,
+                socialState,
+                feedEventId,
+                qSlotId,
                 comment,
                 comments,
                 thread,
-                reactions,
                 updateTriggerLabel,
             })
         );
     });
 
-    const form = document.createElement("form");
-    form.className = "region-feed-comment-form";
+    const form =
+        document.createElement("form");
 
-    const input = document.createElement("textarea");
-    input.className = "region-feed-comment-input";
+    form.className =
+        "region-feed-comment-form";
+
+    const input =
+        document.createElement(
+            "textarea"
+        );
+
+    input.className =
+        "region-feed-comment-input";
+
     input.rows = 1;
     input.maxLength = 1000;
-    input.placeholder = "Add a comment…";
+    input.placeholder =
+        "Add a comment…";
+
     input.setAttribute(
         "aria-label",
         "Add a comment"
     );
 
-    const submit = document.createElement("button");
+    const submit =
+        document.createElement("button");
+
     submit.type = "submit";
-    submit.className = "region-feed-comment-submit";
-    submit.textContent = "Post";
+
+    submit.className =
+        "region-feed-comment-submit";
+
+    submit.textContent =
+        "Post";
 
     form.addEventListener(
         "click",
@@ -450,10 +592,18 @@ function renderCommentsThread({
     );
 
     form.addEventListener(
+        "keydown",
+        stopCardNavigation
+    );
+
+    form.addEventListener(
         "submit",
         async submitEvent => {
             submitEvent.preventDefault();
-            stopCardNavigation(submitEvent);
+
+            stopCardNavigation(
+                submitEvent
+            );
 
             const body =
                 input.value.trim();
@@ -465,61 +615,78 @@ function renderCommentsThread({
 
             try {
                 const created =
-                    await addRegionFeedComment({
-                        feedEventId:
-                            feedEvent.id,
+                    await addComment({
+                        feedEventId,
+                        qSlotId,
                         body,
                     });
 
-                /*
-                 * RPC returns the comment row but not the joined
-                 * member object, so attach the authenticated member
-                 * for immediate rendering.
-                 */
                 const mappedComment = {
-                    id: created.id,
+                    id:
+                        created.id,
+
                     feedEventId:
-                        created.feed_event_id,
+                        created.feed_event_id ||
+                        null,
+
+                    qSlotId:
+                        created.q_slot_id ||
+                        null,
+
                     memberId:
                         created.member_id,
+
                     body:
-                        created.body || body,
+                        created.body ||
+                        body,
+
                     createdAt:
                         created.created_at,
+
                     updatedAt:
                         created.updated_at,
+
                     member:
                         state.currentUserMember
                             ? {
                                 id:
                                     state.currentUserMember.id,
+
                                 paxName:
-                                    state.currentUserMember.paxName || "",
+                                    state.currentUserMember.paxName ||
+                                    "",
+
                                 realName:
-                                    state.currentUserMember.realName || "",
+                                    state.currentUserMember.realName ||
+                                    "",
                             }
                             : null,
                 };
 
-                comments.push(mappedComment);
+                comments.push(
+                    mappedComment
+                );
 
-                feedEvent.commentCount =
-                    (Number(
-                        feedEvent.commentCount
-                    ) || 0) + 1;
+                socialState.commentCount =
+                    (
+                        Number(
+                            socialState.commentCount
+                        ) || 0
+                    ) + 1;
 
                 updateTriggerLabel();
 
                 renderCommentsThread({
-                    feedEvent,
+                    socialState,
+                    feedEventId,
+                    qSlotId,
                     comments,
                     thread,
-                    reactions,
                     updateTriggerLabel,
                 });
             } catch (error) {
                 console.error(
-                    "Failed to add feed comment:",
+                    "Failed to add comment:",
                     error
                 );
 
@@ -529,33 +696,167 @@ function renderCommentsThread({
         }
     );
 
-    form.append(input, submit);
-    thread.append(list, form);
+    form.append(
+        input,
+        submit
+    );
+
+    thread.append(
+        list,
+        form
+    );
+}
+
+function createCommentsTrigger({
+    socialState,
+    feedEventId,
+    qSlotId,
+    thread,
+}) {
+    const button =
+        document.createElement("button");
+
+    button.type = "button";
+
+    button.className =
+        "region-feed-comments-trigger";
+
+    button.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+    function updateLabel() {
+        const count =
+            Number(
+                socialState.commentCount
+            ) || 0;
+
+        button.textContent =
+            count === 0
+                ? "Add comment"
+                : `${count} comment${
+                    count === 1
+                        ? ""
+                        : "s"
+                }`;
+    }
+
+    updateLabel();
+
+    button.addEventListener(
+        "click",
+        async clickEvent => {
+            stopCardNavigation(
+                clickEvent
+            );
+
+            const shouldOpen =
+                thread.hidden;
+
+            if (!shouldOpen) {
+                thread.hidden = true;
+
+                button.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+                return;
+            }
+
+            thread.hidden =
+                false;
+
+            button.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+
+            if (
+                thread.dataset.loaded ===
+                "true"
+            ) {
+                return;
+            }
+
+            thread.classList.add(
+                "is-loading"
+            );
+
+            try {
+                const comments =
+                    await loadComments({
+                        feedEventId,
+                        qSlotId,
+                    });
+
+                thread.dataset.loaded =
+                    "true";
+
+                renderCommentsThread({
+                    socialState,
+                    feedEventId,
+                    qSlotId,
+                    comments,
+                    thread,
+                    updateTriggerLabel:
+                        updateLabel,
+                });
+            } catch (error) {
+                console.error(
+                    "Failed to load comments:",
+                    error
+                );
+
+                thread.textContent =
+                    "Comments could not be loaded.";
+
+                thread.classList.add(
+                    "has-error"
+                );
+            } finally {
+                thread.classList.remove(
+                    "is-loading"
+                );
+            }
+        }
+    );
+
+    return button;
 }
 
 function renderReactionBar({
-    feedEvent,
+    socialState,
+    feedEventId,
+    qSlotId,
     reactions,
     picker,
     thread,
 }) {
-    const bar = reactions.querySelector(
-        ".region-feed-reaction-bar"
-    );
+    const bar =
+        reactions.querySelector(
+            ".region-feed-reaction-bar"
+        );
 
     bar.textContent = "";
 
     REACTIONS.forEach(reaction => {
         const count =
-            feedEvent.reactionCounts?.[
-                reaction.type
-            ] || 0;
+            socialState
+                .reactionCounts?.[
+                    reaction.type
+                ] || 0;
 
-        if (count === 0) return;
+        if (count === 0) {
+            return;
+        }
 
         bar.appendChild(
             createReactionPill({
-                feedEvent,
+                socialState,
+                feedEventId,
+                qSlotId,
                 reaction,
                 count,
                 reactions,
@@ -565,33 +866,26 @@ function renderReactionBar({
         );
     });
 
-    /*
-     * Reaction picker stays visually grouped with
-     * the existing reaction pills.
-     */
     bar.appendChild(
         createReactionTrigger({
-            feedEvent,
-            reactions,
             picker,
         })
     );
 
-    /*
-     * Discussion lives on the opposite side of
-     * the social footer.
-     */
     bar.appendChild(
         createCommentsTrigger({
-            feedEvent,
+            socialState,
+            feedEventId,
+            qSlotId,
             thread,
-            reactions,
         })
     );
 }
 
 function renderReactionPicker({
-    feedEvent,
+    socialState,
+    feedEventId,
+    qSlotId,
     reactions,
     picker,
     thread,
@@ -599,23 +893,32 @@ function renderReactionPicker({
     picker.textContent = "";
 
     REACTIONS.forEach(reaction => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "region-feed-reaction-option";
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        button.type =
+            "button";
+
+        button.className =
+            "region-feed-reaction-option";
+
         button.setAttribute(
             "aria-label",
             reaction.label
         );
+
         button.setAttribute(
             "aria-pressed",
-            feedEvent.currentReaction ===
+            socialState.currentReaction ===
                 reaction.type
                 ? "true"
                 : "false"
         );
 
         if (
-            feedEvent.currentReaction ===
+            socialState.currentReaction ===
             reaction.type
         ) {
             button.classList.add(
@@ -642,7 +945,9 @@ function renderReactionPicker({
                 }
 
                 void updateReaction({
-                    feedEvent,
+                    socialState,
+                    feedEventId,
+                    qSlotId,
                     reactionType:
                         reaction.type,
                     reactions,
@@ -652,13 +957,45 @@ function renderReactionPicker({
             }
         );
 
-        picker.appendChild(button);
+        picker.appendChild(
+            button
+        );
     });
 }
 
-export function createRegionFeedReactions(
-    feedEvent
-) {
+export function createRegionalSocial({
+    socialState,
+    feedEventId = null,
+    qSlotId = null,
+}) {
+    if (
+        !socialState ||
+        (!feedEventId && !qSlotId)
+    ) {
+        return document.createElement(
+            "div"
+        );
+    }
+
+    socialState.reactionCounts =
+        socialState.reactionCounts || {
+            like: 0,
+            strong: 0,
+            fire: 0,
+            applause: 0,
+            heart: 0,
+        };
+
+    socialState.reactionTotal =
+        Number(
+            socialState.reactionTotal
+        ) || 0;
+
+    socialState.commentCount =
+        Number(
+            socialState.commentCount
+        ) || 0;
+
     const reactions =
         document.createElement("div");
 
@@ -681,6 +1018,7 @@ export function createRegionFeedReactions(
 
     picker.className =
         "region-feed-reaction-picker";
+
     picker.hidden = true;
 
     const thread =
@@ -688,6 +1026,7 @@ export function createRegionFeedReactions(
 
     thread.className =
         "region-feed-comments-thread";
+
     thread.hidden = true;
 
     reactions.append(
@@ -697,18 +1036,38 @@ export function createRegionFeedReactions(
     );
 
     renderReactionBar({
-        feedEvent,
+        socialState,
+        feedEventId,
+        qSlotId,
         reactions,
         picker,
         thread,
     });
 
     renderReactionPicker({
-        feedEvent,
+        socialState,
+        feedEventId,
+        qSlotId,
         reactions,
         picker,
         thread,
     });
 
     return reactions;
+}
+
+
+/*
+ * Backward-compatible feed-event wrapper while existing
+ * event renderers migrate to the generic social API.
+ */
+export function createRegionFeedReactions(
+    feedEvent
+) {
+    return createRegionalSocial({
+        socialState:
+            feedEvent,
+        feedEventId:
+            feedEvent.id,
+    });
 }

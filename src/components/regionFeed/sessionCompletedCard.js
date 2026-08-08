@@ -2,7 +2,7 @@ import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
 import { loadSessionsByIds } from "../../services/cloudData.js";
 import { createIcon } from "../../utils/icons.js";
-import { createRegionFeedReactions } from "./regionFeedReactions.js";
+import { createRegionalSocial } from "./regionFeedReactions.js";
 
 function getMemberName(memberId) {
     const member =
@@ -228,7 +228,13 @@ export function renderSessionCompletedCard(event) {
     action.className = "region-feed-card-action";
     action.textContent = "View Session →";
 
-    const reactions = createRegionFeedReactions(event);
+    const qSlotId = session?.sourceQSlotId || null;
+
+    const reactions = createRegionalSocial({
+        socialState: event,
+        qSlotId,
+        feedEventId: qSlotId ? null : event.id,
+    });
 
     button.addEventListener("click", async () => {
         button.disabled = true;

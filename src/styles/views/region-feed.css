@@ -1482,3 +1482,276 @@
         animation: none;
     }
 }
+
+/* =========================================================
+   UPCOMING WORKOUTS
+   ========================================================= */
+
+.view-regionFeed .region-feed-upcoming {
+    margin-bottom: 1.4rem;
+}
+
+.view-regionFeed .region-feed-upcoming-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+}
+
+.view-regionFeed .region-feed-upcoming-helper {
+    color: rgba(194, 202, 211, 0.5);
+    font-size: 0.66rem;
+    font-weight: 650;
+}
+
+.view-regionFeed .region-feed-upcoming-list {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(19, 25, 29, 0.96),
+            rgba(7, 11, 13, 0.98)
+        );
+}
+
+.view-regionFeed .region-feed-upcoming-card {
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.055);
+}
+
+.view-regionFeed .region-feed-upcoming-card:last-child {
+    border-bottom: 0;
+}
+
+.view-regionFeed .region-feed-upcoming-summary {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+    gap: 0.55rem 0.9rem;
+    padding: 0.9rem 1rem;
+}
+
+.view-regionFeed .region-feed-upcoming-identity {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    box-shadow: none;
+}
+
+.view-regionFeed .region-feed-upcoming-eyebrow {
+    color: var(--feed-accent);
+    font-family: var(--font-display);
+    font-size: 0.63rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.view-regionFeed .region-feed-upcoming-title {
+    margin: 0.16rem 0 0;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.view-regionFeed .region-feed-upcoming-meta {
+    margin-top: 0.18rem;
+    overflow: hidden;
+    color: rgba(225, 229, 234, 0.63);
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.view-regionFeed .region-feed-upcoming-commitments {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.view-regionFeed .region-feed-upcoming-commitment {
+    min-height: 30px;
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(143, 211, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(143, 211, 255, 0.035);
+    color: rgba(210, 232, 245, 0.72);
+    box-shadow: none;
+    font-size: 0.61rem;
+    font-weight: 850;
+    line-height: 1;
+}
+
+.view-regionFeed .region-feed-upcoming-commitment:hover {
+    background: rgba(143, 211, 255, 0.07);
+    box-shadow: none;
+}
+
+.view-regionFeed .region-feed-upcoming-commitment.selected {
+    border-color: rgba(105, 229, 164, 0.42);
+    background: rgba(105, 229, 164, 0.11);
+    color: #69e5a4;
+}
+
+.view-regionFeed .region-feed-upcoming-commitment:disabled {
+    opacity: 0.5;
+}
+
+.view-regionFeed .region-feed-upcoming-status {
+    grid-column: 1 / -1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0.1rem 0 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: left;
+}
+
+.view-regionFeed .region-feed-upcoming-preblast-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.view-regionFeed .region-feed-upcoming-preblast-status.is-pending {
+    color: #d9a441;
+}
+
+.view-regionFeed .region-feed-upcoming-preblast-status.is-posted {
+    color: #69e5a4;
+}
+
+.view-regionFeed .region-feed-upcoming-chevron {
+    color: var(--feed-accent);
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.view-regionFeed .region-feed-upcoming-expanded {
+    padding:
+        0
+        1rem
+        0.95rem;
+}
+
+.view-regionFeed .region-feed-upcoming-detail-section {
+    padding-top: 0.75rem;
+    border-top:
+        1px solid rgba(255, 255, 255, 0.055);
+}
+
+.view-regionFeed .region-feed-upcoming-detail-section + .region-feed-upcoming-detail-section {
+    margin-top: 0.75rem;
+}
+
+.view-regionFeed .region-feed-upcoming-detail-label {
+    margin-bottom: 0.35rem;
+    color: rgba(143, 211, 255, 0.72);
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.view-regionFeed .region-feed-upcoming-preblast,
+.view-regionFeed .region-feed-upcoming-detail-copy {
+    color: rgba(225, 229, 234, 0.75);
+    font-size: 0.74rem;
+    font-weight: 500;
+    line-height: 1.45;
+    white-space: pre-wrap;
+}
+
+.view-regionFeed .region-feed-activity-heading {
+    margin:
+        0
+        0
+        0.75rem;
+    color: rgba(194, 202, 211, 0.57);
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+/* Upcoming commitment details */
+
+.view-regionFeed .region-feed-upcoming-commitment-group + .region-feed-upcoming-commitment-group {
+    margin-top: 0.65rem;
+}
+
+.view-regionFeed .region-feed-upcoming-commitment-group-label {
+    margin-bottom: 0.18rem;
+    color: rgba(194, 202, 211, 0.5);
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.view-regionFeed .region-feed-upcoming-commitment-names {
+    color: rgba(225, 229, 234, 0.77);
+    font-size: 0.72rem;
+    font-weight: 550;
+    line-height: 1.4;
+}
+
+.view-regionFeed .region-feed-upcoming-retry {
+    margin-top: 0.4rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(143, 211, 255, 0.18);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--feed-accent);
+    box-shadow: none;
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+/* =========================================================
+   UPCOMING WORKOUT SOCIAL
+   ========================================================= */
+
+   .view-regionFeed
+   .region-feed-upcoming-social-section
+   .region-feed-reactions {
+       width: 100%;
+       margin: 0;
+       padding-top: 0.35rem;
+       border-top: 0;
+   }
+   
+   .view-regionFeed
+   .region-feed-upcoming-social-section
+   .region-feed-reaction-bar {
+       width: 100%;
+   }
+   
+   .view-regionFeed
+   .region-feed-upcoming-social-section
+   .region-feed-comments-thread {
+       width: 100%;
+       margin-top: 0.65rem;
+   }
+   
+   .view-regionFeed
+   .region-feed-upcoming-social-section
+   .region-feed-comment-form {
+       width: 100%;
+   }

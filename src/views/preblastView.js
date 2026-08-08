@@ -614,6 +614,32 @@ export function renderPreblastView() {
         return savedQSlot;
     }
 
+    async function markPreblastPosted() {
+        if (!preblastQSlot) {
+            return null;
+        }
+    
+        const postedAt = new Date().toISOString();
+    
+        const updatedQSlot = {
+            ...preblastQSlot,
+            preblastText: textInput.value,
+            preblastLastModifiedAt: postedAt,
+            preblastPostedAt: postedAt,
+        };
+    
+        const savedQSlot = await updateQSlotInCloud(
+            state.currentRegionId,
+            updatedQSlot
+        );
+    
+        state.qSlots = state.qSlots.map(slot =>
+            slot.id === savedQSlot.id ? savedQSlot : slot
+        );
+    
+        return savedQSlot;
+    }
+
     const saveButton = document.createElement("button");
     saveButton.classList.add(
         "preblast-secondary-action"
@@ -714,7 +740,9 @@ export function renderPreblastView() {
                 } else {
                     await navigator.share({ text });
                 }
-
+                
+                await markPreblastPosted();
+                
                 returnToDashboardAfterShare();
 
             } catch (error) {

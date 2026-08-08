@@ -35,7 +35,11 @@ import { createWorkoutEmphasisBadge } from "../components/workoutEmphasisBadge.j
 import { releaseWakeLock } from "../utils/wakelock.js";
 import { getSessionDisplayCounts } from "../utils/sessionAttendance.js";
 import { getDashboardLeadershipBadge } from "../utils/leadership.js";
-import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
+import {
+    findWorkoutForQSlot,
+    getQSlotDisplayTime,
+} from "../utils/qSlotMatching.js";
+import { createUpcomingWorkoutCardViewModel } from "../utils/upcomingWorkoutViewModel.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { clearPlannerDraft, savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 import { switchWorkspace } from "../services/workspaceService.js";
@@ -1391,25 +1395,16 @@ export function renderDashboard() {
             .sort((a, b) => a.date.localeCompare(b.date));
     }
 
-    function getDayOfWeekFromDateKey(dateKey) {
-        const [year, month, day] = dateKey.split("-").map(Number);
-        return new Date(year, month - 1, day).getDay();
-    }
-    
     function getSlotDisplayTime(slot, ao) {
-        if (!slot || !ao) return "";
+        const workout =
+            findMatchingPlannedWorkoutForSlot(
+                slot
+            );
     
-        const workout = findMatchingPlannedWorkoutForSlot(slot);
-    
-        const dayKey = String(getDayOfWeekFromDateKey(slot.date));
-    
-        return (
-            workout?.startTime ||
-            slot.overrideTime ||
-            slot.startTime ||
-            ao.timeSchedule?.[dayKey] ||
-            ao.time ||
-            ""
+        return getQSlotDisplayTime(
+            slot,
+            ao,
+            workout
         );
     }
 
@@ -3238,6 +3233,23 @@ const debugWeatherCacheKey =
                         slot.id
                     ];
     
+            const workoutCard =
+                createUpcomingWorkoutCardViewModel({
+                    slot,
+                    workouts:
+                        state.plannedWorkouts || [],
+                    aos:
+                        state.aos || [],
+                    sessions:
+                        state.sessions || [],
+                    commitmentSummary:
+                        summary,
+                    memberDirectory:
+                        state.regionParticipants ||
+                        state.members ||
+                        [],
+                });
+
             const isUpdating =
                 Boolean(
                     state
