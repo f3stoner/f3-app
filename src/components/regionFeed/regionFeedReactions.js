@@ -70,6 +70,7 @@ async function updateReaction({
     reactionType,
     reactions,
     picker,
+    thread,
 }) {
     reactions.classList.add("is-updating");
 
@@ -89,6 +90,7 @@ async function updateReaction({
             feedEvent,
             reactions,
             picker,
+            thread,
         });
 
         picker.hidden = true;
@@ -108,6 +110,7 @@ function createReactionPill({
     count,
     reactions,
     picker,
+    thread,
 }) {
     const button = document.createElement("button");
     button.type = "button";
@@ -147,6 +150,7 @@ function createReactionPill({
             reactionType: reaction.type,
             reactions,
             picker,
+            thread,
         });
     });
 
@@ -556,6 +560,7 @@ function renderReactionBar({
                 count,
                 reactions,
                 picker,
+                thread,
             })
         );
     });
@@ -589,6 +594,7 @@ function renderReactionPicker({
     feedEvent,
     reactions,
     picker,
+    thread,
 }) {
     picker.textContent = "";
 
@@ -641,6 +647,7 @@ function renderReactionPicker({
                         reaction.type,
                     reactions,
                     picker,
+                    thread,
                 });
             }
         );
@@ -700,6 +707,7 @@ export function createRegionFeedReactions(
         feedEvent,
         reactions,
         picker,
+        thread,
     });
 
     return reactions;
