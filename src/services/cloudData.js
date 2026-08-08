@@ -5399,3 +5399,308 @@ export async function searchGlobalMembers(
             true,
     }));
 }
+
+function mapCampaignFromDb(row) {
+    return {
+        id: row.id,
+        regionId: row.region_id,
+        templateId: row.template_id || null,
+        title: row.title || "",
+        description: row.description || "",
+        scopeType: row.scope_type || "region",
+        scopeAoId: row.scope_ao_id || null,
+        participantMode:
+            row.participant_mode || "collective",
+        enrollmentMode:
+            row.enrollment_mode || "automatic",
+        status: row.status || "draft",
+        startsOn: row.starts_on,
+        endsOn: row.ends_on,
+        metricKey: row.metric_key,
+        targetValue:
+            Number(row.target_value) || 0,
+        metricConfig:
+            row.metric_config || {},
+        createdByUserId:
+            row.created_by_user_id || null,
+        publishedAt:
+            row.published_at || null,
+        completedAt:
+            row.completed_at || null,
+        cancelledAt:
+            row.cancelled_at || null,
+        createdAt:
+            row.created_at || null,
+        updatedAt:
+            row.updated_at || null,
+    };
+}
+
+function mapCampaignTemplateFromDb(row) {
+    return {
+        id: row.id,
+        templateKey: row.template_key,
+        version:
+            Number(row.version) || 1,
+        title: row.title || "",
+        description: row.description || "",
+        status: row.status || "draft",
+        scopeType:
+            row.scope_type || "region",
+        participantMode:
+            row.participant_mode || "collective",
+        enrollmentMode:
+            row.enrollment_mode || "automatic",
+        defaultDurationDays:
+            row.default_duration_days ?? null,
+        metricKey: row.metric_key,
+        metricConfig:
+            row.metric_config || {},
+        createdAt:
+            row.created_at || null,
+        updatedAt:
+            row.updated_at || null,
+    };
+}
+
+export async function loadCampaignTemplates() {
+    const { data, error } = await supabase
+        .from("campaign_templates")
+        .select("*")
+        .eq("status", "published")
+        .order("title", { ascending: true })
+        .order("version", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(
+        mapCampaignTemplateFromDb
+    );
+}
+
+export async function loadRegionCampaigns(
+    regionId
+) {
+    if (!regionId) return [];
+
+    const { data, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .eq("region_id", regionId)
+        .order("starts_on", {
+            ascending: false,
+        })
+        .order("created_at", {
+            ascending: false,
+        });
+
+    if (error) throw error;
+
+    return (data || []).map(
+        mapCampaignFromDb
+    );
+}
+
+export async function loadCampaign(
+    campaignId
+) {
+    if (!campaignId) {
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .eq("id", campaignId)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data
+        ? mapCampaignFromDb(data)
+        : null;
+}
+
+export async function loadCampaignProgress(
+    campaignId
+) {
+    if (!campaignId) {
+        throw new Error(
+            "Campaign id is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_progress",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to load campaign progress:",
+            {
+                campaignId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.campaignId) {
+        throw new Error(
+            "Campaign progress returned no campaign."
+        );
+    }
+
+    return {
+        campaignId:
+            data.campaignId,
+        metric:
+            data.metric || "",
+        current:
+            Number(data.current) || 0,
+        target:
+            Number(data.target) || 0,
+        percent:
+            Number(data.percent) || 0,
+        goalReached:
+            Boolean(data.goalReached),
+        unit:
+            data.unit || "",
+        startsOn:
+            data.startsOn || null,
+        endsOn:
+            data.endsOn || null,
+    };
+}
+
+export async function createCampaign({
+    regionId,
+    templateId,
+    title,
+    description = "",
+    startsOn,
+    endsOn,
+    targetValue,
+}) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to create a campaign."
+        );
+    }
+
+    if (!templateId) {
+        throw new Error(
+            "Campaign template is required."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "create_campaign",
+        {
+            p_region_id: regionId,
+            p_template_id: templateId,
+            p_title: title,
+            p_description:
+                description || null,
+            p_starts_on: startsOn,
+            p_ends_on: endsOn,
+            p_target_value:
+                Number(targetValue),
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to create campaign:",
+            {
+                regionId,
+                templateId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.campaign) {
+        throw new Error(
+            "Campaign command returned no campaign."
+        );
+    }
+
+    return mapCampaignFromDb(
+        data.campaign
+    );
+}
+
+export async function loadCampaignRecentProgress(
+    campaignId,
+    limit = 20
+) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_recent_progress",
+        {
+            p_campaign_id: campaignId,
+            p_limit: limit,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to load campaign recent progress:",
+            {
+                campaignId,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        memberId: row.member_id,
+        paxName: row.pax_name || "",
+        sessionId: row.session_id,
+        sessionDate: row.session_date,
+        aoId: row.ao_id || null,
+        aoName: row.ao_name || "",
+    }));
+}
+
+export async function deleteCampaign(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "delete_campaign",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error("Failed to delete campaign:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    if (data?.deletedId !== campaignId) {
+        throw new Error(
+            "Campaign delete command did not confirm the delete."
+        );
+    }
+
+    return campaignId;
+}

@@ -83,6 +83,13 @@ const AO_Q_SLOT_MANAGEMENT_POSITIONS = [
     "first_f",
     "ao_data_q",
 ];
+const REGION_CAMPAIGN_MANAGEMENT_POSITIONS = [
+    "nantan",
+    "weasel_shaker",
+    "first_f",
+    "second_f",
+    "third_f",
+];
 
 export function hasPermission(permission) {
     const role = state.currentUserRole || "pax";
@@ -290,4 +297,33 @@ export function canManageCurrentRoster() {
         state.currentRegionId &&
         homeRegionId === state.currentRegionId
     );
+}
+
+function normalizeRegionPositionRow(row) {
+    return {
+        profileId: row.profileId || row.profile_id,
+        regionId: row.regionId || row.region_id,
+        position: row.position || row.regionPosition || row.region_position,
+    };
+}
+
+export function canManageCampaigns() {
+    if (isSuperAdmin() || isRegionalSLT()) {
+        return true;
+    }
+
+    const profileId = getCurrentProfileId();
+    const regionId = state.currentRegionId;
+
+    if (!profileId || !regionId) {
+        return false;
+    }
+
+    return (state.profileRegionPositions || [])
+        .map(normalizeRegionPositionRow)
+        .some(row =>
+            row.profileId === profileId &&
+            row.regionId === regionId &&
+            REGION_CAMPAIGN_MANAGEMENT_POSITIONS.includes(row.position)
+        );
 }

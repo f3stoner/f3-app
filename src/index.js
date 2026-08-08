@@ -522,6 +522,8 @@ const RESTORABLE_VIEWS = new Set([
     "rosterManagement",
     "leadership",
     "siteManagement",
+    "campaigns",
+    "campaignCreate",
 ]);
 
 function restoreNavState(nav) {
@@ -535,6 +537,7 @@ function restoreNavState(nav) {
     state.plannedWorkoutLaunchMode = nav.plannedWorkoutLaunchMode || null;
     state.selectedSessionId = nav.selectedSessionId || null;
     state.selectedPreblastWorkoutId = nav.selectedPreblastWorkoutId || null;
+    state.selectedCampaignId = nav.selectedCampaignId || null;
     
     state.editingSessionId = null;
 }
@@ -596,6 +599,7 @@ const lazyRouteLoaders = {
             /* webpackChunkName: "route-weekly-q-calendar" */
             "./views/weeklyQCalendarView.js"
         ).then(module => module.renderWeeklyQCalendarView),
+
     leadership: () =>
         import(
             /* webpackChunkName: "route-leadership" */
@@ -604,6 +608,28 @@ const lazyRouteLoaders = {
             module =>
                 module.renderLeadershipView
         ),
+
+    campaigns: () =>
+        import(
+            /* webpackChunkName: "route-campaigns" */
+            "./views/campaignsView.js"
+        ).then(
+            module =>
+                module.renderCampaignsView
+        ),
+
+    campaignDetail: () =>
+        import(
+            /* webpackChunkName: "route-campaign-detail" */
+            "./views/campaignDetailView.js"
+        ).then(module => module.renderCampaignDetailView),
+
+    campaignCreate: () =>
+        import(
+            /* webpackChunkName: "route-campaign-create" */
+            "./views/campaignCreateView.js"
+        ).then(module => module.renderCampaignCreateView),
+
     siteManagement: () =>
         import(
             /* webpackChunkName: "route-site-management" */
@@ -628,6 +654,9 @@ function getLazyRouteLabel(viewName) {
         weeklyQCalendar: "Weekly Q Calendar",
         leadership: "Leadership",
         siteManagement: "Site Management",
+        campaigns: "Campaigns",
+        campaignDetail: "Campaign",
+        campaignCreate: "Start Campaign",
     };
 
     return labels[viewName] || "Screen";
@@ -818,6 +847,21 @@ function renderApp() {
     } else if (state.currentView === "regionFeed") {
         renderLazyRoute(
             "regionFeed",
+            currentRenderSequence
+        );
+    } else if (state.currentView === "campaigns") {
+        renderLazyRoute(
+            "campaigns",
+            currentRenderSequence
+        );
+    } else if (state.currentView === "campaignDetail") {
+        renderLazyRoute(
+            "campaignDetail",
+            currentRenderSequence
+        );
+    } else if (state.currentView === "campaignCreate") {
+        renderLazyRoute(
+            "campaignCreate",
             currentRenderSequence
         );
     } else if (state.currentView === "auth") {

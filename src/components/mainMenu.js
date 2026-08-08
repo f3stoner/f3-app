@@ -167,6 +167,10 @@ export function createMainMenu() {
                         state.currentUserRole === "superadmin",
                 },
                 {
+                    label: "Campaigns",
+                    view: "campaigns",
+                },
+                {
                     label: "Double Down Tracker",
                     externalUrl: DOUBLE_DOWN_TRACKER_URL,
                     isVisible: isAggielandRegion,
