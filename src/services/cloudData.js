@@ -5432,7 +5432,26 @@ function mapCampaignFromDb(row) {
         createdAt:
             row.created_at || null,
         updatedAt:
-            row.updated_at || null,
+        row.updated_at || null,
+        trackingMode: row.tracking_mode || "automatic",
+        cadence: row.cadence || "campaign",
+        creatorMode: row.creator_mode || "region",
+        
+        activityTypeId:
+            row.activity_type_id || null,
+        
+        activityKey:
+            row.activity_types?.activity_key || null,
+        
+        activityName:
+            row.activity_types?.display_name ||
+            row.metric_config?.activityName ||
+            "",
+        
+        activityUnit:
+            row.activity_types?.unit ||
+            row.metric_config?.unit ||
+            "",
     };
 }
 
@@ -5460,6 +5479,8 @@ function mapCampaignTemplateFromDb(row) {
             row.created_at || null,
         updatedAt:
             row.updated_at || null,
+        trackingMode: row.tracking_mode || "automatic",
+        cadence: row.cadence || "campaign",
     };
 }
 
@@ -5485,7 +5506,14 @@ export async function loadRegionCampaigns(
 
     const { data, error } = await supabase
         .from("campaigns")
-        .select("*")
+        .select(`
+        *,
+        activity_types (
+            activity_key,
+            display_name,
+            unit
+        )
+    `)
         .eq("region_id", regionId)
         .order("starts_on", {
             ascending: false,
@@ -5510,7 +5538,14 @@ export async function loadCampaign(
 
     const { data, error } = await supabase
         .from("campaigns")
-        .select("*")
+        .select(`
+            *,
+            activity_types (
+                activity_key,
+                display_name,
+                unit
+            )
+        `)
         .eq("id", campaignId)
         .maybeSingle();
 
@@ -5574,6 +5609,17 @@ export async function loadCampaignProgress(
             data.startsOn || null,
         endsOn:
             data.endsOn || null,
+        participantMode: data?.participantMode || "collective",
+        enrollmentMode: data?.enrollmentMode || "automatic",
+        trackingMode: data?.trackingMode || "automatic",
+        cadence: data?.cadence || "campaign",
+        isEnrolled: Boolean(data?.isEnrolled),
+        participantCount: Number(data?.participantCount) || 0,
+        activityName: data?.activityName || "",
+        todayCurrent: Number(data?.todayCurrent) || 0,
+        todayTarget: Number(data?.todayTarget) || 0,
+        completedDays: Number(data?.completedDays) || 0,
+        totalDays: Number(data?.totalDays) || 0,
     };
 }
 
@@ -5703,4 +5749,321 @@ export async function deleteCampaign(campaignId) {
     }
 
     return campaignId;
+}
+
+export async function joinCampaign(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc("join_campaign", {
+        p_campaign_id: campaignId,
+    });
+
+    if (error) {
+        console.error("Failed to join campaign:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function leaveCampaign(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc("leave_campaign", {
+        p_campaign_id: campaignId,
+    });
+
+    if (error) {
+        console.error("Failed to leave campaign:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function setCampaignDailyQuantity(
+    campaignId,
+    quantity,
+    contributionDate = null
+) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const params = {
+        p_campaign_id: campaignId,
+        p_quantity: Number(quantity),
+    };
+
+    if (contributionDate) {
+        params.p_contribution_date = contributionDate;
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_campaign_daily_quantity",
+        params
+    );
+
+    if (error) {
+        console.error("Failed to save campaign quantity:", {
+            campaignId,
+            quantity,
+            error,
+        });
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function loadCampaignDailyHistory(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_daily_history",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error("Failed to load campaign daily history:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        date: row.contribution_date,
+        quantity: Number(row.quantity) || 0,
+    }));
+}
+
+export async function loadCampaignStandings(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_standings",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error("Failed to load campaign standings:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        rank: Number(row.rank_position) || 0,
+        memberId: row.member_id,
+        paxName: row.pax_name || "",
+        current: Number(row.current_value) || 0,
+        target: Number(row.target_value) || 0,
+        percent: Number(row.progress_percent) || 0,
+        completedDays: Number(row.completed_days) || 0,
+        totalDays: Number(row.total_days) || 0,
+        isCurrentMember: Boolean(row.is_current_member),
+    }));
+}
+
+export async function createCustomCampaign({
+    regionId,
+    title,
+    description = "",
+    creatorMode = "pax",
+    participantMode = "individual",
+    enrollmentMode = "opt_in",
+    trackingMode,
+    cadence,
+    metricKey,
+    activityKey = null,
+    targetValue,
+    metricConfig = {},
+    startsOn,
+    endsOn,
+}) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to create a campaign."
+        );
+    }
+
+    const definition = {
+        regionId,
+        title,
+        description: description || null,
+        creatorMode,
+        participantMode,
+        enrollmentMode,
+        trackingMode,
+        cadence,
+        metricKey,
+        activityKey,
+        targetValue: Number(targetValue),
+        metricConfig,
+        startsOn,
+        endsOn,
+    };
+
+    const { data, error } = await supabase.rpc(
+        "create_custom_campaign",
+        {
+            p_definition: definition,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to create custom campaign:",
+            {
+                definition,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.campaign) {
+        throw new Error(
+            "Custom campaign command returned no campaign."
+        );
+    }
+
+    return mapCampaignFromDb(
+        data.campaign
+    );
+}
+
+export async function setCampaignQuantity(
+    campaignId,
+    quantity,
+    contributionDate = null
+) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const params = {
+        p_campaign_id: campaignId,
+        p_quantity: Number(quantity),
+    };
+
+    if (contributionDate) {
+        params.p_contribution_date = contributionDate;
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_campaign_quantity",
+        params
+    );
+
+    if (error) {
+        console.error(
+            "Failed to save campaign quantity:",
+            {
+                campaignId,
+                quantity,
+                contributionDate,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function loadActivityTypes() {
+    const { data, error } = await supabase
+        .from("activity_types")
+        .select(`
+            id,
+            activity_key,
+            display_name,
+            unit,
+            quantity_type,
+            status
+        `)
+        .eq("status", "active")
+        .order("display_name", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map(row => ({
+        id: row.id,
+        activityKey: row.activity_key,
+        displayName: row.display_name,
+        unit: row.unit,
+        quantityType: row.quantity_type || "number",
+    }));
+}
+
+export async function logMemberActivity(
+    activityKey,
+    quantity,
+    occurredOn = null
+) {
+    if (!activityKey) {
+        throw new Error("Activity is required.");
+    }
+
+    if (!Number.isFinite(Number(quantity)) || Number(quantity) <= 0) {
+        throw new Error("Quantity must be greater than zero.");
+    }
+
+    const params = {
+        p_activity_key: activityKey,
+        p_quantity: Number(quantity),
+    };
+
+    if (occurredOn) {
+        params.p_occurred_on = occurredOn;
+    }
+
+    const { data, error } = await supabase.rpc(
+        "log_member_activity",
+        params
+    );
+
+    if (error) {
+        console.error(
+            "Failed to log member activity:",
+            {
+                activityKey,
+                quantity,
+                occurredOn,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    return data;
 }

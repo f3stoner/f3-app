@@ -104,6 +104,176 @@
     text-transform: uppercase;
 }
 
+/* =========================================================
+   CAMPAIGN TABS
+   ========================================================= */
+
+.view-campaigns .campaign-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    padding: 0.22rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaigns .campaign-tab {
+    min-width: 0;
+    min-height: 38px;
+
+    margin: 0;
+    padding: 0.45rem 0.4rem;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: transparent;
+    color: rgba(194, 202, 211, 0.58);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.view-campaigns .campaign-tab:hover {
+    background: rgba(143, 211, 255, 0.04);
+    box-shadow: none;
+}
+
+.view-campaigns .campaign-tab-active {
+    background: rgba(143, 211, 255, 0.1);
+    color: var(--campaign-accent-bright);
+}
+
+.view-campaigns .campaign-tab-active:hover {
+    background: rgba(143, 211, 255, 0.12);
+}
+
+.view-campaigns .campaign-tab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* =========================================================
+   COMPACT ACTIVE PROGRESS ROWS
+   ========================================================= */
+
+.view-campaigns .campaign-progress-row-list {
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 16px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaigns .campaign-progress-row {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0.8rem;
+
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(143, 211, 255, 0.035),
+            transparent 72%
+        );
+
+    color: var(--text);
+
+    box-shadow: none;
+    text-align: left;
+}
+
+.view-campaigns .campaign-progress-row:last-child {
+    border-bottom: 0;
+}
+
+.view-campaigns .campaign-progress-row:hover {
+    background: rgba(143, 211, 255, 0.055);
+    box-shadow: none;
+}
+
+.view-campaigns .campaign-progress-row:active {
+    transform: none;
+    background: rgba(143, 211, 255, 0.08);
+}
+
+.view-campaigns .campaign-progress-row-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.75rem;
+}
+
+.view-campaigns .campaign-progress-row-identity {
+    min-width: 0;
+}
+
+.view-campaigns .campaign-progress-row-eyebrow {
+    margin-bottom: 0.22rem;
+
+    color: rgba(143, 211, 255, 0.68);
+
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.view-campaigns .campaign-progress-row-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.05;
+}
+
+.view-campaigns .campaign-progress-row-percent {
+    color: var(--campaign-accent-bright);
+
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.view-campaigns .campaign-progress-row-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    margin: 0.35rem 0 0.5rem;
+
+    color: rgba(194, 202, 211, 0.58);
+
+    font-size: 0.66rem;
+    font-weight: 700;
+}
+
+.view-campaigns .campaign-progress-row .campaign-progress-track {
+    height: 6px;
+}
+
 
 /* =========================================================
    ACTIVE CAMPAIGNS
@@ -607,6 +777,103 @@
         var(--bg);
 }
 
+/* =========================================================
+   DETAIL TABS
+   ========================================================= */
+
+   .view-campaignDetail .campaign-detail-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    margin: 0 0 1rem;
+    padding: 0.22rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail .campaign-detail-tab {
+    min-width: 0;
+    min-height: 38px;
+
+    margin: 0;
+    padding: 0.45rem 0.4rem;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: transparent;
+    color: rgba(194, 202, 211, 0.58);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-tab:hover {
+    background: rgba(143, 211, 255, 0.04);
+    box-shadow: none;
+}
+
+.view-campaignDetail .campaign-detail-tab-active {
+    background: rgba(143, 211, 255, 0.1);
+    color: var(--campaign-accent-bright);
+}
+
+.view-campaignDetail .campaign-detail-tab-active:hover {
+    background: rgba(143, 211, 255, 0.12);
+}
+
+.view-campaignDetail .campaign-detail-tab-content {
+    min-width: 0;
+}
+
+.view-campaignDetail
+.campaign-detail-tab-content
+.campaign-detail-section:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+
+/* =========================================================
+   DETAIL ABOUT
+   ========================================================= */
+
+.view-campaignDetail .campaign-detail-about {
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 16px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail .campaign-detail-about-block {
+    padding: 0.9rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.06);
+}
+
+.view-campaignDetail
+.campaign-detail-about-block:last-child {
+    border-bottom: 0;
+}
+
+.view-campaignDetail
+.campaign-detail-about-block
+.campaign-detail-section-label {
+    margin-bottom: 0.45rem;
+}
+
 
 /* =========================================================
    DETAIL NAVIGATION
@@ -642,7 +909,7 @@
    ========================================================= */
 
 .view-campaignDetail .campaign-detail-hero {
-    margin-bottom: 1.4rem;
+    margin-bottom: 0.9rem;
 }
 
 .view-campaignDetail .campaign-detail-eyebrow {
@@ -666,9 +933,9 @@
     font-family: var(--font-display);
     font-size:
         clamp(
-            2.2rem,
-            9vw,
-            3.25rem
+            2rem,
+            8vw,
+            2.8rem
         );
 
     font-weight: 900;
@@ -689,7 +956,7 @@
 .view-campaignDetail .campaign-detail-description {
     max-width: 36rem;
 
-    margin: 0.65rem 0 0;
+    margin: 0.5rem 0 0;
 
     color: rgba(225, 229, 234, 0.72);
 
@@ -722,6 +989,17 @@
             transparent 62%
         ),
         rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail .campaign-detail-overall-progress {
+    margin-bottom: 1rem;
+    padding: 0;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+    box-shadow: none;
 }
 
 .view-campaignDetail .campaign-detail-section-label {
@@ -760,6 +1038,12 @@
     font-weight: 900;
     line-height: 0.85;
     letter-spacing: -0.04em;
+}
+
+.view-campaignDetail
+.campaign-detail-overall-progress
+.campaign-detail-progress-value strong {
+    font-size: 2.25rem;
 }
 
 .view-campaignDetail .campaign-detail-progress-value span {
@@ -849,6 +1133,15 @@
     font-size: 0.82rem;
     font-weight: 550;
     line-height: 1.5;
+}
+
+.view-campaignDetail .campaign-detail-subsection-title {
+    margin-bottom: 0.7rem;
+
+    color: rgba(201, 234, 255, 0.88);
+
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
 }
 
 
@@ -1394,3 +1687,1108 @@
     opacity: 0.45;
     cursor: default;
 }
+
+/* =========================================================
+   CAMPAIGN PARTICIPATION
+   ========================================================= */
+
+   .view-campaignDetail .campaign-detail-participation {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+}
+
+.view-campaignDetail .campaign-detail-participant-count {
+    display: flex;
+    align-items: baseline;
+
+    margin-bottom: 0.7rem;
+
+    color: rgba(194, 202, 211, 0.64);
+
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.view-campaignDetail .campaign-detail-participant-count strong {
+    margin-right: 0.18rem;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.view-campaignDetail .campaign-detail-enrolled {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    margin-bottom: 0.55rem;
+
+    color: #79e6a5;
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-enrolled span {
+    font-size: 0.85rem;
+}
+
+.view-campaignDetail .campaign-detail-join {
+    width: 100%;
+    min-height: 44px;
+
+    margin: 0;
+
+    border: 1px solid rgba(143, 211, 255, 0.35);
+    border-radius: var(--radius-md);
+
+    background: rgba(143, 211, 255, 0.09);
+    color: var(--campaign-accent-bright);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-join:hover {
+    background: rgba(143, 211, 255, 0.14);
+    box-shadow: none;
+}
+
+.view-campaignDetail .campaign-detail-join:active {
+    transform: none;
+    background: rgba(143, 211, 255, 0.18);
+}
+
+.view-campaignDetail .campaign-detail-leave {
+    width: auto;
+    min-height: 32px;
+
+    margin: 0.1rem 0 0;
+    padding: 0.35rem 0.6rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.025);
+    color: rgba(225, 229, 234, 0.66);
+
+    box-shadow: none;
+
+    font-size: 0.68rem;
+    font-weight: 750;
+}
+
+.view-campaignDetail .campaign-detail-leave:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    box-shadow: none;
+}
+
+.view-campaignDetail .campaign-detail-join:disabled,
+.view-campaignDetail .campaign-detail-leave:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+/* =========================================================
+   AVAILABLE CHALLENGES
+   ========================================================= */
+
+   .view-campaigns .campaign-available-list {
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaigns .campaign-available-card {
+    padding: 0.9rem;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.035),
+            transparent 62%
+        );
+}
+
+.view-campaigns .campaign-available-card:last-child {
+    border-bottom: 0;
+}
+
+.view-campaigns .campaign-available-main {
+    width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+    color: var(--text);
+
+    box-shadow: none;
+    text-align: left;
+}
+
+.view-campaigns .campaign-available-main:hover {
+    background: transparent;
+    box-shadow: none;
+}
+
+.view-campaigns .campaign-available-main:active {
+    transform: none;
+}
+
+.view-campaigns .campaign-available-description {
+    margin: 0.45rem 0 0;
+
+    color: rgba(225, 229, 234, 0.68);
+
+    font-size: 0.75rem;
+    font-weight: 550;
+    line-height: 1.4;
+}
+
+.view-campaigns .campaign-available-meta {
+    margin-top: 0.5rem;
+
+    color: rgba(194, 202, 211, 0.55);
+
+    font-size: 0.66rem;
+    font-weight: 700;
+}
+
+.view-campaigns .campaign-available-join {
+    width: 100%;
+    min-height: 38px;
+
+    margin: 0.75rem 0 0;
+
+    border: 1px solid rgba(143, 211, 255, 0.3);
+    border-radius: var(--radius-md);
+
+    background: rgba(143, 211, 255, 0.07);
+    color: var(--campaign-accent-bright);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.view-campaigns .campaign-available-join:hover {
+    background: rgba(143, 211, 255, 0.12);
+    box-shadow: none;
+}
+
+.view-campaigns .campaign-available-join:active {
+    transform: none;
+    background: rgba(143, 211, 255, 0.16);
+}
+
+.view-campaigns .campaign-available-join:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+
+/* =========================================================
+   UNJOINED CHALLENGE DETAIL
+   ========================================================= */
+
+.view-campaignDetail .campaign-detail-join-panel {
+    margin-bottom: 1.4rem;
+    padding: 0.9rem 1rem;
+
+    border: 1px solid rgba(143, 211, 255, 0.1);
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.045),
+            transparent 65%
+        ),
+        rgba(255, 255, 255, 0.015);
+}
+
+.view-campaignDetail
+.campaign-detail-join-panel
+.campaign-detail-participant-count {
+    margin-bottom: 0.7rem;
+}
+
+/* =========================================================
+   DAILY CHALLENGE LOGGING
+   ========================================================= */
+
+.view-campaignDetail .campaign-detail-today {
+    margin-bottom: 0.9rem;
+    padding: 0.9rem;
+
+    border-color: rgba(121, 230, 165, 0.14);
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(121, 230, 165, 0.055),
+            transparent 60%
+        ),
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail
+.campaign-detail-today
+.campaign-detail-progress-value strong {
+    font-size: 2.35rem;
+    line-height: 1;
+}
+
+.view-campaignDetail
+.campaign-detail-today
+.campaign-detail-progress-value span {
+    font-size: 1rem;
+}
+
+.view-campaignDetail .campaign-detail-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.45rem;
+
+    margin-top: 0.7rem;
+}
+
+.view-campaignDetail .campaign-detail-quick-add {
+    min-height: 36px;
+
+    margin: 0;
+
+    border: 1px solid rgba(143, 211, 255, 0.18);
+    border-radius: var(--radius-md);
+
+    background: rgba(143, 211, 255, 0.055);
+    color: var(--campaign-accent-bright);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.view-campaignDetail .campaign-detail-quick-add:hover {
+    background: rgba(143, 211, 255, 0.1);
+    box-shadow: none;
+}
+
+.view-campaignDetail .campaign-detail-quick-add:active {
+    transform: none;
+    background: rgba(143, 211, 255, 0.14);
+}
+
+.view-campaignDetail .campaign-detail-custom-log {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+
+    margin-top: 0.45rem;
+}
+
+.view-campaignDetail .campaign-detail-custom-input {
+    min-width: 0;
+    min-height: 38px;
+
+    padding: 0.55rem 0.7rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--radius-md);
+
+    background: rgba(0, 0, 0, 0.16);
+    color: var(--text);
+
+    font: inherit;
+}
+
+.view-campaignDetail .campaign-detail-custom-input::placeholder {
+    color: rgba(194, 202, 211, 0.4);
+}
+
+.view-campaignDetail .campaign-detail-log-button {
+    min-width: 70px;
+    min-height: 38px;
+
+    margin: 0;
+
+    border: 1px solid rgba(143, 211, 255, 0.3);
+    border-radius: var(--radius-md);
+
+    background: rgba(143, 211, 255, 0.09);
+    color: var(--campaign-accent-bright);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-log-button:hover {
+    background: rgba(143, 211, 255, 0.14);
+    box-shadow: none;
+}
+
+.view-campaignDetail .campaign-detail-quick-add:disabled,
+.view-campaignDetail .campaign-detail-log-button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+/* =========================================================
+DAILY CHALLENGE COMPLETE
+========================================================= */
+
+.view-campaignDetail
+.campaign-detail-today-complete {
+    border-color: rgba(121, 230, 165, 0.38);
+
+    background:
+        radial-gradient(
+            circle at 88% 22%,
+            rgba(121, 230, 165, 0.13),
+            transparent 42%
+        ),
+        linear-gradient(
+            115deg,
+            rgba(121, 230, 165, 0.09),
+            transparent 62%
+        ),
+        rgba(255, 255, 255, 0.02);
+
+    box-shadow:
+        0 0 0 1px rgba(121, 230, 165, 0.04),
+        0 0 22px rgba(121, 230, 165, 0.06);
+}
+
+.view-campaignDetail
+.campaign-detail-today-complete
+.campaign-detail-section-label {
+    color: rgba(121, 230, 165, 0.82);
+}
+
+.view-campaignDetail
+.campaign-detail-today-complete
+.campaign-detail-progress-value strong {
+    color: #79e6a5;
+}
+
+.view-campaignDetail
+.campaign-detail-today-complete
+.campaign-detail-progress-percent {
+    color: #79e6a5;
+}
+
+.view-campaignDetail
+.campaign-detail-today-complete
+.campaign-detail-progress-track {
+    border-color: rgba(121, 230, 165, 0.18);
+
+    background: rgba(121, 230, 165, 0.06);
+}
+
+.view-campaignDetail
+.campaign-detail-today-complete
+.campaign-detail-progress-fill {
+    background:
+        linear-gradient(
+            90deg,
+            #58d68d,
+            #79e6a5
+        );
+
+    box-shadow:
+        0 0 16px rgba(121, 230, 165, 0.22);
+}
+
+.view-campaignDetail
+.campaign-detail-today-complete
+.campaign-detail-progress-copy {
+    color: #79e6a5;
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.025em;
+}
+
+/* =========================================================
+   DAILY CHALLENGE HISTORY
+   ========================================================= */
+
+   .view-campaignDetail .campaign-detail-history {
+    padding-top: 0;
+}
+
+.view-campaignDetail .campaign-detail-history-list {
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 16px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail .campaign-detail-history-row {
+    min-height: 50px;
+
+    display: grid;
+    grid-template-columns: minmax(70px, auto) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+
+    padding: 0.62rem 0.75rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.055);
+}
+
+.view-campaignDetail .campaign-detail-history-row:last-child {
+    border-bottom: 0;
+}
+
+.view-campaignDetail .campaign-detail-history-row-today {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(143, 211, 255, 0.045),
+            transparent 70%
+        );
+}
+
+.view-campaignDetail .campaign-detail-history-row-complete {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(121, 230, 165, 0.045),
+            transparent 70%
+        );
+}
+
+.view-campaignDetail .campaign-detail-history-date {
+    color: rgba(225, 229, 234, 0.72);
+
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-history-row-today
+.campaign-detail-history-date {
+    color: var(--campaign-accent-bright);
+}
+
+.view-campaignDetail .campaign-detail-history-value {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: rgba(194, 202, 211, 0.64);
+
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.view-campaignDetail .campaign-detail-history-row-complete
+.campaign-detail-history-value {
+    color: rgba(121, 230, 165, 0.78);
+}
+
+.view-campaignDetail .campaign-detail-history-status {
+    color: rgba(194, 202, 211, 0.44);
+
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-history-row-complete
+.campaign-detail-history-status {
+    color: #79e6a5;
+
+    font-size: 0.9rem;
+}
+
+/* =========================================================
+   CHALLENGE STANDINGS
+   ========================================================= */
+
+   .view-campaignDetail .campaign-detail-standings {
+    padding-top: 0;
+}
+
+.view-campaignDetail .campaign-detail-standings-list {
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 16px;
+
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail .campaign-detail-standing-row {
+    min-height: 52px;
+
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.65rem;
+
+    padding: 0.65rem 0.75rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.055);
+}
+
+.view-campaignDetail .campaign-detail-standing-row:last-child {
+    border-bottom: 0;
+}
+
+.view-campaignDetail .campaign-detail-standing-row-current {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(143, 211, 255, 0.065),
+            transparent 72%
+        );
+}
+
+.view-campaignDetail .campaign-detail-standing-rank {
+    color: rgba(194, 202, 211, 0.48);
+
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.view-campaignDetail .campaign-detail-standing-name {
+    display: block;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 0.88rem;
+    font-weight: 900;
+}
+
+.view-campaignDetail
+.campaign-detail-standing-row-current
+.campaign-detail-standing-name {
+    color: var(--campaign-accent-bright);
+}
+
+.view-campaignDetail .campaign-detail-standing-progress {
+    color: rgba(194, 202, 211, 0.62);
+
+    font-size: 0.68rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   CUMULATIVE CHALLENGE LOGGING
+   ========================================================= */
+
+   .view-campaignDetail .campaign-detail-cumulative-log {
+    border-color: rgba(143, 211, 255, 0.16);
+
+    background:
+        radial-gradient(
+            circle at 88% 24%,
+            rgba(143, 211, 255, 0.1),
+            transparent 42%
+        ),
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.055),
+            transparent 62%
+        ),
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-section-label {
+    color: rgba(143, 211, 255, 0.8);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-progress-copy {
+    margin-top: 0;
+
+    color: rgba(225, 229, 234, 0.68);
+
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-quick-actions {
+    margin-top: 0.85rem;
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-quick-add {
+    border-color: rgba(143, 211, 255, 0.22);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(143, 211, 255, 0.08),
+            rgba(143, 211, 255, 0.035)
+        );
+
+    color: var(--campaign-accent-bright);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-quick-add:hover {
+    border-color: rgba(143, 211, 255, 0.32);
+    background: rgba(143, 211, 255, 0.12);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-custom-input {
+    border-color: rgba(143, 211, 255, 0.12);
+
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-custom-input:focus {
+    border-color: rgba(143, 211, 255, 0.34);
+    outline: none;
+
+    box-shadow:
+        0 0 0 2px rgba(143, 211, 255, 0.055);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-log-button {
+    border-color: rgba(143, 211, 255, 0.34);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(143, 211, 255, 0.13),
+            rgba(143, 211, 255, 0.07)
+        );
+
+    color: var(--campaign-accent-bright);
+}
+
+.view-campaignDetail
+.campaign-detail-cumulative-log
+.campaign-detail-log-button:hover {
+    border-color: rgba(143, 211, 255, 0.44);
+    background: rgba(143, 211, 255, 0.16);
+}
+
+.view-campaignDetail .campaign-detail-cumulative-today {
+    display: flex;
+    align-items: baseline;
+    gap: 0.28rem;
+
+    margin-bottom: 0.15rem;
+
+    font-family: var(--font-display);
+}
+
+.view-campaignDetail .campaign-detail-cumulative-today strong {
+    color: var(--text);
+
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+}
+
+.view-campaignDetail .campaign-detail-cumulative-today span {
+    color: rgba(194, 202, 211, 0.6);
+
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   ACTIVITY LOGGER
+   ========================================================= */
+
+.view-campaigns .campaign-activity-logger {
+    padding: 0.8rem;
+
+    border: 1px solid rgba(143, 211, 255, 0.12);
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.05),
+            transparent 65%
+        ),
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-campaigns .campaign-activity-logger-heading {
+    margin-bottom: 0.6rem;
+}
+
+.view-campaigns
+.campaign-activity-logger-heading
+.campaign-section-label {
+    margin-bottom: 0.3rem;
+
+    color: rgba(143, 211, 255, 0.76);
+}
+
+.view-campaigns
+.campaign-activity-logger-heading p {
+    margin: 0.15rem 0 0;
+
+    color: rgba(194, 202, 211, 0.52);
+
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.view-campaigns .campaign-activity-logger-controls {
+    display: grid;
+    grid-template-columns:
+        minmax(105px, 0.8fr)
+        minmax(0, 1.2fr)
+        72px;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.view-campaigns .campaign-activity-input {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+
+    margin: 0;
+    padding: 0 2.5rem 0 0.75rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    background-color: rgba(0, 0, 0, 0.2);
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 50%,
+            rgba(225, 229, 234, 0.9) 50%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(225, 229, 234, 0.9) 50%,
+            transparent 50%
+        );
+    background-position:
+        calc(100% - 1.35rem) 50%,
+        calc(100% - 1.05rem) 50%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+
+    color: var(--text);
+
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.view-campaigns .campaign-activity-quantity {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+
+    margin: 0;
+    padding: 0 0.7rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text);
+
+    font-size: 0.82rem;
+    font-weight: 700;
+
+    box-sizing: border-box;
+}
+
+.view-campaigns
+.campaign-activity-quantity::placeholder {
+    color: rgba(194, 202, 211, 0.4);
+}
+
+.view-campaigns .campaign-activity-submit {
+    min-width: 76px;
+    height: 42px;
+
+    margin: 0;
+    padding: 0 0.9rem;
+
+    border: 1px solid rgba(143, 211, 255, 0.3);
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(143, 211, 255, 0.13),
+            rgba(143, 211, 255, 0.07)
+        );
+
+    color: var(--campaign-accent-bright);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.view-campaigns .campaign-activity-submit:hover {
+    border-color: rgba(143, 211, 255, 0.42);
+    background: rgba(143, 211, 255, 0.15);
+    box-shadow: none;
+}
+
+.view-campaigns .campaign-activity-submit:active {
+    transform: none;
+    background: rgba(143, 211, 255, 0.19);
+}
+
+.view-campaigns .campaign-activity-submit:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.view-campaigns .campaign-activity-input,
+.view-campaigns .campaign-activity-quantity,
+.view-campaigns .campaign-activity-submit {
+    height: 40px;
+}
+
+/* =========================================================
+   DAILY CHALLENGE CALENDAR
+   ========================================================= */
+
+.view-campaignDetail .campaign-detail-calendar {
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+.view-campaignDetail .campaign-detail-calendar-month {
+    margin-bottom: 1rem;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-month:last-child {
+    margin-bottom: 0;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-month-title {
+    margin-bottom: 0.6rem;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+
+    margin-bottom: 0.3rem;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-weekdays div {
+    color: rgba(194, 202, 211, 0.48);
+
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.32rem;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-spacer {
+    height: 48px;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day {
+    height: 48px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+
+    margin: 0;
+    padding: 0.2rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    color: rgba(225, 229, 234, 0.72);
+
+    box-shadow: none;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-number {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-value {
+    margin-top: 0.16rem;
+
+    color: rgba(194, 202, 211, 0.55);
+
+    font-size: 0.55rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-complete {
+    border-color:
+        rgba(121, 230, 165, 0.28);
+
+    background:
+        rgba(121, 230, 165, 0.09);
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-complete
+.campaign-detail-calendar-day-number,
+.view-campaignDetail
+.campaign-detail-calendar-day-complete
+.campaign-detail-calendar-day-value {
+    color: #79e6a5;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-missed {
+    border-color:
+        rgba(255, 180, 90, 0.16);
+
+    background:
+        rgba(255, 180, 90, 0.035);
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-missed
+.campaign-detail-calendar-day-number {
+    color:
+        rgba(255, 190, 110, 0.72);
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-today {
+    border-color:
+        rgba(143, 211, 255, 0.48);
+
+    box-shadow:
+        0 0 0 1px
+        rgba(143, 211, 255, 0.08);
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-future {
+    opacity: 0.42;
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-outside {
+    visibility: hidden;
+}
+

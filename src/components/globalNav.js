@@ -8,6 +8,12 @@ const EDIT_ACTION_VIEWS = new Set([
     "session",
 ]);
 
+const HIDE_FLOATING_LOG_VIEWS = new Set([
+    "campaigns",
+    "campaignDetail",
+    "campaignCreate",
+]);
+
 export function createGlobalNav () {
     if (EDIT_ACTION_VIEWS.has(state.currentView)) {
         return createEditActionBar();
@@ -44,7 +50,10 @@ export function createGlobalNav () {
         nav.appendChild(button);
     });
 
-    if (canUseFloatingLogButton()) {
+    if (
+        canUseFloatingLogButton() &&
+        !HIDE_FLOATING_LOG_VIEWS.has(state.currentView)
+    ) {
         const fabButton = document.createElement("button");
         fabButton.classList.add("global-fab");
         fabButton.textContent = "+ Log";

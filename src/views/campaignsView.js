@@ -2,10 +2,44 @@ import { state } from "../modules/state.js";
 import {
     loadRegionCampaigns,
     loadCampaignProgress,
+    joinCampaign,
+    logMemberActivity,
 } from "../services/cloudData.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
-import { canManageCampaigns } from "../utils/permissions.js";
+import { showToast } from "../utils/toast.js";
+
+let activeCampaignTab = "mine";
+let campaignViewData = null;
+
+function renderCampaignTab() {
+    const tabContent =
+        document.querySelector(
+            ".view-campaigns .campaign-tab-content"
+        );
+
+    if (!tabContent || !campaignViewData) {
+        return;
+    }
+
+    tabContent.replaceChildren(
+        createCampaignTabContent(
+            campaignViewData
+        )
+    );
+
+    document
+        .querySelectorAll(
+            ".view-campaigns .campaign-tab"
+        )
+        .forEach(button => {
+            button.classList.toggle(
+                "campaign-tab-active",
+                button.dataset.campaignTab ===
+                    activeCampaignTab
+            );
+        });
+}
 
 function formatCampaignDate(date) {
     if (!date) return "";
@@ -17,12 +51,31 @@ function formatCampaignDate(date) {
         });
 }
 
+function formatCampaignDateWithYear(date) {
+    if (!date) return "";
+
+    return new Date(`${date}T12:00:00`)
+        .toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+}
+
 function formatCampaignDateRange(campaign) {
+    if (!campaign.startsOn && !campaign.endsOn) return "";
+    if (!campaign.startsOn) return formatCampaignDateWithYear(campaign.endsOn);
+    if (!campaign.endsOn) return formatCampaignDateWithYear(campaign.startsOn);
+
+    const startYear = campaign.startsOn.slice(0, 4);
+    const endYear = campaign.endsOn.slice(0, 4);
+
+    if (startYear !== endYear) {
+        return `${formatCampaignDateWithYear(campaign.startsOn)}–${formatCampaignDateWithYear(campaign.endsOn)}`;
+    }
+
     const start = formatCampaignDate(campaign.startsOn);
     const end = formatCampaignDate(campaign.endsOn);
-
-    if (!start) return end;
-    if (!end) return start;
 
     return `${start}–${end}`;
 }
@@ -67,7 +120,64 @@ function createCampaignProgressBar(progress) {
     return track;
 }
 
-function createActiveCampaign(campaign, progress) {
+function createCampaignProgressRow(
+    campaign,
+    progress,
+    eyebrowText
+) {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "campaign-progress-row";
+
+    const top = document.createElement("div");
+    top.className = "campaign-progress-row-top";
+
+    const identity = document.createElement("div");
+    identity.className = "campaign-progress-row-identity";
+
+    const eyebrow = document.createElement("div");
+    eyebrow.className = "campaign-progress-row-eyebrow";
+    eyebrow.textContent = eyebrowText;
+
+    const title = document.createElement("div");
+    title.className = "campaign-progress-row-title";
+    title.textContent = campaign.title;
+
+    identity.append(eyebrow, title);
+
+    const percent = document.createElement("div");
+    percent.className = "campaign-progress-row-percent";
+    percent.textContent = `${progress.percent}%`;
+
+    top.append(identity, percent);
+
+    const meta = document.createElement("div");
+    meta.className = "campaign-progress-row-meta";
+
+    const progressText = document.createElement("span");
+    progressText.textContent =
+        `${progress.current} / ${progress.target} ${progress.unit}`;
+
+    const dates = document.createElement("span");
+    dates.textContent = formatCampaignDateRange(campaign);
+
+    meta.append(progressText, dates);
+
+    row.append(
+        top,
+        meta,
+        createCampaignProgressBar(progress)
+    );
+
+    row.addEventListener("click", () => {
+        state.selectedCampaignId = campaign.id;
+        navigateTo("campaignDetail");
+    });
+
+    return row;
+}
+
+function createActiveCampaign(campaign, progress, eyebrowText = "Regional Campaign") {
     const item = document.createElement("button");
     item.type = "button";
     item.className = "campaign-active-card";
@@ -80,7 +190,7 @@ function createActiveCampaign(campaign, progress) {
 
     const eyebrow = document.createElement("div");
     eyebrow.className = "campaign-active-eyebrow";
-    eyebrow.textContent = "Regional Campaign";
+    eyebrow.textContent = eyebrowText;
 
     const title = document.createElement("h3");
     title.className = "campaign-active-title";
@@ -148,6 +258,86 @@ function createActiveCampaign(campaign, progress) {
         state.selectedCampaignId = campaign.id;
         navigateTo("campaignDetail");
     });
+
+    return item;
+}
+
+function createAvailableChallenge(campaign, progress, onJoined) {
+    const item = document.createElement("div");
+    item.className = "campaign-available-card";
+
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "campaign-available-main";
+
+    const identity = document.createElement("div");
+    identity.className = "campaign-available-identity";
+
+    const eyebrow = document.createElement("div");
+    eyebrow.className = "campaign-active-eyebrow";
+    eyebrow.textContent = "Available Challenge";
+
+    const title = document.createElement("h3");
+    title.className = "campaign-active-title";
+    title.textContent = campaign.title;
+
+    identity.append(eyebrow, title);
+
+    const dates = document.createElement("div");
+    dates.className = "campaign-active-dates";
+    dates.textContent = formatCampaignDateRange(campaign);
+
+    const header = document.createElement("div");
+    header.className = "campaign-active-card-header";
+    header.append(identity, dates);
+
+    main.append(header);
+
+    if (campaign.description) {
+        const description = document.createElement("p");
+        description.className = "campaign-available-description";
+        description.textContent = campaign.description;
+        main.append(description);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "campaign-available-meta";
+    meta.textContent = `${progress.participantCount} PAX participating`;
+
+    main.append(meta);
+
+    main.addEventListener("click", () => {
+        state.selectedCampaignId = campaign.id;
+        navigateTo("campaignDetail");
+    });
+
+    const joinButton = document.createElement("button");
+    joinButton.type = "button";
+    joinButton.className = "campaign-available-join";
+    joinButton.textContent = "Join Challenge";
+
+    joinButton.addEventListener("click", async () => {
+        joinButton.disabled = true;
+        joinButton.textContent = "Joining…";
+
+        try {
+            await joinCampaign(campaign.id);
+            showToast("You're in.", "success");
+            onJoined();
+        } catch (error) {
+            console.error("Failed to join challenge:", error);
+
+            joinButton.disabled = false;
+            joinButton.textContent = "Join Challenge";
+
+            showToast(
+                error?.message || "Failed to join challenge.",
+                "error"
+            );
+        }
+    });
+
+    item.append(main, joinButton);
 
     return item;
 }
@@ -226,6 +416,379 @@ function createCampaignState({
     return container;
 }
 
+function createActivityLogger(activeProgress, onLogged) {
+    const activities = new Map();
+
+    activeProgress.forEach(({ campaign, progress }) => {
+        if (
+            campaign.metricKey !== "manual_quantity" ||
+            !campaign.activityKey
+        ) {
+            return;
+        }
+
+        const isApplicable =
+            campaign.participantMode === "collective" ||
+            progress.isEnrolled;
+
+        if (!isApplicable) return;
+
+        if (!activities.has(campaign.activityKey)) {
+            activities.set(campaign.activityKey, {
+                activityKey: campaign.activityKey,
+                name:
+                    campaign.activityName ||
+                    progress.unit ||
+                    campaign.activityKey,
+                unit: progress.unit || "",
+            });
+        }
+    });
+
+    if (activities.size === 0) return null;
+
+    const section = document.createElement("section");
+    section.className = "campaign-activity-logger";
+
+    const heading = document.createElement("div");
+    heading.className = "campaign-activity-logger-heading";
+
+    const eyebrow = document.createElement("div");
+    eyebrow.className = "campaign-section-label";
+    eyebrow.textContent = "Log Activity";
+
+    const copy = document.createElement("p");
+    copy.textContent = "One log updates every matching challenge.";
+
+    heading.append(eyebrow, copy);
+
+    const controls = document.createElement("div");
+    controls.className = "campaign-activity-logger-controls";
+
+    const activityInput = document.createElement("select");
+    activityInput.className = "campaign-activity-input";
+
+    activities.forEach(activity => {
+        const option = document.createElement("option");
+        option.value = activity.activityKey;
+        option.textContent = activity.name;
+
+        activityInput.append(option);
+    });
+
+    const quantityInput = document.createElement("input");
+    quantityInput.type = "number";
+    quantityInput.min = "0.01";
+    quantityInput.step = "any";
+    quantityInput.inputMode = "decimal";
+    quantityInput.placeholder = "Amount";
+    quantityInput.className = "campaign-activity-quantity";
+
+    const logButton = document.createElement("button");
+    logButton.type = "button";
+    logButton.className = "campaign-activity-submit";
+    logButton.textContent = "Log";
+
+    logButton.addEventListener("click", async () => {
+        const activityKey = activityInput.value;
+        const quantity = Number(quantityInput.value);
+
+        if (!activityKey) {
+            showToast("Choose an activity.", "error");
+            return;
+        }
+
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+            showToast("Enter an amount greater than zero.", "error");
+            return;
+        }
+
+        logButton.disabled = true;
+        logButton.textContent = "Logging…";
+
+        try {
+            const result = await logMemberActivity(
+                activityKey,
+                quantity
+            );
+
+            const affectedCount =
+                Number(result?.affectedCampaignCount) || 0;
+
+            const unit =
+                result?.unit ||
+                activities.get(activityKey)?.unit ||
+                "";
+
+            showToast(
+                affectedCount > 1
+                    ? `${quantity} ${unit} logged · counted toward ${affectedCount} challenges.`
+                    : `${quantity} ${unit} logged.`,
+                "success"
+            );
+
+            quantityInput.value = "";
+
+            await onLogged();
+        } catch (error) {
+            console.error(
+                "Failed to log activity:",
+                error
+            );
+
+            logButton.disabled = false;
+            logButton.textContent = "Log";
+
+            showToast(
+                error?.message || "Failed to log activity.",
+                "error"
+            );
+        }
+    });
+
+    controls.append(
+        quantityInput,
+        activityInput,
+        logButton
+    );
+
+    section.append(
+        heading,
+        controls
+    );
+
+    return section;
+}
+
+function createCampaignTabs() {
+    const tabs = document.createElement("div");
+    tabs.className = "campaign-tabs";
+
+    [
+        {
+            key: "mine",
+            label: "My Challenges",
+        },
+        {
+            key: "discover",
+            label: "Discover",
+        },
+        {
+            key: "history",
+            label: "History",
+        },
+    ].forEach(tab => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "campaign-tab";
+        button.dataset.campaignTab = tab.key;
+        button.textContent = tab.label;
+
+        if (tab.key === activeCampaignTab) {
+            button.classList.add("campaign-tab-active");
+        }
+
+        button.addEventListener("click", () => {
+            if (activeCampaignTab === tab.key) return;
+        
+            activeCampaignTab = tab.key;
+            renderCampaignTab();
+        });
+
+        tabs.append(button);
+    });
+
+    return tabs;
+}
+
+function createCampaignTabContent({
+    lifecycleGroups,
+    groups,
+}) {
+    const content = document.createDocumentFragment();
+
+    if (activeCampaignTab === "mine") {
+        if (groups.regional.length > 0) {
+            const section = document.createElement("section");
+            section.className = "campaign-section";
+
+            section.append(
+                createCampaignSectionLabel("Regional")
+            );
+
+            const list = document.createElement("div");
+            list.className = "campaign-progress-row-list";
+
+            groups.regional.forEach(
+                ({ campaign, progress }) => {
+                    list.append(
+                        createCampaignProgressRow(
+                            campaign,
+                            progress,
+                            "Regional Campaign"
+                        )
+                    );
+                }
+            );
+
+            section.append(list);
+            content.append(section);
+        }
+
+        if (groups.joined.length > 0) {
+            const section = document.createElement("section");
+            section.className = "campaign-section";
+
+            section.append(
+                createCampaignSectionLabel("Personal")
+            );
+
+            const list = document.createElement("div");
+            list.className = "campaign-progress-row-list";
+
+            groups.joined.forEach(
+                ({ campaign, progress }) => {
+                    list.append(
+                        createCampaignProgressRow(
+                            campaign,
+                            progress,
+                            "Joined Challenge"
+                        )
+                    );
+                }
+            );
+
+            section.append(list);
+            content.append(section);
+        }
+
+        if (
+            groups.regional.length === 0 &&
+            groups.joined.length === 0
+        ) {
+            content.append(
+                createCampaignState({
+                    type: "empty",
+                    title: "Nothing active yet",
+                    message:
+                        "Join a challenge or wait for a regional campaign to begin.",
+                })
+            );
+        }
+    }
+
+    if (activeCampaignTab === "discover") {
+        if (groups.available.length > 0) {
+            const section = document.createElement("section");
+            section.className = "campaign-section";
+
+            section.append(
+                createCampaignSectionLabel(
+                    "Available Challenges"
+                )
+            );
+
+            const list = document.createElement("div");
+            list.className = "campaign-available-list";
+
+            groups.available.forEach(
+                ({ campaign, progress }) => {
+                    list.append(
+                        createAvailableChallenge(
+                            campaign,
+                            progress,
+                            renderCampaignsView
+                        )
+                    );
+                }
+            );
+
+            section.append(list);
+            content.append(section);
+        }
+
+        if (lifecycleGroups.upcoming.length > 0) {
+            const section = document.createElement("section");
+            section.className = "campaign-section";
+
+            section.append(
+                createCampaignSectionLabel(
+                    "Starting Soon"
+                )
+            );
+
+            const list = document.createElement("div");
+            list.className = "campaign-row-list";
+
+            lifecycleGroups.upcoming.forEach(
+                campaign => {
+                    list.append(
+                        createCampaignRow(campaign)
+                    );
+                }
+            );
+
+            section.append(list);
+            content.append(section);
+        }
+
+        if (
+            groups.available.length === 0 &&
+            lifecycleGroups.upcoming.length === 0
+        ) {
+            content.append(
+                createCampaignState({
+                    type: "empty",
+                    title: "Nothing to discover",
+                    message:
+                        "New challenges and upcoming campaigns will appear here.",
+                })
+            );
+        }
+    }
+
+    if (activeCampaignTab === "history") {
+        if (lifecycleGroups.completed.length > 0) {
+            const section = document.createElement("section");
+            section.className = "campaign-section";
+
+            section.append(
+                createCampaignSectionLabel("Completed")
+            );
+
+            const list = document.createElement("div");
+            list.className = "campaign-row-list";
+
+            lifecycleGroups.completed.forEach(
+                campaign => {
+                    list.append(
+                        createCampaignRow(
+                            campaign,
+                            {
+                                completed: true,
+                            }
+                        )
+                    );
+                }
+            );
+
+            section.append(list);
+            content.append(section);
+        } else {
+            content.append(
+                createCampaignState({
+                    type: "empty",
+                    title: "No history yet",
+                    message:
+                        "Completed and expired challenges will appear here.",
+                })
+            );
+        }
+    }
+
+    return content;
+}
+
 async function loadCampaignContent(content) {
     const regionId = state.activeRegionId || state.currentRegionId;
 
@@ -248,7 +811,7 @@ async function loadCampaignContent(content) {
             createCampaignState({
                 type: "empty",
                 title: "No campaigns yet",
-                message: "Regional campaigns will appear here when they launch.",
+                message: "Regional campaigns and challenges will appear here when they launch.",
             })
         );
 
@@ -257,77 +820,79 @@ async function loadCampaignContent(content) {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    const groups = {
+    const lifecycleGroups = {
         active: [],
         upcoming: [],
         completed: [],
     };
 
     campaigns.forEach(campaign => {
-        groups[getCampaignGroup(campaign, today)].push(campaign);
+        lifecycleGroups[getCampaignGroup(campaign, today)].push(campaign);
     });
+
+    const activeProgress = await Promise.all(
+        lifecycleGroups.active.map(async campaign => ({
+            campaign,
+            progress: await loadCampaignProgress(campaign.id),
+        }))
+    );
+
+    const groups = {
+        regional: [],
+        joined: [],
+        available: [],
+    };
+
+    activeProgress.forEach(item => {
+        const { campaign, progress } = item;
+
+        if (
+            campaign.participantMode === "individual" &&
+            campaign.enrollmentMode === "opt_in"
+        ) {
+            if (progress.isEnrolled) {
+                groups.joined.push(item);
+            } else {
+                groups.available.push(item);
+            }
+
+            return;
+        }
+
+        groups.regional.push(item);
+    });
+
+    campaignViewData = {
+        lifecycleGroups,
+        groups,
+    };
 
     const fragment = document.createDocumentFragment();
 
-    if (groups.active.length > 0) {
-        const section = document.createElement("section");
-        section.className = "campaign-section campaign-section-active";
-        section.append(createCampaignSectionLabel("Active"));
-
-        const list = document.createElement("div");
-        list.className = "campaign-active-list";
-
-        const progressResults = await Promise.all(
-            groups.active.map(async campaign => ({
-                campaign,
-                progress: await loadCampaignProgress(campaign.id),
-            }))
-        );
-
-        progressResults.forEach(({ campaign, progress }) => {
-            list.append(createActiveCampaign(campaign, progress));
-        });
-
-        section.append(list);
-        fragment.append(section);
+    const activityLogger = createActivityLogger(
+        activeProgress,
+        renderCampaignsView
+    );
+    
+    if (activityLogger) {
+        fragment.append(activityLogger);
     }
-
-    if (groups.upcoming.length > 0) {
-        const section = document.createElement("section");
-        section.className = "campaign-section";
-        section.append(createCampaignSectionLabel("Upcoming"));
-
-        const list = document.createElement("div");
-        list.className = "campaign-row-list";
-
-        groups.upcoming.forEach(campaign => {
-            list.append(createCampaignRow(campaign));
-        });
-
-        section.append(list);
-        fragment.append(section);
-    }
-
-    if (groups.completed.length > 0) {
-        const section = document.createElement("section");
-        section.className = "campaign-section";
-        section.append(createCampaignSectionLabel("Completed"));
-
-        const list = document.createElement("div");
-        list.className = "campaign-row-list";
-
-        groups.completed.forEach(campaign => {
-            list.append(
-                createCampaignRow(campaign, {
-                    completed: true,
-                })
-            );
-        });
-
-        section.append(list);
-        fragment.append(section);
-    }
-
+    
+    fragment.append(
+        createCampaignTabs()
+    );
+    
+    const tabContent = document.createElement("div");
+    tabContent.className = "campaign-tab-content";
+    
+    tabContent.append(
+        createCampaignTabContent(
+            campaignViewData
+        )
+    );
+    
+    fragment.append(tabContent);
+    
     content.replaceChildren(fragment);
 }
 
@@ -351,24 +916,20 @@ export function renderCampaignsView() {
 
     const subtitle = document.createElement("p");
     subtitle.className = "campaign-header-subtitle";
-    subtitle.textContent = "What the region is working toward.";
+    subtitle.textContent = "Set goals. Track the work. Keep moving.";
 
     identity.append(title, subtitle);
 
-    if (canManageCampaigns()) {
-        const startButton = document.createElement("button");
-        startButton.type = "button";
-        startButton.className = "campaign-header-action";
-        startButton.textContent = "+ Start";
+    const startButton = document.createElement("button");
+    startButton.type = "button";
+    startButton.className = "campaign-header-action";
+    startButton.textContent = "+ Start";
     
-        startButton.addEventListener("click", () => {
-            navigateTo("campaignCreate");
-        });
+    startButton.addEventListener("click", () => {
+        navigateTo("campaignCreate");
+    });
     
-        header.append(identity, startButton);
-    } else {
-        header.append(identity);
-    }
+    header.append(identity, startButton);
 
     const content = document.createElement("div");
     content.className = "campaign-content";
