@@ -2,37 +2,6 @@
 
 import { heicTo, isHeic } from "heic-to";
 
-export async function normalizeMediaImage(file) {
-    if (!(file instanceof Blob)) {
-        throw new Error("Image processing requires a Blob.");
-    }
-
-    if (
-        file.type === "image/jpeg" ||
-        file.type === "image/webp"
-    ) {
-        return file;
-    }
-
-    const isHeicImage =
-        file.type === "image/heic" ||
-        file.type === "image/heif" ||
-        /\.hei[cf]$/i.test(file.name || "") ||
-        await isHeic(file);
-
-    if (!isHeicImage) {
-        throw new Error("Unsupported image format.");
-    }
-
-    const converted = await heicTo({
-        blob: file,
-        type: "image/jpeg",
-        quality: 0.85,
-    });
-
-    return converted;
-}
-
 const AVATAR_SIZE = 512;
 const AVATAR_QUALITY = 0.82;
 const MAX_SOURCE_FILE_SIZE =
@@ -42,6 +11,12 @@ const MAX_SOURCE_PIXELS =
 const MAX_AVATAR_FILE_SIZE =
     1024 * 1024;
 
+const MEDIA_MAX_DIMENSION = 2048;
+const MEDIA_QUALITY = 0.84;
+const MAX_MEDIA_SOURCE_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_MEDIA_SOURCE_PIXELS = 40 * 1000 * 1000;
+const MAX_MEDIA_OUTPUT_SIZE = 3 * 1024 * 1024;
+
 const ALLOWED_IMAGE_TYPES = new Set([
     "image/jpeg",
     "image/png",
@@ -49,6 +24,104 @@ const ALLOWED_IMAGE_TYPES = new Set([
     "image/heic",
     "image/heif",
 ]);
+
+export async function normalizeMediaImage(file) {
+    if (!(file instanceof Blob)) {
+        throw new Error("Image processing requires a Blob.");
+    }
+
+    if (file.size > MAX_MEDIA_SOURCE_FILE_SIZE) {
+        throw new Error("That image is too large. Choose a photo under 20 MB.");
+    }
+
+    const fileName = String(file.name || "").toLowerCase();
+
+    const isHeicImage =
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        fileName.endsWith(".heic") ||
+        fileName.endsWith(".heif") ||
+        await isHeic(file);
+
+    let sourceBlob = file;
+
+    if (isHeicImage) {
+        sourceBlob = await heicTo({
+            blob: file,
+            type: "image/jpeg",
+            quality: MEDIA_QUALITY,
+        });
+    }
+
+    const image = await decodeImageFile(sourceBlob);
+
+    try {
+        validateMediaImageDimensions(image.width, image.height);
+
+        const scale = Math.min(
+            1,
+            MEDIA_MAX_DIMENSION / Math.max(image.width, image.height)
+        );
+
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+            throw new Error("Image processing is not supported on this device.");
+        }
+
+        context.drawImage(
+            image.source,
+            0,
+            0,
+            image.width,
+            image.height,
+            0,
+            0,
+            width,
+            height
+        );
+
+        let blob = await canvasToBlob(canvas, "image/webp", MEDIA_QUALITY);
+
+        if (!blob || blob.type !== "image/webp") {
+            blob = await canvasToBlob(canvas, "image/jpeg", MEDIA_QUALITY);
+        }
+
+        if (!blob) {
+            throw new Error("The image could not be processed.");
+        }
+
+        if (blob.size > MAX_MEDIA_OUTPUT_SIZE) {
+            throw new Error("The processed image is still too large.");
+        }
+
+        return blob;
+    } finally {
+        image.cleanup();
+    }
+}
+
+function validateMediaImageDimensions(width, height) {
+    if (
+        !Number.isFinite(width) ||
+        !Number.isFinite(height) ||
+        width <= 0 ||
+        height <= 0
+    ) {
+        throw new Error("That image could not be read.");
+    }
+
+    if (width * height > MAX_MEDIA_SOURCE_PIXELS) {
+        throw new Error("That image is too large to process safely.");
+    }
+}
 
 export async function canvasToAvatarBlob(canvas) {
     if (!(canvas instanceof HTMLCanvasElement)) {
