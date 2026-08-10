@@ -774,10 +774,11 @@ export function renderPreblastView() {
     
             return (
                 file.type === "image/jpeg" ||
+                file.type === "image/png" ||
                 file.type === "image/webp" ||
                 file.type === "image/heic" ||
                 file.type === "image/heif" ||
-                /\.hei[cf]$/i.test(file.name || "")
+                /\.(jpe?g|png|webp|hei[cf])$/i.test(file.name || "")
             );
         });
     }
