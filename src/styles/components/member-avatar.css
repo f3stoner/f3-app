@@ -212,3 +212,121 @@ body.avatar-editor-open {
 body.avatar-editor-open .global-nav {
     display: none;
 }
+
+body.avatar-actions-open {
+    position: fixed;
+    top: calc(-1px * var(--avatar-actions-scroll-y, 0));
+    right: 0;
+    left: 0;
+
+    width: 100%;
+    overflow: hidden;
+}
+
+.avatar-actions-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1rem;
+
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(6px);
+}
+
+.avatar-actions {
+    width: min(100%, 22rem);
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(143, 211, 255, 0.05),
+            transparent 42%
+        ),
+        #0b0d10;
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.avatar-actions-title {
+    padding: 0.9rem 1rem;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+
+    color: rgba(245, 245, 242, 0.55);
+
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.09em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.avatar-actions-button {
+    width: 100%;
+    min-height: 52px;
+
+    margin: 0;
+    padding: 0.8rem 1rem;
+
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--text);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.avatar-actions-button:hover {
+    background: rgba(255, 255, 255, 0.045);
+
+    box-shadow: none;
+}
+
+.avatar-actions-button:active {
+    transform: none;
+
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.avatar-actions-button-danger {
+    color: #ef7d7d;
+}
+
+.avatar-actions-cancel {
+    border-bottom: 0;
+
+    color: rgba(245, 245, 242, 0.58);
+}
+
+@media (max-width: 520px) {
+    .avatar-actions-overlay {
+        align-items: center;
+
+        padding: 0.75rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    .avatar-actions {
+        width: 100%;
+        max-width: 24rem;
+    }
+}
+
+body.avatar-actions-open .global-nav {
+    display: none;
+}

@@ -2,6 +2,7 @@ import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
 import { createIcon } from "../../utils/icons.js";
 import { createRegionFeedReactions } from "./regionFeedReactions.js";
+import { createMemberAvatar } from "../memberAvatar.js";
 
 function formatEventTime(timestamp) {
     if (!timestamp) return "";
@@ -14,12 +15,20 @@ function formatEventTime(timestamp) {
     }).format(new Date(timestamp));
 }
 
-export function renderFngWelcomedRow(event) {
+export function renderFngWelcomedRow(
+    event,
+    {
+        avatarUrls = new Map(),
+    } = {}
+) {
     const session = event.session;
     const paxName = event.member?.paxName || "";
     const realName = event.member?.realName || "";
     const displayName = paxName || realName || "New PAX";
     const aoName = session?.aoName || "the region";
+    const avatarUrl = event.member?.avatarPath
+        ? avatarUrls.get(event.member.avatarPath) || null
+        : null;
 
     const row = document.createElement("article");
     row.className = "region-feed-card region-feed-fng-card";
@@ -29,20 +38,10 @@ export function renderFngWelcomedRow(event) {
     button.className = "region-feed-card-button region-feed-fng-button";
     button.setAttribute("aria-label", `View ${displayName}'s profile`);
 
-    const icon = document.createElement("div");
-    icon.className = "region-feed-event-icon region-feed-fng-icon";
-    icon.setAttribute("aria-hidden", "true");
-
-    icon.appendChild(
-        createIcon(
-            "feedFngWelcome",
-            "region-feed-event-icon-svg",
-            {
-                size: 21,
-                strokeWidth: 2.3,
-            }
-        )
-    );
+    const avatar = createMemberAvatar(event.member, {
+        signedUrl: avatarUrl,
+        className: "region-feed-member-avatar",
+    });
 
     const content = document.createElement("div");
     content.className = "region-feed-card-content";
@@ -97,7 +96,7 @@ export function renderFngWelcomedRow(event) {
     });
 
     button.append(
-        icon,
+        avatar,
         content,
         visual,
         action

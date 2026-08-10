@@ -254,33 +254,44 @@
         0 0 14px rgba(88, 214, 141, 0.1);
 }
 
-.view-regionFeed .region-feed-milestone-card::before {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
+.view-regionFeed
+.region-feed-milestone-button
+.region-feed-member-avatar {
+    grid-column: 1;
+    grid-row: 1;
+
     width: 38px;
     height: 38px;
-    display: grid;
-    place-items: center;
-    border-radius: 11px;
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 900;
-    line-height: 1;
+
+    align-self: start;
+
+    border:
+        1px solid
+        rgba(240, 190, 72, 0.22);
+
+    border-radius: 50%;
+
+    background:
+        rgba(240, 190, 72, 0.065);
 }
 
-.view-regionFeed .region-feed-milestone-card::before {
-    content: "★";
-    border: 1px solid rgba(240, 190, 72, 0.25);
-    background: rgba(240, 190, 72, 0.09);
+.view-regionFeed
+.region-feed-milestone-button
+.region-feed-member-avatar
+.member-avatar-fallback {
     color: #f0be48;
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
 }
 
 .view-regionFeed .region-feed-card-button {
     width: 100%;
     min-width: 0;
     display: grid;
-    grid-template-columns: 50px minmax(0, 1fr);
+    grid-template-columns: 50px minmax(0, 1fr) 64px;
     grid-template-rows: auto;
     column-gap: 0.75rem;
     align-items: center;
@@ -592,6 +603,35 @@
     text-transform: uppercase;
 }
 
+.view-regionFeed
+.region-feed-fng-button
+.region-feed-member-avatar {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 38px;
+    height: 38px;
+
+    align-self: start;
+
+    border: 1px solid rgba(88, 214, 141, 0.24);
+    border-radius: 50%;
+
+    background: rgba(88, 214, 141, 0.065);
+}
+
+.view-regionFeed
+.region-feed-fng-button
+.region-feed-member-avatar
+.member-avatar-fallback {
+    color: #69dc98;
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
 /* =========================================================
    ANNOUNCEMENT EVENT
    ========================================================= */
@@ -803,6 +843,35 @@
     font-weight: 900;
     line-height: 1;
     letter-spacing: 0.08em;
+}
+
+.view-regionFeed
+.region-feed-vq-button
+.region-feed-member-avatar {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 38px;
+    height: 38px;
+
+    align-self: start;
+
+    border: 1px solid rgba(88, 214, 141, 0.28);
+    border-radius: 50%;
+
+    background: rgba(88, 214, 141, 0.075);
+}
+
+.view-regionFeed
+.region-feed-vq-button
+.region-feed-member-avatar
+.member-avatar-fallback {
+    color: #79e6a5;
+
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
 }
 
 /*----*/
@@ -1051,6 +1120,38 @@
 .view-regionFeed .region-feed-comment {
     position: relative;
     min-width: 0;
+
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 0.55rem;
+}
+
+.view-regionFeed .region-feed-comment-avatar {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+
+    width: 30px;
+    height: 30px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.view-regionFeed .region-feed-comment-avatar .member-avatar-fallback {
+    color: rgba(225, 229, 234, 0.7);
+
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.view-regionFeed .region-feed-comment-header,
+.view-regionFeed .region-feed-comment-body,
+.view-regionFeed .region-feed-comment-delete {
+    grid-column: 2;
 }
 
 .view-regionFeed .region-feed-comment-header {
@@ -1186,7 +1287,7 @@
 
 @media (max-width: 430px) {
     .view-regionFeed .region-feed-card-button {
-        grid-template-columns: 46px minmax(0, 1fr);
+        grid-template-columns: 46px minmax(0, 1fr) 56px;
         column-gap: 0.65rem;
         padding: 0.82rem 1.65rem 0.82rem 0.85rem;
     }
@@ -1204,13 +1305,11 @@
         height: 19px;
     }
 
-    .view-regionFeed .region-feed-milestone-card::before {
-        top: 0.85rem;
-        left: 0.85rem;
+    .view-regionFeed
+    .region-feed-milestone-button
+    .region-feed-member-avatar {
         width: 34px;
         height: 34px;
-        border-radius: 10px;
-        font-size: 0.92rem;
     }
 
     .view-regionFeed .region-feed-card-visual {
@@ -1249,6 +1348,13 @@
         border-radius: 14px 14px 18px 18px;
     }
 
+    .view-regionFeed
+    .region-feed-fng-button
+    .region-feed-member-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
     /* VQ earned mobile layout */
 
     .view-regionFeed .region-feed-vq-button {
@@ -1271,6 +1377,13 @@
 
     .view-regionFeed .region-feed-vq-mark {
         font-size: 1rem;
+    }
+
+    .view-regionFeed
+    .region-feed-vq-button
+    .region-feed-member-avatar {
+        width: 34px;
+        height: 34px;
     }
 
     /* Announcement mobile layout */

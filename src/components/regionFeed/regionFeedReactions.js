@@ -9,6 +9,8 @@ import {
     deleteRegionFeedComment,
 } from "../../services/regionFeedService.js";
 import { createIcon } from "../../utils/icons.js";
+import { createMemberAvatar } from "../memberAvatar.js";
+import { resolveMediaUrl } from "../../services/mediaService.js";
 
 const REACTIONS = [
     {
@@ -340,6 +342,37 @@ function createReactionTrigger({
     return button;
 }
 
+function hydrateCommentAvatar(avatar, member) {
+    const avatarPath = member?.avatarPath;
+
+    if (!avatarPath) return;
+
+    resolveMediaUrl(avatarPath)
+        .then(signedUrl => {
+            if (!signedUrl) return;
+
+            const image = document.createElement("img");
+
+            image.className = "member-avatar-image";
+            image.alt = "";
+            image.decoding = "async";
+            image.src = signedUrl;
+
+            image.addEventListener("load", () => {
+                avatar.classList.add("member-avatar-loaded");
+            });
+
+            image.addEventListener("error", () => {
+                image.remove();
+            });
+
+            avatar.appendChild(image);
+        })
+        .catch(error => {
+            console.warn("Failed to resolve comment avatar:", error);
+        });
+}
+
 function getCommentMemberName(
     comment
 ) {
@@ -377,39 +410,32 @@ function createCommentRow({
     thread,
     updateTriggerLabel,
 }) {
-    const row =
-        document.createElement("div");
+    const row = document.createElement("div");
 
-    row.className =
-        "region-feed-comment";
+    row.className = "region-feed-comment";
 
-    const header =
-        document.createElement("div");
+    const avatar = createMemberAvatar(comment.member, {
+        className: "region-feed-comment-avatar",
+    });
+
+    hydrateCommentAvatar(avatar, comment.member);
+
+    const header = document.createElement("div");
 
     header.className =
         "region-feed-comment-header";
 
-    const name =
-        document.createElement("strong");
+    const name = document.createElement("strong");
 
-    name.className =
-        "region-feed-comment-author";
+    name.className = "region-feed-comment-author";
 
-    name.textContent =
-        getCommentMemberName(
-            comment
-        );
+    name.textContent = getCommentMemberName(comment);
 
-    const time =
-        document.createElement("span");
+    const time = document.createElement("span");
 
-    time.className =
-        "region-feed-comment-time";
+    time.className = "region-feed-comment-time";
 
-    time.textContent =
-        formatCommentTime(
-            comment.createdAt
-        );
+    time.textContent = formatCommentTime(comment.createdAt);
 
     header.append(
         name,
@@ -426,6 +452,7 @@ function createCommentRow({
         comment.body;
 
     row.append(
+        avatar,
         header,
         body
     );
@@ -646,21 +673,14 @@ function renderCommentsThread({
                     updatedAt:
                         created.updated_at,
 
-                    member:
-                        state.currentUserMember
-                            ? {
-                                id:
-                                    state.currentUserMember.id,
-
-                                paxName:
-                                    state.currentUserMember.paxName ||
-                                    "",
-
-                                realName:
-                                    state.currentUserMember.realName ||
-                                    "",
-                            }
-                            : null,
+                    member: state.currentUserMember
+                        ? {
+                            id: state.currentUserMember.id,
+                            paxName: state.currentUserMember.paxName || "",
+                            realName: state.currentUserMember.realName || "",
+                            avatarPath: state.currentUserMember.avatarPath || null,
+                        }
+                        : null,
                 };
 
                 comments.push(

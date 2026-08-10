@@ -18,6 +18,7 @@ import {
 } from "../services/cloudData.js";
 import { createUpcomingWorkoutCardViewModel } from "../utils/upcomingWorkoutViewModel.js";
 import { renderUpcomingWorkoutCard } from "../components/regionFeed/upcomingWorkoutCard.js";
+import { resolveMediaUrls } from "../services/mediaService.js";
 
 let regionFeedRequestSequence = 0;
 let upcomingWorkoutSummaryRequestKey = null;
@@ -40,6 +41,9 @@ function resetRegionFeed(regionId) {
         hasLoaded: false,
         error: null,
         hasMore: true,
+
+        avatarUrls: new Map(),
+        avatarUrlsLoading: false,
 
         expandedUpcomingSlotId: null,
 
@@ -88,6 +92,82 @@ function createLoadingState() {
     );
 
     return loading;
+}
+
+function loadRegionFeedAvatarUrls() {
+    if (state.regionFeed.avatarUrlsLoading) return;
+
+    const members = [
+        ...(state.regionParticipants || []),
+        ...(state.members || []),
+    ];
+
+    const avatarPaths = [
+        ...new Set(
+            members
+                .map(member => member.avatarPath)
+                .filter(Boolean)
+        ),
+    ];
+
+    if (avatarPaths.length === 0) {
+        return;
+    }
+
+    const unresolvedPaths =
+        avatarPaths.filter(
+            path =>
+                !state.regionFeed.avatarUrls.has(
+                    path
+                )
+        );
+
+    if (unresolvedPaths.length === 0) {
+        return;
+    }
+
+    const workspaceGeneration =
+        state.workspaceGeneration;
+
+    state.regionFeed.avatarUrlsLoading = true;
+
+    resolveMediaUrls(unresolvedPaths)
+        .then(urls => {
+            if (
+                workspaceGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+
+            urls.forEach((url, path) => {
+                state.regionFeed.avatarUrls.set(
+                    path,
+                    url
+                );
+            });
+
+            if (
+                state.currentView ===
+                "regionFeed"
+            ) {
+                renderRegionFeedView();
+            }
+        })
+        .catch(error => {
+            console.warn(
+                "Failed to resolve feed avatars:",
+                error
+            );
+        })
+        .finally(() => {
+            if (
+                workspaceGeneration ===
+                state.workspaceGeneration
+            ) {
+                state.regionFeed.avatarUrlsLoading = false;
+            }
+        });
 }
 
 function createEmptyState() {
@@ -921,7 +1001,10 @@ function renderFeedItems(items) {
 
             list.appendChild(
                 renderer
-                    ? renderer(event)
+                    ? renderer(event, {
+                        avatarUrls:
+                            state.regionFeed.avatarUrls,
+                    })
                     : createUnsupportedEvent(event)
             );
         });
@@ -1171,6 +1254,8 @@ export function renderRegionFeedView() {
     
         return;
     }
+
+    loadRegionFeedAvatarUrls();
 
     const upcomingWorkouts =
         renderUpcomingWorkouts();

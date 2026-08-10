@@ -11,6 +11,8 @@ import { showToast } from "../utils/toast.js";
 import { PERMISSIONS, hasPermission } from "../utils/permissions.js";
 import { navigateTo, navigateToPaxProfile } from "../utils/navigation.js";
 import { addMember } from "../services/appData.js";
+import { createMemberAvatar } from "../components/memberAvatar.js";
+import { resolveMediaUrls } from "../services/mediaService.js";
 
 const ROSTER_INDEX_KEYS = [
   "#",
@@ -611,7 +613,8 @@ function renderRosterList(
   rosterContainer,
   members,
   indexContainer,
-  resultsMeta
+  resultsMeta,
+  avatarUrls = new Map()
 ) {
   rosterContainer.textContent = "";
 
@@ -715,6 +718,12 @@ function renderRosterList(
         );
       }
 
+      const avatar = createMemberAvatar(member, {
+        signedUrl: member.avatarPath
+          ? avatarUrls.get(member.avatarPath) || null
+          : null,
+      });
+
       const memberContent =
         document.createElement("div");
 
@@ -796,6 +805,7 @@ function renderRosterList(
       chevron.textContent = "›";
 
       memberRow.append(
+        avatar,
         memberContent,
         chevron
       );
@@ -1066,6 +1076,8 @@ export function renderRoster() {
     rosterIndex
   );
 
+  let rosterAvatarUrls = new Map();
+
   function renderVisibleRoster() {
     cleanupRosterInteractions?.();
   
@@ -1073,7 +1085,8 @@ export function renderRoster() {
       rosterContainer,
       getVisibleRosterMembers(),
       rosterIndex,
-      resultsMeta
+      resultsMeta,
+      rosterAvatarUrls
     );
   
     cleanupRosterInteractions =
@@ -1094,6 +1107,21 @@ export function renderRoster() {
   );
 
   renderVisibleRoster();
+
+  const avatarPaths = state.members
+    .map(member => member.avatarPath)
+    .filter(Boolean);
+
+  if (avatarPaths.length) {
+    resolveMediaUrls(avatarPaths)
+      .then(urls => {
+        rosterAvatarUrls = urls;
+        renderVisibleRoster();
+      })
+      .catch(error => {
+        console.warn("Failed to resolve roster avatars:", error);
+      });
+  }
 
   const nav = createGlobalNav();
 

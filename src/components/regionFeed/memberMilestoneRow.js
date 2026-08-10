@@ -1,6 +1,7 @@
 import { state } from "../../modules/state.js";
 import { navigateTo } from "../../utils/navigation.js";
 import { createRegionFeedReactions } from "./regionFeedReactions.js";
+import { createMemberAvatar } from "../memberAvatar.js";
 
 function formatEventTime(timestamp) {
     if (!timestamp) return "";
@@ -13,9 +14,17 @@ function formatEventTime(timestamp) {
     }).format(new Date(timestamp));
 }
 
-export function renderMemberMilestoneRow(event) {
+export function renderMemberMilestoneRow(
+    event,
+    {
+        avatarUrls = new Map(),
+    } = {}
+) {
     const milestone = Number(event.payload?.milestone) || 0;
     const paxName = event.member?.paxName || event.member?.realName || "A PAX";
+    const avatarUrl = event.member?.avatarPath
+        ? avatarUrls.get(event.member.avatarPath) || null
+        : null;
 
     const row = document.createElement("article");
     row.className = "region-feed-card region-feed-milestone-card";
@@ -24,6 +33,14 @@ export function renderMemberMilestoneRow(event) {
     button.type = "button";
     button.className = "region-feed-card-button region-feed-milestone-button";
     button.setAttribute("aria-label", `View ${paxName}'s profile`);
+
+    const avatar = createMemberAvatar(
+        event.member,
+        {
+            signedUrl: avatarUrl,
+            className: "region-feed-member-avatar",
+        }
+    );
 
     const content = document.createElement("div");
     content.className = "region-feed-card-content";
@@ -73,6 +90,7 @@ export function renderMemberMilestoneRow(event) {
     });
 
     button.append(
+        avatar,
         content,
         visual,
         action

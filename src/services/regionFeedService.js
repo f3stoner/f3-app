@@ -34,6 +34,7 @@ function mapRegionFeedCommentFromDb(row) {
                 id: row.members.id,
                 paxName: row.members.pax_name || "",
                 realName: row.members.real_name || "",
+                avatarPath: row.members.avatar_path || null,
             }
             : null,
     };
@@ -59,7 +60,8 @@ export async function loadWorkoutComments(qSlotId) {
             members (
                 id,
                 pax_name,
-                real_name
+                real_name,
+                avatar_path
             )
         `)
         .eq("q_slot_id", qSlotId)
@@ -147,6 +149,7 @@ function mapRegionFeedEventFromDb(row) {
                 id: row.members.id,
                 paxName: row.members.pax_name || "",
                 realName: row.members.real_name || "",
+                avatarPath: row.members.avatar_path || null,
             }
             : null,
         announcementId: row.announcement_id,
@@ -295,7 +298,8 @@ export async function loadRegionFeedPage({
             members (
                 id,
                 pax_name,
-                real_name
+                real_name,
+                avatar_path
             ),
             announcement_id,
             announcements (
@@ -484,7 +488,7 @@ export async function loadRegionFeedPage({
             item.currentReaction = summary.current_reaction || null;
             item.commentCount = Number(summary.comment_count) || 0;
         });
-        
+
     const finalItem =
         items[items.length - 1];
 
@@ -617,7 +621,8 @@ export async function loadRegionFeedComments(
             members (
                 id,
                 pax_name,
-                real_name
+                real_name,
+                avatar_path
             )
         `)
         .eq("feed_event_id", feedEventId)

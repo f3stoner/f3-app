@@ -17,12 +17,71 @@ import {
 } from "../services/mediaService.js";
 import { setMemberAvatarInCloud } from "../services/cloudData.js";
 import { openAvatarEditor } from "../components/avatarEditor.js";
+import { openAvatarActions } from "../components/avatarActions.js";
 
 
 function getSelectedMember() {
     return getMemberById(
         state.selectedPaxId
     );
+}
+
+async function removeAvatar(member) {
+    const previousAvatarPath = member.avatarPath;
+
+    if (!previousAvatarPath) return;
+
+    try {
+        const result = await setMemberAvatarInCloud(
+            member.id,
+            null
+        );
+
+        member.avatarPath = null;
+
+        if (state.currentUserMember?.id === member.id) {
+            state.currentUserMember.avatarPath = null;
+        }
+
+        const stateMember = state.members.find(
+            candidate => candidate.id === member.id
+        );
+
+        if (stateMember) {
+            stateMember.avatarPath = null;
+        }
+
+        const participant = state.participants.find(
+            candidate => candidate.id === member.id
+        );
+
+        if (participant) {
+            participant.avatarPath = null;
+        }
+
+        clearResolvedMediaUrl(previousAvatarPath);
+
+        removeMediaObjects([
+            previousAvatarPath,
+        ]).catch(error => {
+            console.warn(
+                "Failed to remove previous avatar:",
+                error
+            );
+        });
+
+        renderPaxProfileView();
+    } catch (error) {
+        console.error(
+            "Failed to remove profile avatar:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Unable to remove profile photo."
+        );
+    }
 }
 
 function createProfileIdentity(member, memberSince, avatarUrl = null) {
@@ -33,7 +92,11 @@ function createProfileIdentity(member, memberSince, avatarUrl = null) {
         avatarUrl,
         avatarInteractive: isCurrentUser,
         onAvatarActivate: isCurrentUser
-            ? () => selectAndUploadAvatar(member)
+            ? () => openAvatarActions({
+                hasAvatar: Boolean(member.avatarPath),
+                onChange: () => selectAndUploadAvatar(member),
+                onRemove: () => removeAvatar(member),
+            })
             : null,
     });
 }

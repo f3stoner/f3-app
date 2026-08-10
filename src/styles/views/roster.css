@@ -614,11 +614,12 @@
 
     display: grid;
     grid-template-columns:
+        2.5rem
         minmax(0, 1fr)
         auto;
 
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.7rem;
 
     margin: 0;
     padding:
@@ -780,6 +781,38 @@
         var(--roster-accent);
 }
 
+.view-roster
+.roster-member-row
+.member-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.view-roster
+.roster-member-row
+.member-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
 
 /* =========================================================
    INACTIVE MEMBERS
@@ -916,7 +949,7 @@
 
         padding:
             0.72rem
-            0.75rem;
+            0.35rem;
     }
 
     .view-roster

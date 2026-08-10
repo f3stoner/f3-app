@@ -3,6 +3,7 @@ import { navigateTo } from "../../utils/navigation.js";
 import { loadSessionsByIds } from "../../services/cloudData.js";
 import { createIcon } from "../../utils/icons.js";
 import { createRegionFeedReactions } from "./regionFeedReactions.js";
+import { createMemberAvatar } from "../memberAvatar.js";
 
 function formatEventTime(timestamp) {
     if (!timestamp) return "";
@@ -48,10 +49,17 @@ async function openSession(event) {
     navigateTo("sessionDetail");
 }
 
-export function renderVqEarnedRow(event) {
-    const session = event.session;
+export function renderVqEarnedRow(
+    event,
+    {
+        avatarUrls = new Map(),
+    } = {}
+) {    const session = event.session;
     const paxName = event.member?.paxName || event.member?.realName || "A PAX";
     const aoName = session?.aoName || event.payload?.aoName || "a workout";
+    const avatarUrl = event.member?.avatarPath
+        ? avatarUrls.get(event.member.avatarPath) || null
+        : null;
 
     const row = document.createElement("article");
     row.className = "region-feed-card region-feed-vq-card";
@@ -61,20 +69,10 @@ export function renderVqEarnedRow(event) {
     button.className = "region-feed-vq-button";
     button.setAttribute("aria-label", `View ${paxName}'s VQ at ${aoName}`);
 
-    const icon = document.createElement("div");
-    icon.className = "region-feed-event-icon region-feed-vq-icon";
-    icon.setAttribute("aria-hidden", "true");
-
-    icon.appendChild(
-        createIcon(
-            "feedVqEarned",
-            "region-feed-event-icon-svg",
-            {
-                size: 21,
-                strokeWidth: 2.3,
-            }
-        )
-    );
+    const avatar = createMemberAvatar(event.member, {
+        signedUrl: avatarUrl,
+        className: "region-feed-member-avatar",
+    });
 
     const content = document.createElement("div");
     content.className = "region-feed-card-content";
@@ -125,7 +123,7 @@ export function renderVqEarnedRow(event) {
     });
 
     button.append(
-        icon,
+        avatar,
         content,
         visual,
         action
