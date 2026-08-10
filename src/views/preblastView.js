@@ -84,6 +84,7 @@ export function renderPreblastView() {
         state.persistedPreblastMediaUrls = new Map();
         state.persistedPreblastMediaQSlotId = null;
         state.persistedPreblastLocalFileKeys = new Set();
+        state.persistedPreblastAssetLocalKeys = new Map();
 
         state.currentView = "dashboard";
         showToast("Preblast shared.", "success");
@@ -103,6 +104,7 @@ export function renderPreblastView() {
         state.persistedPreblastMediaUrls = new Map();
         state.persistedPreblastMediaQSlotId = null;
         state.persistedPreblastLocalFileKeys = new Set();
+        state.persistedPreblastAssetLocalKeys = new Map();
 
         if (returnToWorkout) {
             state.currentView = "plannedWorkoutDetail";
@@ -663,6 +665,19 @@ export function renderPreblastView() {
                     }
                 }
 
+                const localFileKey = state.persistedPreblastAssetLocalKeys?.get(asset.id);
+
+                if (localFileKey) {
+                    state.draftPreblastMediaFiles = (state.draftPreblastMediaFiles || [])
+                        .filter(file => {
+                            const fileKey = `${file.name}__${file.size}__${file.lastModified}`;
+                            return fileKey !== localFileKey;
+                        });
+
+                    state.persistedPreblastLocalFileKeys?.delete(localFileKey);
+                    state.persistedPreblastAssetLocalKeys?.delete(asset.id);
+                }
+
                 state.persistedPreblastMediaQSlotId = null;
                 state.persistedPreblastMedia = [];
                 state.persistedPreblastMediaUrls = new Map();
@@ -769,42 +784,59 @@ export function renderPreblastView() {
 
     async function persistPreblastMedia() {
         const files = getPersistablePreblastFiles();
-        const file = files[0];
     
-        if (!file) return null;
+        if (!files.length) return [];
     
         if (!preblastQSlot?.id) {
             throw new Error("No Q slot found for preblast media.");
         }
     
-        const uploadBlob = await normalizeMediaImage(file);
-
-        const reservation = await reserveMediaAttachment({
-            qSlotId: preblastQSlot.id,
-            mediaKind: "image",
-            mimeType: uploadBlob.type,
-            fileSizeBytes: uploadBlob.size,
-            displayOrder: 0,
-        });
-        
-        const asset = reservation?.asset;
-        
-        if (!asset?.id || !asset?.storage_path) {
-            throw new Error("Media reservation did not return a valid asset.");
-        }
-        
-        await uploadMediaAsset(asset.storage_path, uploadBlob);
-        
-        const finalized = await finalizeMediaAsset(asset.id);
-        
         state.persistedPreblastLocalFileKeys =
             state.persistedPreblastLocalFileKeys || new Set();
-        
-        state.persistedPreblastLocalFileKeys.add(
-            `${file.name}__${file.size}__${file.lastModified}`
-        );
-        
-        return finalized;
+    
+        state.persistedPreblastAssetLocalKeys =
+            state.persistedPreblastAssetLocalKeys || new Map();
+    
+        const existingOrders = (state.persistedPreblastMedia || [])
+            .map(item => Number(item.displayOrder))
+            .filter(Number.isFinite);
+    
+        let displayOrder = existingOrders.length
+            ? Math.max(...existingOrders) + 1
+            : 0;
+    
+        const finalizedAssets = [];
+    
+        for (const file of files) {
+            const uploadBlob = await normalizeMediaImage(file);
+    
+            const reservation = await reserveMediaAttachment({
+                qSlotId: preblastQSlot.id,
+                mediaKind: "image",
+                mimeType: uploadBlob.type,
+                fileSizeBytes: uploadBlob.size,
+                displayOrder,
+            });
+    
+            const asset = reservation?.asset;
+    
+            if (!asset?.id || !asset?.storage_path) {
+                throw new Error("Media reservation did not return a valid asset.");
+            }
+    
+            await uploadMediaAsset(asset.storage_path, uploadBlob);
+    
+            const finalized = await finalizeMediaAsset(asset.id);
+            const fileKey = `${file.name}__${file.size}__${file.lastModified}`;
+    
+            state.persistedPreblastLocalFileKeys.add(fileKey);
+            state.persistedPreblastAssetLocalKeys.set(asset.id, fileKey);
+    
+            finalizedAssets.push(finalized);
+            displayOrder += 1;
+        }
+    
+        return finalizedAssets;
     }
 
     async function loadPersistedPreblastMedia() {
@@ -945,8 +977,6 @@ export function renderPreblastView() {
     } else {
         shareButton.addEventListener("click", async () => {
             try {
-                await persistPreblastDraft();
-
                 const mediaFiles = state.draftPreblastMediaFiles || [];
                 const rawText = textInput.value || "";
                 const text = mediaFiles.length ? removeUrlProtocol(rawText) : rawText;
