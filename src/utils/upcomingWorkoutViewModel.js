@@ -43,6 +43,7 @@ export function createUpcomingWorkoutCardViewModel({
     sessions = [],
     commitmentSummary = null,
     memberDirectory = null,
+    preblastMedia = [],
 }) {
     if (!slot) {
         return null;
@@ -159,13 +160,19 @@ export function createUpcomingWorkoutCardViewModel({
 
         preblastText,
 
+        preblastMedia:
+            Array.isArray(preblastMedia)
+                ? preblastMedia
+                : [],
+
         preblastPostedAt:
             slot.preblastPostedAt ||
             null,
 
         hasPreblast:
             Boolean(
-                preblastText.trim()
+                preblastText.trim() ||
+                preblastMedia.length > 0
             ),
 
         hcCount:

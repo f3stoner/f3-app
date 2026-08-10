@@ -451,10 +451,85 @@ export function renderUpcomingWorkoutCard({
             ? workout.preblastText
             : "The Q hasn't posted a preblast yet.";
 
-    preblastSection.append(
-        preblastLabel,
-        preblastBody
+    preblastSection.appendChild(
+        preblastLabel
     );
+    
+    if (workout.preblastText) {
+        preblastSection.appendChild(
+            preblastBody
+        );
+    }
+
+    const preblastMedia =
+    Array.isArray(
+        workout.preblastMedia
+    )
+        ? workout.preblastMedia
+        : [];
+
+if (preblastMedia.length > 0) {
+    const media =
+        document.createElement("div");
+
+    media.className =
+        "region-feed-upcoming-preblast-media";
+
+    if (preblastMedia.length === 1) {
+        media.classList.add(
+            "single"
+        );
+    } else if (
+        preblastMedia.length === 2
+    ) {
+        media.classList.add(
+            "double"
+        );
+    } else {
+        media.classList.add(
+            "gallery"
+        );
+    }
+
+    preblastMedia
+        .slice(0, 4)
+        .forEach(item => {
+        if (
+            item.mediaKind !==
+            "image"
+        ) {
+            return;
+        }
+
+        const image =
+            document.createElement("img");
+
+        image.className =
+            "region-feed-upcoming-preblast-image";
+
+        image.src =
+            item.url;
+
+        image.alt =
+            "Preblast attachment";
+
+        image.loading =
+            "lazy";
+
+        image.decoding =
+            "async";
+
+        media.appendChild(
+            image
+        );
+    });
+
+    if (media.childElementCount > 0) {
+        preblastSection.appendChild(
+            media
+        );
+    }
+}
 
     expanded.appendChild(
         preblastSection

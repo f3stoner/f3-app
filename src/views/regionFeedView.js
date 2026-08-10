@@ -18,11 +18,15 @@ import {
 } from "../services/cloudData.js";
 import { createUpcomingWorkoutCardViewModel } from "../utils/upcomingWorkoutViewModel.js";
 import { renderUpcomingWorkoutCard } from "../components/regionFeed/upcomingWorkoutCard.js";
-import { resolveMediaUrls } from "../services/mediaService.js";
+import {
+    loadQSlotMediaAttachmentsBySlotIds,
+    resolveMediaUrls,
+} from "../services/mediaService.js";
 
 let regionFeedRequestSequence = 0;
 let upcomingWorkoutSummaryRequestKey = null;
 let upcomingWorkoutSocialRequestKey = null;
+let upcomingWorkoutMediaRequestKey = null;
 
 const eventRenderers = {
     session_completed: renderSessionCompletedCard,
@@ -51,6 +55,8 @@ function resetRegionFeed(regionId) {
         upcomingCommitmentDetailsLoadingBySlotId: {},
         upcomingCommitmentDetailsErrorBySlotId: {},
         upcomingCommitmentUpdatingBySlotId: {},
+        upcomingMediaBySlotId: {},
+        upcomingMediaLoading: false,
     };
 }
 
@@ -184,13 +190,13 @@ function createEmptyState() {
         document.createElement("h2");
 
     heading.textContent =
-        "The feed is just getting started";
+        "No recent activity";
 
     const copy =
         document.createElement("p");
 
     copy.textContent =
-        "Newly logged workouts will appear here.";
+        "Newly logged workouts and regional accomplishments will appear here.";
 
     empty.append(
         heading,
@@ -416,6 +422,161 @@ function loadUpcomingWorkoutSummaries(
 
             upcomingWorkoutSummaryRequestKey =
                 null;
+        });
+}
+
+function loadUpcomingWorkoutMedia(
+    slots
+) {
+    const slotIds =
+        slots
+            .map(slot => slot.id)
+            .filter(Boolean);
+
+    if (slotIds.length === 0) {
+        return;
+    }
+
+    const requestKey = [
+        state.currentRegionId,
+        state.workspaceGeneration,
+        ...slotIds,
+    ].join("__");
+
+    if (
+        upcomingWorkoutMediaRequestKey ===
+        requestKey
+    ) {
+        return;
+    }
+
+    upcomingWorkoutMediaRequestKey =
+        requestKey;
+
+    const workspaceGeneration =
+        state.workspaceGeneration;
+
+    state.regionFeed.upcomingMediaLoading =
+        true;
+
+    loadQSlotMediaAttachmentsBySlotIds(
+        slotIds
+    )
+        .then(async attachmentsBySlotId => {
+            if (
+                workspaceGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+
+            const storagePaths = [
+                ...new Set(
+                    [...attachmentsBySlotId.values()]
+                        .flat()
+                        .map(
+                            attachment =>
+                                attachment
+                                    .asset
+                                    ?.storagePath
+                        )
+                        .filter(Boolean)
+                ),
+            ];
+
+            const urls =
+                await resolveMediaUrls(
+                    storagePaths
+                );
+
+            if (
+                workspaceGeneration !==
+                state.workspaceGeneration
+            ) {
+                return;
+            }
+
+            const mediaBySlotId = {};
+
+            slotIds.forEach(slotId => {
+                mediaBySlotId[slotId] =
+                    (
+                        attachmentsBySlotId.get(
+                            slotId
+                        ) || []
+                    )
+                        .map(attachment => {
+                            const storagePath =
+                                attachment.asset
+                                    ?.storagePath;
+
+                            const url =
+                                storagePath
+                                    ? urls.get(
+                                        storagePath
+                                    )
+                                    : null;
+
+                            if (!url) {
+                                return null;
+                            }
+
+                            return {
+                                id:
+                                    attachment.id,
+                                assetId:
+                                    attachment.asset.id,
+                                url,
+                                storagePath,
+                                mediaKind:
+                                    attachment.asset
+                                        .mediaKind,
+                                mimeType:
+                                    attachment.asset
+                                        .mimeType,
+                                width:
+                                    attachment.asset
+                                        .width,
+                                height:
+                                    attachment.asset
+                                        .height,
+                                displayOrder:
+                                    attachment
+                                        .displayOrder,
+                            };
+                        })
+                        .filter(Boolean);
+            });
+
+            state.regionFeed
+                .upcomingMediaBySlotId =
+                    mediaBySlotId;
+
+            if (
+                state.currentView ===
+                "regionFeed"
+            ) {
+                renderRegionFeedView();
+            }
+        })
+        .catch(error => {
+            console.error(
+                "Failed to hydrate upcoming workout media:",
+                error
+            );
+
+            upcomingWorkoutMediaRequestKey =
+                null;
+        })
+        .finally(() => {
+            if (
+                workspaceGeneration ===
+                state.workspaceGeneration
+            ) {
+                state.regionFeed
+                    .upcomingMediaLoading =
+                        false;
+            }
         });
 }
 
@@ -761,6 +922,10 @@ function renderUpcomingWorkouts() {
         slots
     );
 
+    loadUpcomingWorkoutMedia(
+        slots
+    );
+
     const workouts =
         slots.map(slot => {
             const commitmentSummary =
@@ -821,6 +986,11 @@ function renderUpcomingWorkouts() {
                         state.regionParticipants ||
                         state.members ||
                         [],
+                    preblastMedia:
+                        state.regionFeed
+                            .upcomingMediaBySlotId?.[
+                                slot.id
+                            ] || [],
                 });
             
             if (!workout) {
@@ -1247,17 +1417,6 @@ export function renderRegionFeedView() {
         return;
     }
 
-    if (
-        state.regionFeed.hasLoaded &&
-        state.regionFeed.items.length === 0
-    ) {
-        content.appendChild(
-            createEmptyState()
-        );
-    
-        return;
-    }
-
     loadRegionFeedAvatarUrls();
 
     const upcomingWorkouts =
@@ -1281,6 +1440,16 @@ export function renderRegionFeedView() {
     content.appendChild(
         activityHeading
     );
+
+    if (
+        state.regionFeed.items.length === 0
+    ) {
+        content.appendChild(
+            createEmptyState()
+        );
+
+        return;
+    }
 
     content.appendChild(
         renderFeedItems(

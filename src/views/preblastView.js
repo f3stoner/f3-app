@@ -622,7 +622,16 @@ export function renderPreblastView() {
 
     mediaInput.addEventListener("change", (event) => {
         const files = Array.from(event.target.files || []);
-        state.draftPreblastMediaFiles = files;
+        const existingFiles = state.draftPreblastMediaFiles || [];
+    
+        const filesByKey = new Map();
+    
+        [...existingFiles, ...files].forEach(file => {
+            const key = `${file.name}__${file.size}__${file.lastModified}`;
+            filesByKey.set(key, file);
+        });
+    
+        state.draftPreblastMediaFiles = [...filesByKey.values()];
         renderApp();
     });
 
@@ -888,6 +897,69 @@ export function renderPreblastView() {
         return savedQSlot;
     }
 
+    async function buildPreblastShareFiles() {
+        const localFiles = state.draftPreblastMediaFiles || [];
+    
+        if (!preblastQSlot?.id) return localFiles;
+    
+        const localFilesByKey = new Map(
+            localFiles.map(file => [
+                `${file.name}__${file.size}__${file.lastModified}`,
+                file,
+            ])
+        );
+    
+        const assetLocalKeys = state.persistedPreblastAssetLocalKeys || new Map();
+    
+        const attachments = await loadQSlotMediaAttachments(preblastQSlot.id);
+    
+        const persistedAttachmentsNeedingFiles = attachments.filter(item => {
+            const assetId = item.asset?.id;
+            const localFileKey = assetId ? assetLocalKeys.get(assetId) : null;
+    
+            return !(localFileKey && localFilesByKey.has(localFileKey));
+        });
+    
+        const storagePaths = persistedAttachmentsNeedingFiles
+            .map(item => item.asset?.storagePath)
+            .filter(Boolean);
+    
+        const urls = await resolveMediaUrls(storagePaths);
+        const persistedFiles = [];
+    
+        for (let index = 0; index < persistedAttachmentsNeedingFiles.length; index += 1) {
+            const attachment = persistedAttachmentsNeedingFiles[index];
+            const asset = attachment.asset;
+            const url = urls.get(asset.storagePath);
+    
+            if (!url) continue;
+    
+            const response = await fetch(url);
+    
+            if (!response.ok) {
+                throw new Error(`Failed to prepare saved media for sharing: ${response.status}`);
+            }
+    
+            const blob = await response.blob();
+            const mimeType = blob.type || asset.mimeType || "image/jpeg";
+    
+            const extension =
+                mimeType === "image/webp"
+                    ? "webp"
+                    : mimeType === "image/png"
+                        ? "png"
+                        : "jpg";
+    
+            persistedFiles.push(
+                new File([blob], `preblast-${index + 1}.${extension}`, {
+                    type: mimeType,
+                })
+            );
+        }
+    
+        return [...persistedFiles, ...localFiles];
+    }
+
     const saveButton = document.createElement("button");
     saveButton.classList.add(
         "preblast-secondary-action"
@@ -965,6 +1037,7 @@ export function renderPreblastView() {
             showToast("Copied, but draft was not saved.", "error");
         }
     });
+
     const shareButton = document.createElement("button");
     shareButton.classList.add(
         "preblast-share-button",
@@ -978,7 +1051,11 @@ export function renderPreblastView() {
     } else {
         shareButton.addEventListener("click", async () => {
             try {
-                const mediaFiles = state.draftPreblastMediaFiles || [];
+                shareButton.disabled = true;
+                shareButton.textContent = "Preparing…";
+                
+                const mediaFiles = await buildPreblastShareFiles();
+                
                 const rawText = textInput.value || "";
                 const text = mediaFiles.length ? removeUrlProtocol(rawText) : rawText;
                 
@@ -1007,20 +1084,20 @@ export function renderPreblastView() {
                 returnToDashboardAfterShare();
 
             } catch (error) {
-                if (error.name === "AbortError") return;
+                if (error.name !== "AbortError") {
+                    console.error("Share failed:", error);
+                    showToast("Share failed.", "error");
 
-                console.error("Share failed:", error);
-                showToast("Share failed.", "error");
-
-                logActionFailure("sharePreblast", error, {
-                    qSlotId: preblastQSlot?.id || null,
-                    plannedWorkoutId: state.selectedPreblastWorkoutId || state.selectedPlannedWorkoutId || null,
-                    mediaFileCount: state.draftPreblastMediaFiles?.length || 0,
-                    usedFilesShare: Boolean(
-                        state.draftPreblastMediaFiles?.length &&
-                        navigator.canShare?.({ files: state.draftPreblastMediaFiles })
-                    ),
-                });
+                    logActionFailure("sharePreblast", error, {
+                        qSlotId: preblastQSlot?.id || null,
+                        plannedWorkoutId: state.selectedPreblastWorkoutId || state.selectedPlannedWorkoutId || null,
+                    });
+                }
+            } finally {
+                if (state.currentView === "preblast") {
+                    shareButton.disabled = false;
+                    shareButton.textContent = "Share Preblast";
+                }
             }
         });
     }

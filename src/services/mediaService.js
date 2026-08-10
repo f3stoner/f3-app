@@ -423,3 +423,88 @@ export async function removeMediaAsset(mediaAssetId) {
     if (error) throw error;
     return data;
 }
+
+export async function loadQSlotMediaAttachmentsBySlotIds(
+    qSlotIds = []
+) {
+    const cleanSlotIds = [
+        ...new Set(
+            qSlotIds.filter(Boolean)
+        ),
+    ];
+
+    if (cleanSlotIds.length === 0) {
+        return new Map();
+    }
+
+    const { data, error } = await supabase
+        .from("media_attachments")
+        .select(`
+            id,
+            q_slot_id,
+            display_order,
+            media_assets (
+                id,
+                storage_path,
+                media_kind,
+                mime_type,
+                file_size_bytes,
+                width,
+                height,
+                status
+            )
+        `)
+        .in("q_slot_id", cleanSlotIds)
+        .order("display_order", {
+            ascending: true,
+        });
+
+    if (error) throw error;
+
+    const bySlotId = new Map(
+        cleanSlotIds.map(
+            qSlotId => [
+                qSlotId,
+                [],
+            ]
+        )
+    );
+
+    (data || []).forEach(row => {
+        if (
+            !row.q_slot_id ||
+            row.media_assets?.status !==
+                "ready"
+        ) {
+            return;
+        }
+
+        bySlotId
+            .get(row.q_slot_id)
+            ?.push({
+                id: row.id,
+                displayOrder:
+                    row.display_order,
+                asset: {
+                    id:
+                        row.media_assets.id,
+                    storagePath:
+                        row.media_assets.storage_path,
+                    mediaKind:
+                        row.media_assets.media_kind,
+                    mimeType:
+                        row.media_assets.mime_type,
+                    fileSizeBytes:
+                        row.media_assets.file_size_bytes,
+                    width:
+                        row.media_assets.width,
+                    height:
+                        row.media_assets.height,
+                    status:
+                        row.media_assets.status,
+                },
+            });
+    });
+
+    return bySlotId;
+}
