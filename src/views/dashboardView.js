@@ -2988,8 +2988,9 @@ const debugWeatherCacheKey =
                         createdByUserId: state.currentUserId,
                         createdAt: Date.now(),
                         backblastText: "",
-                        backblastIntroText: "",
-                        backblastBodyText: "",
+                        backblastHashtagsText: null,
+                        backblastIntroText: null,
+                        backblastBodyText: null,
                     };
             
                     state.editingSessionId = null;

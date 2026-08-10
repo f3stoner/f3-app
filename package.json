@@ -39,6 +39,7 @@
     "cropperjs": "^2.1.1",
     "csv-parse": "^6.2.1",
     "dotenv-webpack": "^9.0.0",
+    "heic-to": "^1.5.2",
     "html2canvas": "^1.4.1",
     "lucide": "^1.14.0",
     "papaparse": "^5.5.3",

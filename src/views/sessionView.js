@@ -3300,7 +3300,11 @@ saveButton.addEventListener("click", async () => {
                 state.hasAddedBackblastWeather =
                     false;
     
-                navigateTo("backblast");
+                navigateTo(
+                    "backblast",
+                    {},
+                    { replaceCurrent: true }
+                );
             }
         } catch (error) {
             console.error(

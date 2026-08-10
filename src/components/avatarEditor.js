@@ -2,10 +2,12 @@ import Cropper from "cropperjs";
 import {
     canvasToAvatarBlob,
     validateAvatarSourceFile,
+    validateAvatarSourceDimensions,
 } from "../utils/imageProcessing.js";
 
-export function openAvatarEditor(file) {
+export async function openAvatarEditor(file) {
     validateAvatarSourceFile(file);
+    await validateAvatarSourceDimensions(file);
 
     return new Promise((resolve, reject) => {
         const objectUrl = URL.createObjectURL(file);
@@ -111,29 +113,41 @@ export function openAvatarEditor(file) {
                 throw new Error("Avatar cropper could not be initialized.");
             }
 
-            cropperImage.$center("cover");
+            let boundsReady = false;
+            let lastValidTransform = null;
 
-            let lastValidTransform = cropperImage.$getTransform();
+            requestAnimationFrame(() => {
+                cropperImage.$center("cover");
+            
+                requestAnimationFrame(() => {
+                    lastValidTransform = cropperImage.$getTransform();
+                    boundsReady = true;
+                });
+            });
 
             cropperImage.addEventListener("transform", event => {
+                if (!boundsReady) return;
+            
                 const nextTransform = event.detail.matrix;
-
+            
                 requestAnimationFrame(() => {
                     const imageRect = cropperImage.getBoundingClientRect();
                     const selectionRect = selection.getBoundingClientRect();
-
+            
                     const coversSelection =
                         imageRect.left <= selectionRect.left &&
                         imageRect.top <= selectionRect.top &&
                         imageRect.right >= selectionRect.right &&
                         imageRect.bottom >= selectionRect.bottom;
-
+            
                     if (coversSelection) {
                         lastValidTransform = nextTransform;
                         return;
                     }
-
-                    cropperImage.$setTransform(lastValidTransform);
+            
+                    if (lastValidTransform) {
+                        cropperImage.$setTransform(lastValidTransform);
+                    }
                 });
             });
         }, { once: true });

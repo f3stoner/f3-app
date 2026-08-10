@@ -472,18 +472,48 @@ export function renderPlannedWorkoutDetail() {
                 "aria-live",
                 "polite"
             );
-    
+        
             message.textContent =
-                "Loading saved workout…";
-    
-            container.appendChild(
-                message
+                fallbackIsLoading
+                    ? "Loading saved workout…"
+                    : "Workout unavailable";
+        
+            const actions =
+                document.createElement("div");
+        
+            actions.classList.add(
+                "route-load-actions"
             );
-    
-            app.appendChild(
-                container
+        
+            const exitButton =
+                document.createElement("button");
+        
+            exitButton.type = "button";
+        
+            exitButton.classList.add(
+                "secondary-button",
+                "planned-workout-back-button"
             );
-    
+        
+            exitButton.textContent =
+                "Back to Workouts";
+        
+            exitButton.addEventListener("click", () => {
+                state.selectedPlannedWorkoutId = null;
+                state.plannedWorkoutLaunchMode = null;
+                endWorkoutExecution();
+                navigateTo("plannedWorkoutList");
+            });
+        
+            actions.appendChild(exitButton);
+        
+            container.append(
+                message,
+                actions
+            );
+        
+            app.appendChild(container);
+        
             return;
         }
     
@@ -1879,7 +1909,11 @@ export function renderPlannedWorkoutDetail() {
         state.selectedSessionId = null;
         state.editingSessionId = null;
         state.plannedWorkoutLaunchMode = null;
-        navigateTo("session");
+        navigateTo(
+            "session",
+            {},
+            { replaceCurrent: true }
+        );
     });
 
     const runWorkoutButton = document.createElement("button");

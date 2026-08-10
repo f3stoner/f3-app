@@ -19,6 +19,7 @@ const TOP_LEVEL_VIEWS = new Set([
     "plannedWorkoutList",
     "myPlanner",
     "aoManagement",
+
 ]);
 
 const PAX_PROFILE_VIEWS = new Set([
@@ -28,9 +29,11 @@ const PAX_PROFILE_VIEWS = new Set([
 
 export function navigateTo(
     view,
-    params = {}
+    params = {},
+    options = {}
 ) {
     const currentView = state.currentView;
+    const replaceCurrent = options.replaceCurrent === true;
 
     if (currentView && currentView !== view) {
         runViewCleanup(currentView);
@@ -39,12 +42,14 @@ export function navigateTo(
     if (TOP_LEVEL_VIEWS.has(view)) {
         state.viewHistory = [];
     } else if (
+        !replaceCurrent &&
         currentView &&
         currentView !== view &&
         !NON_HISTORY_VIEWS.has(currentView)
     ) {
         state.viewHistory.push(currentView);
     }
+
     state.currentViewParams = params;
     state.currentView = view;
     saveNavState(state);

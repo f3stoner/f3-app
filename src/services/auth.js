@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient.js";
+import { clearMediaUrlCache } from "./mediaService.js";
 
 export async function getCurrentSession() {
     const { data, error } = await supabase.auth.getSession();
@@ -19,7 +20,10 @@ export async function signInWithEmail(email, password) {
 
 export async function signOut() {
     const { error } = await supabase.auth.signOut();
+
     if (error) throw error;
+
+    clearMediaUrlCache();
 }
 
 export async function getMyProfile(existingSession = null) {

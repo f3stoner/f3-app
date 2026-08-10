@@ -98,10 +98,13 @@ function loadRegionFeedAvatarUrls() {
     if (state.regionFeed.avatarUrlsLoading) return;
 
     const members = [
-        ...(state.regionParticipants || []),
+        ...(state.participants || []),
         ...(state.members || []),
+        ...state.regionFeed.items
+            .map(item => item.member)
+            .filter(Boolean),
     ];
-
+    
     const avatarPaths = [
         ...new Set(
             members
@@ -109,7 +112,7 @@ function loadRegionFeedAvatarUrls() {
                 .filter(Boolean)
         ),
     ];
-
+    
     if (avatarPaths.length === 0) {
         return;
     }

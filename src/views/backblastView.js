@@ -6,6 +6,7 @@ import {
     generateBackblastHeader,
     generateBackblastHashtags,
     generateBackblastIntro,
+    resolveBackblastBody,
 } from "../modules/backblast.js";
 import { updateSession } from "../services/appData.js";
 import { showToast } from "../utils/toast.js";
@@ -58,8 +59,9 @@ export function renderBackblastView () {
                             null,
                     
                         backblastBodyText:
-                            session.backblastBodyText ??
-                            null,
+                            resolveBackblastBody(
+                                session
+                            ),
                     
                         backblastText,
                     };
@@ -128,8 +130,12 @@ export function renderBackblastView () {
             generateBackblastIntro(session, state.members);
         
         bodyText =
-            session.backblastBodyText ??
-            generateBackblastBody(session);
+            resolveBackblastBody(
+                session
+            );
+        
+        session.backblastBodyText =
+            bodyText;
     
         state.draftBackblastText =
             buildCurrentBackblastText();
@@ -575,7 +581,10 @@ export function renderBackblastView () {
                         const backblastText =
                             buildCurrentBackblastText();
 
-                            const persistableSession = { ...session };
+                            const {
+                                _backblastSectionsInitialized,
+                                ...persistableSession
+                            } = session;
                             
                             const updatedSession = {
                                 ...persistableSession,
@@ -589,8 +598,9 @@ export function renderBackblastView () {
                                     null,
                             
                                 backblastBodyText:
-                                    session.backblastBodyText ??
-                                    null,
+                                    resolveBackblastBody(
+                                        session
+                                    ),
                             
                                 backblastText,
                             

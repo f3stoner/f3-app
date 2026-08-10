@@ -504,6 +504,21 @@ export function generateBackblastBody(
     return workoutText;
 }
 
+export function resolveBackblastBody(
+    session
+) {
+    if (!session) return "";
+
+    const savedBody =
+        typeof session.backblastBodyText === "string"
+            ? session.backblastBodyText
+            : "";
+
+    return savedBody.trim()
+        ? savedBody
+        : generateBackblastBody(session);
+}
+
 export function composeBackblast({
     hashtagsText = "",
     introText = "",
@@ -559,8 +574,7 @@ export function buildBackblastSnapshot(
             ),
     
         bodyText:
-            session.backblastBodyText ??
-            generateBackblastBody(
+            resolveBackblastBody(
                 session
             ),
     });

@@ -8,6 +8,8 @@ const SIGNED_URL_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
 const resolvedUrlCache = new Map();
 
+const inFlightUrlPromises = new Map();
+
 function getCachedMediaUrl(path) {
     if (!path) return null;
 
@@ -63,126 +65,139 @@ export function buildAvatarPath(
 export async function resolveMediaUrl(path) {
     if (!path) return null;
 
-    const cachedUrl =
-        getCachedMediaUrl(path);
+    const cachedUrl = getCachedMediaUrl(path);
 
-    if (cachedUrl) {
-        return cachedUrl;
-    }
+    if (cachedUrl) return cachedUrl;
 
-    const { data, error } =
-        await supabase.storage
+    const existingPromise = inFlightUrlPromises.get(path);
+
+    if (existingPromise) return existingPromise;
+
+    const requestPromise = (async () => {
+        const { data, error } = await supabase.storage
             .from(MEDIA_BUCKET)
-            .createSignedUrl(
-                path,
-                SIGNED_URL_TTL_SECONDS
-            );
+            .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
 
-    if (error) {
-        console.warn(
-            "Failed to resolve media URL:",
-            {
+        if (error) {
+            console.warn("Failed to resolve media URL:", {
                 path,
                 error,
-            }
-        );
+            });
 
-        return null;
-    }
+            return null;
+        }
 
-    const signedUrl =
-        data?.signedUrl || null;
+        const signedUrl = data?.signedUrl || null;
 
-    if (signedUrl) {
-        cacheMediaUrl(
-            path,
-            signedUrl
-        );
-    }
+        if (signedUrl) cacheMediaUrl(path, signedUrl);
 
-    return signedUrl;
-}
+        return signedUrl;
+    })();
 
-export async function resolveMediaUrls(
-    paths = []
-) {
-    const cleanPaths = [
-        ...new Set(
-            paths.filter(Boolean)
-        ),
-    ];
-
-    if (cleanPaths.length === 0) {
-        return new Map();
-    }
-
-    const resolved = new Map();
-    const unresolvedPaths = [];
-
-    cleanPaths.forEach(path => {
-        const cachedUrl =
-            getCachedMediaUrl(path);
-
-        if (cachedUrl) {
-            resolved.set(
-                path,
-                cachedUrl
-            );
-        } else {
-            unresolvedPaths.push(path);
+    const trackedPromise = requestPromise.finally(() => {
+        if (inFlightUrlPromises.get(path) === trackedPromise) {
+            inFlightUrlPromises.delete(path);
         }
     });
 
-    if (
-        unresolvedPaths.length === 0
-    ) {
-        return resolved;
-    }
+    inFlightUrlPromises.set(path, trackedPromise);
 
-    const { data, error } =
-        await supabase.storage
-            .from(MEDIA_BUCKET)
-            .createSignedUrls(
-                unresolvedPaths,
-                SIGNED_URL_TTL_SECONDS
-            );
+    return trackedPromise;
+}
 
-    if (error) {
-        console.warn(
-            "Failed to resolve media URLs:",
-            {
-                paths:
-                    unresolvedPaths,
-                error,
-            }
-        );
+export async function resolveMediaUrls(paths = []) {
+    const cleanPaths = [...new Set(paths.filter(Boolean))];
 
-        return resolved;
-    }
+    if (cleanPaths.length === 0) return new Map();
 
-    (data || []).forEach(item => {
-        const path =
-            item.path || null;
+    const resolved = new Map();
+    const pending = [];
+    const unresolvedPaths = [];
 
-        const signedUrl =
-            item.signedUrl || null;
+    cleanPaths.forEach(path => {
+        const cachedUrl = getCachedMediaUrl(path);
 
-        if (
-            !path ||
-            !signedUrl
-        ) {
+        if (cachedUrl) {
+            resolved.set(path, cachedUrl);
             return;
         }
 
-        cacheMediaUrl(
-            path,
-            signedUrl
-        );
+        const existingPromise = inFlightUrlPromises.get(path);
 
-        resolved.set(
+        if (existingPromise) {
+            pending.push({
+                path,
+                promise: existingPromise,
+            });
+
+            return;
+        }
+
+        unresolvedPaths.push(path);
+    });
+
+    if (unresolvedPaths.length > 0) {
+        const batchPromise = (async () => {
+            const { data, error } = await supabase.storage
+                .from(MEDIA_BUCKET)
+                .createSignedUrls(
+                    unresolvedPaths,
+                    SIGNED_URL_TTL_SECONDS
+                );
+
+            if (error) {
+                console.warn("Failed to resolve media URLs:", {
+                    paths: unresolvedPaths,
+                    error,
+                });
+
+                return new Map();
+            }
+
+            const batchResults = new Map();
+
+            (data || []).forEach(item => {
+                const path = item.path || null;
+                const signedUrl = item.signedUrl || null;
+
+                if (!path || !signedUrl) return;
+
+                cacheMediaUrl(path, signedUrl);
+                batchResults.set(path, signedUrl);
+            });
+
+            return batchResults;
+        })();
+
+        unresolvedPaths.forEach(path => {
+            const requestPromise = batchPromise.then(
+                results => results.get(path) || null
+            );
+
+            const trackedPromise = requestPromise.finally(() => {
+                if (inFlightUrlPromises.get(path) === trackedPromise) {
+                    inFlightUrlPromises.delete(path);
+                }
+            });
+
+            inFlightUrlPromises.set(path, trackedPromise);
+
+            pending.push({
+                path,
+                promise: trackedPromise,
+            });
+        });
+    }
+
+    const pendingResults = await Promise.all(
+        pending.map(async ({ path, promise }) => ({
             path,
-            signedUrl
-        );
+            signedUrl: await promise,
+        }))
+    );
+
+    pendingResults.forEach(({ path, signedUrl }) => {
+        if (signedUrl) resolved.set(path, signedUrl);
     });
 
     return resolved;
@@ -294,4 +309,117 @@ export function clearResolvedMediaUrls(
 
 export function clearMediaUrlCache() {
     resolvedUrlCache.clear();
+    inFlightUrlPromises.clear();
+}
+
+export async function reserveMediaAttachment({
+    qSlotId = null,
+    sessionId = null,
+    regionFeedCommentId = null,
+    announcementId = null,
+    mediaKind,
+    mimeType,
+    fileSizeBytes = null,
+    width = null,
+    height = null,
+    displayOrder = 0,
+}) {
+    const { data, error } = await supabase.rpc("reserve_media_attachment", {
+        p_q_slot_id: qSlotId,
+        p_session_id: sessionId,
+        p_region_feed_comment_id: regionFeedCommentId,
+        p_announcement_id: announcementId,
+        p_media_kind: mediaKind,
+        p_mime_type: mimeType,
+        p_file_size_bytes: fileSizeBytes,
+        p_width: width,
+        p_height: height,
+        p_display_order: displayOrder,
+    });
+
+    if (error) throw error;
+    return data;
+}
+
+export async function uploadMediaAsset(storagePath, blob) {
+    if (!storagePath) {
+        throw new Error("Storage path is required.");
+    }
+
+    if (!(blob instanceof Blob)) {
+        throw new Error("Media upload requires a Blob.");
+    }
+
+    const { error } = await supabase.storage
+        .from(MEDIA_BUCKET)
+        .upload(storagePath, blob, {
+            contentType: blob.type,
+            upsert: false,
+        });
+
+    if (error) throw error;
+
+    clearResolvedMediaUrl(storagePath);
+}
+
+export async function finalizeMediaAsset(mediaAssetId) {
+    const { data, error } = await supabase.rpc("finalize_media_asset", {
+        p_media_asset_id: mediaAssetId,
+    });
+
+    if (error) throw error;
+    return data;
+}
+
+export async function loadQSlotMediaAttachments(qSlotId) {
+    if (!qSlotId) return [];
+
+    const { data, error } = await supabase
+        .from("media_attachments")
+        .select(`
+            id,
+            display_order,
+            media_assets (
+                id,
+                storage_path,
+                media_kind,
+                mime_type,
+                file_size_bytes,
+                width,
+                height,
+                status
+            )
+        `)
+        .eq("q_slot_id", qSlotId)
+        .order("display_order", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || [])
+        .map(row => ({
+            id: row.id,
+            displayOrder: row.display_order,
+            asset: row.media_assets
+                ? {
+                    id: row.media_assets.id,
+                    storagePath: row.media_assets.storage_path,
+                    mediaKind: row.media_assets.media_kind,
+                    mimeType: row.media_assets.mime_type,
+                    fileSizeBytes: row.media_assets.file_size_bytes,
+                    width: row.media_assets.width,
+                    height: row.media_assets.height,
+                    status: row.media_assets.status,
+                }
+                : null,
+        }))
+        .filter(item => item.asset?.status === "ready");
+}
+
+export async function removeMediaAsset(mediaAssetId) {
+    const { data, error } = await supabase.rpc("remove_media_asset", {
+        p_media_asset_id: mediaAssetId,
+    });
+
+    if (error) throw error;
+    return data;
 }

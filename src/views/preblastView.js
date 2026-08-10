@@ -11,6 +11,16 @@ import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot, getWorkoutEmphasisTagsForSlot } from "../utils/workoutEmphasis.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
+import {
+    reserveMediaAttachment,
+    uploadMediaAsset,
+    finalizeMediaAsset,
+    loadQSlotMediaAttachments,
+    resolveMediaUrls,
+    removeMediaAsset,
+    removeMediaObjects,
+} from "../services/mediaService.js";
+import { normalizeMediaImage } from "../utils/imageProcessing.js";
 
 export function renderPreblastView() {
 
@@ -70,6 +80,11 @@ export function renderPreblastView() {
         state.selectedPreblastQSlotId = null;
         state.selectedPreblastWorkoutId = null;
         state.selectedPlannedWorkoutId = null;
+        state.persistedPreblastMedia = [];
+        state.persistedPreblastMediaUrls = new Map();
+        state.persistedPreblastMediaQSlotId = null;
+        state.persistedPreblastLocalFileKeys = new Set();
+
         state.currentView = "dashboard";
         showToast("Preblast shared.", "success");
         renderApp();
@@ -84,6 +99,10 @@ export function renderPreblastView() {
         state.hasAddedPreblastForecast = false;
         state.selectedPreblastQSlotId = null;
         state.selectedPreblastWorkoutId = null;
+        state.persistedPreblastMedia = [];
+        state.persistedPreblastMediaUrls = new Map();
+        state.persistedPreblastMediaQSlotId = null;
+        state.persistedPreblastLocalFileKeys = new Set();
 
         if (returnToWorkout) {
             state.currentView = "plannedWorkoutDetail";
@@ -115,13 +134,63 @@ export function renderPreblastView() {
     intro.append(title, subtitle);
 
     function getPreblastQSlot() {
-        return state.qSlots.find(
+        const selectedSlot = state.qSlots.find(
             slot => slot.id === state.selectedPreblastQSlotId
         );
+    
+        if (selectedSlot) return selectedSlot;
+    
+        const workout = getPreblastWorkout();
+    
+        if (!workout) return null;
+    
+        if (workout.sourceQSlotId) {
+            const sourceSlot = state.qSlots.find(
+                slot => slot.id === workout.sourceQSlotId
+            );
+    
+            if (sourceSlot) return sourceSlot;
+        }
+    
+        return state.qSlots.find(slot => {
+            const ao = state.aos.find(
+                candidate => candidate.id === slot.aoId
+            );
+    
+            return (
+                slot.date === workout.date &&
+                (
+                    slot.aoId === workout.aoId ||
+                    (
+                        !workout.aoId &&
+                        ao?.name === workout.aoName
+                    )
+                ) &&
+                slot.qUserId === state.currentUserMemberId
+            );
+        }) || null;
     }
 
-    const preblastQSlot = getPreblastQSlot();
     const preblastWorkout = getPreblastWorkout();
+    const preblastQSlot = getPreblastQSlot();
+    
+    if (
+        preblastQSlot &&
+        state.selectedPreblastQSlotId !== preblastQSlot.id
+    ) {
+        state.selectedPreblastQSlotId = preblastQSlot.id;
+    }
+    
+    if (
+        !state.draftPreblastText &&
+        preblastQSlot?.preblastText
+    ) {
+        state.draftPreblastText = preblastQSlot.preblastText;
+    }
+
+    state.persistedPreblastMedia = state.persistedPreblastMedia || [];
+
+    state.persistedPreblastMediaUrls = state.persistedPreblastMediaUrls || new Map();
 
     const textInput = document.createElement("textarea");
     textInput.classList.add("preblast-textarea");
@@ -503,7 +572,8 @@ export function renderPreblastView() {
     mediaSection.classList.add("preblast-media-section");
 
     const mediaFiles = state.draftPreblastMediaFiles || [];
-
+    const persistedLocalFileKeys = state.persistedPreblastLocalFileKeys || new Set();
+    
     const mediaPanel = document.createElement("section");
     mediaPanel.classList.add("preblast-media-panel");
     
@@ -516,7 +586,13 @@ export function renderPreblastView() {
     
     const mediaCount = document.createElement("div");
     mediaCount.classList.add("preblast-section-count");
-    mediaCount.textContent = mediaFiles.length;
+    const persistedMedia = state.persistedPreblastMedia || [];
+    const visibleLocalMediaCount = mediaFiles.filter(file => {
+        const fileKey = `${file.name}__${file.size}__${file.lastModified}`;
+        return !persistedLocalFileKeys.has(fileKey);
+    }).length;
+    
+    mediaCount.textContent = visibleLocalMediaCount + persistedMedia.length;
     
     mediaHeader.append(
         mediaLabel,
@@ -551,8 +627,66 @@ export function renderPreblastView() {
     const mediaPreviewWrapper = document.createElement("div");
     mediaPreviewWrapper.classList.add("preblast-media-preview-wrapper");
 
+    persistedMedia.forEach(item => {
+        const asset = item.asset;
+        const signedUrl = state.persistedPreblastMediaUrls?.get(asset.storagePath);
+
+        if (!signedUrl) return;
+
+        const mediaItem = document.createElement("div");
+        mediaItem.classList.add("preblast-media-item", "preblast-media-item-persisted");
+
+        const image = document.createElement("img");
+        image.classList.add("preblast-media-preview");
+        image.alt = "Saved preblast media";
+        image.loading = "lazy";
+        image.decoding = "async";
+        image.src = signedUrl;
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.textContent = "Remove Media";
+
+        removeButton.addEventListener("click", async () => {
+            removeButton.disabled = true;
+            removeButton.textContent = "Removing…";
+
+            try {
+                const result = await removeMediaAsset(asset.id);
+                const storagePath = result?.storage_path || asset.storagePath;
+
+                if (storagePath) {
+                    try {
+                        await removeMediaObjects([storagePath]);
+                    } catch (error) {
+                        console.error("Storage cleanup failed:", error);
+                    }
+                }
+
+                state.persistedPreblastMediaQSlotId = null;
+                state.persistedPreblastMedia = [];
+                state.persistedPreblastMediaUrls = new Map();
+
+                showToast("Media removed.", "success");
+                renderApp();
+            } catch (error) {
+                console.error("Failed to remove media:", error);
+                showToast("Failed to remove media.", "error");
+
+                removeButton.disabled = false;
+                removeButton.textContent = "Remove Media";
+            }
+        });
+
+        mediaItem.append(image, removeButton);
+        mediaPreviewWrapper.appendChild(mediaItem);
+    });
+
     mediaFiles.forEach((file, index) => {
-        
+        const fileKey = `${file.name}__${file.size}__${file.lastModified}`;
+    
+        if (persistedLocalFileKeys.has(fileKey)) return;
+    
         const mediaItem = document.createElement("div");
         mediaItem.classList.add("preblast-media-item");
 
@@ -614,6 +748,87 @@ export function renderPreblastView() {
         return savedQSlot;
     }
 
+    function getPersistablePreblastFiles() {
+        const files = state.draftPreblastMediaFiles || [];
+        const persistedKeys = state.persistedPreblastLocalFileKeys || new Set();
+    
+        return files.filter(file => {
+            const key = `${file.name}__${file.size}__${file.lastModified}`;
+    
+            if (persistedKeys.has(key)) return false;
+    
+            return (
+                file.type === "image/jpeg" ||
+                file.type === "image/webp" ||
+                file.type === "image/heic" ||
+                file.type === "image/heif" ||
+                /\.hei[cf]$/i.test(file.name || "")
+            );
+        });
+    }
+
+    async function persistPreblastMedia() {
+        const files = getPersistablePreblastFiles();
+        const file = files[0];
+    
+        if (!file) return null;
+    
+        if (!preblastQSlot?.id) {
+            throw new Error("No Q slot found for preblast media.");
+        }
+    
+        const uploadBlob = await normalizeMediaImage(file);
+
+        const reservation = await reserveMediaAttachment({
+            qSlotId: preblastQSlot.id,
+            mediaKind: "image",
+            mimeType: uploadBlob.type,
+            fileSizeBytes: uploadBlob.size,
+            displayOrder: 0,
+        });
+        
+        const asset = reservation?.asset;
+        
+        if (!asset?.id || !asset?.storage_path) {
+            throw new Error("Media reservation did not return a valid asset.");
+        }
+        
+        await uploadMediaAsset(asset.storage_path, uploadBlob);
+        
+        const finalized = await finalizeMediaAsset(asset.id);
+        
+        state.persistedPreblastLocalFileKeys =
+            state.persistedPreblastLocalFileKeys || new Set();
+        
+        state.persistedPreblastLocalFileKeys.add(
+            `${file.name}__${file.size}__${file.lastModified}`
+        );
+        
+        return finalized;
+    }
+
+    async function loadPersistedPreblastMedia() {
+        if (!preblastQSlot?.id) return;
+    
+        if (state.persistedPreblastMediaQSlotId === preblastQSlot.id) return;
+    
+        state.persistedPreblastMediaQSlotId = preblastQSlot.id;
+    
+        try {
+            const attachments = await loadQSlotMediaAttachments(preblastQSlot.id);
+            const paths = attachments.map(item => item.asset?.storagePath).filter(Boolean);
+            const urls = await resolveMediaUrls(paths);
+    
+            state.persistedPreblastMedia = attachments;
+            state.persistedPreblastMediaUrls = urls;
+    
+            if (state.currentView === "preblast") renderApp();
+        } catch (error) {
+            state.persistedPreblastMediaQSlotId = null;
+            console.warn("Failed to load persisted preblast media:", error);
+        }
+    }
+
     async function markPreblastPosted() {
         if (!preblastQSlot) {
             return null;
@@ -653,7 +868,19 @@ export function renderPreblastView() {
         }
     
         try {
-            await persistPreblastDraft({ showSuccessToast: true });
+            await persistPreblastDraft();
+        
+            if (state.draftPreblastMediaFiles?.length) {
+                saveButton.disabled = true;
+                saveButton.textContent = "Uploading…";
+        
+                await persistPreblastMedia();
+
+                state.persistedPreblastMediaQSlotId = null;
+            }
+        
+            showToast("Preblast saved.", "success");
+            renderApp();
         } catch (error) {
             console.error("Failed to save preblast:", error);
             showToast("Failed to save preblast.", "error");
@@ -662,6 +889,9 @@ export function renderPreblastView() {
                 qSlotId: preblastQSlot.id,
                 plannedWorkoutId: state.selectedPreblastWorkoutId || null,
             });
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = "Save Draft";
         }
     });
 
@@ -795,6 +1025,8 @@ export function renderPreblastView() {
         mediaPanel,
         templateDetails,
     );
+
+    loadPersistedPreblastMedia();
     
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());

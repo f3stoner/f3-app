@@ -193,7 +193,10 @@ export function buildSessionSaveRpcCommand({
             session.backblastIntroText ?? null,
         
         backblastBodyText:
-            session.backblastBodyText ?? null,
+            typeof session.backblastBodyText === "string" &&
+            session.backblastBodyText.trim()
+                ? session.backblastBodyText
+                : null,
 
         backblastStatus:
             session.backblastStatus || null,

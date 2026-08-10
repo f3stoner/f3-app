@@ -1,5 +1,38 @@
 // src/utils/imageProcessing.js
 
+import { heicTo, isHeic } from "heic-to";
+
+export async function normalizeMediaImage(file) {
+    if (!(file instanceof Blob)) {
+        throw new Error("Image processing requires a Blob.");
+    }
+
+    if (
+        file.type === "image/jpeg" ||
+        file.type === "image/webp"
+    ) {
+        return file;
+    }
+
+    const isHeicImage =
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        /\.hei[cf]$/i.test(file.name || "") ||
+        await isHeic(file);
+
+    if (!isHeicImage) {
+        throw new Error("Unsupported image format.");
+    }
+
+    const converted = await heicTo({
+        blob: file,
+        type: "image/jpeg",
+        quality: 0.85,
+    });
+
+    return converted;
+}
+
 const AVATAR_SIZE = 512;
 const AVATAR_QUALITY = 0.82;
 const MAX_SOURCE_FILE_SIZE =
@@ -136,6 +169,18 @@ export async function processAvatarImage(
             sourceY,
             sourceSize: cropSize,
         });
+    } finally {
+        image.cleanup();
+    }
+}
+
+export async function validateAvatarSourceDimensions(file) {
+    validateAvatarSourceFile(file);
+
+    const image = await decodeImageFile(file);
+
+    try {
+        validateImageDimensions(image.width, image.height);
     } finally {
         image.cleanup();
     }
