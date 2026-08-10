@@ -1,7 +1,5 @@
 // src/utils/imageProcessing.js
 
-import { heicTo, isHeic } from "heic-to";
-
 const AVATAR_SIZE = 512;
 const AVATAR_QUALITY = 0.82;
 const MAX_SOURCE_FILE_SIZE =
@@ -25,6 +23,31 @@ const ALLOWED_IMAGE_TYPES = new Set([
     "image/heif",
 ]);
 
+function looksLikeHeic(file) {
+    const fileName = String(file.name || "").toLowerCase();
+
+    return (
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        fileName.endsWith(".heic") ||
+        fileName.endsWith(".heif")
+    );
+}
+
+async function normalizeHeicSource(file, quality) {
+    if (!looksLikeHeic(file)) {
+        return file;
+    }
+
+    const { heicTo } = await import("heic-to");
+
+    return heicTo({
+        blob: file,
+        type: "image/jpeg",
+        quality,
+    });
+}
+
 export async function normalizeMediaImage(file) {
     if (!(file instanceof Blob)) {
         throw new Error("Image processing requires a Blob.");
@@ -36,22 +59,10 @@ export async function normalizeMediaImage(file) {
 
     const fileName = String(file.name || "").toLowerCase();
 
-    const isHeicImage =
-        file.type === "image/heic" ||
-        file.type === "image/heif" ||
-        fileName.endsWith(".heic") ||
-        fileName.endsWith(".heif") ||
-        await isHeic(file);
-
-    let sourceBlob = file;
-
-    if (isHeicImage) {
-        sourceBlob = await heicTo({
-            blob: file,
-            type: "image/jpeg",
-            quality: MEDIA_QUALITY,
-        });
-    }
+    const sourceBlob = await normalizeHeicSource(
+        file,
+        MEDIA_QUALITY
+    );
 
     const image = await decodeImageFile(sourceBlob);
 
@@ -203,8 +214,13 @@ export async function processAvatarImage(
 ) {
     validateAvatarSourceFile(file);
 
-    const image =
-        await decodeImageFile(file);
+    const sourceFile =
+        await normalizeHeicSource(
+            file,
+            AVATAR_QUALITY
+        );
+
+    const image = await decodeImageFile(sourceFile);
 
     try {
         validateImageDimensions(
@@ -250,8 +266,16 @@ export async function processAvatarImage(
 export async function validateAvatarSourceDimensions(file) {
     validateAvatarSourceFile(file);
 
-    const image = await decodeImageFile(file);
+    const sourceFile =
+        await normalizeHeicSource(
+            file,
+            AVATAR_QUALITY
+        );
 
+    const image =
+        await decodeImageFile(
+            sourceFile
+        );
     try {
         validateImageDimensions(image.width, image.height);
     } finally {

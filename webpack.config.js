@@ -8,6 +8,7 @@ import { InjectManifest } from "workbox-webpack-plugin";
 export default (env, argv) => {
     const isProd = argv.mode === "production";
     const buildId = new Date().toISOString();
+    const publicPath = isProd ? "/f3-app/" : "/";
 
     return {
         mode: argv.mode || "development",
@@ -17,7 +18,7 @@ export default (env, argv) => {
             chunkFilename: "[name].[contenthash].js",
             path: path.resolve(import.meta.dirname, "dist"),
             clean: true,
-            publicPath: isProd ? "/f3-app/" : "/",
+            publicPath,
         },
         devtool: isProd ? false : "eval-source-map",
         devServer: {
@@ -35,16 +36,23 @@ export default (env, argv) => {
             }),
             new HtmlWebpackPlugin({
                 template: "./index.html",
+                templateParameters: {
+                    publicPath,
+                },
             }),
             new CopyPlugin({
                 patterns: [{ from: "public", to: "" }],
             }),
-            new InjectManifest({
-                swSrc: "./src/sw.js",
-                swDest: "sw.js",
-                exclude: [/\.LICENSE\.txt$/],
-                maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-            }),
+            ...(isProd
+                ? [
+                    new InjectManifest({
+                        swSrc: "./src/sw.js",
+                        swDest: "sw.js",
+                        exclude: [/\.LICENSE\.txt$/],
+                        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+                    }),
+                ]
+                : []),
             new Dotenv(),
         ],
         module: {
