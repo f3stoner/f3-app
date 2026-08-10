@@ -39,7 +39,10 @@ async function normalizeHeicSource(file, quality) {
         return file;
     }
 
-    const { heicTo } = await import("heic-to");
+    const { heicTo } = await import(
+        /* webpackChunkName: "heic" */
+        "heic-to"
+    );
 
     return heicTo({
         blob: file,

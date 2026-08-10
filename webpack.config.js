@@ -48,7 +48,10 @@ export default (env, argv) => {
                     new InjectManifest({
                         swSrc: "./src/sw.js",
                         swDest: "sw.js",
-                        exclude: [/\.LICENSE\.txt$/],
+                        exclude: [
+                            /\.LICENSE\.txt$/,
+                            /heic\..*\.js$/,
+                        ],
                         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
                     }),
                 ]
