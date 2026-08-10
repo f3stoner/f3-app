@@ -1,32 +1,4 @@
-function getPaxInitials(member) {
-    const displayName =
-        member?.paxName ||
-        member?.displayName ||
-        "PAX";
-
-    const words = displayName
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-
-    if (words.length === 0) {
-        return "P";
-    }
-
-    if (words.length === 1) {
-        const letters = words[0]
-            .replace(/[^a-zA-Z0-9]/g, "")
-            .slice(0, 2);
-
-        return letters.toUpperCase() || "P";
-    }
-
-    return words
-        .slice(0, 2)
-        .map(word => word.charAt(0))
-        .join("")
-        .toUpperCase();
-}
+import { createMemberAvatar } from "./memberAvatar.js";
 
 function getProfileSubtitleParts(member) {
     return [
@@ -43,6 +15,9 @@ export function createPaxProfileIdentity(
     member,
     {
         memberSince = null,
+        avatarUrl = null,
+        avatarInteractive = false,
+        onAvatarActivate = null,
     } = {}
 ) {
     const identity =
@@ -65,28 +40,19 @@ export function createPaxProfileIdentity(
     );
 
     const avatar =
-        document.createElement("div");
-
-    avatar.classList.add(
-        "pax-profile-avatar"
+    createMemberAvatar(
+        member,
+        {
+            signedUrl:
+                avatarUrl,
+            interactive:
+                avatarInteractive,
+            onActivate:
+                onAvatarActivate,
+            className:
+                "pax-profile-avatar",
+        }
     );
-
-    avatar.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-    const avatarInner =
-        document.createElement("div");
-
-    avatarInner.classList.add(
-        "pax-profile-avatar-inner"
-    );
-
-    avatarInner.textContent =
-        getPaxInitials(member);
-
-    avatar.appendChild(avatarInner);
 
     const name =
         document.createElement("h1");

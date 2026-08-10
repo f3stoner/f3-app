@@ -1157,23 +1157,18 @@ export function mapMemberFromDb(row) {
 
     return {
         id: row.id,
-        regionId:
-            row.region_id || null,
-        paxName:
-            row.pax_name || "",
-        realName:
-            row.real_name || "",
-        homeAo:
-            row.home_ao || "",
+        regionId: row.region_id || null,
+        paxName: row.pax_name || "",
+        realName: row.real_name || "",
+        homeAo: row.home_ao || "",
         invitedById,
         inviterIds:
             invitedById
                 ? [invitedById]
                 : [],
-        firstPostDate:
-            row.first_post_date || null,
-        status:
-            row.status || "active",
+        firstPostDate: row.first_post_date || null,
+        status: row.status || "active",
+        avatarPath: row.avatar_path || null,
     };
 }
 
@@ -1451,6 +1446,50 @@ export async function insertMember(regionId, member) {
     if (error) throw error;
 
     return mapMemberFromDb(data);
+}
+
+export async function setMemberAvatarInCloud(
+    memberId,
+    avatarPath
+) {
+    if (!memberId) {
+        throw new Error(
+            "Member id is required to update avatar."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_member_avatar",
+        {
+            p_member_id: memberId,
+            p_avatar_path: avatarPath || null,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to update member avatar:",
+            {
+                memberId,
+                avatarPath,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.member) {
+        throw new Error(
+            "Avatar update returned no member."
+        );
+    }
+
+    return {
+        member: mapMemberFromDb(data.member),
+        previousAvatarPath:
+            data.previous_avatar_path || null,
+    };
 }
 
 export async function setMemberRosterStatusInCloud(

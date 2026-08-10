@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
+    "cropperjs": "^2.1.1",
     "csv-parse": "^6.2.1",
     "dotenv-webpack": "^9.0.0",
     "html2canvas": "^1.4.1",

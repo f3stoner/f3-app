@@ -7,14 +7,100 @@ import { createPaxProfileNav } from "../components/paxProfileNav.js";
 import { canViewPaxOverview } from "../utils/permissions.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { getMemberById } from "../utils/memberLookup.js";
+import { createPaxProfileIdentity } from "../components/paxProfileIdentity.js";
+import { processAvatarImage } from "../utils/imageProcessing.js";
 import {
-    createPaxProfileIdentity,
-} from "../components/paxProfileIdentity.js";
+    resolveMediaUrl,
+    uploadAvatar,
+    removeMediaObjects,
+    clearResolvedMediaUrl,
+} from "../services/mediaService.js";
+import { setMemberAvatarInCloud } from "../services/cloudData.js";
+import { openAvatarEditor } from "../components/avatarEditor.js";
+
 
 function getSelectedMember() {
     return getMemberById(
         state.selectedPaxId
     );
+}
+
+function createProfileIdentity(member, memberSince, avatarUrl = null) {
+    const isCurrentUser = member?.id === state.currentUserMemberId;
+
+    return createPaxProfileIdentity(member, {
+        memberSince,
+        avatarUrl,
+        avatarInteractive: isCurrentUser,
+        onAvatarActivate: isCurrentUser
+            ? () => selectAndUploadAvatar(member)
+            : null,
+    });
+}
+
+async function selectAndUploadAvatar(member) {
+    const input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
+
+    input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        let uploadedPath = null;
+
+        try {
+            const blob = await openAvatarEditor(file);
+            if (!blob) return;
+
+            uploadedPath = await uploadAvatar(
+                member.id,
+                blob
+            );
+
+            const result = await setMemberAvatarInCloud(
+                member.id,
+                uploadedPath
+            );
+
+            clearResolvedMediaUrl(uploadedPath);
+
+            member.avatarPath = result.member.avatarPath;
+
+            if (state.currentUserMember?.id === member.id) {
+                state.currentUserMember.avatarPath = result.member.avatarPath;
+            }
+
+            const stateMember = state.members.find(candidate => candidate.id === member.id);
+            if (stateMember) stateMember.avatarPath = result.member.avatarPath;
+
+            const participant = state.participants.find(candidate => candidate.id === member.id);
+            if (participant) participant.avatarPath = result.member.avatarPath;
+
+            if (result.previousAvatarPath) {
+                removeMediaObjects([
+                    result.previousAvatarPath,
+                ]).catch(error => {
+                    console.warn("Failed to remove previous avatar:", error);
+                });
+            }
+
+            renderPaxProfileView();
+        } catch (error) {
+            console.error("Failed to update profile avatar:", error);
+
+            if (uploadedPath) {
+                removeMediaObjects([uploadedPath]).catch(cleanupError => {
+                    console.warn("Failed to clean up avatar upload:", cleanupError);
+                });
+            }
+
+            alert(error.message || "Unable to update profile photo.");
+        }
+    }, { once: true });
+
+    input.click();
 }
 
 function getMemberStats(memberId) {
@@ -468,31 +554,24 @@ export function renderPaxProfileView() {
         sessions.at(-1)?.date ||
         null;
 
-    const titleSection =
-        createPaxProfileIdentity(
-            member,
-            {
-                memberSince:
-                    profileMemberSince
-                        ? new Intl.DateTimeFormat(
-                            undefined,
-                            {
-                                month: "short",
-                                year: "numeric",
-                            }
-                        ).format(
-                            new Date(
-                                /^\d{4}-\d{2}-\d{2}$/.test(
-                                    profileMemberSince
-                                )
-                                    ? `${profileMemberSince}T00:00:00`
-                                    : profileMemberSince
-                            )
-                        )
-                        : null,
-            }
-        );
+    const memberSinceLabel = profileMemberSince
+        ? new Intl.DateTimeFormat(undefined, {
+            month: "short",
+            year: "numeric",
+        }).format(
+            new Date(
+                /^\d{4}-\d{2}-\d{2}$/.test(profileMemberSince)
+                    ? `${profileMemberSince}T00:00:00`
+                    : profileMemberSince
+            )
+        )
+        : null;
     
+    const titleSection = createProfileIdentity(
+        member,
+        memberSinceLabel
+    );
+
     const totalPosts = stats?.posts ?? sessions.length;
     const totalQs = stats?.qs ?? 0;
     
@@ -605,6 +684,33 @@ export function renderPaxProfileView() {
         recentSection,
         createGlobalNav()
     );
+
+    if (member.avatarPath) {
+        const selectedMemberId = member.id;
+    
+        resolveMediaUrl(member.avatarPath)
+            .then(avatarUrl => {
+                if (!avatarUrl) return;
+                if (state.selectedPaxId !== selectedMemberId) return;
+    
+                const currentIdentity = app.querySelector(".pax-profile-identity");
+                if (!currentIdentity) return;
+    
+                currentIdentity.replaceWith(
+                    createProfileIdentity(
+                        member,
+                        memberSinceLabel,
+                        avatarUrl
+                    )
+                );
+            })
+            .catch(error => {
+                console.warn("Failed to resolve profile avatar:", {
+                    memberId: selectedMemberId,
+                    error,
+                });
+            });
+    }
 
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());

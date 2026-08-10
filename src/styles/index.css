@@ -1,5 +1,8 @@
 @import "./legacy.css";
 
+/* Shared components */
+@import "./components/member-avatar.css";
+
 /* Screen-specific rules */
 @import "./views/dashboard.css";
 @import "./views/q-signup.css";

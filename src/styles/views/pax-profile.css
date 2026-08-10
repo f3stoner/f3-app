@@ -123,16 +123,19 @@
         rgba(143, 211, 255, 0.045),
         0 12px 32px
         rgba(0, 0, 0, 0.34);
+
+    padding: 0;
+    color: inherit;
+    font: inherit;
 }
 
 .view-paxProfile
-.pax-profile-avatar-inner {
-    width: 3.65rem;
-    height: 3.65rem;
+.pax-profile-avatar
+.member-avatar-fallback {
+    inset: 0.4rem;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: auto;
+    height: auto;
 
     border:
         1px solid
@@ -150,9 +153,7 @@
 
     color: var(--text);
 
-    font-family:
-        var(--font-display);
-
+    font-family: var(--font-display);
     font-size: 1.65rem;
     font-weight: 900;
     line-height: 1;
@@ -1569,10 +1570,10 @@
     }
 
     .view-paxProfile
-    .pax-profile-avatar-inner {
-        width: 3.25rem;
-        height: 3.25rem;
-
+    .pax-profile-avatar
+    .member-avatar-fallback {
+        inset: 0.35rem;
+    
         font-size: 1.45rem;
     }
 
