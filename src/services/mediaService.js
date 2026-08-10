@@ -40,15 +40,24 @@ function cacheMediaUrl(path, signedUrl) {
 
 export function buildAvatarPath(
     memberId,
+    mimeType,
     assetId = crypto.randomUUID()
 ) {
     if (!memberId) {
-        throw new Error(
-            "Member id is required to build an avatar path."
-        );
+        throw new Error("Member id is required to build an avatar path.");
     }
 
-    return `avatars/${memberId}/${assetId}.webp`;
+    const extension = mimeType === "image/webp"
+        ? "webp"
+        : mimeType === "image/jpeg"
+            ? "jpg"
+            : null;
+
+    if (!extension) {
+        throw new Error("Unsupported avatar image type.");
+    }
+
+    return `avatars/${memberId}/${assetId}.${extension}`;
 }
 
 export async function resolveMediaUrl(path) {
@@ -195,16 +204,11 @@ export async function uploadAvatar(
         );
     }
 
-    if (
-        blob.type !== "image/webp"
-    ) {
-        throw new Error(
-            "Avatar must be a WebP image."
-        );
+    if (blob.type !== "image/webp" && blob.type !== "image/jpeg") {
+        throw new Error("Avatar must be a WebP or JPEG image.");
     }
 
-    const path =
-        buildAvatarPath(memberId);
+    const path = buildAvatarPath(memberId, blob.type);
 
     const { error } =
         await supabase.storage
@@ -213,8 +217,7 @@ export async function uploadAvatar(
                 path,
                 blob,
                 {
-                    contentType:
-                        "image/webp",
+                    contentType: blob.type,
                     upsert: false,
                 }
             );

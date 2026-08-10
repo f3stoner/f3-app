@@ -17,38 +17,35 @@ const ALLOWED_IMAGE_TYPES = new Set([
     "image/heif",
 ]);
 
-export function canvasToAvatarBlob(canvas) {
+export async function canvasToAvatarBlob(canvas) {
     if (!(canvas instanceof HTMLCanvasElement)) {
-        return Promise.reject(
-            new Error("A valid crop canvas is required.")
-        );
+        throw new Error("A valid crop canvas is required.");
     }
 
-    return new Promise((resolve, reject) => {
-        canvas.toBlob(blob => {
-            if (!blob) {
-                reject(new Error("The profile photo could not be created."));
-                return;
-            }
+    let blob = await canvasToBlob(canvas, "image/webp", AVATAR_QUALITY);
 
-            if (blob.type !== "image/webp") {
-                reject(
-                    new Error(
-                        "WebP image processing is not supported on this device."
-                    )
-                );
-                return;
-            }
+    if (!blob || blob.type !== "image/webp") {
+        blob = await canvasToBlob(canvas, "image/jpeg", AVATAR_QUALITY);
+    }
 
-            if (blob.size > MAX_AVATAR_FILE_SIZE) {
-                reject(
-                    new Error("The processed profile photo is too large.")
-                );
-                return;
-            }
+    if (!blob) {
+        throw new Error("The profile photo could not be created.");
+    }
 
-            resolve(blob);
-        }, "image/webp", AVATAR_QUALITY);
+    if (blob.type !== "image/webp" && blob.type !== "image/jpeg") {
+        throw new Error("This device cannot create a supported profile photo.");
+    }
+
+    if (blob.size > MAX_AVATAR_FILE_SIZE) {
+        throw new Error("The processed profile photo is too large.");
+    }
+
+    return blob;
+}
+
+function canvasToBlob(canvas, type, quality) {
+    return new Promise(resolve => {
+        canvas.toBlob(resolve, type, quality);
     });
 }
 
