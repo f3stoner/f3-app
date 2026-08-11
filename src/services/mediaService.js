@@ -520,6 +520,12 @@ export async function loadCommentMediaAttachmentsByCommentIds(commentIds = []) {
             id,
             region_feed_comment_id,
             display_order,
+            media_source,
+            external_provider,
+            external_media_id,
+            external_url,
+            external_preview_url,
+            external_still_url,
             media_assets (
                 id,
                 storage_path,
@@ -541,13 +547,31 @@ export async function loadCommentMediaAttachmentsByCommentIds(commentIds = []) {
     );
 
     (data || []).forEach(row => {
-        if (!row.region_feed_comment_id || row.media_assets?.status !== "ready") {
+        if (!row.region_feed_comment_id) return;
+
+        if (row.media_source === "external") {
+            byCommentId.get(row.region_feed_comment_id)?.push({
+                id: row.id,
+                displayOrder: row.display_order,
+                source: "external",
+                external: {
+                    provider: row.external_provider,
+                    mediaId: row.external_media_id,
+                    url: row.external_url,
+                    previewUrl: row.external_preview_url,
+                    stillUrl: row.external_still_url,
+                },
+            });
+
             return;
         }
+
+        if (row.media_assets?.status !== "ready") return;
 
         byCommentId.get(row.region_feed_comment_id)?.push({
             id: row.id,
             displayOrder: row.display_order,
+            source: "upload",
             asset: {
                 id: row.media_assets.id,
                 storagePath: row.media_assets.storage_path,
@@ -562,4 +586,35 @@ export async function loadCommentMediaAttachmentsByCommentIds(commentIds = []) {
     });
 
     return byCommentId;
+}
+
+export async function attachExternalCommentMedia({
+    commentId,
+    provider,
+    externalMediaId,
+    externalUrl,
+    externalPreviewUrl = null,
+    externalStillUrl = null,
+    displayOrder = 0,
+}) {
+    if (!commentId) {
+        throw new Error("Comment id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "attach_external_comment_media",
+        {
+            p_comment_id: commentId,
+            p_provider: provider,
+            p_external_media_id: externalMediaId,
+            p_external_url: externalUrl,
+            p_external_preview_url: externalPreviewUrl,
+            p_external_still_url: externalStillUrl,
+            p_display_order: displayOrder,
+        }
+    );
+
+    if (error) throw error;
+
+    return data;
 }

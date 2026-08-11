@@ -17,7 +17,12 @@ import {
     uploadMediaAsset,
     finalizeMediaAsset,
     loadCommentMediaAttachmentsByCommentIds,
+    attachExternalCommentMedia,
 } from "../../services/mediaService.js";
+import {
+    loadTrendingGifs,
+    searchGifs,
+} from "../../services/giphyService.js";
 import { normalizeMediaImage } from "../../utils/imageProcessing.js";
 
 const REACTIONS = [
@@ -152,13 +157,34 @@ async function addComment({
 }
 
 const MAX_COMMENT_IMAGES = 3;
+const MAX_COMMENT_GIF_SIZE = 3 * 1024 * 1024;
+
+function validateCommentMediaFile(file) {
+    if (isGifFile(file) && file.size > MAX_COMMENT_GIF_SIZE) {
+        throw new Error("GIFs must be 3 MB or smaller.");
+    }
+}
+
+function isGifFile(file) {
+    return file?.type === "image/gif" ||
+        String(file?.name || "").toLowerCase().endsWith(".gif");
+}
+
+async function prepareCommentImage(file) {
+    if (isGifFile(file)) return file;
+
+    return normalizeMediaImage(file);
+}
 
 async function persistCommentImages(commentId, files = []) {
     const persisted = [];
 
     for (let index = 0; index < files.length; index += 1) {
         const file = files[index];
-        const blob = await normalizeMediaImage(file);
+
+        validateCommentMediaFile(file);
+        
+        const blob = await prepareCommentImage(file);
 
         const reservation = await reserveMediaAttachment({
             regionFeedCommentId: commentId,
@@ -206,7 +232,10 @@ async function hydrateCommentMedia(comments = []) {
 
     attachmentsByCommentId.forEach(attachments => {
         attachments.forEach(attachment => {
-            if (attachment.asset?.storagePath) {
+            if (
+                attachment.source === "upload" &&
+                attachment.asset?.storagePath
+            ) {
                 storagePaths.push(attachment.asset.storagePath);
             }
         });
@@ -218,10 +247,19 @@ async function hydrateCommentMedia(comments = []) {
         const attachments = attachmentsByCommentId.get(comment.id) || [];
 
         comment.media = attachments
-            .map(attachment => ({
-                ...attachment,
-                url: urls.get(attachment.asset?.storagePath) || null,
-            }))
+            .map(attachment => {
+                if (attachment.source === "external") {
+                    return {
+                        ...attachment,
+                        url: attachment.external?.url || null,
+                    };
+                }
+
+                return {
+                    ...attachment,
+                    url: urls.get(attachment.asset?.storagePath) || null,
+                };
+            })
             .filter(item => item.url);
     });
 
@@ -764,10 +802,12 @@ function renderCommentsThread({
     );
 
     const selectedImages = [];
+    let selectedGiphy = null;
+    let giphyLoaded = false;
 
     const mediaInput = document.createElement("input");
     mediaInput.type = "file";
-    mediaInput.accept = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
+    mediaInput.accept = "image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.gif,.heic,.heif";
     mediaInput.multiple = true;
     mediaInput.hidden = true;
 
@@ -787,14 +827,92 @@ function renderCommentsThread({
         )
     );
 
+    const gifButton = document.createElement("button");
+    gifButton.type = "button";
+    gifButton.className = "region-feed-comment-gif-add";
+    gifButton.textContent = "GIF";
+    gifButton.setAttribute("aria-label", "Add GIF");
+
     const preview = document.createElement("div");
     preview.className = "region-feed-comment-media-preview";
     preview.hidden = true;
 
+    const gifPicker = document.createElement("div");
+    gifPicker.className = "region-feed-comment-gif-picker";
+    gifPicker.hidden = true;
+
+    const gifSearch = document.createElement("input");
+    gifSearch.type = "search";
+    gifSearch.className = "region-feed-comment-gif-search";
+    gifSearch.placeholder = "Search GIFs…";
+    gifSearch.setAttribute("aria-label", "Search GIFs");
+
+    const gifResults = document.createElement("div");
+    gifResults.className = "region-feed-comment-gif-results";
+
+    const giphyAttribution = document.createElement("div");
+    giphyAttribution.className = "region-feed-comment-giphy-attribution";
+    giphyAttribution.textContent = "Powered by GIPHY";
+
+    gifPicker.append(
+        gifSearch,
+        gifResults,
+        giphyAttribution
+    );
+
+    function renderGiphyResults(results = []) {
+        gifResults.textContent = "";
+        gifResults.classList.remove("is-message");
+    
+        if (results.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "region-feed-comment-gif-empty";
+            empty.textContent = "No GIFs found.";
+    
+            gifResults.appendChild(empty);
+            return;
+        }
+    
+        results.forEach(result => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "region-feed-comment-gif-result";
+            button.setAttribute("aria-label", result.title || "Select GIF");
+    
+            const image = document.createElement("img");
+            image.className = "region-feed-comment-gif-result-image";
+            image.src = result.previewUrl || result.url;
+            image.alt = result.title || "GIF";
+            image.decoding = "async";
+    
+            button.addEventListener("click", event => {
+                stopCardNavigation(event);
+            
+                if (selectedImages.length >= MAX_COMMENT_IMAGES) return;
+            
+                selectedGiphy = result;
+                gifPicker.hidden = true;
+            
+                renderSelectedImages();
+            });
+    
+            button.appendChild(image);
+            gifResults.appendChild(button);
+        });
+    }
+
     function renderSelectedImages() {
         preview.textContent = "";
-        preview.hidden = selectedImages.length === 0;
-        mediaButton.disabled = selectedImages.length >= MAX_COMMENT_IMAGES;
+        preview.hidden = selectedImages.length === 0 && !selectedGiphy;
+        const selectedMediaCount =
+            selectedImages.length +
+            (selectedGiphy ? 1 : 0);
+        
+        mediaButton.disabled = selectedMediaCount >= MAX_COMMENT_IMAGES;
+        
+        gifButton.disabled =
+            Boolean(selectedGiphy) ||
+            selectedMediaCount >= MAX_COMMENT_IMAGES;
 
         selectedImages.forEach((file, index) => {
             const item = document.createElement("div");
@@ -826,7 +944,92 @@ function renderCommentsThread({
             item.append(image, remove);
             preview.appendChild(item);
         });
+
+        if (selectedGiphy) {
+            const item = document.createElement("div");
+            item.className = "region-feed-comment-media-preview-item";
+        
+            const image = document.createElement("img");
+            image.className = "region-feed-comment-media-preview-image";
+            image.src = selectedGiphy.previewUrl || selectedGiphy.url;
+            image.alt = selectedGiphy.title || "Selected GIF";
+        
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "region-feed-comment-media-preview-remove";
+            remove.setAttribute("aria-label", "Remove GIF");
+            remove.textContent = "×";
+        
+            remove.addEventListener("click", event => {
+                stopCardNavigation(event);
+                selectedGiphy = null;
+                renderSelectedImages();
+            });
+        
+            item.append(image, remove);
+            preview.appendChild(item);
+        }
     }
+
+    gifButton.addEventListener("click", async event => {
+        stopCardNavigation(event);
+    
+        const shouldOpen = gifPicker.hidden;
+        gifPicker.hidden = !shouldOpen;
+
+        if (!shouldOpen) {
+            gifSearchRequestId += 1;
+            clearTimeout(gifSearchTimeout);
+            return;
+        }
+    
+        gifSearch.focus();
+    
+        if (giphyLoaded) return;
+    
+        gifResults.classList.add("is-message");
+        gifResults.textContent = "Loading GIFs…";
+
+        try {
+            const results = await loadTrendingGifs();
+    
+            renderGiphyResults(results);
+            giphyLoaded = true;
+        } catch (error) {
+            console.error("Failed to load GIPHY trending:", error);
+            gifResults.classList.add("is-message");
+            gifResults.textContent = "GIFs could not be loaded.";
+        }
+    });
+
+    let gifSearchTimeout = null;
+    let gifSearchRequestId = 0;
+
+    gifSearch.addEventListener("input", () => {
+        clearTimeout(gifSearchTimeout);
+    
+        const requestId = ++gifSearchRequestId;
+    
+        gifSearchTimeout = setTimeout(async () => {
+            gifResults.classList.add("is-message");
+            gifResults.textContent = "Loading GIFs…";
+    
+            try {
+                const results = await searchGifs(gifSearch.value);
+    
+                if (requestId !== gifSearchRequestId) return;
+    
+                renderGiphyResults(results);
+            } catch (error) {
+                if (requestId !== gifSearchRequestId) return;
+    
+                console.error("Failed to search GIPHY:", error);
+    
+                gifResults.classList.add("is-message");
+                gifResults.textContent = "GIFs could not be loaded.";
+            }
+        }, 350);
+    });
 
     mediaButton.addEventListener("click", event => {
         stopCardNavigation(event);
@@ -837,7 +1040,9 @@ function renderCommentsThread({
         const files = Array.from(event.target.files || []);
 
         files.forEach(file => {
-            if (selectedImages.length >= MAX_COMMENT_IMAGES) return;
+            const selectedMediaCount = selectedImages.length + (selectedGiphy ? 1 : 0);
+        
+            if (selectedMediaCount >= MAX_COMMENT_IMAGES) return;
 
             const duplicate = selectedImages.some(existing =>
                 existing.name === file.name &&
@@ -884,10 +1089,11 @@ function renderCommentsThread({
 
             const body = input.value.trim();
 
-            if (!body && selectedImages.length === 0) return;
+            if (!body && selectedImages.length === 0 && !selectedGiphy) return;
 
             input.disabled = true;
             mediaButton.disabled = true;
+            gifButton.disabled = true;
             submit.disabled = true;
 
             try {
@@ -915,9 +1121,36 @@ function renderCommentsThread({
                         persistedMedia = persistedMedia
                             .map(item => ({
                                 ...item,
+                                source: "upload",
                                 url: urls.get(item.asset?.storagePath) || null,
                             }))
                             .filter(item => item.url);
+                    }
+                
+                    if (selectedGiphy) {
+                        const externalAttachment = await attachExternalCommentMedia({
+                            commentId: created.id,
+                            provider: "giphy",
+                            externalMediaId: selectedGiphy.id,
+                            externalUrl: selectedGiphy.url,
+                            externalPreviewUrl: selectedGiphy.previewUrl || null,
+                            externalStillUrl: selectedGiphy.stillUrl || null,
+                            displayOrder: persistedMedia.length,
+                        });
+                
+                        persistedMedia.push({
+                            id: externalAttachment?.id || null,
+                            displayOrder: persistedMedia.length,
+                            source: "external",
+                            external: {
+                                provider: "giphy",
+                                mediaId: selectedGiphy.id,
+                                url: selectedGiphy.url,
+                                previewUrl: selectedGiphy.previewUrl || null,
+                                stillUrl: selectedGiphy.stillUrl || null,
+                            },
+                            url: selectedGiphy.url,
+                        });
                     }
                 } catch (error) {
                     if (!body) {
@@ -997,6 +1230,7 @@ function renderCommentsThread({
 
                 input.disabled = false;
                 mediaButton.disabled = false;
+                gifButton.disabled = false;
                 submit.disabled = false;
             }
         }
@@ -1007,6 +1241,7 @@ function renderCommentsThread({
     
     composerActions.append(
         mediaButton,
+        gifButton,
         submit
     );
     
@@ -1014,7 +1249,8 @@ function renderCommentsThread({
         input,
         mediaInput,
         preview,
-        composerActions
+        composerActions,
+        gifPicker
     );
 
     thread.append(
