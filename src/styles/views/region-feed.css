@@ -1562,6 +1562,16 @@ body.region-feed-gif-search-active .global-nav {
         padding: 0.82rem 1.65rem 0.82rem 0.85rem;
     }
 
+    .view-regionFeed .region-feed-comment-gif-search {
+        font-size: 16px;
+    }
+
+    .view-regionFeed .region-feed-comment-input,
+    .view-regionFeed .region-feed-comment-gif-search {
+        font-size: 16px;
+    }
+    
+
     /* Feed event icons mobile */
 
     .view-regionFeed .region-feed-event-icon {
