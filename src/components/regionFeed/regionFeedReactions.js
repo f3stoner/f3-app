@@ -1007,14 +1007,6 @@ function renderCommentsThread({
 
     gifSearch.addEventListener("focus", () => {
         document.body.classList.add("region-feed-gif-search-active");
-    });
-    
-    gifSearch.addEventListener("blur", () => {
-        document.body.classList.remove("region-feed-gif-search-active");
-    });
-
-    gifSearch.addEventListener("focus", () => {
-        document.body.classList.add("region-feed-gif-search-active");
     
         setTimeout(() => {
             gifSearch.scrollIntoView({
@@ -1022,6 +1014,10 @@ function renderCommentsThread({
                 block: "start",
             });
         }, 250);
+    });
+    
+    gifSearch.addEventListener("blur", () => {
+        document.body.classList.remove("region-feed-gif-search-active");
     });
 
     gifSearch.addEventListener("input", () => {
