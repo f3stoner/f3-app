@@ -24,8 +24,8 @@ export function createGlobalNav () {
 
     const items = [
         { label: "Home", view: "dashboard" },
-        { label: "Planner", view: "myPlanner"},
-        { label: "History", view: "sessionHistory" },
+        { label: "Planner", view: "myPlanner" },
+        { label: "Pulse", view: "regionFeed" },
     ];
 
     items.forEach(item => {

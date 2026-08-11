@@ -160,16 +160,8 @@ export function createMainMenu() {
             icon: "firstF",
             items: [
                 { label: "Dashboard", view: "dashboard" },
-                {
-                    label: "Activity",
-                    view: "regionFeed",
-                    isVisible: () =>
-                        state.currentUserRole === "superadmin",
-                },
-                {
-                    label: "Campaigns",
-                    view: "campaigns",
-                },
+                { label: "Pulse", view: "regionFeed" },
+                { label: "Campaigns", view: "campaigns" },
                 {
                     label: "Double Down Tracker",
                     externalUrl: DOUBLE_DOWN_TRACKER_URL,

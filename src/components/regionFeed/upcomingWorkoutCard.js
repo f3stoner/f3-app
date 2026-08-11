@@ -370,13 +370,13 @@ export function renderUpcomingWorkoutCard({
         document.createElement("span");
 
     preblastStatus.className =
-        workout.preblastPostedAt
+        workout.hasPreblast
             ? "region-feed-upcoming-preblast-status is-posted"
             : "region-feed-upcoming-preblast-status is-pending";
     
     preblastStatus.textContent =
-        workout.preblastPostedAt
-            ? "✓ Preblast Posted"
+        workout.hasPreblast
+            ? "✓ Preblast Ready"
             : "● Preblast Pending";
 
     const chevron =
@@ -488,9 +488,7 @@ export function renderUpcomingWorkoutCard({
         "region-feed-upcoming-preblast";
 
     preblastBody.textContent =
-        workout.preblastPostedAt
-            ? workout.preblastText
-            : "The Q hasn't posted a preblast yet.";
+        workout.preblastText;
 
     preblastSection.appendChild(
         preblastLabel

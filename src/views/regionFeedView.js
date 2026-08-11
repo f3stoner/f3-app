@@ -83,14 +83,9 @@ function createLoadingState() {
         "true"
     );
 
-    const text =
-        document.createElement("div");
-
-    text.className =
-        "region-feed-state-copy";
-
-    text.textContent =
-        "Loading regional activity…";
+    const text = document.createElement("div");
+    text.className = "region-feed-state-copy";
+    text.textContent = "Loading Pulse…";
 
     loading.append(
         spinner,
@@ -207,40 +202,24 @@ function createEmptyState() {
 }
 
 function createErrorState(onRetry) {
-    const errorState =
-        document.createElement("section");
+    const errorState = document.createElement("section");
+    errorState.className = "region-feed-state region-feed-error";
 
-    errorState.className =
-        "region-feed-state region-feed-error";
+    const heading = document.createElement("h2");
+    heading.textContent = "Unable to load Pulse";
 
-    const heading =
-        document.createElement("h2");
-
-    heading.textContent =
-        "Unable to load activity";
-
-    const copy =
-        document.createElement("p");
-
-    copy.textContent =
-        navigator.onLine
+    const copy = document.createElement("p");
+    copy.textContent = navigator.onLine
             ? "Something interrupted the request."
             : "Reconnect to load regional activity.";
 
-    const retry =
-        document.createElement("button");
+    const retry = document.createElement("button");
 
     retry.type = "button";
-    retry.className =
-        "region-feed-retry";
+    retry.className = "region-feed-retry";
+    retry.textContent = "Try Again";
 
-    retry.textContent =
-        "Try Again";
-
-    retry.addEventListener(
-        "click",
-        onRetry
-    );
+    retry.addEventListener("click", onRetry);
 
     errorState.append(
         heading,
@@ -1341,11 +1320,6 @@ export function renderRegionFeedView() {
 
     cleanupMainMenu();
 
-    if (state.currentUserRole !== "superadmin") {
-        app.textContent = "You do not have permission to view Activity.";
-        return;
-    }
-
     if (
         !state.regionFeed ||
         state.regionFeed.regionId !==
@@ -1361,7 +1335,7 @@ export function renderRegionFeedView() {
     content.className = "region-feed-content";
 
     const header = createAppHeader({
-        title: "Activity",
+        title: `${state.regionName || "Region"} Pulse`,
         showBack: true,
         fallbackView: "dashboard",
         showMenu: true,
@@ -1428,14 +1402,11 @@ export function renderRegionFeedView() {
         );
     }
 
-    const activityHeading =
-        document.createElement("div");
+    const activityHeading = document.createElement("div");
 
-    activityHeading.className =
-        "region-feed-activity-heading";
+    activityHeading.className = "region-feed-activity-heading";
 
-    activityHeading.textContent =
-        "Regional Activity";
+    activityHeading.textContent = "Recent Activity";
 
     content.appendChild(
         activityHeading
