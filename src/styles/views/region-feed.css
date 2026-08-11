@@ -1472,6 +1472,10 @@
     text-align: center;
 }
 
+body.region-feed-gif-search-active .global-bottom-nav {
+    display: none;
+}
+
 .view-regionFeed .region-feed-comment-input {
     width: 100%;
     min-width: 0;

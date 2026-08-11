@@ -1005,6 +1005,25 @@ function renderCommentsThread({
     let gifSearchTimeout = null;
     let gifSearchRequestId = 0;
 
+    gifSearch.addEventListener("focus", () => {
+        document.body.classList.add("region-feed-gif-search-active");
+    });
+    
+    gifSearch.addEventListener("blur", () => {
+        document.body.classList.remove("region-feed-gif-search-active");
+    });
+
+    gifSearch.addEventListener("focus", () => {
+        document.body.classList.add("region-feed-gif-search-active");
+    
+        setTimeout(() => {
+            gifSearch.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        }, 250);
+    });
+
     gifSearch.addEventListener("input", () => {
         clearTimeout(gifSearchTimeout);
     
