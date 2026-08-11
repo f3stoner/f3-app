@@ -1,5 +1,46 @@
 import { createRegionalSocial } from "./regionFeedReactions.js";
 
+function openPreblastMediaLightbox(item) {
+    if (!item?.url) return;
+
+    const overlay = document.createElement("div");
+    overlay.className = "region-feed-media-lightbox";
+
+    const image = document.createElement("img");
+    image.className = "region-feed-media-lightbox-image";
+    image.src = item.url;
+    image.alt = "Preblast attachment";
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "region-feed-media-lightbox-close";
+    closeButton.setAttribute("aria-label", "Close image");
+    closeButton.textContent = "×";
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const close = () => {
+        document.body.style.overflow = previousOverflow;
+        document.removeEventListener("keydown", handleKeyDown);
+        overlay.remove();
+    };
+
+    const handleKeyDown = event => {
+        if (event.key === "Escape") close();
+    };
+
+    overlay.addEventListener("click", event => {
+        if (event.target === overlay) close();
+    });
+
+    closeButton.addEventListener("click", close);
+    document.addEventListener("keydown", handleKeyDown);
+
+    overlay.append(image, closeButton);
+    document.body.appendChild(overlay);
+}
+
 function formatTime(value) {
     if (!value) return "";
 
@@ -461,75 +502,101 @@ export function renderUpcomingWorkoutCard({
         );
     }
 
-    const preblastMedia =
-    Array.isArray(
-        workout.preblastMedia
-    )
+    const preblastMedia = Array.isArray(workout.preblastMedia)
         ? workout.preblastMedia
         : [];
 
-if (preblastMedia.length > 0) {
-    const media =
-        document.createElement("div");
+    const displayMedia = preblastMedia
+        .filter(item => item.mediaKind === "image")
+        .slice(0, 4);
 
-    media.className =
-        "region-feed-upcoming-preblast-media";
+    if (displayMedia.length > 0) {
+        const media = document.createElement("div");
+        media.className = "region-feed-upcoming-preblast-media";
 
-    if (preblastMedia.length === 1) {
-        media.classList.add(
-            "single"
-        );
-    } else if (
-        preblastMedia.length === 2
-    ) {
-        media.classList.add(
-            "double"
-        );
-    } else {
-        media.classList.add(
-            "gallery"
-        );
-    }
-
-    preblastMedia
-        .slice(0, 4)
-        .forEach(item => {
-        if (
-            item.mediaKind !==
-            "image"
-        ) {
-            return;
+        if (displayMedia.length === 1) {
+            media.classList.add("single");
+        } else if (displayMedia.length === 2) {
+            media.classList.add("double");
+        } else {
+            media.classList.add("gallery");
         }
 
-        const image =
-            document.createElement("img");
+        displayMedia.forEach(item => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "region-feed-upcoming-preblast-image-button";
+            button.setAttribute("aria-label", "View full image");
 
-        image.className =
-            "region-feed-upcoming-preblast-image";
+            const image = document.createElement("img");
+            image.className = "region-feed-upcoming-preblast-image";
+            image.src = item.url;
+            image.alt = "Preblast attachment";
+            image.loading = "lazy";
+            image.decoding = "async";
 
-        image.src =
-            item.url;
+            button.addEventListener("click", () => {
+                openPreblastMediaLightbox(item);
+            });
 
-        image.alt =
-            "Preblast attachment";
+            button.appendChild(image);
+            media.appendChild(button);
+        });
 
-        image.loading =
-            "lazy";
+        if (displayMedia.length === 3) {
+            media.classList.add("is-ordering");
+        
+            const buttons = [...media.children];
+            let loadedCount = 0;
+        
+            const finishImageLoad = () => {
+                loadedCount += 1;
+        
+                if (loadedCount < 3) return;
+        
+                const candidates = buttons
+                    .map((button, index) => {
+                        const image = button.querySelector("img");
+        
+                        return {
+                            button,
+                            index,
+                            ratio: image?.naturalWidth && image?.naturalHeight
+                                ? image.naturalWidth / image.naturalHeight
+                                : null,
+                        };
+                    })
+                    .filter(candidate => candidate.ratio);
+        
+                const portraitCandidates = candidates
+                    .filter(candidate => candidate.ratio < 0.95)
+                    .sort((a, b) => a.ratio - b.ratio);
+        
+                if (portraitCandidates.length > 0) {
+                    const dominant = portraitCandidates[0];
+        
+                    if (dominant.index !== 0) {
+                        media.prepend(dominant.button);
+                    }
+                }
+        
+                media.classList.remove("is-ordering");
+            };
+        
+            buttons.forEach(button => {
+                const image = button.querySelector("img");
+        
+                if (image.complete) {
+                    finishImageLoad();
+                } else {
+                    image.addEventListener("load", finishImageLoad, { once: true });
+                    image.addEventListener("error", finishImageLoad, { once: true });
+                }
+            });
+        }
 
-        image.decoding =
-            "async";
-
-        media.appendChild(
-            image
-        );
-    });
-
-    if (media.childElementCount > 0) {
-        preblastSection.appendChild(
-            media
-        );
+        preblastSection.appendChild(media);
     }
-}
 
     expanded.appendChild(
         preblastSection

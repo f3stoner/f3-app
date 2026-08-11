@@ -1054,6 +1054,16 @@ export function renderPreblastView() {
                 shareButton.disabled = true;
                 shareButton.textContent = "Preparing…";
                 
+                await persistPreblastDraft();
+                
+                if (getPersistablePreblastFiles().length) {
+                    shareButton.textContent = "Saving Media…";
+                
+                    await persistPreblastMedia();
+                
+                    state.persistedPreblastMediaQSlotId = null;
+                }
+                
                 const mediaFiles = await buildPreblastShareFiles();
                 
                 const rawText = textInput.value || "";
