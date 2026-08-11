@@ -2790,9 +2790,7 @@ const debugWeatherCacheKey =
                     notes: "",
                     workout: matchingWorkout || null,
                     sourcePlannedWorkoutId: matchingWorkout?.id || null,
-                    sourceQSlotId:
-                        matchingWorkout?.sourceQSlotId ||
-                        nextQSlot.id,
+                    sourceQSlotId: nextQSlot.id,
                     createdByUserId: state.currentUserId,
                     createdAt: Date.now(),
                     backblastText: "",
@@ -2982,9 +2980,7 @@ const debugWeatherCacheKey =
                         notes: "",
                         workout: matchingWorkout || null,
                         sourcePlannedWorkoutId: matchingWorkout?.id || null,
-                        sourceQSlotId:
-                            matchingWorkout?.sourceQSlotId ||
-                            nextQSlot.id,
+                        sourceQSlotId: nextQSlot.id,
                         createdByUserId: state.currentUserId,
                         createdAt: Date.now(),
                         backblastText: "",

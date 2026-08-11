@@ -329,8 +329,18 @@ dateInput.min = min;
 dateInput.max = today;
 
 function updateDraftDate(event) {
+    const previousDate = draftSession.date;
+
     draftSession.date =
         event.target.value;
+
+    if (
+        previousDate &&
+        previousDate !== draftSession.date
+    ) {
+        draftSession.sourceQSlotId = null;
+        draftSession.sourcePlannedWorkoutId = null;
+    }
 
     dateDisplay.textContent =
         formatDate(
@@ -478,14 +488,26 @@ if (!draftSession.aoId && draftSession.aoName) {
 
 aoSelect.value = draftSession.aoId || "";
 
-aoSelect.addEventListener("change", (event) => {
-    const selectedAo = state.aos.find(ao => ao.id === event.target.value);
+aoSelect.addEventListener("change", event => {
+    const previousAoId = draftSession.aoId;
+
+    const selectedAo = state.aos.find(
+        ao => ao.id === event.target.value
+    );
 
     draftSession.aoId = selectedAo?.id || null;
     draftSession.aoName = selectedAo?.name || "";
     draftSession.siteId =
         selectedAo?.defaultSiteId ||
         null;
+
+    if (
+        previousAoId &&
+        previousAoId !== draftSession.aoId
+    ) {
+        draftSession.sourceQSlotId = null;
+        draftSession.sourcePlannedWorkoutId = null;
+    }
 
     updateSessionContextSummary();
 

@@ -1900,11 +1900,8 @@ export function renderPlannedWorkoutDetail() {
         };
         
         session.sourcePlannedWorkoutId = workout.id;
-        session.sourceQSlotId =
-            workout.sourceQSlotId ||
-            matchingQSlot?.id ||
-            null;
-
+        session.sourceQSlotId = matchingQSlot?.id || null;
+        
         state.draftSession = session;
         state.selectedSessionId = null;
         state.editingSessionId = null;
@@ -1939,11 +1936,17 @@ export function renderPlannedWorkoutDetail() {
 
     function findMatchingQSlotForWorkout(workout) {
         if (workout.sourceQSlotId) {
-            const slot = state.qSlots.find(
+            const sourceSlot = state.qSlots.find(
                 slot => slot.id === workout.sourceQSlotId
             );
     
-            if (slot) return slot;
+            if (
+                sourceSlot &&
+                sourceSlot.date === workout.date &&
+                sourceSlot.aoId === workout.aoId
+            ) {
+                return sourceSlot;
+            }
         }
     
         return state.qSlots.find(slot => {

@@ -652,11 +652,17 @@ export function renderWorkoutPlanner() {
 
     function findMatchingQSlotForDraftWorkout() {
         if (draftWorkout.sourceQSlotId) {
-            const slot = state.qSlots.find(
+            const sourceSlot = state.qSlots.find(
                 slot => slot.id === draftWorkout.sourceQSlotId
             );
     
-            if (slot) return slot;
+            if (
+                sourceSlot &&
+                sourceSlot.date === draftWorkout.date &&
+                sourceSlot.aoId === draftWorkout.aoId
+            ) {
+                return sourceSlot;
+            }
         }
     
         return state.qSlots.find(slot =>
@@ -725,6 +731,7 @@ export function renderWorkoutPlanner() {
 
     function updateDraftDate(event) {
         draftWorkout.date = event.target.value;
+        draftWorkout.sourceQSlotId = null;
     
         if (draftWorkout.announcementMode !== "custom") {
             draftWorkout.announcementText = "";
@@ -796,13 +803,14 @@ export function renderWorkoutPlanner() {
     
     aoSelect.value = draftWorkout.aoId || "";
     
-    aoSelect.addEventListener("change", (event) => {
+    aoSelect.addEventListener("change", event => {
         const selectedAo = state.aos.find(
             ao => ao.id === event.target.value
         );
-        
+    
         draftWorkout.aoId = selectedAo?.id || null;
         draftWorkout.aoName = selectedAo?.name || "";
+        draftWorkout.sourceQSlotId = null;
 
         if (draftWorkout.announcementMode !== "custom") {
             draftWorkout.announcementText = "";
