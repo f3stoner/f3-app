@@ -508,3 +508,58 @@ export async function loadQSlotMediaAttachmentsBySlotIds(
 
     return bySlotId;
 }
+
+export async function loadCommentMediaAttachmentsByCommentIds(commentIds = []) {
+    const cleanCommentIds = [...new Set(commentIds.filter(Boolean))];
+
+    if (cleanCommentIds.length === 0) return new Map();
+
+    const { data, error } = await supabase
+        .from("media_attachments")
+        .select(`
+            id,
+            region_feed_comment_id,
+            display_order,
+            media_assets (
+                id,
+                storage_path,
+                media_kind,
+                mime_type,
+                file_size_bytes,
+                width,
+                height,
+                status
+            )
+        `)
+        .in("region_feed_comment_id", cleanCommentIds)
+        .order("display_order", { ascending: true });
+
+    if (error) throw error;
+
+    const byCommentId = new Map(
+        cleanCommentIds.map(commentId => [commentId, []])
+    );
+
+    (data || []).forEach(row => {
+        if (!row.region_feed_comment_id || row.media_assets?.status !== "ready") {
+            return;
+        }
+
+        byCommentId.get(row.region_feed_comment_id)?.push({
+            id: row.id,
+            displayOrder: row.display_order,
+            asset: {
+                id: row.media_assets.id,
+                storagePath: row.media_assets.storage_path,
+                mediaKind: row.media_assets.media_kind,
+                mimeType: row.media_assets.mime_type,
+                fileSizeBytes: row.media_assets.file_size_bytes,
+                width: row.media_assets.width,
+                height: row.media_assets.height,
+                status: row.media_assets.status,
+            },
+        });
+    });
+
+    return byCommentId;
+}

@@ -100,12 +100,6 @@ export async function addWorkoutComment({
         );
     }
 
-    if (!cleanBody) {
-        throw new Error(
-            "Comment body is required."
-        );
-    }
-
     const { data, error } = await supabase.rpc(
         "add_workout_comment",
         {
@@ -626,6 +620,7 @@ export async function loadRegionFeedComments(
             )
         `)
         .eq("feed_event_id", feedEventId)
+        .is("deleted_at", null)
         .order("created_at", {
             ascending: true,
         })
@@ -660,12 +655,6 @@ export async function addRegionFeedComment({
     if (!feedEventId) {
         throw new Error(
             "Feed event id is required to add a comment."
-        );
-    }
-
-    if (!cleanBody) {
-        throw new Error(
-            "Comment body is required."
         );
     }
 

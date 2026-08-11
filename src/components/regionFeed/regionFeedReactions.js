@@ -10,7 +10,15 @@ import {
 } from "../../services/regionFeedService.js";
 import { createIcon } from "../../utils/icons.js";
 import { createMemberAvatar } from "../memberAvatar.js";
-import { resolveMediaUrl } from "../../services/mediaService.js";
+import {
+    resolveMediaUrl,
+    resolveMediaUrls,
+    reserveMediaAttachment,
+    uploadMediaAsset,
+    finalizeMediaAsset,
+    loadCommentMediaAttachmentsByCommentIds,
+} from "../../services/mediaService.js";
+import { normalizeMediaImage } from "../../utils/imageProcessing.js";
 
 const REACTIONS = [
     {
@@ -141,6 +149,83 @@ async function addComment({
         feedEventId,
         body,
     });
+}
+
+const MAX_COMMENT_IMAGES = 3;
+
+async function persistCommentImages(commentId, files = []) {
+    const persisted = [];
+
+    for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        const blob = await normalizeMediaImage(file);
+
+        const reservation = await reserveMediaAttachment({
+            regionFeedCommentId: commentId,
+            mediaKind: "image",
+            mimeType: blob.type,
+            fileSizeBytes: blob.size,
+            displayOrder: index,
+        });
+
+        const asset = reservation?.asset;
+
+        if (!asset?.id || !asset?.storage_path) {
+            throw new Error("Comment media reservation did not return a valid asset.");
+        }
+
+        await uploadMediaAsset(asset.storage_path, blob);
+        await finalizeMediaAsset(asset.id);
+
+        persisted.push({
+            id: reservation?.attachment?.id || null,
+            displayOrder: index,
+            asset: {
+                id: asset.id,
+                storagePath: asset.storage_path,
+                mediaKind: "image",
+                mimeType: blob.type,
+                fileSizeBytes: blob.size,
+                status: "ready",
+            },
+        });
+    }
+
+    return persisted;
+}
+
+async function hydrateCommentMedia(comments = []) {
+    const commentIds = comments.map(comment => comment.id).filter(Boolean);
+
+    if (commentIds.length === 0) return comments;
+
+    const attachmentsByCommentId =
+        await loadCommentMediaAttachmentsByCommentIds(commentIds);
+
+    const storagePaths = [];
+
+    attachmentsByCommentId.forEach(attachments => {
+        attachments.forEach(attachment => {
+            if (attachment.asset?.storagePath) {
+                storagePaths.push(attachment.asset.storagePath);
+            }
+        });
+    });
+
+    const urls = await resolveMediaUrls(storagePaths);
+
+    comments.forEach(comment => {
+        const attachments = attachmentsByCommentId.get(comment.id) || [];
+
+        comment.media = attachments
+            .map(attachment => ({
+                ...attachment,
+                url: urls.get(attachment.asset?.storagePath) || null,
+            }))
+            .filter(item => item.url);
+    });
+
+    return comments;
 }
 
 async function updateReaction({
@@ -373,6 +458,47 @@ function hydrateCommentAvatar(avatar, member) {
         });
 }
 
+function openCommentMediaLightbox(url) {
+    if (!url) return;
+
+    const overlay = document.createElement("div");
+    overlay.className = "region-feed-media-lightbox";
+
+    const image = document.createElement("img");
+    image.className = "region-feed-media-lightbox-image";
+    image.src = url;
+    image.alt = "Comment attachment";
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "region-feed-media-lightbox-close";
+    closeButton.setAttribute("aria-label", "Close image");
+    closeButton.textContent = "×";
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const close = () => {
+        document.body.style.overflow = previousOverflow;
+        document.removeEventListener("keydown", handleKeyDown);
+        overlay.remove();
+    };
+
+    const handleKeyDown = event => {
+        if (event.key === "Escape") close();
+    };
+
+    overlay.addEventListener("click", event => {
+        if (event.target === overlay) close();
+    });
+
+    closeButton.addEventListener("click", close);
+    document.addEventListener("keydown", handleKeyDown);
+
+    overlay.append(image, closeButton);
+    document.body.appendChild(overlay);
+}
+
 function getCommentMemberName(
     comment
 ) {
@@ -453,9 +579,44 @@ function createCommentRow({
 
     row.append(
         avatar,
-        header,
-        body
+        header
     );
+    
+    if (comment.body) {
+        row.appendChild(body);
+    }
+
+    const commentMedia = Array.isArray(comment.media)
+        ? comment.media
+        : [];
+
+    if (commentMedia.length > 0) {
+        const media = document.createElement("div");
+        media.className = "region-feed-comment-media";
+
+        commentMedia.slice(0, MAX_COMMENT_IMAGES).forEach(item => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "region-feed-comment-media-button";
+            button.setAttribute("aria-label", "View full image");
+
+            const image = document.createElement("img");
+            image.className = "region-feed-comment-media-image";
+            image.src = item.url;
+            image.alt = "Comment attachment";
+            image.decoding = "async";
+
+            button.addEventListener("click", event => {
+                stopCardNavigation(event);
+                openCommentMediaLightbox(item.url);
+            });
+
+            button.appendChild(image);
+            media.appendChild(button);
+        });
+
+        row.appendChild(media);
+    }
 
     if (
         comment.memberId ===
@@ -602,6 +763,95 @@ function renderCommentsThread({
         "Add a comment"
     );
 
+    const selectedImages = [];
+
+    const mediaInput = document.createElement("input");
+    mediaInput.type = "file";
+    mediaInput.accept = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
+    mediaInput.multiple = true;
+    mediaInput.hidden = true;
+
+    const mediaButton = document.createElement("button");
+    mediaButton.type = "button";
+    mediaButton.className = "region-feed-comment-media-add";
+    mediaButton.setAttribute("aria-label", "Add photos");
+    
+    mediaButton.appendChild(
+        createIcon(
+            "feedCommentImage",
+            "region-feed-comment-media-add-icon",
+            {
+                size: 18,
+                strokeWidth: 2,
+            }
+        )
+    );
+
+    const preview = document.createElement("div");
+    preview.className = "region-feed-comment-media-preview";
+    preview.hidden = true;
+
+    function renderSelectedImages() {
+        preview.textContent = "";
+        preview.hidden = selectedImages.length === 0;
+        mediaButton.disabled = selectedImages.length >= MAX_COMMENT_IMAGES;
+
+        selectedImages.forEach((file, index) => {
+            const item = document.createElement("div");
+            item.className = "region-feed-comment-media-preview-item";
+
+            const image = document.createElement("img");
+            image.className = "region-feed-comment-media-preview-image";
+            image.alt = "Selected comment attachment";
+
+            const objectUrl = URL.createObjectURL(file);
+            image.src = objectUrl;
+
+            image.addEventListener("load", () => {
+                URL.revokeObjectURL(objectUrl);
+            }, { once: true });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "region-feed-comment-media-preview-remove";
+            remove.setAttribute("aria-label", "Remove image");
+            remove.textContent = "×";
+
+            remove.addEventListener("click", event => {
+                stopCardNavigation(event);
+                selectedImages.splice(index, 1);
+                renderSelectedImages();
+            });
+
+            item.append(image, remove);
+            preview.appendChild(item);
+        });
+    }
+
+    mediaButton.addEventListener("click", event => {
+        stopCardNavigation(event);
+        mediaInput.click();
+    });
+
+    mediaInput.addEventListener("change", event => {
+        const files = Array.from(event.target.files || []);
+
+        files.forEach(file => {
+            if (selectedImages.length >= MAX_COMMENT_IMAGES) return;
+
+            const duplicate = selectedImages.some(existing =>
+                existing.name === file.name &&
+                existing.size === file.size &&
+                existing.lastModified === file.lastModified
+            );
+
+            if (!duplicate) selectedImages.push(file);
+        });
+
+        mediaInput.value = "";
+        renderSelectedImages();
+    });
+
     const submit =
         document.createElement("button");
 
@@ -632,22 +882,55 @@ function renderCommentsThread({
                 submitEvent
             );
 
-            const body =
-                input.value.trim();
+            const body = input.value.trim();
 
-            if (!body) return;
+            if (!body && selectedImages.length === 0) return;
 
             input.disabled = true;
+            mediaButton.disabled = true;
             submit.disabled = true;
 
             try {
-                const created =
-                    await addComment({
-                        feedEventId,
-                        qSlotId,
-                        body,
-                    });
+                const created = await addComment({
+                    feedEventId,
+                    qSlotId,
+                    body,
+                });
+                
+                let persistedMedia = [];
 
+                try {
+                    if (selectedImages.length > 0) {
+                        persistedMedia = await persistCommentImages(
+                            created.id,
+                            selectedImages
+                        );
+                
+                        const paths = persistedMedia
+                            .map(item => item.asset?.storagePath)
+                            .filter(Boolean);
+                
+                        const urls = await resolveMediaUrls(paths);
+                
+                        persistedMedia = persistedMedia
+                            .map(item => ({
+                                ...item,
+                                url: urls.get(item.asset?.storagePath) || null,
+                            }))
+                            .filter(item => item.url);
+                    }
+                } catch (error) {
+                    if (!body) {
+                        try {
+                            await deleteRegionFeedComment(created.id);
+                        } catch (cleanupError) {
+                            console.error("Failed to clean up empty comment:", cleanupError);
+                        }
+                    }
+                
+                    throw error;
+                }
+                
                 const mappedComment = {
                     id:
                         created.id,
@@ -672,6 +955,8 @@ function renderCommentsThread({
 
                     updatedAt:
                         created.updated_at,
+
+                    media: persistedMedia,
 
                     member: state.currentUserMember
                         ? {
@@ -711,14 +996,25 @@ function renderCommentsThread({
                 );
 
                 input.disabled = false;
+                mediaButton.disabled = false;
                 submit.disabled = false;
             }
         }
     );
 
+    const composerActions = document.createElement("div");
+    composerActions.className = "region-feed-comment-composer-actions";
+    
+    composerActions.append(
+        mediaButton,
+        submit
+    );
+    
     form.append(
         input,
-        submit
+        mediaInput,
+        preview,
+        composerActions
     );
 
     thread.append(
@@ -805,14 +1101,14 @@ function createCommentsTrigger({
             );
 
             try {
-                const comments =
-                    await loadComments({
-                        feedEventId,
-                        qSlotId,
-                    });
-
-                thread.dataset.loaded =
-                    "true";
+                const comments = await loadComments({
+                    feedEventId,
+                    qSlotId,
+                });
+                
+                await hydrateCommentMedia(comments);
+                
+                thread.dataset.loaded = "true";
 
                 renderCommentsThread({
                     socialState,
