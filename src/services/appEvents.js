@@ -824,10 +824,7 @@ export function logActionFailure(
             "Action Failed",
         metadata: {
             source,
-            errorMessage:
-                error?.message || null,
-            errorName:
-                error?.name || null,
+            error: error || null,
             ...metadata,
         },
     });

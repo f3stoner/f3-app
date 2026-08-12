@@ -10,7 +10,7 @@ import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
 import { addAdminFlags } from "../services/appData.js";
-import { logSaveFailure } from "../services/appEvents.js";
+import { logSaveFailure, logActionFailure } from "../services/appEvents.js";
 import { getSiteWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
@@ -2244,6 +2244,30 @@ async function loadDraftQSlotCommitments() {
             {
                 qSlotId,
                 error,
+            }
+        );
+
+        logActionFailure(
+            "sessionView.loadQSlotCommitments",
+            error,
+            {
+                qSlotId,
+                draftSessionId:
+                    draftSession?.id ||
+                    null,
+                sessionDate:
+                    draftSession?.date ||
+                    null,
+                sessionAoId:
+                    draftSession?.aoId ||
+                    null,
+                sessionAoName:
+                    draftSession?.aoName ||
+                    null,
+                sourcePlannedWorkoutId:
+                    draftSession
+                        ?.sourcePlannedWorkoutId ||
+                    null,
             }
         );
 
