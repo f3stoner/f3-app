@@ -524,6 +524,7 @@ const RESTORABLE_VIEWS = new Set([
     "siteManagement",
     "campaigns",
     "campaignCreate",
+    "regionOnboarding",
 ]);
 
 function restoreNavState(nav) {
@@ -638,6 +639,11 @@ const lazyRouteLoaders = {
             module =>
                 module.renderSiteManagementView
         ),
+    regionOnboarding: () =>
+        import(
+            /* webpackChunkName: "route-region-onboarding" */
+            "./views/regionOnboardingView.js"
+        ).then(module => module.renderRegionOnboardingView),
 };
 
 const lazyRoutePromises = new Map();
@@ -657,6 +663,7 @@ function getLazyRouteLabel(viewName) {
         campaigns: "Campaigns",
         campaignDetail: "Campaign",
         campaignCreate: "Start Campaign",
+        regionOnboarding: "Region Onboarding",
     };
 
     return labels[viewName] || "Screen";
@@ -935,6 +942,11 @@ function renderApp() {
     } else if (state.currentView === "importRuns") {
         renderLazyRoute(
             "importRuns",
+            currentRenderSequence
+        );
+    } else if (state.currentView === "regionOnboarding") {
+        renderLazyRoute(
+            "regionOnboarding",
             currentRenderSequence
         );
     } else if (state.currentView === "announcementManagement") {

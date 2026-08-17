@@ -266,6 +266,11 @@ export function createMainMenu() {
                     permission: PERMISSIONS.VIEW_IMPORTS,
                 },
                 {
+                    label: "Region Onboarding",
+                    view: "regionOnboarding",
+                    isVisible: () => state.currentUserRole === "superadmin",
+                },
+                {
                     label: "Library Workbench",
                     view: "libraryWorkbench",
                     permission: PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,

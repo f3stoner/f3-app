@@ -1778,20 +1778,15 @@ export async function insertSession(regionId, session) {
                 source_q_slot_id: session.sourceQSlotId || null,
                 created_at: session.createdAt,
                 created_by_user_id: session.createdByUserId,
-                backblast_text:
-                    session.backblastText || "",
+                backblast_text: session.backblastText || "",
 
-                backblast_hashtags_text:
-                    session.backblastHashtagsText ?? null,
+                backblast_hashtags_text: session.backblastHashtagsText ?? null,
 
-                backblast_intro_text:
-                    session.backblastIntroText ?? null,
+                backblast_intro_text: session.backblastIntroText ?? null,
 
-                backblast_body_text:
-                    session.backblastBodyText ?? null,
+                backblast_body_text: session.backblastBodyText ?? null,
 
-                backblast_status:
-                    session.backblastStatus || null,
+                backblast_status: session.backblastStatus || null,
                 backblast_posted_at: session.backblastPostedAt || null,
                 unresolved_pax: session.unresolvedPax || [],
                 weather_snapshot: session.weatherSnapshot || null,
@@ -5198,6 +5193,39 @@ export async function loadMemberMerge(
             p_merge_id: mergeId,
         }
     );
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function previewMemberMerge(mergeId) {
+    if (!mergeId) {
+        throw new Error("Merge id is required.");
+    }
+
+    const { data, error } = await supabase.rpc("preview_member_merge", {
+        p_merge_id: mergeId,
+    });
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function markMemberMergeReady(mergeId, expectedPlanHash) {
+    if (!mergeId) {
+        throw new Error("Merge id is required.");
+    }
+
+    if (!expectedPlanHash) {
+        throw new Error("Expected plan hash is required.");
+    }
+
+    const { data, error } = await supabase.rpc("mark_member_merge_ready", {
+        p_merge_id: mergeId,
+        p_expected_plan_hash: expectedPlanHash,
+    });
 
     if (error) throw error;
 
