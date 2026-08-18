@@ -10,6 +10,7 @@ import { getMemberById } from "../utils/memberLookup.js";
 import {
     createPaxProfileIdentity,
 } from "../components/paxProfileIdentity.js";
+import { resolveMediaUrl } from "../services/mediaService.js";
 
 let paxCommunityRenderSequence = 0;
 
@@ -368,6 +369,37 @@ export async function renderPaxCommunityView() {
         loading,
         createGlobalNav()
     );
+
+    if (member.avatarPath) {
+        resolveMediaUrl(member.avatarPath)
+            .then(avatarUrl => {
+                if (!avatarUrl) return;
+                if (!isCurrentRender()) return;
+    
+                const currentIdentity =
+                    app.querySelector(".pax-profile-identity");
+    
+                if (!currentIdentity) return;
+    
+                currentIdentity.replaceWith(
+                    createPaxProfileIdentity(
+                        member,
+                        {
+                            avatarUrl,
+                        }
+                    )
+                );
+            })
+            .catch(error => {
+                console.warn(
+                    "Failed to resolve community profile avatar:",
+                    {
+                        memberId: member.id,
+                        error,
+                    }
+                );
+            });
+    }
 
     if (state.isMainMenuOpen) {
         document.body.appendChild(createMainMenu());
