@@ -252,26 +252,53 @@ export function renderPreblastView() {
     
     upsertEmphasisHashtag();
 
-    if (preblastSite?.id && targetDateTime && !state.hasAddedPreblastForecast) {
-        state.hasAddedPreblastForecast = true;
-
-        upsertForecastLine();
-
-        getSiteWeather(preblastSite.id, targetDateTime)
-            .then(weather => {
-                console.log("preblast weather result", {
-                    siteId: preblastSite.id,
-                    targetDateTime,
-                    weather,
+    if (preblastSite?.id && targetDateTime) {
+        const existingForecastMatch = (state.draftPreblastText || "").match(/^Forecast:(.*)$/im);
+        const existingForecastText = existingForecastMatch?.[1]?.trim() || "";
+    
+        const shouldLoadForecast =
+            !existingForecastText ||
+            existingForecastText.toLowerCase() === "checking conditions...";
+    
+        if (shouldLoadForecast) {
+            upsertForecastLine();
+    
+            getSiteWeather(preblastSite.id, targetDateTime)
+                .then(weather => {
+                    console.log("preblast weather result", {
+                        siteId: preblastSite.id,
+                        targetDateTime,
+                        weather,
+                    });
+    
+                    const forecastLine = buildForecastLine(weather);
+    
+                    if (state.currentView !== "preblast") return;
+    
+                    state.draftPreblastText = (state.draftPreblastText || "").replace(
+                        /^Forecast:.*$/im,
+                        forecastLine
+                    );
+    
+                    if (textInput.isConnected) {
+                        textInput.value = state.draftPreblastText;
+                    }
+                })
+                .catch(error => {
+                    console.error("Failed to load preblast forecast:", error);
+    
+                    const fallbackLine = "Forecast: weather unavailable.";
+    
+                    state.draftPreblastText = (state.draftPreblastText || "").replace(
+                        /^Forecast:.*$/im,
+                        fallbackLine
+                    );
+    
+                    if (textInput.isConnected) {
+                        textInput.value = state.draftPreblastText;
+                    }
                 });
-            
-                const forecastLine = buildForecastLine(weather);
-                upsertForecastLine(forecastLine);
-            })
-            .catch(error => {
-                console.error("Failed to load preblast forecast:", error);
-                upsertForecastLine("Forecast: weather unavailable.");
-            });
+        }
     }
 
     state.customTemplates = ensureCustomTemplates(state.customTemplates);
