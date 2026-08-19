@@ -31,10 +31,6 @@ function formatCampaignDate(date) {
         });
 }
 
-function getMonthKey(dateString) {
-    return dateString.slice(0, 7);
-}
-
 function getMonthLabel(dateString) {
     return new Date(`${dateString}T12:00:00`)
         .toLocaleDateString(undefined, {
@@ -59,15 +55,40 @@ function getMonthStartDay(year, monthIndex) {
     ).getDay();
 }
 
+function isPrivateChallenge(campaign) {
+    return campaign.visibility === "private";
+}
+
+function isIndividualChallenge(campaign) {
+    return campaign.participantMode === "individual";
+}
+
+function isManualDailyChallenge(campaign) {
+    return campaign.metricKey === "manual_quantity"
+        && campaign.trackingMode === "manual"
+        && campaign.cadence === "daily";
+}
+
+function isManualCumulativeChallenge(campaign) {
+    return campaign.metricKey === "manual_quantity"
+        && campaign.trackingMode === "manual"
+        && campaign.cadence === "campaign";
+}
+
 function supportsRecentProgress(campaign) {
     return campaign.metricKey === "regional_first_time_fngs";
 }
 
 function shouldShowPersonalProgress(campaign, progress) {
-    return !isIndividualChallenge(campaign) || progress.isEnrolled;
+    return !isIndividualChallenge(campaign)
+        || progress.isEnrolled;
 }
 
 function supportsStandings(campaign) {
+    if (isPrivateChallenge(campaign)) {
+        return false;
+    }
+
     return isIndividualChallenge(campaign)
         && (
             campaign.metricKey === "member_posts"
@@ -85,8 +106,15 @@ function canManageCampaign(campaign) {
 }
 
 function formatCampaignDateRange(campaign) {
-    const start = formatCampaignDate(campaign.startsOn);
-    const end = formatCampaignDate(campaign.endsOn);
+    const start =
+        formatCampaignDate(
+            campaign.startsOn
+        );
+
+    const end =
+        formatCampaignDate(
+            campaign.endsOn
+        );
 
     if (!start) return end;
     if (!end) return start;
@@ -95,43 +123,70 @@ function formatCampaignDateRange(campaign) {
 }
 
 function getCampaignStatus(campaign) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today =
+        new Date()
+            .toISOString()
+            .slice(0, 10);
 
     if (
-        campaign.status === "completed" ||
-        campaign.endsOn < today
+        campaign.status === "completed"
+        || campaign.endsOn < today
     ) {
         return "Completed";
     }
 
     if (
-        campaign.status === "scheduled" ||
-        campaign.startsOn > today
+        campaign.status === "scheduled"
+        || campaign.startsOn > today
     ) {
         return "Upcoming";
     }
 
-    if (campaign.status === "cancelled") {
+    if (
+        campaign.status === "cancelled"
+    ) {
         return "Cancelled";
     }
 
     return "Active";
 }
 
+function getCampaignTypeLabel(campaign) {
+    if (isPrivateChallenge(campaign)) {
+        return "Private Challenge";
+    }
+
+    if (isIndividualChallenge(campaign)) {
+        return "Shared Challenge";
+    }
+
+    return "Regional Campaign";
+}
+
 function getCampaignMetricDescription(campaign) {
-    if (campaign.metricKey === "regional_first_time_fngs") {
+    if (
+        campaign.metricKey ===
+        "regional_first_time_fngs"
+    ) {
         return "Each first-time PAX welcomed at a regional workout during the campaign counts toward the goal.";
     }
 
-    if (campaign.metricKey === "member_posts") {
+    if (
+        campaign.metricKey ===
+        "member_posts"
+    ) {
         return "Each workout you attend in the region during the campaign counts as one post.";
     }
 
-    if (isManualDailyChallenge(campaign)) {
+    if (
+        isManualDailyChallenge(campaign)
+    ) {
         return "Log your activity throughout the day. Your entries are added to today's total, and each day that reaches the daily target counts as completed.";
     }
-    
-    if (isManualCumulativeChallenge(campaign)) {
+
+    if (
+        isManualCumulativeChallenge(campaign)
+    ) {
         return "Log your activity throughout the challenge. Each entry adds to your cumulative total toward the overall goal.";
     }
 
@@ -139,43 +194,110 @@ function getCampaignMetricDescription(campaign) {
 }
 
 function createProgressBar(progress) {
-    const track = document.createElement("div");
-    track.className = "campaign-detail-progress-track";
+    const track =
+        document.createElement("div");
 
-    const fill = document.createElement("div");
-    fill.className = "campaign-detail-progress-fill";
-    fill.style.width = `${Math.min(Math.max(progress.percent, 0), 100)}%`;
+    track.className =
+        "campaign-detail-progress-track";
+
+    const fill =
+        document.createElement("div");
+
+    fill.className =
+        "campaign-detail-progress-fill";
+
+    fill.style.width =
+        `${Math.min(
+            Math.max(
+                progress.percent,
+                0
+            ),
+            100
+        )}%`;
 
     track.append(fill);
 
     return track;
 }
 
-function createCampaignDetailTabs() {
-    const tabs = document.createElement("div");
-    tabs.className = "campaign-detail-tabs";
+function createCampaignDetailTabs(campaign) {
+    const tabs =
+        document.createElement("div");
 
-    [
-        { key: "progress", label: "Progress" },
-        { key: "standings", label: "Standings" },
-        { key: "about", label: "About" },
-    ].forEach(tab => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "campaign-detail-tab";
-        button.dataset.campaignDetailTab = tab.key;
-        button.textContent = tab.label;
+    tabs.className =
+        "campaign-detail-tabs";
 
-        if (tab.key === activeCampaignDetailTab) {
-            button.classList.add("campaign-detail-tab-active");
+    const tabDefinitions = [
+        {
+            key: "progress",
+            label: "Progress",
+        },
+    ];
+
+    if (
+        supportsStandings(campaign)
+    ) {
+        tabDefinitions.push({
+            key: "standings",
+            label: "Standings",
+        });
+    }
+
+    tabDefinitions.push({
+        key: "about",
+        label: "About",
+    });
+
+    if (
+        activeCampaignDetailTab === "standings"
+        && !supportsStandings(campaign)
+    ) {
+        activeCampaignDetailTab =
+            "progress";
+    }
+
+    tabDefinitions.forEach(tab => {
+        const button =
+            document.createElement("button");
+
+        button.type =
+            "button";
+
+        button.className =
+            "campaign-detail-tab";
+
+        button.dataset
+            .campaignDetailTab =
+            tab.key;
+
+        button.textContent =
+            tab.label;
+
+        if (
+            tab.key ===
+            activeCampaignDetailTab
+        ) {
+            button.classList.add(
+                "campaign-detail-tab-active"
+            );
         }
 
-        button.addEventListener("click", () => {
-            if (activeCampaignDetailTab === tab.key) return;
+        button.addEventListener(
+            "click",
+            () => {
+                if (
+                    activeCampaignDetailTab ===
+                    tab.key
+                ) {
+                    return;
+                }
 
-            activeCampaignDetailTab = tab.key;
-            renderCampaignDetailTab();
-        });
+                activeCampaignDetailTab =
+                    tab.key;
+
+                renderCampaignDetailTab();
+            }
+        );
 
         tabs.append(button);
     });
@@ -189,7 +311,12 @@ function renderCampaignDetailTab() {
             ".view-campaignDetail .campaign-detail-tab-content"
         );
 
-    if (!content || !campaignDetailData) return;
+    if (
+        !content
+        || !campaignDetailData
+    ) {
+        return;
+    }
 
     content.replaceChildren(
         createCampaignDetailTabContent(
@@ -204,74 +331,130 @@ function renderCampaignDetailTab() {
         .forEach(button => {
             button.classList.toggle(
                 "campaign-detail-tab-active",
-                button.dataset.campaignDetailTab ===
+                button.dataset
+                    .campaignDetailTab ===
                     activeCampaignDetailTab
             );
         });
 }
 
-function createOverallProgressSection(campaign, progress) {
-    if (!shouldShowPersonalProgress(campaign, progress)) {
+function createOverallProgressSection(
+    campaign,
+    progress
+) {
+    if (
+        !shouldShowPersonalProgress(
+            campaign,
+            progress
+        )
+    ) {
         return null;
     }
 
-    const section = document.createElement("section");
+    const section =
+        document.createElement("section");
+
     section.className =
         "campaign-detail-progress campaign-detail-overall-progress";
 
-    const label = document.createElement("div");
-    label.className = "campaign-detail-section-label campaign-detail-subsection-title";
-    label.textContent = isManualDailyChallenge(campaign)
-        ? "Challenge Progress"
-        : isIndividualChallenge(campaign)
-            ? "Your Progress"
-            : "Regional Progress";
+    const label =
+        document.createElement("div");
 
-    const valueRow = document.createElement("div");
-    valueRow.className = "campaign-detail-progress-value-row";
+    label.className =
+        "campaign-detail-section-label campaign-detail-subsection-title";
 
-    const value = document.createElement("div");
-    value.className = "campaign-detail-progress-value";
+    label.textContent =
+        isManualDailyChallenge(campaign)
+            ? "Challenge Progress"
+            : isIndividualChallenge(campaign)
+                ? "Your Progress"
+                : "Regional Progress";
 
-    const current = document.createElement("strong");
-    current.textContent = progress.current;
+    const valueRow =
+        document.createElement("div");
 
-    const target = document.createElement("span");
-    target.textContent = ` / ${progress.target}`;
+    valueRow.className =
+        "campaign-detail-progress-value-row";
 
-    value.append(current, target);
+    const value =
+        document.createElement("div");
 
-    const unit = document.createElement("div");
-    unit.className = "campaign-detail-progress-unit";
-    unit.textContent = progress.unit;
+    value.className =
+        "campaign-detail-progress-value";
 
-    const percent = document.createElement("div");
-    percent.className = "campaign-detail-progress-percent";
-    percent.textContent = `${progress.percent}%`;
+    const current =
+        document.createElement("strong");
 
-    valueRow.append(value, unit, percent);
+    current.textContent =
+        progress.current;
+
+    const target =
+        document.createElement("span");
+
+    target.textContent =
+        ` / ${progress.target}`;
+
+    value.append(
+        current,
+        target
+    );
+
+    const unit =
+        document.createElement("div");
+
+    unit.className =
+        "campaign-detail-progress-unit";
+
+    unit.textContent =
+        progress.unit;
+
+    const percent =
+        document.createElement("div");
+
+    percent.className =
+        "campaign-detail-progress-percent";
+
+    percent.textContent =
+        `${progress.percent}%`;
+
+    valueRow.append(
+        value,
+        unit,
+        percent
+    );
 
     section.append(
         label,
         valueRow,
-        createProgressBar(progress)
+        createProgressBar(
+            progress
+        )
     );
 
-    const copy = document.createElement("div");
-    copy.className = "campaign-detail-progress-copy";
+    const copy =
+        document.createElement("div");
+
+    copy.className =
+        "campaign-detail-progress-copy";
 
     if (
-        isManualDailyChallenge(campaign) &&
-        progress.totalDays > 0
+        isManualDailyChallenge(campaign)
+        && progress.totalDays > 0
     ) {
         copy.textContent =
             `${progress.completedDays} of ${progress.totalDays} days completed`;
-    } else if (progress.goalReached) {
+    } else if (
+        progress.goalReached
+    ) {
         copy.textContent =
             `Goal reached · ${progress.current} ${progress.unit}`;
     } else {
         const remaining =
-            Math.max(progress.target - progress.current, 0);
+            Math.max(
+                progress.target -
+                    progress.current,
+                0
+            );
 
         copy.textContent =
             `${remaining} ${progress.unit} to go`;
@@ -289,9 +472,13 @@ function createCampaignDetailTabContent({
     dailyHistory,
     standings,
 }) {
-    const content = document.createDocumentFragment();
+    const content =
+        document.createDocumentFragment();
 
-    if (activeCampaignDetailTab === "progress") {
+    if (
+        activeCampaignDetailTab ===
+        "progress"
+    ) {
         const overallProgress =
             createOverallProgressSection(
                 campaign,
@@ -299,12 +486,16 @@ function createCampaignDetailTabContent({
             );
 
         if (overallProgress) {
-            content.append(overallProgress);
+            content.append(
+                overallProgress
+            );
         }
 
         if (
-            isManualDailyChallenge(campaign) &&
-            progress.isEnrolled
+            isManualDailyChallenge(
+                campaign
+            )
+            && progress.isEnrolled
         ) {
             content.append(
                 createDailyChallengeCalendar(
@@ -315,7 +506,11 @@ function createCampaignDetailTabContent({
             );
         }
 
-        if (supportsRecentProgress(campaign)) {
+        if (
+            supportsRecentProgress(
+                campaign
+            )
+        ) {
             content.append(
                 createRecentProgressSection(
                     recentProgress
@@ -324,11 +519,19 @@ function createCampaignDetailTabContent({
         }
 
         if (
-            !isManualDailyChallenge(campaign) &&
-            !supportsRecentProgress(campaign)
+            !isManualDailyChallenge(
+                campaign
+            )
+            && !supportsRecentProgress(
+                campaign
+            )
         ) {
-            const copy = document.createElement("p");
-            copy.className = "campaign-detail-copy";
+            const copy =
+                document.createElement("p");
+
+            copy.className =
+                "campaign-detail-copy";
+
             copy.textContent =
                 "Progress updates will appear here as the challenge continues.";
 
@@ -336,7 +539,13 @@ function createCampaignDetailTabContent({
         }
     }
 
-    if (activeCampaignDetailTab === "standings") {
+    if (
+        activeCampaignDetailTab ===
+        "standings"
+        && supportsStandings(
+            campaign
+        )
+    ) {
         const standingsSection =
             createStandingsSection(
                 campaign,
@@ -344,18 +553,27 @@ function createCampaignDetailTabContent({
             );
 
         if (standingsSection) {
-            content.append(standingsSection);
+            content.append(
+                standingsSection
+            );
         } else {
-            const empty = document.createElement("p");
-            empty.className = "campaign-detail-copy";
+            const empty =
+                document.createElement("p");
+
+            empty.className =
+                "campaign-detail-copy";
+
             empty.textContent =
-                "Standings are not available for this campaign.";
+                "Standings are not available for this challenge.";
 
             content.append(empty);
         }
     }
 
-    if (activeCampaignDetailTab === "about") {
+    if (
+        activeCampaignDetailTab ===
+        "about"
+    ) {
         const participation =
             createParticipationStatus(
                 campaign,
@@ -364,7 +582,9 @@ function createCampaignDetailTabContent({
 
         if (participation) {
             const participationSection =
-                document.createElement("section");
+                document.createElement(
+                    "section"
+                );
 
             participationSection.className =
                 "campaign-detail-about-participation";
@@ -377,6 +597,7 @@ function createCampaignDetailTabContent({
                 participationSection
             );
         }
+
         content.append(
             createCampaignAboutSection(
                 campaign,
@@ -403,29 +624,82 @@ function createCampaignAboutSection(
     campaign,
     progress
 ) {
-    const section = document.createElement("section");
+    const section =
+        document.createElement("section");
+
     section.className =
         "campaign-detail-about";
 
-    const goal = document.createElement("div");
+    if (
+        isPrivateChallenge(campaign)
+    ) {
+        const privacy =
+            document.createElement("div");
+
+        privacy.className =
+            "campaign-detail-about-block";
+
+        const privacyLabel =
+            document.createElement("h2");
+
+        privacyLabel.className =
+            "campaign-detail-section-label";
+
+        privacyLabel.textContent =
+            "Visibility";
+
+        const privacyCopy =
+            document.createElement("p");
+
+        privacyCopy.className =
+            "campaign-detail-copy";
+
+        privacyCopy.textContent =
+            "This is a private challenge. Only you can see and track it.";
+
+        privacy.append(
+            privacyLabel,
+            privacyCopy
+        );
+
+        section.append(
+            privacy
+        );
+    }
+
+    const goal =
+        document.createElement("div");
+
     goal.className =
         "campaign-detail-about-block";
 
-    const goalLabel = document.createElement("h2");
+    const goalLabel =
+        document.createElement("h2");
+
     goalLabel.className =
         "campaign-detail-section-label";
-    goalLabel.textContent = "The Goal";
 
-    const goalCopy = document.createElement("p");
+    goalLabel.textContent =
+        "The Goal";
+
+    const goalCopy =
+        document.createElement("p");
+
     goalCopy.className =
         "campaign-detail-copy";
 
-    if (isManualDailyChallenge(campaign)) {
+    if (
+        isManualDailyChallenge(
+            campaign
+        )
+    ) {
         goalCopy.textContent =
             `Complete ${progress.todayTarget} ${progress.unit} each day from ${formatCampaignDateRange(campaign)}.`;
     } else {
         goalCopy.textContent =
-            isIndividualChallenge(campaign)
+            isIndividualChallenge(
+                campaign
+            )
                 ? `Complete ${progress.target} ${progress.unit} between ${formatCampaignDateRange(campaign)}.`
                 : `Reach ${progress.target} ${progress.unit} between ${formatCampaignDateRange(campaign)}.`;
     }
@@ -435,23 +709,31 @@ function createCampaignAboutSection(
         goalCopy
     );
 
-    const rules = document.createElement("div");
+    const rules =
+        document.createElement("div");
+
     rules.className =
         "campaign-detail-about-block";
 
     const rulesLabel =
         document.createElement("h2");
+
     rulesLabel.className =
         "campaign-detail-section-label";
+
     rulesLabel.textContent =
         "How Progress Counts";
 
     const rulesCopy =
         document.createElement("p");
+
     rulesCopy.className =
         "campaign-detail-copy";
+
     rulesCopy.textContent =
-        getCampaignMetricDescription(campaign);
+        getCampaignMetricDescription(
+            campaign
+        );
 
     rules.append(
         rulesLabel,
@@ -466,97 +748,195 @@ function createCampaignAboutSection(
     return section;
 }
 
-function createDetailState({ type, title, message, onRetry = null }) {
-    const container = document.createElement("div");
-    container.className = `campaign-detail-state campaign-detail-state-${type}`;
+function createDetailState({
+    type,
+    title,
+    message,
+    onRetry = null,
+}) {
+    const container =
+        document.createElement("div");
 
-    if (type === "loading") {
-        const spinner = document.createElement("div");
-        spinner.className = "campaign-detail-spinner";
-        container.append(spinner);
+    container.className =
+        `campaign-detail-state campaign-detail-state-${type}`;
+
+    if (
+        type === "loading"
+    ) {
+        const spinner =
+            document.createElement("div");
+
+        spinner.className =
+            "campaign-detail-spinner";
+
+        container.append(
+            spinner
+        );
     }
 
-    const heading = document.createElement("h2");
-    heading.textContent = title;
+    const heading =
+        document.createElement("h2");
 
-    const copy = document.createElement("p");
-    copy.textContent = message;
+    heading.textContent =
+        title;
 
-    container.append(heading, copy);
+    const copy =
+        document.createElement("p");
+
+    copy.textContent =
+        message;
+
+    container.append(
+        heading,
+        copy
+    );
 
     if (onRetry) {
-        const retry = document.createElement("button");
-        retry.type = "button";
-        retry.className = "campaign-detail-retry";
-        retry.textContent = "Try Again";
-        retry.addEventListener("click", onRetry);
+        const retry =
+            document.createElement("button");
 
-        container.append(retry);
+        retry.type = "button";
+
+        retry.className =
+            "campaign-detail-retry";
+
+        retry.textContent =
+            "Try Again";
+
+        retry.addEventListener(
+            "click",
+            onRetry
+        );
+
+        container.append(
+            retry
+        );
     }
 
     return container;
 }
 
 function createRecentProgressSection(items) {
-    const section = document.createElement("section");
-    section.className = "campaign-detail-section campaign-detail-recent";
+    const section =
+        document.createElement("section");
 
-    const label = document.createElement("h2");
-    label.className = "campaign-detail-section-label";
-    label.textContent = "Recent Progress";
+    section.className =
+        "campaign-detail-section campaign-detail-recent";
+
+    const label =
+        document.createElement("h2");
+
+    label.className =
+        "campaign-detail-section-label";
+
+    label.textContent =
+        "Recent Progress";
 
     section.append(label);
 
-    if (items.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "campaign-detail-copy";
-        empty.textContent = "No qualifying progress yet.";
+    if (
+        items.length === 0
+    ) {
+        const empty =
+            document.createElement("p");
+
+        empty.className =
+            "campaign-detail-copy";
+
+        empty.textContent =
+            "No qualifying progress yet.";
 
         section.append(empty);
+
         return section;
     }
 
-    const list = document.createElement("div");
-    list.className = "campaign-detail-recent-list";
+    const list =
+        document.createElement("div");
+
+    list.className =
+        "campaign-detail-recent-list";
 
     items.forEach(item => {
-        const row = document.createElement("button");
+        const row =
+            document.createElement("button");
+
         row.type = "button";
-        row.className = "campaign-detail-recent-row";
 
-        const identity = document.createElement("div");
-        identity.className = "campaign-detail-recent-identity";
+        row.className =
+            "campaign-detail-recent-row";
 
-        const name = document.createElement("strong");
-        name.className = "campaign-detail-recent-name";
-        name.textContent = item.paxName || "New PAX";
+        const identity =
+            document.createElement("div");
 
-        const action = document.createElement("span");
-        action.className = "campaign-detail-recent-action";
-        action.textContent = "joined the region";
+        identity.className =
+            "campaign-detail-recent-identity";
 
-        identity.append(name, action);
+        const name =
+            document.createElement("strong");
 
-        const meta = document.createElement("div");
-        meta.className = "campaign-detail-recent-meta";
+        name.className =
+            "campaign-detail-recent-name";
+
+        name.textContent =
+            item.paxName ||
+            "New PAX";
+
+        const action =
+            document.createElement("span");
+
+        action.className =
+            "campaign-detail-recent-action";
+
+        action.textContent =
+            "joined the region";
+
+        identity.append(
+            name,
+            action
+        );
+
+        const meta =
+            document.createElement("div");
+
+        meta.className =
+            "campaign-detail-recent-meta";
 
         const parts = [
             item.aoName,
-            formatCampaignDate(item.sessionDate),
+            formatCampaignDate(
+                item.sessionDate
+            ),
         ].filter(Boolean);
 
-        meta.textContent = parts.join(" · ");
+        meta.textContent =
+            parts.join(" · ");
 
-        const chevron = document.createElement("span");
-        chevron.className = "campaign-detail-recent-chevron";
+        const chevron =
+            document.createElement("span");
+
+        chevron.className =
+            "campaign-detail-recent-chevron";
+
         chevron.textContent = "›";
 
-        row.append(identity, meta, chevron);
+        row.append(
+            identity,
+            meta,
+            chevron
+        );
 
-        row.addEventListener("click", () => {
-            state.selectedSessionId = item.sessionId;
-            navigateTo("sessionDetail");
-        });
+        row.addEventListener(
+            "click",
+            () => {
+                state.selectedSessionId =
+                    item.sessionId;
+
+                navigateTo(
+                    "sessionDetail"
+                );
+            }
+        );
 
         list.append(row);
     });
@@ -566,170 +946,281 @@ function createRecentProgressSection(items) {
     return section;
 }
 
-function createCampaignManagementSection(campaign) {
-    if (!canManageCampaign(campaign)) {
+function createCampaignManagementSection(
+    campaign
+) {
+    if (
+        !canManageCampaign(
+            campaign
+        )
+    ) {
         return null;
     }
 
-    const section = document.createElement("section");
+    const section =
+        document.createElement("section");
+
     section.className =
         "campaign-detail-section campaign-detail-management";
 
-    const label = document.createElement("h2");
-    label.className = "campaign-detail-section-label";
-    label.textContent = campaign.creatorMode === "pax"
-        ? "Challenge Management"
-        : "Campaign Management";
+    const label =
+        document.createElement("h2");
 
-    const deleteLabel = campaign.creatorMode === "pax"
-        ? "Delete Challenge"
-        : "Delete Campaign";
-    
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.className = "campaign-detail-delete";
-    deleteButton.textContent = deleteLabel;
+    label.className =
+        "campaign-detail-section-label";
 
-    const itemLabel = campaign.creatorMode === "pax"
-        ? "challenge"
-        : "campaign";
+    label.textContent =
+        campaign.creatorMode === "pax"
+            ? "Challenge Management"
+            : "Campaign Management";
 
-    deleteButton.addEventListener("click", async () => {
-        const confirmed = window.confirm(
-            `Delete ${itemLabel} "${campaign.title}"?\n\nThis cannot be undone.`
-        );
+    const deleteLabel =
+        campaign.creatorMode === "pax"
+            ? "Delete Challenge"
+            : "Delete Campaign";
 
-        if (!confirmed) return;
+    const deleteButton =
+        document.createElement("button");
 
-        deleteButton.disabled = true;
-        deleteButton.textContent = "Deleting…";
+    deleteButton.type =
+        "button";
 
-        try {
-            await deleteCampaign(campaign.id);
+    deleteButton.className =
+        "campaign-detail-delete";
 
-            state.selectedCampaignId = null;
+    deleteButton.textContent =
+        deleteLabel;
 
-            showToast(
-                `${itemLabel === "challenge" ? "Challenge" : "Campaign"} deleted.`,
-                "success"
-            );
-            navigateTo("campaigns");
-        } catch (error) {
-            console.error("Failed to delete campaign:", error);
-        
-            deleteButton.disabled = false;
-            deleteButton.textContent = deleteLabel;
-        
-            showToast(
-                error?.message || `Failed to delete ${itemLabel}.`,
-                "error"
-            );
+    const itemLabel =
+        campaign.creatorMode === "pax"
+            ? "challenge"
+            : "campaign";
+
+    deleteButton.addEventListener(
+        "click",
+        async () => {
+            const confirmed =
+                window.confirm(
+                    `Delete ${itemLabel} "${campaign.title}"?\n\nThis cannot be undone.`
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            deleteButton.disabled =
+                true;
+
+            deleteButton.textContent =
+                "Deleting…";
+
+            try {
+                await deleteCampaign(
+                    campaign.id
+                );
+
+                state.selectedCampaignId =
+                    null;
+
+                showToast(
+                    itemLabel ===
+                        "challenge"
+                        ? "Challenge deleted."
+                        : "Campaign deleted.",
+                    "success"
+                );
+
+                navigateTo(
+                    "campaigns"
+                );
+            } catch (error) {
+                console.error(
+                    "Failed to delete campaign:",
+                    error
+                );
+
+                deleteButton.disabled =
+                    false;
+
+                deleteButton.textContent =
+                    deleteLabel;
+
+                showToast(
+                    error?.message ||
+                        `Failed to delete ${itemLabel}.`,
+                    "error"
+                );
+            }
         }
-    });
+    );
 
-    section.append(label, deleteButton);
+    section.append(
+        label,
+        deleteButton
+    );
 
     return section;
 }
 
-function isIndividualChallenge(campaign) {
-    return campaign.participantMode === "individual";
-}
-
-function isManualDailyChallenge(campaign) {
-    return campaign.metricKey === "manual_quantity"
-        && campaign.trackingMode === "manual"
-        && campaign.cadence === "daily";
-}
-
-function isManualCumulativeChallenge(campaign) {
-    return campaign.metricKey === "manual_quantity"
-        && campaign.trackingMode === "manual"
-        && campaign.cadence === "campaign";
-}
-
-function getCampaignTypeLabel(campaign) {
-    return isIndividualChallenge(campaign)
-        ? "Challenge"
-        : "Regional Campaign";
-}
-
-function createParticipationStatus(campaign, progress) {
-    if (!isIndividualChallenge(campaign)) return null;
-
-    const container = document.createElement("div");
-    container.className = "campaign-detail-participation";
-
-    const summary = document.createElement("div");
-    summary.className = "campaign-detail-participant-count";
-
-    const count = document.createElement("strong");
-    count.textContent = progress.participantCount;
-
-    const label = document.createElement("span");
-    label.textContent =
-        progress.participantCount === 1
-            ? " PAX participating"
-            : " PAX participating";
-
-    summary.append(count, label);
-
-    const action = document.createElement("button");
-    action.type = "button";
-
-    if (progress.isEnrolled) {
-        action.className = "campaign-detail-leave";
-        action.textContent = "Leave Challenge";
-    } else {
-        action.className = "campaign-detail-join";
-        action.textContent = "Join Challenge";
+function createParticipationStatus(
+    campaign,
+    progress
+) {
+    if (
+        !isIndividualChallenge(
+            campaign
+        )
+        || isPrivateChallenge(
+            campaign
+        )
+    ) {
+        return null;
     }
 
-    action.addEventListener("click", async () => {
-        action.disabled = true;
+    const container =
+        document.createElement("div");
 
-        const originalText = action.textContent;
-        action.textContent = progress.isEnrolled
-            ? "Leaving…"
-            : "Joining…";
+    container.className =
+        "campaign-detail-participation";
 
-        try {
-            if (progress.isEnrolled) {
-                await leaveCampaign(campaign.id);
-                showToast("You left the challenge.", "success");
-            } else {
-                await joinCampaign(campaign.id);
-                showToast("You're in.", "success");
+    const summary =
+        document.createElement("div");
+
+    summary.className =
+        "campaign-detail-participant-count";
+
+    const count =
+        document.createElement("strong");
+
+    count.textContent =
+        progress.participantCount;
+
+    const label =
+        document.createElement("span");
+
+    label.textContent =
+        " PAX participating";
+
+    summary.append(
+        count,
+        label
+    );
+
+    const action =
+        document.createElement("button");
+
+    action.type = "button";
+
+    if (
+        progress.isEnrolled
+    ) {
+        action.className =
+            "campaign-detail-leave";
+
+        action.textContent =
+            "Leave Challenge";
+    } else {
+        action.className =
+            "campaign-detail-join";
+
+        action.textContent =
+            "Join Challenge";
+    }
+
+    action.addEventListener(
+        "click",
+        async () => {
+            action.disabled =
+                true;
+
+            const originalText =
+                action.textContent;
+
+            action.textContent =
+                progress.isEnrolled
+                    ? "Leaving…"
+                    : "Joining…";
+
+            try {
+                if (
+                    progress.isEnrolled
+                ) {
+                    await leaveCampaign(
+                        campaign.id
+                    );
+
+                    showToast(
+                        "You left the challenge.",
+                        "success"
+                    );
+                } else {
+                    await joinCampaign(
+                        campaign.id
+                    );
+
+                    showToast(
+                        "You're in.",
+                        "success"
+                    );
+                }
+
+                renderCampaignDetailView();
+            } catch (error) {
+                console.error(
+                    "Failed to update campaign participation:",
+                    error
+                );
+
+                action.disabled =
+                    false;
+
+                action.textContent =
+                    originalText;
+
+                showToast(
+                    error?.message ||
+                        "Failed to update challenge.",
+                    "error"
+                );
             }
-
-            renderCampaignDetailView();
-        } catch (error) {
-            console.error("Failed to update campaign participation:", error);
-
-            action.disabled = false;
-            action.textContent = originalText;
-
-            showToast(
-                error?.message || "Failed to update challenge.",
-                "error"
-            );
         }
-    });
+    );
 
-    if (progress.isEnrolled) {
-        const enrolled = document.createElement("div");
-        enrolled.className = "campaign-detail-enrolled";
+    if (
+        progress.isEnrolled
+    ) {
+        const enrolled =
+            document.createElement("div");
 
-        const mark = document.createElement("span");
+        enrolled.className =
+            "campaign-detail-enrolled";
+
+        const mark =
+            document.createElement("span");
+
         mark.textContent = "✓";
 
-        const text = document.createElement("strong");
-        text.textContent = "You're In";
+        const text =
+            document.createElement("strong");
 
-        enrolled.append(mark, text);
-        container.append(summary, enrolled, action);
+        text.textContent =
+            "You're In";
+
+        enrolled.append(
+            mark,
+            text
+        );
+
+        container.append(
+            summary,
+            enrolled,
+            action
+        );
     } else {
-        container.append(summary, action);
+        container.append(
+            summary,
+            action
+        );
     }
 
     return container;
@@ -740,40 +1231,56 @@ function createDailyChallengeCalendar(
     progress,
     history = []
 ) {
-    const section = document.createElement("section");
-    section.className = "campaign-detail-section campaign-detail-calendar";
+    const section =
+        document.createElement("section");
 
-    const label = document.createElement("h2");
-    label.className = "campaign-detail-section-label campaign-detail-subsection-title";
-    label.textContent = "Daily Progress";
+    section.className =
+        "campaign-detail-section campaign-detail-calendar";
+
+    const label =
+        document.createElement("h2");
+
+    label.className =
+        "campaign-detail-section-label campaign-detail-subsection-title";
+
+    label.textContent =
+        "Daily Progress";
 
     section.append(label);
 
-    const historyByDate = new Map(
-        history.map(item => [
-            item.date,
-            Number(item.quantity) || 0,
-        ])
-    );
+    const historyByDate =
+        new Map(
+            history.map(item => [
+                item.date,
+                Number(item.quantity) || 0,
+            ])
+        );
 
     const today =
-        new Date().toISOString().slice(0, 10);
+        new Date()
+            .toISOString()
+            .slice(0, 10);
 
-    const startDate = new Date(
-        `${campaign.startsOn}T12:00:00`
-    );
+    const startDate =
+        new Date(
+            `${campaign.startsOn}T12:00:00`
+        );
 
-    const endDate = new Date(
-        `${campaign.endsOn}T12:00:00`
-    );
+    const endDate =
+        new Date(
+            `${campaign.endsOn}T12:00:00`
+        );
 
-    const monthCursor = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        1
-    );
+    const monthCursor =
+        new Date(
+            startDate.getFullYear(),
+            startDate.getMonth(),
+            1
+        );
 
-    while (monthCursor <= endDate) {
+    while (
+        monthCursor <= endDate
+    ) {
         const year =
             monthCursor.getFullYear();
 
@@ -785,50 +1292,110 @@ function createDailyChallengeCalendar(
                 monthIndex + 1
             ).padStart(2, "0")}`;
 
+        const firstDayOfMonth =
+            `${monthKey}-01`;
+
+        const lastDayOfMonth =
+            `${monthKey}-${String(
+                getDaysInMonth(
+                    year,
+                    monthIndex
+                )
+            ).padStart(2, "0")}`;
+
+        const visibleStart =
+            campaign.startsOn >
+            firstDayOfMonth
+                ? campaign.startsOn
+                : firstDayOfMonth;
+
+        const visibleEnd =
+            campaign.endsOn <
+            lastDayOfMonth
+                ? campaign.endsOn
+                : lastDayOfMonth;
+
+        const visibleStartDate =
+            new Date(
+                `${visibleStart}T12:00:00`
+            );
+
+        const startDay =
+            visibleStartDate.getDay();
+
+        const startDayNumber =
+            visibleStartDate.getDate();
+
+        const visibleEndDate =
+            new Date(
+                `${visibleEnd}T12:00:00`
+            );
+
+        const endDayNumber =
+            visibleEndDate.getDate();
+
         const monthBlock =
             document.createElement("div");
+
         monthBlock.className =
             "campaign-detail-calendar-month";
 
         const monthTitle =
             document.createElement("div");
+
         monthTitle.className =
             "campaign-detail-calendar-month-title";
+
         monthTitle.textContent =
             getMonthLabel(
                 `${monthKey}-01`
             );
 
-        monthBlock.append(monthTitle);
+        monthBlock.append(
+            monthTitle
+        );
 
         const weekdays =
             document.createElement("div");
+
         weekdays.className =
             "campaign-detail-calendar-weekdays";
 
-        ["S", "M", "T", "W", "T", "F", "S"]
-            .forEach(day => {
-                const weekday =
-                    document.createElement("div");
+        [
+            "S",
+            "M",
+            "T",
+            "W",
+            "T",
+            "F",
+            "S",
+        ].forEach(day => {
+            const weekday =
+                document.createElement("div");
 
-                weekday.textContent = day;
+            weekday.textContent =
+                day;
 
-                weekdays.append(weekday);
-            });
+            weekdays.append(
+                weekday
+            );
+        });
 
-        monthBlock.append(weekdays);
+        monthBlock.append(
+            weekdays
+        );
 
         const grid =
             document.createElement("div");
+
         grid.className =
             "campaign-detail-calendar-grid";
 
-        const startDay =
-            getMonthStartDay(
-                year,
-                monthIndex
-            );
-
+        /*
+         * Only add enough blank cells to place the
+         * first visible challenge date under its
+         * correct weekday.
+         */
         for (
             let index = 0;
             index < startDay;
@@ -840,32 +1407,29 @@ function createDailyChallengeCalendar(
             spacer.className =
                 "campaign-detail-calendar-spacer";
 
-            grid.append(spacer);
+            grid.append(
+                spacer
+            );
         }
 
-        const daysInMonth =
-            getDaysInMonth(
-                year,
-                monthIndex
-            );
-
+        /*
+         * Render only dates that are actually
+         * inside the challenge window.
+         */
         for (
-            let day = 1;
-            day <= daysInMonth;
+            let day = startDayNumber;
+            day <= endDayNumber;
             day += 1
         ) {
             const date =
-                `${monthKey}-${String(day)
-                    .padStart(2, "0")}`;
+                `${monthKey}-${String(
+                    day
+                ).padStart(2, "0")}`;
 
             const quantity =
-                historyByDate.get(date) || 0;
-
-            const isBeforeCampaign =
-                date < campaign.startsOn;
-
-            const isAfterCampaign =
-                date > campaign.endsOn;
+                historyByDate.get(
+                    date
+                ) || 0;
 
             const isFuture =
                 date > today;
@@ -874,30 +1438,24 @@ function createDailyChallengeCalendar(
                 date === today;
 
             const isComplete =
-                progress.todayTarget > 0 &&
-                quantity >= progress.todayTarget;
+                progress.todayTarget > 0
+                && quantity >=
+                    progress.todayTarget;
 
             const isMissed =
-                !isBeforeCampaign &&
-                !isAfterCampaign &&
-                !isFuture &&
-                !isComplete;
+                !isFuture
+                && !isComplete;
 
             const cell =
-                document.createElement("button");
+                document.createElement(
+                    "button"
+                );
 
-            cell.type = "button";
+            cell.type =
+                "button";
+
             cell.className =
                 "campaign-detail-calendar-day";
-
-            if (
-                isBeforeCampaign ||
-                isAfterCampaign
-            ) {
-                cell.classList.add(
-                    "campaign-detail-calendar-day-outside"
-                );
-            }
 
             if (isFuture) {
                 cell.classList.add(
@@ -922,41 +1480,35 @@ function createDailyChallengeCalendar(
             }
 
             const dayNumber =
-                document.createElement("span");
+                document.createElement(
+                    "span"
+                );
 
             dayNumber.className =
                 "campaign-detail-calendar-day-number";
-            dayNumber.textContent = day;
+
+            dayNumber.textContent =
+                day;
 
             const value =
-                document.createElement("span");
+                document.createElement(
+                    "span"
+                );
 
             value.className =
                 "campaign-detail-calendar-day-value";
 
-            if (
-                !isBeforeCampaign &&
-                !isAfterCampaign &&
+            value.textContent =
                 quantity > 0
-            ) {
-                value.textContent = quantity;
-            } else {
-                value.textContent = "";
-            }
+                    ? quantity
+                    : "";
 
             cell.append(
                 dayNumber,
                 value
             );
 
-            cell.disabled =
-                isBeforeCampaign ||
-                isAfterCampaign;
-
-            if (
-                !cell.disabled &&
-                quantity > 0
-            ) {
+            if (quantity > 0) {
                 cell.addEventListener(
                     "click",
                     () => {
@@ -968,11 +1520,18 @@ function createDailyChallengeCalendar(
                 );
             }
 
-            grid.append(cell);
+            grid.append(
+                cell
+            );
         }
 
-        monthBlock.append(grid);
-        section.append(monthBlock);
+        monthBlock.append(
+            grid
+        );
+
+        section.append(
+            monthBlock
+        );
 
         monthCursor.setMonth(
             monthCursor.getMonth() + 1
@@ -982,232 +1541,453 @@ function createDailyChallengeCalendar(
     return section;
 }
 
-function createDailyProgressBar(progress) {
-    const percent = progress.todayTarget > 0
-        ? (progress.todayCurrent / progress.todayTarget) * 100
-        : 0;
+function createDailyProgressBar(
+    progress
+) {
+    const percent =
+        progress.todayTarget > 0
+            ? (
+                progress.todayCurrent
+                / progress.todayTarget
+            ) * 100
+            : 0;
 
-    const track = document.createElement("div");
-    track.className = "campaign-detail-progress-track";
+    const track =
+        document.createElement("div");
 
-    const fill = document.createElement("div");
-    fill.className = "campaign-detail-progress-fill";
-    fill.style.width = `${Math.min(Math.max(percent, 0), 100)}%`;
+    track.className =
+        "campaign-detail-progress-track";
+
+    const fill =
+        document.createElement("div");
+
+    fill.className =
+        "campaign-detail-progress-fill";
+
+    fill.style.width =
+        `${Math.min(
+            Math.max(
+                percent,
+                0
+            ),
+            100
+        )}%`;
 
     track.append(fill);
 
     return track;
 }
 
-function createDailyChallengeSection(campaign, progress) {
+function createDailyChallengeSection(
+    campaign,
+    progress
+) {
     if (
-        !isManualDailyChallenge(campaign)
+        !isManualDailyChallenge(
+            campaign
+        )
         || !progress.isEnrolled
     ) {
         return null;
     }
 
-    const section = document.createElement("section");
-    section.className = "campaign-detail-progress campaign-detail-today";
+    const section =
+        document.createElement("section");
+
+    section.className =
+        "campaign-detail-progress campaign-detail-today";
 
     const dailyGoalComplete =
-        progress.todayTarget > 0 &&
-        progress.todayCurrent >= progress.todayTarget;
+        progress.todayTarget > 0
+        && progress.todayCurrent >=
+            progress.todayTarget;
 
-    if (dailyGoalComplete) {
-        section.classList.add("campaign-detail-today-complete");
+    if (
+        dailyGoalComplete
+    ) {
+        section.classList.add(
+            "campaign-detail-today-complete"
+        );
     }
 
-    const label = document.createElement("div");
-    label.className = "campaign-detail-section-label";
-    label.textContent = "Today";
+    const label =
+        document.createElement("div");
 
-    const valueRow = document.createElement("div");
-    valueRow.className = "campaign-detail-progress-value-row";
+    label.className =
+        "campaign-detail-section-label";
 
-    const value = document.createElement("div");
-    value.className = "campaign-detail-progress-value";
+    label.textContent =
+        "Today";
 
-    const current = document.createElement("strong");
-    current.textContent = progress.todayCurrent;
+    const valueRow =
+        document.createElement("div");
 
-    const target = document.createElement("span");
-    target.textContent = ` / ${progress.todayTarget}`;
+    valueRow.className =
+        "campaign-detail-progress-value-row";
 
-    value.append(current, target);
+    const value =
+        document.createElement("div");
 
-    const unit = document.createElement("div");
-    unit.className = "campaign-detail-progress-unit";
-    unit.textContent = progress.unit;
+    value.className =
+        "campaign-detail-progress-value";
 
-    valueRow.append(value, unit);
+    const current =
+        document.createElement("strong");
+
+    current.textContent =
+        progress.todayCurrent;
+
+    const target =
+        document.createElement("span");
+
+    target.textContent =
+        ` / ${progress.todayTarget}`;
+
+    value.append(
+        current,
+        target
+    );
+
+    const unit =
+        document.createElement("div");
+
+    unit.className =
+        "campaign-detail-progress-unit";
+
+    unit.textContent =
+        progress.unit;
+
+    valueRow.append(
+        value,
+        unit
+    );
 
     section.append(
         label,
         valueRow,
-        createDailyProgressBar(progress)
+        createDailyProgressBar(
+            progress
+        )
     );
 
-    const status = document.createElement("div");
-    status.className = "campaign-detail-progress-copy";
+    const status =
+        document.createElement("div");
 
-    if (progress.todayCurrent >= progress.todayTarget) {
+    status.className =
+        "campaign-detail-progress-copy";
+
+    if (
+        progress.todayCurrent >=
+        progress.todayTarget
+    ) {
         status.textContent =
             `✓ Daily goal complete · ${progress.todayCurrent} ${progress.unit}`;
     } else {
         const remaining =
-            progress.todayTarget - progress.todayCurrent;
+            progress.todayTarget -
+            progress.todayCurrent;
 
         status.textContent =
             `${remaining} ${progress.unit} to go today`;
     }
 
-    section.append(status);
+    section.append(
+        status
+    );
 
-    const quickActions = document.createElement("div");
-    quickActions.className = "campaign-detail-quick-actions";
+    const quickActions =
+        document.createElement("div");
 
-    [25, 50, 100].forEach(amount => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "campaign-detail-quick-add";
-        button.textContent = `+${amount}`;
+    quickActions.className =
+        "campaign-detail-quick-actions";
 
-        button.addEventListener("click", async () => {
+    [25, 50, 100].forEach(
+        amount => {
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "campaign-detail-quick-add";
+
+            button.textContent =
+                `+${amount}`;
+
+            button.addEventListener(
+                "click",
+                async () => {
+                    await addCampaignQuantity(
+                        campaign,
+                        progress,
+                        amount,
+                        button
+                    );
+                }
+            );
+
+            quickActions.append(
+                button
+            );
+        }
+    );
+
+    const custom =
+        document.createElement("div");
+
+    custom.className =
+        "campaign-detail-custom-log";
+
+    const input =
+        document.createElement("input");
+
+    input.type = "number";
+    input.inputMode =
+        "numeric";
+
+    input.min = "1";
+    input.step = "1";
+
+    input.placeholder =
+        "Custom amount";
+
+    input.className =
+        "campaign-detail-custom-input";
+
+    const logButton =
+        document.createElement("button");
+
+    logButton.type =
+        "button";
+
+    logButton.className =
+        "campaign-detail-log-button";
+
+    logButton.textContent =
+        "Log";
+
+    logButton.addEventListener(
+        "click",
+        async () => {
+            const amount =
+                Number(
+                    input.value
+                );
+
+            if (
+                !Number.isFinite(
+                    amount
+                )
+                || amount <= 0
+            ) {
+                showToast(
+                    "Enter an amount greater than zero.",
+                    "error"
+                );
+
+                return;
+            }
+
             await addCampaignQuantity(
                 campaign,
                 progress,
                 amount,
-                button
+                logButton
             );
-        });
-
-        quickActions.append(button);
-    });
-
-    const custom = document.createElement("div");
-    custom.className = "campaign-detail-custom-log";
-
-    const input = document.createElement("input");
-    input.type = "number";
-    input.inputMode = "numeric";
-    input.min = "1";
-    input.step = "1";
-    input.placeholder = "Custom amount";
-    input.className = "campaign-detail-custom-input";
-
-    const logButton = document.createElement("button");
-    logButton.type = "button";
-    logButton.className = "campaign-detail-log-button";
-    logButton.textContent = "Log";
-
-    logButton.addEventListener("click", async () => {
-        const amount = Number(input.value);
-
-        if (!Number.isFinite(amount) || amount <= 0) {
-            showToast("Enter an amount greater than zero.", "error");
-            return;
         }
+    );
 
-        await addCampaignQuantity(
-            campaign,
-            progress,
-            amount,
-            logButton
-        );
-    });
+    custom.append(
+        input,
+        logButton
+    );
 
-    custom.append(input, logButton);
-
-    section.append(quickActions, custom);
+    section.append(
+        quickActions,
+        custom
+    );
 
     return section;
 }
 
-function createCumulativeChallengeSection(campaign, progress) {
+function createCumulativeChallengeSection(
+    campaign,
+    progress
+) {
     if (
-        !isManualCumulativeChallenge(campaign)
+        !isManualCumulativeChallenge(
+            campaign
+        )
         || !progress.isEnrolled
     ) {
         return null;
     }
 
-    const section = document.createElement("section");
-    section.className = "campaign-detail-progress campaign-detail-cumulative-log";
+    const section =
+        document.createElement("section");
 
-    const label = document.createElement("div");
-    label.className = "campaign-detail-section-label";
-    label.textContent = `Log ${progress.unit || "Progress"}`;
+    section.className =
+        "campaign-detail-progress campaign-detail-cumulative-log";
 
-    const today = document.createElement("div");
-    today.className = "campaign-detail-cumulative-today";
-    
-    const todayValue = document.createElement("strong");
-    todayValue.textContent = progress.todayCurrent || 0;
-    
-    const todayUnit = document.createElement("span");
+    const label =
+        document.createElement("div");
+
+    label.className =
+        "campaign-detail-section-label";
+
+    label.textContent =
+        `Log ${progress.unit || "Progress"}`;
+
+    const today =
+        document.createElement("div");
+
+    today.className =
+        "campaign-detail-cumulative-today";
+
+    const todayValue =
+        document.createElement("strong");
+
+    todayValue.textContent =
+        progress.todayCurrent || 0;
+
+    const todayUnit =
+        document.createElement("span");
+
     todayUnit.textContent =
         ` ${progress.unit || ""} today`;
-    
-    today.append(todayValue, todayUnit);
-    
-    section.append(label, today);
 
-    const quickActions = document.createElement("div");
-    quickActions.className = "campaign-detail-quick-actions";
+    today.append(
+        todayValue,
+        todayUnit
+    );
 
-    [1, 5, 10].forEach(amount => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "campaign-detail-quick-add";
-        button.textContent = `+${amount}`;
+    section.append(
+        label,
+        today
+    );
 
-        button.addEventListener("click", async () => {
+    const quickActions =
+        document.createElement("div");
+
+    quickActions.className =
+        "campaign-detail-quick-actions";
+
+    [1, 5, 10].forEach(
+        amount => {
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "campaign-detail-quick-add";
+
+            button.textContent =
+                `+${amount}`;
+
+            button.addEventListener(
+                "click",
+                async () => {
+                    await addCumulativeCampaignQuantity(
+                        campaign,
+                        progress,
+                        amount,
+                        button
+                    );
+                }
+            );
+
+            quickActions.append(
+                button
+            );
+        }
+    );
+
+    const custom =
+        document.createElement("div");
+
+    custom.className =
+        "campaign-detail-custom-log";
+
+    const input =
+        document.createElement("input");
+
+    input.type =
+        "number";
+
+    input.inputMode =
+        "decimal";
+
+    input.min =
+        "0";
+
+    input.step =
+        "any";
+
+    input.placeholder =
+        "Custom amount";
+
+    input.className =
+        "campaign-detail-custom-input";
+
+    const logButton =
+        document.createElement("button");
+
+    logButton.type =
+        "button";
+
+    logButton.className =
+        "campaign-detail-log-button";
+
+    logButton.textContent =
+        "Log";
+
+    logButton.addEventListener(
+        "click",
+        async () => {
+            const amount =
+                Number(
+                    input.value
+                );
+
+            if (
+                !Number.isFinite(
+                    amount
+                )
+                || amount <= 0
+            ) {
+                showToast(
+                    "Enter an amount greater than zero.",
+                    "error"
+                );
+
+                return;
+            }
+
             await addCumulativeCampaignQuantity(
                 campaign,
                 progress,
                 amount,
-                button
+                logButton
             );
-        });
-
-        quickActions.append(button);
-    });
-
-    const custom = document.createElement("div");
-    custom.className = "campaign-detail-custom-log";
-
-    const input = document.createElement("input");
-    input.type = "number";
-    input.inputMode = "decimal";
-    input.min = "0";
-    input.step = "any";
-    input.placeholder = "Custom amount";
-    input.className = "campaign-detail-custom-input";
-
-    const logButton = document.createElement("button");
-    logButton.type = "button";
-    logButton.className = "campaign-detail-log-button";
-    logButton.textContent = "Log";
-
-    logButton.addEventListener("click", async () => {
-        const amount = Number(input.value);
-
-        if (!Number.isFinite(amount) || amount <= 0) {
-            showToast("Enter an amount greater than zero.", "error");
-            return;
         }
+    );
 
-        await addCumulativeCampaignQuantity(
-            campaign,
-            progress,
-            amount,
-            logButton
-        );
-    });
+    custom.append(
+        input,
+        logButton
+    );
 
-    custom.append(input, logButton);
-    section.append(quickActions, custom);
+    section.append(
+        quickActions,
+        custom
+    );
 
     return section;
 }
@@ -1219,13 +1999,16 @@ async function addCumulativeCampaignQuantity(
     button
 ) {
     const newTotal =
-        Number(progress.todayCurrent || 0)
-        + amount;
+        Number(
+            progress.todayCurrent || 0
+        ) + amount;
 
-    const originalText = button.textContent;
+    const originalText =
+        button.textContent;
 
     button.disabled = true;
-    button.textContent = "Saving…";
+    button.textContent =
+        "Saving…";
 
     try {
         const result =
@@ -1233,10 +2016,13 @@ async function addCumulativeCampaignQuantity(
                 campaign.id,
                 newTotal
             );
-        
+
         const affectedCount =
-            Number(result?.affectedCampaignCount) || 0;
-        
+            Number(
+                result
+                    ?.affectedCampaignCount
+            ) || 0;
+
         showToast(
             affectedCount > 1
                 ? `${amount} ${progress.unit} logged · counted toward ${affectedCount} challenges.`
@@ -1251,11 +2037,15 @@ async function addCumulativeCampaignQuantity(
             error
         );
 
-        button.disabled = false;
-        button.textContent = originalText;
+        button.disabled =
+            false;
+
+        button.textContent =
+            originalText;
 
         showToast(
-            error?.message || "Failed to log progress.",
+            error?.message ||
+                "Failed to log progress.",
             "error"
         );
     }
@@ -1267,11 +2057,18 @@ async function addCampaignQuantity(
     amount,
     button
 ) {
-    const newTotal = progress.todayCurrent + amount;
-    const originalText = button.textContent;
+    const newTotal =
+        progress.todayCurrent
+        + amount;
 
-    button.disabled = true;
-    button.textContent = "Saving…";
+    const originalText =
+        button.textContent;
+
+    button.disabled =
+        true;
+
+    button.textContent =
+        "Saving…";
 
     try {
         const result =
@@ -1279,10 +2076,13 @@ async function addCampaignQuantity(
                 campaign.id,
                 newTotal
             );
-        
+
         const affectedCount =
-            Number(result?.affectedCampaignCount) || 0;
-        
+            Number(
+                result
+                    ?.affectedCampaignCount
+            ) || 0;
+
         showToast(
             affectedCount > 1
                 ? `${amount} ${progress.unit} logged · counted toward ${affectedCount} challenges.`
@@ -1297,59 +2097,109 @@ async function addCampaignQuantity(
             error
         );
 
-        button.disabled = false;
-        button.textContent = originalText;
+        button.disabled =
+            false;
+
+        button.textContent =
+            originalText;
 
         showToast(
-            error?.message || "Failed to log progress.",
+            error?.message ||
+                "Failed to log progress.",
             "error"
         );
     }
 }
 
-function createStandingsSection(campaign, standings) {
-    if (!supportsStandings(campaign) || standings.length === 0) {
+function createStandingsSection(
+    campaign,
+    standings
+) {
+    if (
+        !supportsStandings(
+            campaign
+        )
+        || standings.length === 0
+    ) {
         return null;
     }
 
-    const section = document.createElement("section");
-    section.className = "campaign-detail-section campaign-detail-standings";
+    const section =
+        document.createElement("section");
 
-    const label = document.createElement("h2");
-    label.className = "campaign-detail-section-label";
-    label.textContent = "Challenge Standings";
+    section.className =
+        "campaign-detail-section campaign-detail-standings";
 
-    const list = document.createElement("div");
-    list.className = "campaign-detail-standings-list";
+    const label =
+        document.createElement("h2");
+
+    label.className =
+        "campaign-detail-section-label";
+
+    label.textContent =
+        "Challenge Standings";
+
+    const list =
+        document.createElement("div");
+
+    list.className =
+        "campaign-detail-standings-list";
 
     standings.forEach(item => {
-        const row = document.createElement("div");
-        row.className = "campaign-detail-standing-row";
+        const row =
+            document.createElement("div");
 
-        if (item.isCurrentMember) {
-            row.classList.add("campaign-detail-standing-row-current");
-        }
-
-        const rank = document.createElement("div");
-        rank.className = "campaign-detail-standing-rank";
-        rank.textContent = item.rank;
-
-        const identity = document.createElement("div");
-        identity.className = "campaign-detail-standing-identity";
-
-        const name = document.createElement("strong");
-        name.className = "campaign-detail-standing-name";
-        name.textContent = item.isCurrentMember
-            ? `${item.paxName} · You`
-            : item.paxName;
-
-        identity.append(name);
-
-        const progress = document.createElement("div");
-        progress.className = "campaign-detail-standing-progress";
+        row.className =
+            "campaign-detail-standing-row";
 
         if (
-            isManualDailyChallenge(campaign)
+            item.isCurrentMember
+        ) {
+            row.classList.add(
+                "campaign-detail-standing-row-current"
+            );
+        }
+
+        const rank =
+            document.createElement("div");
+
+        rank.className =
+            "campaign-detail-standing-rank";
+
+        rank.textContent =
+            item.rank;
+
+        const identity =
+            document.createElement("div");
+
+        identity.className =
+            "campaign-detail-standing-identity";
+
+        const name =
+            document.createElement("strong");
+
+        name.className =
+            "campaign-detail-standing-name";
+
+        name.textContent =
+            item.isCurrentMember
+                ? `${item.paxName} · You`
+                : item.paxName;
+
+        identity.append(
+            name
+        );
+
+        const progress =
+            document.createElement("div");
+
+        progress.className =
+            "campaign-detail-standing-progress";
+
+        if (
+            isManualDailyChallenge(
+                campaign
+            )
             && item.totalDays > 0
         ) {
             progress.textContent =
@@ -1359,11 +2209,21 @@ function createStandingsSection(campaign, standings) {
                 `${item.current} / ${item.target}`;
         }
 
-        row.append(rank, identity, progress);
-        list.append(row);
+        row.append(
+            rank,
+            identity,
+            progress
+        );
+
+        list.append(
+            row
+        );
     });
 
-    section.append(label, list);
+    section.append(
+        label,
+        list
+    );
 
     return section;
 }
@@ -1375,91 +2235,214 @@ function createDetailContent(
     dailyHistory,
     standings
 ) {
-    const fragment = document.createDocumentFragment();
+    const fragment =
+        document.createDocumentFragment();
 
-    const hero = document.createElement("section");
-    hero.className = "campaign-detail-hero";
+    const hero =
+        document.createElement("section");
 
-    const eyebrow = document.createElement("div");
-    eyebrow.className = "campaign-detail-eyebrow";
-    eyebrow.textContent = `${getCampaignStatus(campaign)} · ${getCampaignTypeLabel(campaign)}`;
+    hero.className =
+        "campaign-detail-hero";
 
-    const title = document.createElement("h1");
-    title.className = "campaign-detail-title";
-    title.textContent = campaign.title;
-
-    const dates = document.createElement("div");
-    dates.className = "campaign-detail-dates";
-    dates.textContent = formatCampaignDateRange(campaign);
-
-    hero.append(eyebrow, title, dates);
-
-    if (campaign.description) {
-        const description = document.createElement("p");
-        description.className = "campaign-detail-description";
-        description.textContent = campaign.description;
-        hero.append(description);
+    if (
+        isPrivateChallenge(
+            campaign
+        )
+    ) {
+        hero.classList.add(
+            "campaign-detail-hero-private"
+        );
     }
 
-    fragment.append(hero);
+    const eyebrow =
+        document.createElement("div");
 
-    const dailySection = createDailyChallengeSection(campaign, progress);
+    eyebrow.className =
+        "campaign-detail-eyebrow";
+
+    eyebrow.textContent =
+        `${getCampaignStatus(campaign)} · ${getCampaignTypeLabel(campaign)}`;
+
+    const title =
+        document.createElement("h1");
+
+    title.className =
+        "campaign-detail-title";
+
+    title.textContent =
+        campaign.title;
+
+    const dates =
+        document.createElement("div");
+
+    dates.className =
+        "campaign-detail-dates";
+
+    dates.textContent =
+        formatCampaignDateRange(
+            campaign
+        );
+
+    hero.append(
+        eyebrow,
+        title,
+        dates
+    );
+
+    if (
+        campaign.description
+    ) {
+        const description =
+            document.createElement("p");
+
+        description.className =
+            "campaign-detail-description";
+
+        description.textContent =
+            campaign.description;
+
+        hero.append(
+            description
+        );
+    }
+
+    fragment.append(
+        hero
+    );
+
+    const dailySection =
+        createDailyChallengeSection(
+            campaign,
+            progress
+        );
 
     if (dailySection) {
-        fragment.append(dailySection);
+        fragment.append(
+            dailySection
+        );
     }
 
     const cumulativeSection =
-        createCumulativeChallengeSection(campaign, progress);
+        createCumulativeChallengeSection(
+            campaign,
+            progress
+        );
 
     if (cumulativeSection) {
-        fragment.append(cumulativeSection);
+        fragment.append(
+            cumulativeSection
+        );
     }
 
-    if (isIndividualChallenge(campaign) && !progress.isEnrolled) {
-        const joinSection = document.createElement("section");
-        joinSection.className = "campaign-detail-join-panel";
+    if (
+        isIndividualChallenge(
+            campaign
+        )
+        && !isPrivateChallenge(
+            campaign
+        )
+        && !progress.isEnrolled
+    ) {
+        const joinSection =
+            document.createElement(
+                "section"
+            );
 
-        const participantCount = document.createElement("div");
-        participantCount.className = "campaign-detail-participant-count";
+        joinSection.className =
+            "campaign-detail-join-panel";
 
-        const count = document.createElement("strong");
-        count.textContent = progress.participantCount;
+        const participantCount =
+            document.createElement(
+                "div"
+            );
 
-        const label = document.createElement("span");
-        label.textContent = " PAX participating";
+        participantCount.className =
+            "campaign-detail-participant-count";
 
-        participantCount.append(count, label);
+        const count =
+            document.createElement(
+                "strong"
+            );
 
-        const joinButton = document.createElement("button");
-        joinButton.type = "button";
-        joinButton.className = "campaign-detail-join";
-        joinButton.textContent = "Join Challenge";
+        count.textContent =
+            progress.participantCount;
 
-        joinButton.addEventListener("click", async () => {
-            joinButton.disabled = true;
-            joinButton.textContent = "Joining…";
+        const label =
+            document.createElement(
+                "span"
+            );
 
-            try {
-                await joinCampaign(campaign.id);
+        label.textContent =
+            " PAX participating";
 
-                showToast("You're in.", "success");
-                renderCampaignDetailView();
-            } catch (error) {
-                console.error("Failed to join challenge:", error);
+        participantCount.append(
+            count,
+            label
+        );
 
-                joinButton.disabled = false;
-                joinButton.textContent = "Join Challenge";
+        const joinButton =
+            document.createElement(
+                "button"
+            );
 
-                showToast(
-                    error?.message || "Failed to join challenge.",
-                    "error"
-                );
+        joinButton.type =
+            "button";
+
+        joinButton.className =
+            "campaign-detail-join";
+
+        joinButton.textContent =
+            "Join Challenge";
+
+        joinButton.addEventListener(
+            "click",
+            async () => {
+                joinButton.disabled =
+                    true;
+
+                joinButton.textContent =
+                    "Joining…";
+
+                try {
+                    await joinCampaign(
+                        campaign.id
+                    );
+
+                    showToast(
+                        "You're in.",
+                        "success"
+                    );
+
+                    renderCampaignDetailView();
+                } catch (error) {
+                    console.error(
+                        "Failed to join challenge:",
+                        error
+                    );
+
+                    joinButton.disabled =
+                        false;
+
+                    joinButton.textContent =
+                        "Join Challenge";
+
+                    showToast(
+                        error?.message ||
+                            "Failed to join challenge.",
+                        "error"
+                    );
+                }
             }
-        });
+        );
 
-        joinSection.append(participantCount, joinButton);
-        fragment.append(joinSection);
+        joinSection.append(
+            participantCount,
+            joinButton
+        );
+
+        fragment.append(
+            joinSection
+        );
     }
 
     campaignDetailData = {
@@ -1471,11 +2454,16 @@ function createDetailContent(
     };
 
     fragment.append(
-        createCampaignDetailTabs()
+        createCampaignDetailTabs(
+            campaign
+        )
     );
 
-    const tabContent = document.createElement("div");
-    tabContent.className = "campaign-detail-tab-content";
+    const tabContent =
+        document.createElement("div");
+
+    tabContent.className =
+        "campaign-detail-tab-content";
 
     tabContent.append(
         createCampaignDetailTabContent(
@@ -1483,105 +2471,167 @@ function createDetailContent(
         )
     );
 
-    fragment.append(tabContent);
+    fragment.append(
+        tabContent
+    );
 
     return fragment;
 }
 
 export function renderCampaignDetailView() {
-    const app = document.getElementById("app");
+    const app =
+        document.getElementById("app");
+
     if (!app) return;
 
-    activeCampaignDetailTab = "progress";
-    campaignDetailData = null;
+    activeCampaignDetailTab =
+        "progress";
+
+    campaignDetailData =
+        null;
 
     app.replaceChildren();
 
-    const header = createAppHeader({
-        title: "Challenge",
-        showBack: true,
-        showMenu: true,
-        fallbackView: "campaigns",
-    });
+    const header =
+        createAppHeader({
+            title: "Challenge",
+            showBack: true,
+            showMenu: true,
+            fallbackView: "campaigns",
+        });
 
-    app.appendChild(header);
+    app.appendChild(
+        header
+    );
 
-    const container = document.createElement("main");
-    container.className = "campaign-detail-view";
+    const container =
+        document.createElement("main");
 
-    const content = document.createElement("div");
-    content.className = "campaign-detail-content";
+    container.className =
+        "campaign-detail-view";
+
+    const content =
+        document.createElement("div");
+
+    content.className =
+        "campaign-detail-content";
 
     content.append(
         createDetailState({
             type: "loading",
-            title: "Loading campaign",
-            message: "Pulling the latest regional progress.",
+            title:
+                "Loading challenge",
+            message:
+                "Pulling the latest progress.",
         })
     );
 
-    container.append(content);
-    app.append(container, createGlobalNav());
+    container.append(
+        content
+    );
 
-    const campaignId = state.selectedCampaignId;
+    app.append(
+        container,
+        createGlobalNav()
+    );
+
+    const campaignId =
+        state.selectedCampaignId;
 
     if (!campaignId) {
         content.replaceChildren(
             createDetailState({
                 type: "error",
-                title: "Campaign not found",
-                message: "Return to Campaigns and select a campaign.",
+                title:
+                    "Challenge not found",
+                message:
+                    "Return to Campaigns and select a challenge.",
             })
         );
 
         return;
     }
 
-    loadCampaign(campaignId)
-        .then(async campaign => {
-            if (!campaign) {
-                throw new Error("Campaign not found.");
-            }
+    loadCampaign(
+        campaignId
+    )
+        .then(
+            async campaign => {
+                if (!campaign) {
+                    throw new Error(
+                        "Campaign not found."
+                    );
+                }
 
-            const progress = await loadCampaignProgress(campaignId);
+                const progress =
+                    await loadCampaignProgress(
+                        campaignId
+                    );
 
-            const [
-                recentProgress,
-                dailyHistory,
-                standings,
-            ] = await Promise.all([
-                supportsRecentProgress(campaign)
-                    ? loadCampaignRecentProgress(campaignId)
-                    : Promise.resolve([]),
-            
-                isManualDailyChallenge(campaign) && progress.isEnrolled
-                    ? loadCampaignDailyHistory(campaignId)
-                    : Promise.resolve([]),
-            
-                supportsStandings(campaign)
-                    ? loadCampaignStandings(campaignId)
-                    : Promise.resolve([]),
-            ]);
-            
-            content.replaceChildren(
-                createDetailContent(
-                    campaign,
-                    progress,
+                const [
                     recentProgress,
                     dailyHistory,
-                    standings
-                )
-            );
-        })
+                    standings,
+                ] =
+                    await Promise.all([
+                        supportsRecentProgress(
+                            campaign
+                        )
+                            ? loadCampaignRecentProgress(
+                                campaignId
+                            )
+                            : Promise.resolve(
+                                []
+                            ),
+
+                        isManualDailyChallenge(
+                            campaign
+                        )
+                        && progress.isEnrolled
+                            ? loadCampaignDailyHistory(
+                                campaignId
+                            )
+                            : Promise.resolve(
+                                []
+                            ),
+
+                        supportsStandings(
+                            campaign
+                        )
+                            ? loadCampaignStandings(
+                                campaignId
+                            )
+                            : Promise.resolve(
+                                []
+                            ),
+                    ]);
+
+                content.replaceChildren(
+                    createDetailContent(
+                        campaign,
+                        progress,
+                        recentProgress,
+                        dailyHistory,
+                        standings
+                    )
+                );
+            }
+        )
         .catch(error => {
-            console.error("Failed to load campaign detail:", error);
+            console.error(
+                "Failed to load campaign detail:",
+                error
+            );
 
             content.replaceChildren(
                 createDetailState({
                     type: "error",
-                    title: "Unable to load campaign",
-                    message: "Check your connection and try again.",
-                    onRetry: renderCampaignDetailView,
+                    title:
+                        "Unable to load challenge",
+                    message:
+                        "Check your connection and try again.",
+                    onRetry:
+                        renderCampaignDetailView,
                 })
             );
         });

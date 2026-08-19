@@ -79,7 +79,8 @@ function createCustomChallengeButton({
 }) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "campaign-template-row campaign-custom-template-row";
+    button.className =
+        "campaign-template-row campaign-custom-template-row";
 
     const content = document.createElement("div");
     content.className = "campaign-template-row-content";
@@ -125,12 +126,90 @@ function createField(labelText, input) {
     return field;
 }
 
+function createVisibilitySelector({
+    value = "public",
+    onChange,
+}) {
+    const field = document.createElement("div");
+    field.className = "campaign-create-field";
+
+    const label = document.createElement("span");
+    label.className = "campaign-create-field-label";
+    label.textContent = "Visibility";
+
+    const options = document.createElement("div");
+    options.className = "campaign-visibility-options";
+
+    const choices = [
+        {
+            value: "public",
+            title: "Shared",
+            description:
+                "Other PAX in this region can see and join this challenge.",
+        },
+        {
+            value: "private",
+            title: "Private",
+            description:
+                "Only you can see and track this challenge.",
+        },
+    ];
+
+    choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "campaign-visibility-option";
+
+        if (choice.value === value) {
+            button.classList.add(
+                "campaign-visibility-option-selected"
+            );
+        }
+
+        const title = document.createElement("strong");
+        title.textContent = choice.title;
+
+        const description =
+            document.createElement("span");
+
+        description.textContent =
+            choice.description;
+
+        button.append(title, description);
+
+        button.addEventListener("click", () => {
+            options
+                .querySelectorAll(
+                    ".campaign-visibility-option"
+                )
+                .forEach(option => {
+                    option.classList.remove(
+                        "campaign-visibility-option-selected"
+                    );
+                });
+
+            button.classList.add(
+                "campaign-visibility-option-selected"
+            );
+
+            onChange(choice.value);
+        });
+
+        options.append(button);
+    });
+
+    field.append(label, options);
+
+    return field;
+}
+
 function createCampaignForm(template, onBack) {
     const form = document.createElement("form");
     form.className = "campaign-create-form";
 
     const templateSummary = document.createElement("div");
-    templateSummary.className = "campaign-create-template-summary";
+    templateSummary.className =
+        "campaign-create-template-summary";
 
     const eyebrow = document.createElement("div");
     eyebrow.className = "campaign-template-eyebrow";
@@ -142,7 +221,11 @@ function createCampaignForm(template, onBack) {
     const templateCopy = document.createElement("p");
     templateCopy.textContent = template.description;
 
-    templateSummary.append(eyebrow, templateTitle, templateCopy);
+    templateSummary.append(
+        eyebrow,
+        templateTitle,
+        templateCopy
+    );
 
     const nameInput = document.createElement("input");
     nameInput.type = "text";
@@ -167,7 +250,10 @@ function createCampaignForm(template, onBack) {
     endsInput.required = true;
     endsInput.value = addDays(
         startsInput.value,
-        Math.max((template.defaultDurationDays || 30) - 1, 0)
+        Math.max(
+            (template.defaultDurationDays || 30) - 1,
+            0
+        )
     );
 
     startsInput.addEventListener("change", () => {
@@ -175,33 +261,63 @@ function createCampaignForm(template, onBack) {
 
         endsInput.value = addDays(
             startsInput.value,
-            Math.max((template.defaultDurationDays || 30) - 1, 0)
+            Math.max(
+                (template.defaultDurationDays || 30) - 1,
+                0
+            )
         );
     });
 
-    const descriptionInput = document.createElement("textarea");
+    const descriptionInput =
+        document.createElement("textarea");
+
     descriptionInput.rows = 3;
     descriptionInput.maxLength = 500;
-    descriptionInput.placeholder = "Optional campaign description";
+    descriptionInput.placeholder =
+        "Optional campaign description";
 
-    const targetWrap = document.createElement("div");
-    targetWrap.className = "campaign-create-target-wrap";
+    const targetWrap =
+        document.createElement("div");
+
+    targetWrap.className =
+        "campaign-create-target-wrap";
 
     const unit = document.createElement("span");
-    unit.className = "campaign-create-target-unit";
-    unit.textContent = template.metricConfig?.unit || "";
+    unit.className =
+        "campaign-create-target-unit";
 
-    targetWrap.append(targetInput, unit);
+    unit.textContent =
+        template.metricConfig?.unit || "";
+
+    targetWrap.append(
+        targetInput,
+        unit
+    );
 
     const fields = document.createElement("div");
     fields.className = "campaign-create-fields";
 
     fields.append(
-        createField("Campaign Name", nameInput),
-        createField("Goal", targetWrap),
-        createField("Starts", startsInput),
-        createField("Ends", endsInput),
-        createField("Description", descriptionInput)
+        createField(
+            "Campaign Name",
+            nameInput
+        ),
+        createField(
+            "Goal",
+            targetWrap
+        ),
+        createField(
+            "Starts",
+            startsInput
+        ),
+        createField(
+            "Ends",
+            endsInput
+        ),
+        createField(
+            "Description",
+            descriptionInput
+        )
     );
 
     const actions = document.createElement("div");
@@ -211,81 +327,146 @@ function createCampaignForm(template, onBack) {
     backButton.type = "button";
     backButton.className = "secondary-button";
     backButton.textContent = "Back";
-    backButton.addEventListener("click", onBack);
+    backButton.addEventListener(
+        "click",
+        onBack
+    );
 
-    const submitButton = document.createElement("button");
+    const submitButton =
+        document.createElement("button");
+
     submitButton.type = "submit";
     submitButton.className = "primary-button";
     submitButton.textContent = "Start Campaign";
 
-    actions.append(backButton, submitButton);
+    actions.append(
+        backButton,
+        submitButton
+    );
 
-    form.append(templateSummary, fields, actions);
+    form.append(
+        templateSummary,
+        fields,
+        actions
+    );
 
-    form.addEventListener("submit", async event => {
-        event.preventDefault();
+    form.addEventListener(
+        "submit",
+        async event => {
+            event.preventDefault();
 
-        const regionId =
-            state.activeRegionId ||
-            state.currentRegionId;
-        const title = nameInput.value.trim();
-        const targetValue = Number(targetInput.value);
+            const regionId =
+                state.activeRegionId ||
+                state.currentRegionId;
 
-        if (!regionId) {
-            showToast("No active region selected.", "error");
-            return;
+            const title =
+                nameInput.value.trim();
+
+            const targetValue =
+                Number(targetInput.value);
+
+            if (!regionId) {
+                showToast(
+                    "No active region selected.",
+                    "error"
+                );
+                return;
+            }
+
+            if (!title) {
+                showToast(
+                    "Campaign name is required.",
+                    "error"
+                );
+                return;
+            }
+
+            if (
+                !Number.isFinite(targetValue) ||
+                targetValue <= 0
+            ) {
+                showToast(
+                    "Enter a valid campaign goal.",
+                    "error"
+                );
+                return;
+            }
+
+            if (
+                !startsInput.value ||
+                !endsInput.value
+            ) {
+                showToast(
+                    "Campaign dates are required.",
+                    "error"
+                );
+                return;
+            }
+
+            if (
+                endsInput.value <
+                startsInput.value
+            ) {
+                showToast(
+                    "End date cannot be before start date.",
+                    "error"
+                );
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent =
+                "Starting…";
+
+            try {
+                const campaign =
+                    await createCampaign({
+                        regionId,
+                        templateId:
+                            template.id,
+                        title,
+                        description:
+                            descriptionInput
+                                .value
+                                .trim(),
+                        startsOn:
+                            startsInput.value,
+                        endsOn:
+                            endsInput.value,
+                        targetValue,
+                    });
+
+                state.selectedCampaignId =
+                    campaign.id;
+
+                showToast(
+                    "Campaign started.",
+                    "success"
+                );
+
+                navigateTo(
+                    "campaignDetail"
+                );
+            } catch (error) {
+                console.error(
+                    "Failed to start campaign:",
+                    error
+                );
+
+                submitButton.disabled =
+                    false;
+
+                submitButton.textContent =
+                    "Start Campaign";
+
+                showToast(
+                    error?.message ||
+                        "Failed to start campaign.",
+                    "error"
+                );
+            }
         }
-
-        if (!title) {
-            showToast("Campaign name is required.", "error");
-            return;
-        }
-
-        if (!Number.isFinite(targetValue) || targetValue <= 0) {
-            showToast("Enter a valid campaign goal.", "error");
-            return;
-        }
-
-        if (!startsInput.value || !endsInput.value) {
-            showToast("Campaign dates are required.", "error");
-            return;
-        }
-
-        if (endsInput.value < startsInput.value) {
-            showToast("End date cannot be before start date.", "error");
-            return;
-        }
-
-        submitButton.disabled = true;
-        submitButton.textContent = "Starting…";
-
-        try {
-            const campaign = await createCampaign({
-                regionId,
-                templateId: template.id,
-                title,
-                description: descriptionInput.value.trim(),
-                startsOn: startsInput.value,
-                endsOn: endsInput.value,
-                targetValue,
-            });
-
-            state.selectedCampaignId = campaign.id;
-
-            showToast("Campaign started.", "success");
-            navigateTo("campaignDetail");
-        } catch (error) {
-            console.error("Failed to start campaign:", error);
-
-            submitButton.disabled = false;
-            submitButton.textContent = "Start Campaign";
-
-            showToast(
-                error?.message || "Failed to start campaign.",
-                "error"
-            );
-        }
-    });
+    );
 
     return form;
 }
@@ -300,68 +481,115 @@ function createCustomQuantityChallengeForm(
         creatorMode = "pax",
         participantMode = "individual",
         enrollmentMode = "opt_in",
+        visibility: initialVisibility = "public",
     } = options;
 
-    const isDaily = cadence === "daily";
-    const isRegional = creatorMode === "region";
-    const form = document.createElement("form");
-    form.className = "campaign-create-form";
+    const isDaily =
+        cadence === "daily";
 
-    const summary = document.createElement("div");
-    summary.className = "campaign-create-template-summary";
+    const isRegional =
+        creatorMode === "region";
 
-    const eyebrow = document.createElement("div");
-    eyebrow.className = "campaign-template-eyebrow";
+    let visibility = isRegional
+        ? "public"
+        : initialVisibility;
+
+    const form =
+        document.createElement("form");
+
+    form.className =
+        "campaign-create-form";
+
+    const summary =
+        document.createElement("div");
+
+    summary.className =
+        "campaign-create-template-summary";
+
+    const eyebrow =
+        document.createElement("div");
+
+    eyebrow.className =
+        "campaign-template-eyebrow";
+
     eyebrow.textContent = isRegional
         ? "Regional Campaign"
         : "Custom Challenge";
 
-    const title = document.createElement("h2");
+    const title =
+        document.createElement("h2");
+
     title.textContent = isRegional
         ? "Cumulative Regional Goal"
         : isDaily
             ? "Daily Quantity"
             : "Cumulative Quantity";
 
-    const copy = document.createElement("p");
+    const copy =
+        document.createElement("p");
+
     copy.textContent = isRegional
         ? "Set one shared goal and let PAX across the region contribute toward the total."
         : isDaily
-            ? "Set a daily target for an activity and challenge PAX to hit it each day."
+            ? "Set a daily target for an activity and track progress each day."
             : "Set a total goal for an activity and work toward it over the full challenge.";
 
-    summary.append(eyebrow, title, copy);
+    summary.append(
+        eyebrow,
+        title,
+        copy
+    );
 
-    const nameInput = document.createElement("input");
+    const nameInput =
+        document.createElement("input");
+
     nameInput.type = "text";
     nameInput.required = true;
     nameInput.maxLength = 100;
+
     nameInput.placeholder = isRegional
         ? "10,000 Miles Together"
         : isDaily
             ? "50 Burpees a Day"
             : "1000 Miles in a Year";
 
-    const activityInput = document.createElement("select");
+    const activityInput =
+        document.createElement("select");
+
     activityInput.required = true;
-    
-    const placeholderOption = document.createElement("option");
+
+    const placeholderOption =
+        document.createElement("option");
+
     placeholderOption.value = "";
-    placeholderOption.textContent = "Choose activity";
+    placeholderOption.textContent =
+        "Choose activity";
+
     placeholderOption.disabled = true;
     placeholderOption.selected = true;
-    
-    activityInput.append(placeholderOption);
-    
+
+    activityInput.append(
+        placeholderOption
+    );
+
     activityTypes.forEach(activity => {
-        const option = document.createElement("option");
-        option.value = activity.activityKey;
-        option.textContent = activity.displayName;
-    
-        activityInput.append(option);
+        const option =
+            document.createElement("option");
+
+        option.value =
+            activity.activityKey;
+
+        option.textContent =
+            activity.displayName;
+
+        activityInput.append(
+            option
+        );
     });
 
-    const targetInput = document.createElement("input");
+    const targetInput =
+        document.createElement("input");
+
     targetInput.type = "number";
     targetInput.required = true;
     targetInput.min = "1";
@@ -369,37 +597,79 @@ function createCustomQuantityChallengeForm(
     targetInput.inputMode = "numeric";
     targetInput.placeholder = "50";
 
-    const startsInput = document.createElement("input");
+    const startsInput =
+        document.createElement("input");
+
     startsInput.type = "date";
     startsInput.required = true;
     startsInput.value = getToday();
 
-    const endsInput = document.createElement("input");
+    const endsInput =
+        document.createElement("input");
+
     endsInput.type = "date";
     endsInput.required = true;
-    endsInput.value = addDays(startsInput.value, 29);
-
-    startsInput.addEventListener("change", () => {
-        if (!startsInput.value) return;
-
-        endsInput.value = addDays(
+    endsInput.value =
+        addDays(
             startsInput.value,
             29
         );
-    });
 
-    const descriptionInput = document.createElement("textarea");
+    startsInput.addEventListener(
+        "change",
+        () => {
+            if (!startsInput.value) {
+                return;
+            }
+
+            endsInput.value =
+                addDays(
+                    startsInput.value,
+                    29
+                );
+        }
+    );
+
+    const descriptionInput =
+        document.createElement("textarea");
+
     descriptionInput.rows = 3;
     descriptionInput.maxLength = 500;
+
     descriptionInput.placeholder =
         "Optional challenge description";
 
-    const fields = document.createElement("div");
-    fields.className = "campaign-create-fields";
+    const fields =
+        document.createElement("div");
+
+    fields.className =
+        "campaign-create-fields";
+
+    if (!isRegional) {
+        fields.append(
+            createVisibilitySelector({
+                value: visibility,
+
+                onChange:
+                    nextVisibility => {
+                        visibility =
+                            nextVisibility;
+                    },
+            })
+        );
+    }
 
     fields.append(
-        createField("Challenge Name", nameInput),
-        createField("Tracker", activityInput),
+        createField(
+            "Challenge Name",
+            nameInput
+        ),
+
+        createField(
+            "Tracker",
+            activityInput
+        ),
+
         createField(
             isRegional
                 ? "Regional Goal"
@@ -408,181 +678,310 @@ function createCustomQuantityChallengeForm(
                     : "Total Goal",
             targetInput
         ),
-        createField("Starts", startsInput),
-        createField("Ends", endsInput),
-        createField("Description", descriptionInput)
+
+        createField(
+            "Starts",
+            startsInput
+        ),
+
+        createField(
+            "Ends",
+            endsInput
+        ),
+
+        createField(
+            "Description",
+            descriptionInput
+        )
     );
 
-    const actions = document.createElement("div");
-    actions.className = "campaign-create-actions";
+    const actions =
+        document.createElement("div");
 
-    const backButton = document.createElement("button");
+    actions.className =
+        "campaign-create-actions";
+
+    const backButton =
+        document.createElement("button");
+
     backButton.type = "button";
-    backButton.className = "secondary-button";
-    backButton.textContent = "Back";
-    backButton.addEventListener("click", onBack);
+    backButton.className =
+        "secondary-button";
 
-    const submitButton = document.createElement("button");
+    backButton.textContent =
+        "Back";
+
+    backButton.addEventListener(
+        "click",
+        onBack
+    );
+
+    const submitButton =
+        document.createElement("button");
+
     submitButton.type = "submit";
-    submitButton.className = "primary-button";
-    submitButton.textContent = "Create Challenge";
+    submitButton.className =
+        "primary-button";
 
-    actions.append(backButton, submitButton);
+    submitButton.textContent =
+        isRegional
+            ? "Start Campaign"
+            : "Create Challenge";
 
-    form.append(summary, fields, actions);
+    actions.append(
+        backButton,
+        submitButton
+    );
 
-    form.addEventListener("submit", async event => {
-        event.preventDefault();
+    form.append(
+        summary,
+        fields,
+        actions
+    );
 
-        const regionId =
-            state.activeRegionId ||
-            state.currentRegionId;
+    form.addEventListener(
+        "submit",
+        async event => {
+            event.preventDefault();
 
-        const title = nameInput.value.trim();
-        const activityKey = activityInput.value;
-        const activity = activityTypes.find(
-            item => item.activityKey === activityKey
-        );
-        const dailyTarget = Number(targetInput.value);
+            const regionId =
+                state.activeRegionId ||
+                state.currentRegionId;
 
-        if (!regionId) {
-            showToast("No active region selected.", "error");
-            return;
+            const title =
+                nameInput.value.trim();
+
+            const activityKey =
+                activityInput.value;
+
+            const activity =
+                activityTypes.find(
+                    item =>
+                        item.activityKey ===
+                        activityKey
+                );
+
+            const targetValue =
+                Number(
+                    targetInput.value
+                );
+
+            if (!regionId) {
+                showToast(
+                    "No active region selected.",
+                    "error"
+                );
+                return;
+            }
+
+            if (!title) {
+                showToast(
+                    "Challenge name is required.",
+                    "error"
+                );
+                return;
+            }
+
+            if (!activity) {
+                showToast(
+                    "Choose an activity.",
+                    "error"
+                );
+                return;
+            }
+
+            if (
+                !Number.isFinite(
+                    targetValue
+                ) ||
+                targetValue <= 0
+            ) {
+                showToast(
+                    isDaily
+                        ? "Enter a valid daily goal."
+                        : "Enter a valid total goal.",
+                    "error"
+                );
+                return;
+            }
+
+            if (
+                !startsInput.value ||
+                !endsInput.value
+            ) {
+                showToast(
+                    "Challenge dates are required.",
+                    "error"
+                );
+                return;
+            }
+
+            if (
+                endsInput.value <
+                startsInput.value
+            ) {
+                showToast(
+                    "End date cannot be before start date.",
+                    "error"
+                );
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent =
+                "Creating…";
+
+            try {
+                const campaign =
+                    await createCustomCampaign({
+                        regionId,
+                        title,
+
+                        description:
+                            descriptionInput
+                                .value
+                                .trim(),
+
+                        creatorMode,
+                        participantMode,
+                        enrollmentMode,
+
+                        visibility:
+                            isRegional
+                                ? "public"
+                                : visibility,
+
+                        trackingMode:
+                            "manual",
+
+                        cadence,
+
+                        metricKey:
+                            "manual_quantity",
+
+                        activityKey,
+
+                        targetValue,
+
+                        metricConfig: {
+                            activityName:
+                                activity.displayName,
+
+                            unit:
+                                activity.unit,
+                        },
+
+                        startsOn:
+                            startsInput.value,
+
+                        endsOn:
+                            endsInput.value,
+                    });
+
+                state.selectedCampaignId =
+                    campaign.id;
+
+                showToast(
+                    isRegional
+                        ? "Campaign started."
+                        : visibility ===
+                            "private"
+                            ? "Private challenge created."
+                            : "Challenge created.",
+                    "success"
+                );
+
+                navigateTo(
+                    "campaignDetail"
+                );
+            } catch (error) {
+                console.error(
+                    "Failed to create custom challenge:",
+                    error
+                );
+
+                submitButton.disabled =
+                    false;
+
+                submitButton.textContent =
+                    isRegional
+                        ? "Start Campaign"
+                        : "Create Challenge";
+
+                showToast(
+                    error?.message ||
+                        "Failed to create challenge.",
+                    "error"
+                );
+            }
         }
-
-        if (!title) {
-            showToast("Challenge name is required.", "error");
-            return;
-        }
-
-        if (!activity) {
-            showToast("Choose an activity.", "error");
-            return;
-        }
-
-        if (
-            !Number.isFinite(dailyTarget)
-            || dailyTarget <= 0
-        ) {
-            showToast(
-                isDaily
-                    ? "Enter a valid daily goal."
-                    : "Enter a valid total goal.",
-                "error"
-            );
-            return;
-        }
-
-        if (!startsInput.value || !endsInput.value) {
-            showToast("Challenge dates are required.", "error");
-            return;
-        }
-
-        if (endsInput.value < startsInput.value) {
-            showToast(
-                "End date cannot be before start date.",
-                "error"
-            );
-            return;
-        }
-
-        submitButton.disabled = true;
-        submitButton.textContent = "Creating…";
-
-        try {
-            const campaign =
-                await createCustomCampaign({
-                    regionId,
-                    title,
-                    description: descriptionInput.value.trim(),
-                    creatorMode,
-                    participantMode,
-                    enrollmentMode,
-                    trackingMode: "manual",
-                    cadence,
-                    metricKey: "manual_quantity",
-                    activityKey,
-                    targetValue: dailyTarget,
-                    metricConfig: {
-                        activityName: activity.displayName,
-                        unit: activity.unit,
-                    },
-                    startsOn: startsInput.value,
-                    endsOn: endsInput.value,
-                });
-            state.selectedCampaignId = campaign.id;
-
-            showToast("Challenge created.", "success");
-            navigateTo("campaignDetail");
-        } catch (error) {
-            console.error(
-                "Failed to create custom challenge:",
-                error
-            );
-
-            submitButton.disabled = false;
-            submitButton.textContent = "Create Challenge";
-
-            showToast(
-                error?.message ||
-                    "Failed to create challenge.",
-                "error"
-            );
-        }
-    });
+    );
 
     return form;
 }
 
 export function renderCampaignCreateView() {
-    const app = document.getElementById("app");
+    const app =
+        document.getElementById("app");
+
     if (!app) return;
 
     app.replaceChildren();
 
-    const header = createAppHeader({
-        title: "Start Something",
-        showBack: true,
-        showMenu: true,
-        fallbackView: "campaigns",
-    });
+    const header =
+        createAppHeader({
+            title: "Start Something",
+            showBack: true,
+            showMenu: true,
+            fallbackView: "campaigns",
+        });
 
     app.appendChild(header);
 
-    const container = document.createElement("main");
-    container.className = "campaign-create-view";
-    
-    const content = document.createElement("div");
-    content.className = "campaign-create-content";
-    
+    const container =
+        document.createElement("main");
+
+    container.className =
+        "campaign-create-view";
+
+    const content =
+        document.createElement("div");
+
+    content.className =
+        "campaign-create-content";
+
     container.append(content);
-    app.append(container, createGlobalNav());
+
+    app.append(
+        container,
+        createGlobalNav()
+    );
 
     function showCreateOptions(
         templates = [],
         activityTypes = []
     ) {
         content.replaceChildren();
-    
+
         if (
-            canManageCampaigns()
-            && templates.length > 0
+            canManageCampaigns() &&
+            templates.length > 0
         ) {
             const officialLabel =
                 document.createElement("h2");
-    
+
             officialLabel.className =
                 "campaign-section-label";
-    
+
             officialLabel.textContent =
                 "Official Templates";
-    
+
             const officialList =
                 document.createElement("div");
-    
+
             officialList.className =
                 "campaign-template-list";
-    
+
             templates.forEach(template => {
                 officialList.append(
                     createTemplateButton(
@@ -591,61 +990,79 @@ export function renderCampaignCreateView() {
                             content.replaceChildren(
                                 createCampaignForm(
                                     selectedTemplate,
-                                    () => showCreateOptions(templates)
+                                    () =>
+                                        showCreateOptions(
+                                            templates,
+                                            activityTypes
+                                        )
                                 )
                             );
                         }
                     )
                 );
             });
-    
+
             content.append(
                 officialLabel,
                 officialList
             );
         }
-    
+
         const customLabel =
             document.createElement("h2");
-    
+
         customLabel.className =
             "campaign-section-label campaign-custom-section-label";
-    
+
         customLabel.textContent =
             "Create Your Own";
-    
+
         const customList =
             document.createElement("div");
-    
+
         customList.className =
             "campaign-template-list";
-    
+
         customList.append(
             createCustomChallengeButton({
                 title: "Daily Quantity",
+
                 description:
                     "Hit a target each day throughout the challenge.",
+
                 onSelect: () => {
                     content.replaceChildren(
                         createCustomQuantityChallengeForm(
                             "daily",
                             activityTypes,
-                            () => showCreateOptions(templates, activityTypes)
+
+                            () =>
+                                showCreateOptions(
+                                    templates,
+                                    activityTypes
+                                )
                         )
                     );
                 },
             }),
-        
+
             createCustomChallengeButton({
                 title: "Cumulative Quantity",
+
                 description:
                     "Work toward one total over the full challenge.",
+
                 onSelect: () => {
                     content.replaceChildren(
                         createCustomQuantityChallengeForm(
                             "campaign",
                             activityTypes,
-                            () => showCreateOptions(templates, activityTypes)
+
+                            () =>
+                                showCreateOptions(
+                                    templates,
+                                    activityTypes
+                                )
                         )
                     );
                 },
@@ -655,19 +1072,36 @@ export function renderCampaignCreateView() {
         if (canManageCampaigns()) {
             customList.append(
                 createCustomChallengeButton({
-                    title: "Regional Cumulative Goal",
+                    title:
+                        "Regional Cumulative Goal",
+
                     description:
                         "Let the whole region contribute toward one shared total.",
+
                     onSelect: () => {
                         content.replaceChildren(
                             createCustomQuantityChallengeForm(
                                 "campaign",
                                 activityTypes,
-                                () => showCreateOptions(templates, activityTypes),
+
+                                () =>
+                                    showCreateOptions(
+                                        templates,
+                                        activityTypes
+                                    ),
+
                                 {
-                                    creatorMode: "region",
-                                    participantMode: "collective",
-                                    enrollmentMode: "automatic",
+                                    creatorMode:
+                                        "region",
+
+                                    participantMode:
+                                        "collective",
+
+                                    enrollmentMode:
+                                        "automatic",
+
+                                    visibility:
+                                        "public",
                                 }
                             )
                         );
@@ -675,47 +1109,53 @@ export function renderCampaignCreateView() {
                 })
             );
         }
-    
+
         content.append(
             customLabel,
             customList
         );
     }
-    
+
     content.append(
         createState(
             "Loading options",
             "Finding available challenge options."
         )
     );
-    
-    const templatePromise = canManageCampaigns()
-        ? loadCampaignTemplates()
-        : Promise.resolve([]);
-    
+
+    const templatePromise =
+        canManageCampaigns()
+            ? loadCampaignTemplates()
+            : Promise.resolve([]);
+
     Promise.all([
         templatePromise,
         loadActivityTypes(),
     ])
-        .then(([templates, activityTypes]) => {
-            showCreateOptions(
+        .then(
+            ([
                 templates,
-                activityTypes
-            );
-        })
+                activityTypes,
+            ]) => {
+                showCreateOptions(
+                    templates,
+                    activityTypes
+                );
+            }
+        )
         .catch(error => {
             console.error(
                 "Failed to load campaign creation options:",
                 error
             );
-    
+
             content.replaceChildren(
                 createState(
                     "Unable to load options",
                     "Challenge creation options could not be loaded."
                 )
             );
-    
+
             showToast(
                 "Challenge creation options could not be loaded.",
                 "error"

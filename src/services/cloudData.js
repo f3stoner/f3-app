@@ -5474,6 +5474,7 @@ function mapCampaignFromDb(row) {
         templateId: row.template_id || null,
         title: row.title || "",
         description: row.description || "",
+        visibility: row.visibility || "public",
         scopeType: row.scope_type || "region",
         scopeAoId: row.scope_ao_id || null,
         participantMode:
@@ -5499,22 +5500,25 @@ function mapCampaignFromDb(row) {
         createdAt:
             row.created_at || null,
         updatedAt:
-        row.updated_at || null,
-        trackingMode: row.tracking_mode || "automatic",
-        cadence: row.cadence || "campaign",
-        creatorMode: row.creator_mode || "region",
-        
+            row.updated_at || null,
+        trackingMode:
+            row.tracking_mode || "automatic",
+        cadence:
+            row.cadence || "campaign",
+        creatorMode:
+            row.creator_mode || "region",
+
         activityTypeId:
             row.activity_type_id || null,
-        
+
         activityKey:
             row.activity_types?.activity_key || null,
-        
+
         activityName:
             row.activity_types?.display_name ||
             row.metric_config?.activityName ||
             "",
-        
+
         activityUnit:
             row.activity_types?.unit ||
             row.metric_config?.unit ||
@@ -5964,6 +5968,7 @@ export async function createCustomCampaign({
     creatorMode = "pax",
     participantMode = "individual",
     enrollmentMode = "opt_in",
+    visibility = "public",
     trackingMode,
     cadence,
     metricKey,
@@ -5979,6 +5984,15 @@ export async function createCustomCampaign({
         );
     }
 
+    if (
+        visibility !== "public" &&
+        visibility !== "private"
+    ) {
+        throw new Error(
+            "Invalid campaign visibility."
+        );
+    }
+
     const definition = {
         regionId,
         title,
@@ -5986,6 +6000,7 @@ export async function createCustomCampaign({
         creatorMode,
         participantMode,
         enrollmentMode,
+        visibility,
         trackingMode,
         cadence,
         metricKey,
