@@ -1321,22 +1321,46 @@ function createMemberCard(
     if ((draftSession.qIds || []).includes(member.id)) {
         qButton.classList.add("q-selected");
     }
+    
     qButton.addEventListener("click", async (event) => {
         event.stopPropagation();
-
-        const isSelectedQ = getUniqueQIds().includes(normalizeId(member.id));        if (isSelectedQ && preventRemovingOnlyQ(member.id)) {
-            return;
-        }
+    
+        const memberId = normalizeId(member.id);
+        const currentQIds = getUniqueQIds();
+        const isSelectedQ = currentQIds.includes(memberId);
+    
         if (isSelectedQ) {
-            draftSession.qIds = (draftSession.qIds || []).filter(id => id !== member.id);
+            if (preventRemovingOnlyQ(member.id)) {
+                return;
+            }
+    
+            draftSession.qIds = (draftSession.qIds || []).filter(
+                id => normalizeId(id) !== memberId
+            );
         } else {
-            draftSession.qIds = [...(draftSession.qIds || []), member.id];
+            if (currentQIds.length > 0) {
+                const displayName = getCachedMemberDisplayName(member);
+    
+                const confirmed = confirm(
+                    `Are you sure you want to add ${displayName} as a co-Q?`
+                );
+    
+                if (!confirmed) {
+                    return;
+                }
+            }
+    
+            draftSession.qIds = [
+                ...(draftSession.qIds || []),
+                member.id,
+            ];
         }
-
+    
         if (!draftSession.attendeeIds.includes(member.id)) {
             draftSession.attendeeIds.push(member.id);
             await maybePromptForFngName(member);
         }
+    
         clearSessionSearch();
         renderMemberList();
     });
