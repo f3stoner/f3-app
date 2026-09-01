@@ -16,7 +16,7 @@ import {
 } from "../utils/modal.js";
 import { showToast } from "../utils/toast.js";
 import {
-    renameMember,
+    updateMemberProfile,
     setMemberRosterStatus,
 } from "../services/appData.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
@@ -119,7 +119,7 @@ function getRpcErrorMessage(
     return message;
 }
 
-function openRenameModal(member) {
+function openEditMemberModal(member) {
     if (!isSuperAdmin()) {
         return;
     }
@@ -136,7 +136,8 @@ function openRenameModal(member) {
     const heading =
         document.createElement("h2");
 
-    heading.textContent = "Edit PAX Name";
+    heading.textContent =
+        "Edit PAX Profile";
 
     const currentName =
         document.createElement("div");
@@ -147,23 +148,235 @@ function openRenameModal(member) {
     );
 
     currentName.textContent =
-        `Current: ${
+        `Editing ${
             getMemberDisplayName(member)
         }`;
 
-    const label =
+    /*
+     * PAX NAME
+     */
+
+    const paxNameLabel =
         document.createElement("label");
 
-    label.classList.add("detail-label");
-    label.textContent = "PAX Name";
+    paxNameLabel.classList.add(
+        "detail-label"
+    );
 
-    const input =
+    paxNameLabel.textContent =
+        "PAX Name";
+
+    const paxNameInput =
         document.createElement("input");
 
-    input.type = "text";
-    input.value = member.paxName || "";
-    input.autocomplete = "off";
-    input.maxLength = 100;
+    paxNameInput.type = "text";
+    paxNameInput.value =
+        member.paxName || "";
+    paxNameInput.autocomplete =
+        "off";
+    paxNameInput.maxLength = 100;
+
+    /*
+     * REAL NAME
+     */
+
+    const realNameLabel =
+        document.createElement("label");
+
+    realNameLabel.classList.add(
+        "detail-label"
+    );
+
+    realNameLabel.textContent =
+        "Real Name";
+
+    const realNameInput =
+        document.createElement("input");
+
+    realNameInput.type = "text";
+    realNameInput.value =
+        member.realName || "";
+    realNameInput.autocomplete =
+        "off";
+    realNameInput.maxLength = 150;
+
+    /*
+     * PROUD PAPA
+     */
+
+    const proudPapaLabel =
+        document.createElement("label");
+
+    proudPapaLabel.classList.add(
+        "detail-label"
+    );
+
+    proudPapaLabel.textContent =
+        "Proud Papa";
+
+    const proudPapaSelect =
+        document.createElement("select");
+
+    const noProudPapaOption =
+        document.createElement("option");
+
+    noProudPapaOption.value = "";
+    noProudPapaOption.textContent =
+        "None";
+
+    proudPapaSelect.append(
+        noProudPapaOption
+    );
+
+    [...(state.members || [])]
+        .filter(
+            candidate =>
+                candidate.id !==
+                member.id
+        )
+        .sort((a, b) =>
+            getMemberDisplayName(a)
+                .localeCompare(
+                    getMemberDisplayName(b),
+                    undefined,
+                    {
+                        sensitivity:
+                            "base",
+                    }
+                )
+        )
+        .forEach(candidate => {
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                candidate.id;
+
+            option.textContent =
+                getMemberDisplayName(
+                    candidate
+                );
+
+            if (
+                candidate.id ===
+                member.invitedById
+            ) {
+                option.selected = true;
+            }
+
+            proudPapaSelect.append(
+                option
+            );
+        });
+
+    /*
+     * HOME AO
+     */
+
+    const homeAoLabel =
+        document.createElement("label");
+
+    homeAoLabel.classList.add(
+        "detail-label"
+    );
+
+    homeAoLabel.textContent =
+        "Home AO";
+
+    const homeAoSelect =
+        document.createElement("select");
+
+    const noHomeAoOption =
+        document.createElement("option");
+
+    noHomeAoOption.value = "";
+    noHomeAoOption.textContent =
+        "None";
+
+    homeAoSelect.append(
+        noHomeAoOption
+    );
+
+    [...(state.aos || [])]
+        .filter(
+            ao =>
+                ao.isActive !== false
+        )
+        .sort((a, b) =>
+            String(a.name || "")
+                .localeCompare(
+                    String(b.name || ""),
+                    undefined,
+                    {
+                        sensitivity:
+                            "base",
+                    }
+                )
+        )
+        .forEach(ao => {
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            /*
+             * members.home_ao currently stores
+             * the AO name, not AO id.
+             */
+            option.value =
+                ao.name || "";
+
+            option.textContent =
+                ao.name || "Unnamed AO";
+
+            if (
+                String(
+                    member.homeAo || ""
+                ).toLowerCase() ===
+                String(
+                    ao.name || ""
+                ).toLowerCase()
+            ) {
+                option.selected = true;
+            }
+
+            homeAoSelect.append(
+                option
+            );
+        });
+
+    /*
+     * Preserve legacy/imported Home AO values
+     * that may no longer exist in state.aos.
+     */
+    if (
+        member.homeAo &&
+        ![...homeAoSelect.options]
+            .some(
+                option =>
+                    option.value ===
+                    member.homeAo
+            )
+    ) {
+        const legacyOption =
+            document.createElement(
+                "option"
+            );
+
+        legacyOption.value =
+            member.homeAo;
+
+        legacyOption.textContent =
+            `${member.homeAo} (existing)`;
+
+        legacyOption.selected = true;
+
+        homeAoSelect.append(
+            legacyOption
+        );
+    }
 
     const errorMessage =
         document.createElement("div");
@@ -175,16 +388,21 @@ function openRenameModal(member) {
     const buttonRow =
         document.createElement("div");
 
-    buttonRow.classList.add("button-row");
+    buttonRow.classList.add(
+        "button-row"
+    );
 
     const cancelButton =
         document.createElement("button");
 
     cancelButton.type = "button";
+
     cancelButton.classList.add(
         "secondary-button"
     );
-    cancelButton.textContent = "Cancel";
+
+    cancelButton.textContent =
+        "Cancel";
 
     cancelButton.addEventListener(
         "click",
@@ -195,95 +413,128 @@ function openRenameModal(member) {
         document.createElement("button");
 
     saveButton.type = "button";
+
     saveButton.classList.add(
         "primary-button"
     );
-    saveButton.textContent = "Save Name";
 
-    async function submitRename() {
-        const normalizedName =
-            input.value
+    saveButton.textContent =
+        "Save Profile";
+
+    async function submitProfile() {
+        const paxName =
+            paxNameInput.value
                 .trim()
                 .replace(/\s+/g, " ");
 
+        const realName =
+            realNameInput.value
+                .trim()
+                .replace(/\s+/g, " ");
+
+        const invitedById =
+            proudPapaSelect.value ||
+            null;
+
+        const homeAo =
+            homeAoSelect.value ||
+            "";
+
         errorMessage.textContent = "";
 
-        if (!normalizedName) {
+        if (!paxName) {
             errorMessage.textContent =
                 "PAX name is required.";
-            input.focus();
-            return;
-        }
 
-        if (
-            normalizedName ===
-            String(member.paxName || "")
-                .trim()
-                .replace(/\s+/g, " ")
-        ) {
-            closeModal();
+            paxNameInput.focus();
             return;
         }
 
         saveButton.disabled = true;
         cancelButton.disabled = true;
-        input.disabled = true;
-        saveButton.textContent = "Saving…";
+
+        paxNameInput.disabled = true;
+        realNameInput.disabled = true;
+        proudPapaSelect.disabled = true;
+        homeAoSelect.disabled = true;
+
+        saveButton.textContent =
+            "Saving…";
 
         try {
-            await renameMember(
+            await updateMemberProfile(
                 member.id,
-                normalizedName
+                {
+                    paxName,
+                    realName,
+                    invitedById,
+                    homeAo,
+                }
             );
 
             closeModal();
 
             showToast(
-                "PAX name updated.",
+                "PAX profile updated.",
                 "success"
             );
 
             renderRosterManagementView();
         } catch (error) {
             console.error(
-                "Failed to rename member:",
+                "Failed to update member profile:",
                 error
             );
 
             errorMessage.textContent =
                 getRpcErrorMessage(
                     error,
-                    "Failed to update PAX name."
+                    "Failed to update PAX profile."
                 );
 
             saveButton.disabled = false;
             cancelButton.disabled = false;
-            input.disabled = false;
-            saveButton.textContent =
-                "Save Name";
 
-            input.focus();
+            paxNameInput.disabled = false;
+            realNameInput.disabled = false;
+            proudPapaSelect.disabled = false;
+            homeAoSelect.disabled = false;
+
+            saveButton.textContent =
+                "Save Profile";
         }
     }
 
     saveButton.addEventListener(
         "click",
-        submitRename
+        submitProfile
     );
 
-    input.addEventListener(
-        "keydown",
-        event => {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                void submitRename();
-            }
+    [
+        paxNameInput,
+        realNameInput,
+    ].forEach(input => {
+        input.addEventListener(
+            "keydown",
+            event => {
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+                    event.preventDefault();
 
-            if (event.key === "Escape") {
-                closeActiveModal();
+                    void submitProfile();
+                }
+
+                if (
+                    event.key ===
+                    "Escape"
+                ) {
+                    closeActiveModal();
+                }
             }
-        }
-    );
+        );
+    });
 
     buttonRow.append(
         cancelButton,
@@ -293,15 +544,26 @@ function openRenameModal(member) {
     modal.append(
         heading,
         currentName,
-        label,
-        input,
+
+        paxNameLabel,
+        paxNameInput,
+
+        realNameLabel,
+        realNameInput,
+
+        proudPapaLabel,
+        proudPapaSelect,
+
+        homeAoLabel,
+        homeAoSelect,
+
         errorMessage,
         buttonRow
     );
 
     requestAnimationFrame(() => {
-        input.focus();
-        input.select();
+        paxNameInput.focus();
+        paxNameInput.select();
     });
 }
 
@@ -396,13 +658,13 @@ function createMemberCard(
             "secondary-button",
             "roster-management-edit-button"
         );
-        editButton.textContent = "Edit Name";
+        editButton.textContent = "Edit";
         editButton.disabled = isSaving;
 
         editButton.addEventListener(
             "click",
             () => {
-                openRenameModal(member);
+                openEditMemberModal(member);
             }
         );
 

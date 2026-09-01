@@ -1525,6 +1525,100 @@ export async function setMemberRosterStatusInCloud(
     return mapMemberFromDb(row);
 }
 
+export async function updateMemberProfileInCloud(
+    memberId,
+    {
+        paxName,
+        realName,
+        invitedById,
+        homeAo,
+    }
+) {
+    if (!memberId) {
+        throw new Error(
+            "Member id is required to update a member profile."
+        );
+    }
+
+    const normalizedPaxName =
+        String(paxName || "")
+            .trim()
+            .replace(/\s+/g, " ");
+
+    const normalizedRealName =
+        String(realName || "")
+            .trim()
+            .replace(/\s+/g, " ");
+
+    const normalizedHomeAo =
+        String(homeAo || "")
+            .trim()
+            .replace(/\s+/g, " ");
+
+    if (!normalizedPaxName) {
+        throw new Error(
+            "PAX name cannot be empty."
+        );
+    }
+
+    const { data, error } =
+        await supabase.rpc(
+            "admin_update_member_profile",
+            {
+                p_member_id:
+                    memberId,
+
+                p_pax_name:
+                    normalizedPaxName,
+
+                p_real_name:
+                    normalizedRealName ||
+                    null,
+
+                p_invited_by_id:
+                    invitedById ||
+                    null,
+
+                p_home_ao:
+                    normalizedHomeAo ||
+                    null,
+            }
+        );
+
+    if (error) {
+        console.error(
+            "Failed to update member profile:",
+            {
+                memberId,
+                paxName:
+                    normalizedPaxName,
+                realName:
+                    normalizedRealName,
+                invitedById:
+                    invitedById || null,
+                homeAo:
+                    normalizedHomeAo,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    const row =
+        Array.isArray(data)
+            ? data[0]
+            : data;
+
+    if (!row) {
+        throw new Error(
+            "Member profile update returned no member."
+        );
+    }
+
+    return mapMemberFromDb(row);
+}
+
 export async function renameMemberInCloud(
     memberId,
     paxName

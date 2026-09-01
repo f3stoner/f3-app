@@ -16,6 +16,7 @@ import {
     setMemberInviters,
     setMemberRosterStatusInCloud,
     renameMemberInCloud,
+    updateMemberProfileInCloud,
     updateAdminFlagInCloud,
     updateMemberInCloud,
     updatePlannedWorkoutInCloud,
@@ -890,6 +891,69 @@ export async function renameMember(
             updatedMember.realName ||
             state.currentUserDisplayName;
     }
+
+    return updatedMember;
+}
+
+export async function updateMemberProfile(
+    memberId,
+    {
+        paxName,
+        realName,
+        invitedById,
+        homeAo,
+    }
+) {
+    const savedMember =
+        await updateMemberProfileInCloud(
+            memberId,
+            {
+                paxName,
+                realName,
+                invitedById,
+                homeAo,
+            }
+        );
+
+    /*
+     * Keep the member's existing inviter array
+     * synchronized with the canonical Proud Papa.
+     */
+    savedMember.invitedById =
+        savedMember.invitedById ||
+        null;
+
+    savedMember.inviterIds =
+        savedMember.invitedById
+            ? [
+                savedMember.invitedById,
+            ]
+            : [];
+
+    const updatedMember =
+        replaceMemberInState(
+            savedMember
+        );
+
+    /*
+     * If a superadmin edits their own member
+     * record, keep authenticated identity state
+     * synchronized too.
+     */
+    if (
+        memberId ===
+        state.currentUserMemberId
+    ) {
+        state.currentUserMember =
+            updatedMember;
+
+        state.currentUserDisplayName =
+            updatedMember.paxName ||
+            updatedMember.realName ||
+            state.currentUserDisplayName;
+    }
+
+    persistAppData();
 
     return updatedMember;
 }

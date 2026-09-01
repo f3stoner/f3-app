@@ -38,6 +38,7 @@ export function renderAuthView() {
         { label: "Aggieland", value: "96c9eef9-3b6e-4365-86cd-51dbeccf231a" },
         { label: "Old 300", value: "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a" },
         { label: "North Katy", value: "c05cd413-7171-4017-aacb-61db1e8ca200" },
+        { label: "West Houston", value: "7298b632-4d9a-542f-b65d-d416e5c1e631" },
     ];
 
     const placeholderOption = document.createElement("option");
