@@ -7,7 +7,11 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { hasPermission, PERMISSIONS } from "../utils/permissions.js";
 import { createHorizontalBarChartSection, createLineChartSection, createMultiLineChartSection, createHeatMapSection, createPipelineSection, } from "../components/regionInsights/charts.js";
-import { loadRegionInsightSessions, loadRegionMilestoneCrossings } from "../services/cloudData.js";
+import {
+    loadRegionInsightSessions,
+    loadRegionMilestoneCrossings,
+    loadRegionLeadershipDepth,
+} from "../services/cloudData.js";
 
 const REGION_TREND_METRICS = [
     {
@@ -844,23 +848,31 @@ export async function renderRegionInsightsView() {
 
     let insightSessions;
     let milestoneCrossings;
-
+    let leadershipDepth;
+    
     try {
         [
             insightSessions,
             milestoneCrossings,
+            leadershipDepth,
         ] = await Promise.all([
             loadRegionInsightSessions({
                 regionId: state.currentRegionId,
                 startDate: historyStartDate,
                 endDate,
             }),
-
+    
             loadRegionMilestoneCrossings({
                 regionId: state.currentRegionId,
                 startDate: milestoneWeek.startDate,
                 endDate: milestoneWeek.endDate,
                 milestones: REGION_POST_MILESTONES,
+            }),
+    
+            loadRegionLeadershipDepth({
+                regionId: state.currentRegionId,
+                minPosts: 25,
+                minQs: 5,
             }),
         ]);
     } catch (error) {
@@ -1547,6 +1559,34 @@ const aoAttendanceHeatMap =
         postingFrequencySection,
     );
 
+    const leadershipDepthSection =
+        createExpandableListSection({
+            title:
+                `Leadership Depth • ${leadershipDepth.length} PAX`,
+
+            items: leadershipDepth,
+
+            initialCount: 8,
+
+            renderRow: member =>
+                createInsightsRow({
+                    title: member.pax_name,
+
+                    subtitle:
+                        `${member.post_count} posts • ` +
+                        `${member.q_count} Qs`,
+
+                    value: "25 / 5",
+
+                    onClick: () => {
+                        state.selectedMemberId =
+                            member.member_id;
+
+                        navigateTo("memberDetail");
+                    },
+                }),
+    });
+
     const leadershipPanel = document.createElement("div");
 
     leadershipPanel.classList.add(
@@ -1567,6 +1607,7 @@ const aoAttendanceHeatMap =
 
     leadershipPanel.append(
         leadershipDate,
+        leadershipDepthSection,
         milestoneSection,
         accelerationSection,
         checkTheSixSection,

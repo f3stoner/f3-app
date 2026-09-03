@@ -6243,3 +6243,24 @@ export async function logMemberActivity(
 
     return data;
 }
+
+export async function loadRegionLeadershipDepth({
+    regionId,
+    minPosts = 25,
+    minQs = 5,
+}) {
+    const { data, error } = await supabase.rpc(
+        "get_region_leadership_depth",
+        {
+            p_region_id: regionId,
+            p_min_posts: minPosts,
+            p_min_qs: minQs,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data || [];
+}
