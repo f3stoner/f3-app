@@ -2050,3 +2050,63 @@ button.leadership-action-card:active {
    .insights-list:empty {
        display: none;
    }
+
+   .view-regionInsights .pax-query-controls[hidden] {
+    display: none;
+}
+
+.view-regionInsights .pax-query-filter-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.008);
+}
+
+.view-regionInsights .pax-query-filter-summary {
+    min-width: 0;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.view-regionInsights .pax-query-filter-toggle {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 34px;
+    margin: 0;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid rgba(143, 211, 255, 0.16);
+    border-radius: var(--radius-sm);
+    background: rgba(143, 211, 255, 0.025);
+    color: var(--region-insights-accent-bright);
+    box-shadow: none;
+    font-size: 0.66rem;
+    font-weight: 850;
+    line-height: 1;
+}
+
+.view-regionInsights .pax-query-results-toggle {
+    align-self: flex-end;
+    width: auto;
+    margin: 0;
+}
+
+.view-regionInsights .pax-query-filter-toggle:hover {
+    border-color: rgba(143, 211, 255, 0.3);
+    background: rgba(143, 211, 255, 0.06);
+    box-shadow: none;
+}
+
+.view-regionInsights .pax-query-filter-toggle:active {
+    transform: none;
+}
+
+.view-regionInsights .pax-query-section {
+    gap: 0.65rem;
+}

@@ -763,7 +763,6 @@ function createPaxQuerySection({
     onMemberClick,
 }) {
     const section = document.createElement("section");
-
     section.classList.add(
         "section",
         "region-insights-list-section",
@@ -778,9 +777,7 @@ function createPaxQuerySection({
     heading.textContent = "PAX Explorer";
 
     const description = document.createElement("div");
-    description.classList.add(
-        "leadership-action-description"
-    );
+    description.classList.add("leadership-action-description");
     description.textContent =
         "Build a custom PAX cohort using posts and Q experience.";
 
@@ -800,71 +797,43 @@ function createPaxQuerySection({
         ["custom", "Custom Range"],
     ].forEach(([value, label]) => {
         const option = document.createElement("option");
-
         option.value = value;
         option.textContent = label;
-
         dateSelect.appendChild(option);
     });
 
-    const resolvedDateLabel =
-        document.createElement("div");
+    dateSelect.value = "ytd";
 
-    resolvedDateLabel.classList.add(
-        "pax-query-date-summary"
-    );
+    const resolvedDateLabel = document.createElement("div");
+    resolvedDateLabel.classList.add("pax-query-date-summary");
 
-    const customDateControls =
-        document.createElement("div");
+    const customDateControls = document.createElement("div");
+    customDateControls.classList.add("pax-query-custom-dates");
 
-    customDateControls.classList.add(
-        "pax-query-custom-dates"
-    );
+    const customStartField = document.createElement("label");
+    customStartField.classList.add("pax-query-date-field");
 
-    const customStartField =
-        document.createElement("label");
-
-    customStartField.classList.add(
-        "pax-query-date-field"
-    );
-
-    const customStartLabel =
-        document.createElement("span");
-
+    const customStartLabel = document.createElement("span");
     customStartLabel.textContent = "From";
 
-    const customStartInput =
-        document.createElement("input");
-
+    const customStartInput = document.createElement("input");
     customStartInput.type = "date";
-    customStartInput.classList.add(
-        "pax-query-date-input"
-    );
-
-    const customEndField =
-        document.createElement("label");
-
-    customEndField.classList.add(
-        "pax-query-date-field"
-    );
-
-    const customEndLabel =
-        document.createElement("span");
-
-    customEndLabel.textContent = "Through";
-
-    const customEndInput =
-        document.createElement("input");
-
-    customEndInput.type = "date";
-    customEndInput.classList.add(
-        "pax-query-date-input"
-    );
+    customStartInput.classList.add("pax-query-date-input");
 
     customStartField.append(
         customStartLabel,
         customStartInput
     );
+
+    const customEndField = document.createElement("label");
+    customEndField.classList.add("pax-query-date-field");
+
+    const customEndLabel = document.createElement("span");
+    customEndLabel.textContent = "Through";
+
+    const customEndInput = document.createElement("input");
+    customEndInput.type = "date";
+    customEndInput.classList.add("pax-query-date-input");
 
     customEndField.append(
         customEndLabel,
@@ -876,9 +845,7 @@ function createPaxQuerySection({
         customEndField
     );
 
-    const postOperator =
-        document.createElement("select");
-
+    const postOperator = document.createElement("select");
     postOperator.classList.add("pax-query-select");
 
     [
@@ -887,34 +854,23 @@ function createPaxQuerySection({
         ["=", "Exactly"],
     ].forEach(([value, label]) => {
         const option = document.createElement("option");
-
         option.value = value;
         option.textContent = label;
-
         postOperator.appendChild(option);
     });
 
-    const postInput =
-        document.createElement("input");
-
+    const postInput = document.createElement("input");
     postInput.type = "number";
     postInput.min = "0";
     postInput.value = "25";
     postInput.inputMode = "numeric";
+    postInput.classList.add("pax-query-number-input");
 
-    postInput.classList.add(
-        "pax-query-number-input"
-    );
-
-    const qEnabled =
-        document.createElement("input");
-
+    const qEnabled = document.createElement("input");
     qEnabled.type = "checkbox";
     qEnabled.checked = true;
 
-    const qOperator =
-        document.createElement("select");
-
+    const qOperator = document.createElement("select");
     qOperator.classList.add("pax-query-select");
 
     [
@@ -923,71 +879,68 @@ function createPaxQuerySection({
         ["=", "Exactly"],
     ].forEach(([value, label]) => {
         const option = document.createElement("option");
-
         option.value = value;
         option.textContent = label;
-
         qOperator.appendChild(option);
     });
 
-    const qInput =
-        document.createElement("input");
-
+    const qInput = document.createElement("input");
     qInput.type = "number";
     qInput.min = "0";
     qInput.value = "5";
     qInput.inputMode = "numeric";
+    qInput.classList.add("pax-query-number-input");
 
-    qInput.classList.add(
-        "pax-query-number-input"
-    );
-
-    const runButton =
-        document.createElement("button");
-
+    const runButton = document.createElement("button");
     runButton.type = "button";
-
-    runButton.classList.add(
-        "pax-query-run-button"
-    );
-
+    runButton.classList.add("pax-query-run-button");
     runButton.textContent = "Run Query";
 
-    const resultsSummary =
-        document.createElement("div");
+    const filterHeader = document.createElement("div");
+    filterHeader.classList.add("pax-query-filter-header");
 
-    resultsSummary.classList.add(
-        "pax-query-results-summary"
+    const filterSummary = document.createElement("div");
+    filterSummary.classList.add("pax-query-filter-summary");
+
+    const filterToggle = document.createElement("button");
+    filterToggle.type = "button";
+    filterToggle.classList.add("pax-query-filter-toggle");
+    filterToggle.textContent = "Edit Filters";
+
+    filterHeader.append(
+        filterSummary,
+        filterToggle
     );
 
-    const resultsList =
-        document.createElement("div");
+    const resultsSummary = document.createElement("div");
+    resultsSummary.classList.add("pax-query-results-summary");
 
+    const resultsList = document.createElement("div");
     resultsList.classList.add("insights-list");
 
+    const resultsToggleButton = document.createElement("button");
+    resultsToggleButton.type = "button";
+    resultsToggleButton.classList.add(
+        "secondary-button",
+        "insights-toggle-button",
+        "pax-query-results-toggle"
+    );
+    resultsToggleButton.style.display = "none";
+
+    let filtersExpanded = false;
+    let currentMatches = [];
+    let resultsExpanded = false;
+
     function createControlGroup(labelText) {
-        const group =
-            document.createElement("div");
+        const group = document.createElement("div");
+        group.classList.add("pax-query-control-group");
 
-        group.classList.add(
-            "pax-query-control-group"
-        );
-
-        const label =
-            document.createElement("div");
-
-        label.classList.add(
-            "pax-query-control-label"
-        );
-
+        const label = document.createElement("div");
+        label.classList.add("pax-query-control-label");
         label.textContent = labelText;
 
-        const body =
-            document.createElement("div");
-
-        body.classList.add(
-            "pax-query-control-body"
-        );
+        const body = document.createElement("div");
+        body.classList.add("pax-query-control-body");
 
         group.append(label, body);
 
@@ -997,8 +950,7 @@ function createPaxQuerySection({
         };
     }
 
-    const dateGroup =
-        createControlGroup("Date Range");
+    const dateGroup = createControlGroup("Date Range");
 
     dateGroup.body.append(
         dateSelect,
@@ -1006,48 +958,29 @@ function createPaxQuerySection({
         customDateControls
     );
 
-    const postsGroup =
-        createControlGroup("Posts");
-
-    postsGroup.body.classList.add(
-        "pax-query-inline-controls"
-    );
+    const postsGroup = createControlGroup("Posts");
+    postsGroup.body.classList.add("pax-query-inline-controls");
 
     postsGroup.body.append(
         postOperator,
         postInput
     );
 
-    const qGroup =
-        createControlGroup("Qs");
+    const qGroup = createControlGroup("Qs");
 
-    const qHeaderRow =
-        document.createElement("div");
+    const qHeaderRow = document.createElement("div");
+    qHeaderRow.classList.add("pax-query-q-header");
 
-    qHeaderRow.classList.add(
-        "pax-query-q-header"
-    );
-
-    const qToggleLabel =
-        document.createElement("label");
-
-    qToggleLabel.classList.add(
-        "pax-query-checkbox-label"
-    );
+    const qToggleLabel = document.createElement("label");
+    qToggleLabel.classList.add("pax-query-checkbox-label");
 
     qToggleLabel.append(
         qEnabled,
-        document.createTextNode(
-            " Include Q filter"
-        )
+        document.createTextNode("Include Q filter")
     );
 
-    const qFilterControls =
-        document.createElement("div");
-
-    qFilterControls.classList.add(
-        "pax-query-inline-controls"
-    );
+    const qFilterControls = document.createElement("div");
+    qFilterControls.classList.add("pax-query-inline-controls");
 
     qFilterControls.append(
         qOperator,
@@ -1068,143 +1001,163 @@ function createPaxQuerySection({
         runButton
     );
 
-    function compare(
-        value,
-        operator,
-        target
-    ) {
-        if (operator === ">=") {
-            return value >= target;
-        }
-
-        if (operator === "<=") {
-            return value <= target;
-        }
-
-        return value === target;
-    }
-
     function getTodayKey() {
-        return formatDateKey(
-            new Date()
-        );
+        return formatDateKey(new Date());
     }
 
     function getPresetDateRange() {
         const now = new Date();
+        const endDate = getTodayKey();
 
-        const endDate =
-            getTodayKey();
-
-        if (
-            dateSelect.value ===
-            "lifetime"
-        ) {
+        if (dateSelect.value === "lifetime") {
             return {
                 startDate: null,
                 endDate: null,
             };
         }
 
-        if (
-            dateSelect.value ===
-            "ytd"
-        ) {
+        if (dateSelect.value === "ytd") {
             return {
-                startDate:
-                    `${now.getFullYear()}-01-01`,
+                startDate: `${now.getFullYear()}-01-01`,
                 endDate,
             };
         }
 
-        if (
-            dateSelect.value ===
-            "custom"
-        ) {
+        if (dateSelect.value === "custom") {
             return {
-                startDate:
-                    customStartInput.value ||
-                    null,
-
-                endDate:
-                    customEndInput.value ||
-                    null,
+                startDate: customStartInput.value || null,
+                endDate: customEndInput.value || null,
             };
         }
 
-        const days =
-            Number(dateSelect.value);
+        const days = Number(dateSelect.value);
+        const start = new Date(now);
 
-        const start =
-            new Date(now);
-
-        start.setDate(
-            start.getDate() -
-            days +
-            1
-        );
+        start.setDate(start.getDate() - days + 1);
 
         return {
-            startDate:
-                formatDateKey(start),
-
+            startDate: formatDateKey(start),
             endDate,
         };
     }
 
     function formatRangeDate(dateKey) {
-        if (!dateKey) {
-            return "";
-        }
+        if (!dateKey) return "";
 
         return new Date(
             `${dateKey}T00:00:00`
-        ).toLocaleDateString(
-            undefined,
-            {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-            }
-        );
+        ).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+    }
+
+    function getOperatorLabel(operator) {
+        if (operator === ">=") return "≥";
+        if (operator === "<=") return "≤";
+        return "=";
+    }
+
+    function getDatePresetLabel() {
+        const option = dateSelect.options[
+            dateSelect.selectedIndex
+        ];
+
+        return option?.textContent || "Date Range";
+    }
+
+    function updateFilterSummary() {
+        const parts = [
+            getDatePresetLabel(),
+            `Posts ${getOperatorLabel(postOperator.value)} ${Number(postInput.value) || 0}`,
+        ];
+
+        if (qEnabled.checked) {
+            parts.push(
+                `Qs ${getOperatorLabel(qOperator.value)} ${Number(qInput.value) || 0}`
+            );
+        }
+
+        filterSummary.textContent = parts.join(" • ");
+    }
+
+    function updateFilterVisibility() {
+        controls.hidden = !filtersExpanded;
+
+        filterToggle.textContent = filtersExpanded
+            ? "Hide Filters"
+            : "Edit Filters";
     }
 
     function updateDateUi() {
-        const isCustom =
-            dateSelect.value ===
-            "custom";
-
-        customDateControls.hidden =
-            !isCustom;
+        const isCustom = dateSelect.value === "custom";
+        customDateControls.hidden = !isCustom;
 
         const {
             startDate,
             endDate,
         } = getPresetDateRange();
 
-        if (
-            dateSelect.value ===
-            "lifetime"
-        ) {
-            resolvedDateLabel.textContent =
-                "All recorded history";
-
+        if (dateSelect.value === "lifetime") {
+            resolvedDateLabel.textContent = "All recorded history";
+            updateFilterSummary();
             return;
         }
 
-        if (
-            !startDate ||
-            !endDate
-        ) {
-            resolvedDateLabel.textContent =
-                "Choose both dates";
-
+        if (!startDate || !endDate) {
+            resolvedDateLabel.textContent = "Choose both dates";
+            updateFilterSummary();
             return;
         }
 
         resolvedDateLabel.textContent =
-            `${formatRangeDate(startDate)} – ` +
-            `${formatRangeDate(endDate)}`;
+            `${formatRangeDate(startDate)} – ${formatRangeDate(endDate)}`;
+
+        updateFilterSummary();
+    }
+
+    function compare(value, operator, target) {
+        if (operator === ">=") return value >= target;
+        if (operator === "<=") return value <= target;
+        return value === target;
+    }
+
+    function renderResults() {
+        resultsList.textContent = "";
+
+        const visibleMatches = resultsExpanded
+            ? currentMatches
+            : currentMatches.slice(0, 5);
+
+        visibleMatches.forEach(member => {
+            resultsList.appendChild(
+                createInsightsRow({
+                    title: member.pax_name,
+                    subtitle: `${member.post_count} posts • ${member.q_count} Qs`,
+                    value: "",
+                    onClick: () => {
+                        onMemberClick(member);
+                    },
+                })
+            );
+        });
+
+        if (!currentMatches.length) {
+            const empty = document.createElement("div");
+            empty.classList.add("empty-state");
+            empty.textContent = "No PAX match these filters.";
+            resultsList.appendChild(empty);
+        }
+
+        if (currentMatches.length > 5) {
+            resultsToggleButton.style.display = "inline-flex";
+            resultsToggleButton.textContent = resultsExpanded
+                ? "Show Less"
+                : `Show All (${currentMatches.length})`;
+        } else {
+            resultsToggleButton.style.display = "none";
+        }
     }
 
     async function runQuery() {
@@ -1214,12 +1167,8 @@ function createPaxQuerySection({
         } = getPresetDateRange();
 
         if (
-            dateSelect.value ===
-            "custom" &&
-            (
-                !startDate ||
-                !endDate
-            )
+            dateSelect.value === "custom" &&
+            (!startDate || !endDate)
         ) {
             resultsSummary.textContent =
                 "Choose both custom dates.";
@@ -1239,104 +1188,55 @@ function createPaxQuerySection({
         }
 
         runButton.disabled = true;
-        runButton.textContent =
-            "Loading...";
+        runButton.textContent = "Loading...";
 
-        resultsSummary.textContent =
-            "";
-
-        resultsList.textContent =
-            "";
+        resultsSummary.textContent = "";
 
         try {
-            const metrics =
-                await loadRegionPaxQueryMetrics({
-                    regionId,
-                    startDate,
-                    endDate,
-                });
+            const metrics = await loadRegionPaxQueryMetrics({
+                regionId,
+                startDate,
+                endDate,
+            });
 
             const postTarget =
-                Number(
-                    postInput.value
-                ) || 0;
+                Number(postInput.value) || 0;
 
             const qTarget =
-                Number(
-                    qInput.value
-                ) || 0;
+                Number(qInput.value) || 0;
 
-            const matches =
-                metrics.filter(member => {
-                    const postsMatch =
-                        compare(
-                            Number(
-                                member.post_count
-                            ),
-                            postOperator.value,
-                            postTarget
-                        );
+            currentMatches = metrics.filter(member => {
+                const postsMatch = compare(
+                    Number(member.post_count),
+                    postOperator.value,
+                    postTarget
+                );
 
-                    if (!postsMatch) {
-                        return false;
-                    }
+                if (!postsMatch) {
+                    return false;
+                }
 
-                    if (
-                        !qEnabled.checked
-                    ) {
-                        return true;
-                    }
+                if (!qEnabled.checked) {
+                    return true;
+                }
 
-                    return compare(
-                        Number(
-                            member.q_count
-                        ),
-                        qOperator.value,
-                        qTarget
-                    );
-                });
-
-            resultsSummary.textContent =
-                `${matches.length} PAX match`;
-
-            matches.forEach(member => {
-                resultsList.appendChild(
-                    createInsightsRow({
-                        title:
-                            member.pax_name,
-
-                        subtitle:
-                            `${member.post_count} posts • ` +
-                            `${member.q_count} Qs`,
-
-                        value: "",
-
-                        onClick: () => {
-                            onMemberClick(
-                                member
-                            );
-                        },
-                    })
+                return compare(
+                    Number(member.q_count),
+                    qOperator.value,
+                    qTarget
                 );
             });
 
-            if (!matches.length) {
-                const empty =
-                    document.createElement(
-                        "div"
-                    );
+            resultsExpanded = false;
 
-                empty.classList.add(
-                    "empty-state"
-                );
+            resultsSummary.textContent =
+                `${currentMatches.length} PAX match`;
 
-                empty.textContent =
-                    "No PAX match these filters.";
+            renderResults();
 
-                resultsList.appendChild(
-                    empty
-                );
-            }
+            filtersExpanded = false;
+            updateFilterSummary();
+            updateFilterVisibility();
         } catch (error) {
             console.error(
                 "Failed to run PAX query",
@@ -1347,21 +1247,25 @@ function createPaxQuerySection({
                 "Could not load PAX results.";
         } finally {
             runButton.disabled = false;
-            runButton.textContent =
-                "Run Query";
+            runButton.textContent = "Run Query";
         }
     }
 
-    qEnabled.addEventListener(
-        "change",
-        () => {
-            qOperator.disabled =
-                !qEnabled.checked;
+    filterToggle.addEventListener("click", () => {
+        filtersExpanded = !filtersExpanded;
+        updateFilterVisibility();
+    });
 
-            qInput.disabled =
-                !qEnabled.checked;
-        }
-    );
+    resultsToggleButton.addEventListener("click", () => {
+        resultsExpanded = !resultsExpanded;
+        renderResults();
+    });
+
+    qEnabled.addEventListener("change", () => {
+        qOperator.disabled = !qEnabled.checked;
+        qInput.disabled = !qEnabled.checked;
+        updateFilterSummary();
+    });
 
     dateSelect.addEventListener(
         "change",
@@ -1378,39 +1282,59 @@ function createPaxQuerySection({
         updateDateUi
     );
 
+    postOperator.addEventListener(
+        "change",
+        updateFilterSummary
+    );
+
+    postInput.addEventListener(
+        "input",
+        updateFilterSummary
+    );
+
+    qOperator.addEventListener(
+        "change",
+        updateFilterSummary
+    );
+
+    qInput.addEventListener(
+        "input",
+        updateFilterSummary
+    );
+
     runButton.addEventListener(
         "click",
         runQuery
     );
 
-    /*
-     * Give Custom Range sensible initial
-     * values if the user switches to it.
-     */
     const now = new Date();
 
-    customEndInput.value =
-        formatDateKey(now);
+    customEndInput.value = formatDateKey(now);
 
-    const ninetyDaysAgo =
-        new Date(now);
+    const ninetyDaysAgo = new Date(now);
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 89);
 
-    ninetyDaysAgo.setDate(
-        ninetyDaysAgo.getDate() - 89
-    );
-
-    customStartInput.value =
-        formatDateKey(ninetyDaysAgo);
+    customStartInput.value = formatDateKey(ninetyDaysAgo);
 
     updateDateUi();
+    updateFilterSummary();
+    updateFilterVisibility();
 
     section.append(
         heading,
         description,
+        filterHeader,
         controls,
         resultsSummary,
-        resultsList
+        resultsList,
+        resultsToggleButton
     );
+
+    /*
+     * Populate the default YTD / 25 posts / 5 Q cohort
+     * immediately when Leadership renders.
+     */
+    runQuery();
 
     return section;
 }
