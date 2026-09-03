@@ -6264,3 +6264,24 @@ export async function loadRegionLeadershipDepth({
 
     return data || [];
 }
+
+export async function loadRegionPaxQueryMetrics({
+    regionId,
+    startDate = null,
+    endDate = null,
+}) {
+    const { data, error } = await supabase.rpc(
+        "load_region_pax_query_metrics",
+        {
+            p_region_id: regionId,
+            p_start_date: startDate,
+            p_end_date: endDate,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data || [];
+}
