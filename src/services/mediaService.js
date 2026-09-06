@@ -618,3 +618,97 @@ export async function attachExternalCommentMedia({
 
     return data;
 }
+
+const REGION_PUBLIC_ASSETS_BUCKET = "region-public-assets";
+
+function assertPublicSiteAssetKind(kind) {
+    if (kind !== "logo" && kind !== "hero") {
+        throw new Error(
+            `Unsupported public site asset kind: ${kind}`
+        );
+    }
+}
+
+export async function uploadRegionPublicSiteAsset(
+    regionId,
+    kind,
+    blob,
+    extension = "webp"
+) {
+    if (!regionId) {
+        throw new Error("Region ID is required.");
+    }
+
+    assertPublicSiteAssetKind(kind);
+
+    if (!(blob instanceof Blob)) {
+        throw new Error("A valid image blob is required.");
+    }
+
+    const normalizedExtension =
+        extension === "jpg"
+            ? "jpg"
+            : "webp";
+
+    const expectedMimeType =
+        normalizedExtension === "jpg"
+            ? "image/jpeg"
+            : "image/webp";
+
+    if (blob.type !== expectedMimeType) {
+        throw new Error(
+            `Expected ${expectedMimeType} image data.`
+        );
+    }
+
+    if (blob.size > 3 * 1024 * 1024) {
+        throw new Error(
+            "Public site images must be 3 MB or smaller."
+        );
+    }
+
+    const objectId = crypto.randomUUID();
+
+    const path =
+        `regions/${regionId}/public-site/${kind}/` +
+        `${objectId}.${normalizedExtension}`;
+
+    const { error } = await supabase.storage
+        .from(REGION_PUBLIC_ASSETS_BUCKET)
+        .upload(path, blob, {
+            contentType: expectedMimeType,
+            upsert: false,
+        });
+
+    if (error) {
+        throw error;
+    }
+
+    return path;
+}
+
+export async function deleteRegionPublicSiteAsset(path) {
+    if (!path) {
+        return;
+    }
+
+    const { error } = await supabase.storage
+        .from(REGION_PUBLIC_ASSETS_BUCKET)
+        .remove([path]);
+
+    if (error) {
+        throw error;
+    }
+}
+
+export function getRegionPublicSiteAssetUrl(path) {
+    if (!path) {
+        return null;
+    }
+
+    const { data } = supabase.storage
+        .from(REGION_PUBLIC_ASSETS_BUCKET)
+        .getPublicUrl(path);
+
+    return data?.publicUrl ?? null;
+}

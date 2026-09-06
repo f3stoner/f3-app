@@ -7096,3 +7096,42 @@ button.leadership-action-card:disabled {
 .settings-region-row:last-child {
     border-bottom: none;
 }
+
+.admin-public-site {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.admin-public-site > .detail-label {
+    margin-top: 1rem;
+}
+
+.admin-public-site input[type="text"],
+.admin-public-site textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-public-site textarea {
+    resize: vertical;
+}
+
+.public-site-image-preview {
+    display: block;
+    margin: 0.75rem 0;
+    object-fit: contain;
+}
+
+.public-site-logo-preview {
+    width: 180px;
+    max-width: 100%;
+    max-height: 180px;
+}
+
+.public-site-hero-preview {
+    width: 100%;
+    max-width: 640px;
+    max-height: 280px;
+    object-fit: cover;
+}

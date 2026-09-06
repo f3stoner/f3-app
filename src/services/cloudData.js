@@ -1151,6 +1151,63 @@ export async function updateRegionWorkoutFieldLabels(regionId, labels) {
     return mapRegionFromDb(data);
 }
 
+export async function loadRegionPublicSiteConfig(
+    regionId
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to load public site configuration."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "load_region_public_site_config",
+        {
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data || null;
+}
+
+export async function saveRegionPublicSiteConfig(
+    regionId,
+    config
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to save public site configuration."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "save_region_public_site_config",
+        {
+            p_region_id: regionId,
+            p_tagline: config.tagline || null,
+            p_description: config.description || null,
+            p_primary_color:
+                config.primaryColor || null,
+            p_secondary_color:
+                config.secondaryColor || null,
+            p_logo_asset_path:
+                config.logoAssetPath || null,
+            p_hero_asset_path:
+                config.heroAssetPath || null,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
 export function mapMemberFromDb(row) {
     const invitedById =
         row.invited_by_id || null;
