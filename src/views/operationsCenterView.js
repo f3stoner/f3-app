@@ -134,15 +134,14 @@ function createOperationsScopeSelector(content) {
             name: "All",
         },
         ...(state.availableRegions || [])
-            .filter(region =>
-                String(region.name || "")
-                    .trim()
-                    .toLowerCase() !== "sandbox"
+            .filter(
+                region =>
+                    region.environment === "production"
             )
             .map(region => ({
                 id: region.id,
                 name: region.name.replace(/^F3\s+/i, ""),
-            })),
+        })),
     ];
 
     scopes.forEach(scope => {

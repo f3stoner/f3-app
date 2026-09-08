@@ -14,6 +14,7 @@ import { logActionFailure } from "../services/appEvents.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { getWorkoutEmphasisForSlot } from "../utils/workoutEmphasis.js";
+import { getMemberDirectory } from "../utils/memberLookup.js";
 
 export function renderBackblastView () {
     const app = document.getElementById("app");
@@ -107,12 +108,14 @@ export function renderBackblastView () {
         s => s.id === state.selectedSessionId
     );
 
+    const memberDirectory = getMemberDirectory();
+
     function buildCurrentBackblastText() {
         if (!session) return "";
     
         return buildBackblastSnapshot(
             session,
-            state.members
+            memberDirectory
         );
     }
 
@@ -123,11 +126,11 @@ export function renderBackblastView () {
     if (session) {
         hashtagsText =
             session.backblastHashtagsText ??
-            generateBackblastHashtags(session, state.members);
+            generateBackblastHashtags(session, memberDirectory);
         
         introText =
             session.backblastIntroText ??
-            generateBackblastIntro(session, state.members);
+            generateBackblastIntro(session, memberDirectory);
         
         bodyText =
             resolveBackblastBody(
@@ -269,7 +272,7 @@ export function renderBackblastView () {
         session
             ? generateBackblastHeader(
                 session,
-                state.members
+                memberDirectory
             )
             : "";
     
@@ -352,7 +355,7 @@ export function renderBackblastView () {
     generatedContent.textContent =
         generateBackblastHeader(
             session,
-            state.members
+            memberDirectory
         );
     }
 
@@ -680,13 +683,13 @@ export function renderBackblastView () {
             session.backblastHashtagsText =
                 generateBackblastHashtags(
                     session,
-                    state.members
+                    memberDirectory
                 );
 
             session.backblastIntroText =
                 generateBackblastIntro(
                     session,
-                    state.members
+                    memberDirectory
                 );
 
             session.backblastBodyText =

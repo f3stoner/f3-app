@@ -3011,6 +3011,7 @@ function mapRegionFromDb(row) {
     return {
         id: row.id,
         name: row.name,
+        environment: row.environment || "production",
         workoutFieldLabels: row.workout_field_labels || null,
         fngNamingPostNumber: row.fng_naming_post_number ?? 1,
         includeInReporting: row.include_in_reporting ?? true,
