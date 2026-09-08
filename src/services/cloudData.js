@@ -1190,14 +1190,14 @@ export async function saveRegionPublicSiteConfig(
             p_region_id: regionId,
             p_tagline: config.tagline || null,
             p_description: config.description || null,
-            p_primary_color:
-                config.primaryColor || null,
-            p_secondary_color:
-                config.secondaryColor || null,
-            p_logo_asset_path:
-                config.logoAssetPath || null,
-            p_hero_asset_path:
-                config.heroAssetPath || null,
+            p_primary_color: config.primaryColor || null,
+            p_secondary_color: config.secondaryColor || null,
+            p_logo_asset_path: config.logoAssetPath || null,
+            p_hero_asset_path: config.heroAssetPath || null,
+            p_contact_url: config.contactUrl || null,
+            p_join_url: config.joinUrl || null,
+            p_social_links: config.socialLinks || [],
+            p_contact_email: config.contactEmail || null,
         }
     );
 

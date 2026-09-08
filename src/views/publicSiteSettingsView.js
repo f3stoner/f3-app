@@ -365,8 +365,101 @@ export async function renderPublicSiteSettingsView() {
             publicSiteConfig.secondaryColor || ""
         );
 
-    secondaryColor.input.placeholder =
-        "#D9B65B";
+    secondaryColor.input.placeholder = "#D9B65B";
+
+    const contactSection = createSettingsSection(
+        "Contact & Social",
+        "Help new visitors connect with your region and find your public communities."
+    );
+    
+    const contactEmail = createTextInput(
+        "Contact Email",
+        publicSiteConfig.contactEmail || ""
+    );
+    
+    contactEmail.input.type = "email";
+    contactEmail.input.placeholder = "contact@example.com";
+    
+    const contactUrl = createTextInput(
+        "Contact Link",
+        publicSiteConfig.contactUrl || ""
+    );
+    
+    contactUrl.input.type = "url";
+    contactUrl.input.placeholder = "https://...";
+    
+    const joinUrl = createTextInput(
+        "Join / Community Link",
+        publicSiteConfig.joinUrl || ""
+    );
+    
+    joinUrl.input.type = "url";
+    joinUrl.input.placeholder = "https://...";
+    
+    function getSocialUrl(platform) {
+        const links = Array.isArray(publicSiteConfig.socialLinks)
+            ? publicSiteConfig.socialLinks
+            : [];
+    
+        const match = links.find(
+            link => link?.platform === platform
+        );
+    
+        return match?.url || "";
+    }
+    
+    const facebook = createTextInput(
+        "Facebook",
+        getSocialUrl("facebook")
+    );
+    
+    facebook.input.type = "url";
+    facebook.input.placeholder = "https://facebook.com/...";
+    
+    const instagram = createTextInput(
+        "Instagram",
+        getSocialUrl("instagram")
+    );
+    
+    instagram.input.type = "url";
+    instagram.input.placeholder = "https://instagram.com/...";
+    
+    const youtube = createTextInput(
+        "YouTube",
+        getSocialUrl("youtube")
+    );
+    
+    youtube.input.type = "url";
+    youtube.input.placeholder = "https://youtube.com/...";
+    
+    const xTwitter = createTextInput(
+        "X / Twitter",
+        getSocialUrl("x")
+    );
+    
+    xTwitter.input.type = "url";
+    xTwitter.input.placeholder = "https://x.com/...";
+    
+    function buildSocialLinks() {
+        return [
+            {
+                platform: "facebook",
+                url: facebook.input.value.trim(),
+            },
+            {
+                platform: "instagram",
+                url: instagram.input.value.trim(),
+            },
+            {
+                platform: "youtube",
+                url: youtube.input.value.trim(),
+            },
+            {
+                platform: "x",
+                url: xTwitter.input.value.trim(),
+            },
+        ].filter(link => link.url);
+    }
 
     const photographySection = createSettingsSection(
         "Homepage Photography",
@@ -972,26 +1065,38 @@ export async function renderPublicSiteSettingsView() {
                         newHeroPath;
                 }
 
-                const saved =
-                    await saveRegionPublicSiteConfig(
-                        state.currentRegionId,
-                        {
-                            tagline:
-                                tagline.input.value.trim(),
-
-                            description:
-                                description.value.trim(),
-
-                            primaryColor:
-                                primaryColor.input.value.trim(),
-
-                            secondaryColor:
-                                secondaryColor.input.value.trim(),
-
-                            logoAssetPath,
-                            heroAssetPath,
-                        }
-                    );
+            const saved =
+                await saveRegionPublicSiteConfig(
+                    state.currentRegionId,
+                    {
+                        tagline:
+                            tagline.input.value.trim(),
+            
+                        description:
+                            description.value.trim(),
+            
+                        primaryColor:
+                            primaryColor.input.value.trim(),
+            
+                        secondaryColor:
+                            secondaryColor.input.value.trim(),
+            
+                        logoAssetPath,
+                        heroAssetPath,
+            
+                        contactEmail:
+                            contactEmail.input.value.trim(),
+            
+                        contactUrl:
+                            contactUrl.input.value.trim(),
+            
+                        joinUrl:
+                            joinUrl.input.value.trim(),
+            
+                        socialLinks:
+                            buildSocialLinks(),
+                    }
+                );
 
                 const cleanupPaths = [
                     saved.previousLogoAssetPath &&
@@ -1106,6 +1211,36 @@ export async function renderPublicSiteSettingsView() {
 
     copySection.appendChild(copyFields);
 
+    const contactFields = document.createElement("div");
+    contactFields.classList.add(
+        "public-site-settings-fields"
+    );
+
+    contactFields.append(
+        contactEmail.label,
+        contactEmail.input,
+
+        contactUrl.label,
+        contactUrl.input,
+
+        joinUrl.label,
+        joinUrl.input,
+
+        facebook.label,
+        facebook.input,
+
+        instagram.label,
+        instagram.input,
+
+        youtube.label,
+        youtube.input,
+
+        xTwitter.label,
+        xTwitter.input
+    );
+
+    contactSection.appendChild(contactFields);
+
     const photographyGrid = document.createElement("div");
     photographyGrid.classList.add("public-site-photo-grid");
 
@@ -1164,6 +1299,7 @@ export async function renderPublicSiteSettingsView() {
     content.append(
         brandingSection,
         copySection,
+        contactSection,
         photographySection,
         newHerePhotographySection,
         aboutPhotographySection
