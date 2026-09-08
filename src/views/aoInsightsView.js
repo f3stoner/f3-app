@@ -21,6 +21,7 @@ import {
 } from "../utils/sessionAttendance.js";
 import { createHorizontalBarChartSection } from "../components/regionInsights/charts.js";
 import { buildRegionInsights } from "../modules/insights.js";
+import { getMemberDirectory } from "../utils/memberLookup.js";
 
 const AO_INSIGHT_LOOKBACK_DAYS = 180;
 
@@ -744,6 +745,7 @@ function buildAoInsights({
 }) {
     const sessions = loadedSessions || [];
     const historySessions = insightHistorySessions || sessions;
+    const memberDirectory = getMemberDirectory();
 
     const allAoSessions = state.sessions.filter(
         session => session.aoId === aoId
@@ -758,7 +760,7 @@ function buildAoInsights({
     const newPaxPipelineInsight = buildNewPaxPipelineInsight(historySessions, {
         anchorDate: endDate,
         memberStats: state.memberStats,
-        members: state.members,
+        members: memberDirectory,
     });
 
     //TODO: Replace with attendanceInsight.metrics once the old snapshot cards are retired
@@ -1353,9 +1355,11 @@ export async function renderAoInsightsView() {
         ? formatDateKey(new Date())
         : selected.endDate;
 
+    const memberDirectory = getMemberDirectory();
+
     const aoLeadershipInsights = buildRegionInsights({
         sessions: insightHistorySessions,
-        members: state.members,
+        members: memberDirectory,
         memberStats: state.memberStats,
         aos: [selectedAo],
         startDate: selected.startDate,

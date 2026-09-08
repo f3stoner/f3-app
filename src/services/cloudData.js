@@ -1208,6 +1208,169 @@ export async function saveRegionPublicSiteConfig(
     return data;
 }
 
+export async function loadRegionPublicSiteMedia(regionId) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to load public site media."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "load_region_public_site_media",
+        {
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data || {
+        assets: [],
+        slots: {},
+    };
+}
+
+export async function reserveRegionPublicSiteMediaAsset(
+    regionId,
+    {
+        mimeType,
+        fileSizeBytes,
+        width = null,
+        height = null,
+    }
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to reserve public site media."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "reserve_region_public_site_media_asset",
+        {
+            p_region_id: regionId,
+            p_mime_type: mimeType,
+            p_file_size_bytes: fileSizeBytes,
+            p_width: width,
+            p_height: height,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+export async function finalizeRegionPublicSiteMediaAsset(
+    assetId
+) {
+    if (!assetId) {
+        throw new Error(
+            "Asset id is required to finalize public site media."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "finalize_region_public_site_media_asset",
+        {
+            p_asset_id: assetId,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+export async function setRegionPublicSiteMediaSlot(
+    regionId,
+    {
+        slotKey,
+        assetId,
+        altText,
+        focalX = 0.5,
+        focalY = 0.5,
+    }
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to set public site media."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_region_public_site_media_slot",
+        {
+            p_region_id: regionId,
+            p_slot_key: slotKey,
+            p_asset_id: assetId,
+            p_alt_text: altText,
+            p_focal_x: focalX,
+            p_focal_y: focalY,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+export async function clearRegionPublicSiteMediaSlot(
+    regionId,
+    slotKey
+) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to clear public site media."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "clear_region_public_site_media_slot",
+        {
+            p_region_id: regionId,
+            p_slot_key: slotKey,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+export async function removeRegionPublicSiteMediaAsset(
+    assetId
+) {
+    if (!assetId) {
+        throw new Error(
+            "Asset id is required to remove public site media."
+        );
+    }
+
+    const { data, error } = await supabase.rpc(
+        "remove_region_public_site_media_asset",
+        {
+            p_asset_id: assetId,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
 export function mapMemberFromDb(row) {
     const invitedById =
         row.invited_by_id || null;

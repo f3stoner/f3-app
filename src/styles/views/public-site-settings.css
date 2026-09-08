@@ -1,0 +1,364 @@
+.view-public-site-settings {
+    --public-site-accent: #8fd3ff;
+    --public-site-accent-soft: rgba(143, 211, 255, 0.12);
+    --public-site-success: #6fd183;
+    --public-site-danger: #ff8585;
+}
+
+.view-public-site-settings > h1 {
+    margin-bottom: 6px;
+}
+
+.view-public-site-settings > .stats-line {
+    max-width: 620px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.view-public-site-settings .admin-public-site {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.view-public-site-settings .detail-label {
+    margin: 0 0 7px;
+    color: var(--accent-bright);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+}
+
+.view-public-site-settings input[type="text"],
+.view-public-site-settings textarea {
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface-strong);
+    color: var(--text);
+    box-sizing: border-box;
+}
+
+.view-public-site-settings textarea {
+    min-height: 120px;
+    resize: vertical;
+    font: inherit;
+    line-height: 1.5;
+}
+
+.view-public-site-settings input[type="text"]:focus,
+.view-public-site-settings textarea:focus {
+    outline: none;
+    border-color: var(--public-site-accent);
+    box-shadow: 0 0 0 3px var(--public-site-accent-soft);
+}
+
+.view-public-site-settings input[type="file"] {
+    margin: 0;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-strong);
+}
+
+.view-public-site-settings input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface-raised);
+    color: var(--text);
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.view-public-site-settings input[type="file"]::file-selector-button:hover {
+    background: var(--public-site-accent);
+    border-color: var(--public-site-accent);
+    color: var(--text-inverse);
+}
+
+.view-public-site-settings .public-site-image-preview {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    object-fit: cover;
+}
+
+.view-public-site-settings .public-site-logo-preview {
+    max-width: 220px;
+    max-height: 180px;
+    object-fit: contain;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+.view-public-site-settings .public-site-hero-preview {
+    max-height: 260px;
+    aspect-ratio: 16 / 7;
+}
+
+.view-public-site-settings .public-site-photo-control {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+}
+
+.view-public-site-settings .public-site-photo-control > .detail-label {
+    margin: 0;
+    color: var(--text);
+    font-size: 15px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.view-public-site-settings .public-site-photo-control > .stats-line {
+    margin: -4px 0 2px;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.view-public-site-settings .public-site-photo-preview {
+    width: 100%;
+    max-height: 300px;
+    aspect-ratio: 16 / 10;
+}
+
+.view-public-site-settings .public-site-photo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.view-public-site-settings .public-site-photo-actions button {
+    margin: 0;
+}
+
+.view-public-site-settings .public-site-photo-actions button:first-child {
+    background: var(--public-site-accent);
+    border-color: var(--public-site-accent);
+    color: var(--text-inverse);
+}
+
+.view-public-site-settings .public-site-photo-actions button:last-child {
+    background: transparent;
+    border-color: rgba(255, 133, 133, 0.45);
+    color: var(--public-site-danger);
+}
+
+.view-public-site-settings .public-site-settings-section {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+}
+
+.view-public-site-settings .public-site-settings-section-header {
+    padding: 18px 18px 16px;
+    border-bottom: 1px solid var(--border);
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.025),
+            transparent
+        );
+}
+
+.view-public-site-settings .public-site-settings-section-header h2 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.view-public-site-settings .public-site-settings-section-header .stats-line {
+    max-width: 580px;
+    margin: 7px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.view-public-site-settings .public-site-settings-fields {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+}
+
+.view-public-site-settings .public-site-settings-fields > .detail-label:not(:first-child) {
+    margin-top: 10px;
+}
+
+.view-public-site-settings .public-site-settings-fields > button {
+    width: fit-content;
+    margin: 2px 0 4px;
+}
+
+.view-public-site-settings .public-site-primary-button {
+    width: 100%;
+    margin: 10px 0 0;
+    padding: 12px 16px;
+    background: var(--public-site-accent);
+    border-color: var(--public-site-accent);
+    color: var(--text-inverse);
+}
+
+.view-public-site-settings .public-site-destructive-button {
+    width: fit-content;
+    margin: 0;
+    background: transparent;
+    border-color: rgba(255, 133, 133, 0.45);
+    color: var(--public-site-danger);
+}
+
+.view-public-site-settings .public-site-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+}
+
+.view-public-site-settings .public-site-photo-control {
+    min-width: 0;
+}
+
+.view-public-site-settings .public-site-image-preview[hidden] {
+    display: none;
+}
+.view-public-site-settings .public-site-settings-fields > .stats-line,
+.view-public-site-settings .public-site-photo-control > .stats-line {
+    margin-bottom: 0;
+}
+
+.view-public-site-settings .public-site-settings-fields > .stats-line:not([hidden]),
+.view-public-site-settings .public-site-photo-control > .stats-line:not([hidden]) {
+    padding: 10px 12px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.view-public-site-settings .public-site-photo-preview {
+    width: 100%;
+    max-height: 280px;
+    aspect-ratio: 16 / 10;
+}
+
+.view-public-site-settings .public-site-hero-preview {
+    width: 100%;
+    max-height: 260px;
+    aspect-ratio: 16 / 7;
+}
+
+.view-public-site-settings .public-site-logo-preview {
+    width: auto;
+    max-width: min(220px, 100%);
+    max-height: 180px;
+    object-fit: contain;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+.public-site-focal-editor {
+    position: relative;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.public-site-focal-editor .public-site-photo-preview {
+    display: block;
+    width: 100%;
+}
+
+.public-site-focal-target {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 3px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55);
+}
+
+.public-site-focal-target::before,
+.public-site-focal-target::after {
+    content: "";
+    position: absolute;
+    background: white;
+}
+
+.public-site-focal-target::before {
+    width: 2px;
+    height: 32px;
+    left: 8px;
+    top: -7px;
+}
+
+.public-site-focal-target::after {
+    width: 32px;
+    height: 2px;
+    left: -7px;
+    top: 8px;
+}
+
+.public-site-focal-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.public-site-focal-controls .stats-line {
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .view-public-site-settings .admin-public-site {
+        gap: 16px;
+    }
+
+    .view-public-site-settings .public-site-photo-control {
+        padding: 14px;
+    }
+
+    .view-public-site-settings .public-site-photo-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .view-public-site-settings .public-site-photo-actions button {
+        width: 100%;
+    }
+
+    .view-public-site-settings .public-site-logo-preview {
+        max-width: 180px;
+    }
+
+    .view-public-site-settings .public-site-settings-section-header,
+    .view-public-site-settings .public-site-settings-fields,
+    .view-public-site-settings .public-site-photo-grid {
+        padding: 14px;
+    }
+
+    .view-public-site-settings .public-site-photo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .view-public-site-settings .public-site-settings-fields > button {
+        width: 100%;
+    }
+
+    .view-public-site-settings .public-site-destructive-button {
+        width: 100%;
+    }
+}

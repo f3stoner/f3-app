@@ -7,7 +7,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
 import { loadOlderSessionsPage, loadSessionsByIds, loadMatchingSessions, searchHistoricalBackblasts } from "../services/cloudData.js";
 import { getSessionDisplayCounts, getRegularPaxIds, memberAttendedSession } from "../utils/sessionAttendance.js";
-import { getMemberById } from "../utils/memberLookup.js";
+import { getMemberById, getMemberDirectory } from "../utils/memberLookup.js";
 
 state.sessionHistorySearchMode = state.sessionHistorySearchMode || "all";
 
@@ -373,7 +373,7 @@ export function renderSessionHistory() {
     
         if (!normalizedSearch) return [];
     
-        return state.members
+        return getMemberDirectory()
             .filter(member => {
                 const searchableName = [
                     member.paxName,

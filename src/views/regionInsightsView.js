@@ -12,6 +12,7 @@ import {
     loadRegionMilestoneCrossings,
     loadRegionPaxQueryMetrics,
 } from "../services/cloudData.js";
+import { getMemberDirectory } from "../utils/memberLookup.js";
 
 const REGION_TREND_METRICS = [
     {
@@ -1497,9 +1498,11 @@ export async function renderRegionInsightsView() {
 
     monthNavRow.append(previousMonthButton, monthLabel, nextMonthButton);
 
+    const memberDirectory = getMemberDirectory();
+
     const insights = buildRegionInsights({
         sessions: insightSessions,
-        members: state.members,
+        members: memberDirectory,
         memberStats: state.memberStats,
         aos: state.aos,
         startDate,

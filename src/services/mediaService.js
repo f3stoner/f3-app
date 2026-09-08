@@ -712,3 +712,64 @@ export function getRegionPublicSiteAssetUrl(path) {
 
     return data?.publicUrl ?? null;
 }
+
+export async function uploadRegionPublicSiteMedia(
+    storagePath,
+    blob
+) {
+    if (!storagePath) {
+        throw new Error(
+            "Storage path is required for public site media."
+        );
+    }
+
+    if (!(blob instanceof Blob)) {
+        throw new Error(
+            "A valid image blob is required."
+        );
+    }
+
+    if (
+        blob.type !== "image/webp" &&
+        blob.type !== "image/jpeg"
+    ) {
+        throw new Error(
+            "Public site media must be WebP or JPEG."
+        );
+    }
+
+    if (blob.size > 3 * 1024 * 1024) {
+        throw new Error(
+            "Public site images must be 3 MB or smaller."
+        );
+    }
+
+    const { error } = await supabase.storage
+        .from(REGION_PUBLIC_ASSETS_BUCKET)
+        .upload(storagePath, blob, {
+            contentType: blob.type,
+            upsert: false,
+        });
+
+    if (error) {
+        throw error;
+    }
+
+    return storagePath;
+}
+
+export async function deleteRegionPublicSiteMedia(
+    storagePath
+) {
+    if (!storagePath) {
+        return;
+    }
+
+    const { error } = await supabase.storage
+        .from(REGION_PUBLIC_ASSETS_BUCKET)
+        .remove([storagePath]);
+
+    if (error) {
+        throw error;
+    }
+}

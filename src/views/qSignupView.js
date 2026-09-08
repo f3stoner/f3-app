@@ -33,6 +33,7 @@ import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } f
 import { resolveSiteForQSlot } from "../utils/siteResolution.js";
 import {
     getMemberById,
+    getMemberDirectory,
 } from "../utils/memberLookup.js";
 
 
@@ -444,7 +445,7 @@ export function renderQSignupView() {
             member.fullName ||
             "Unnamed PAX";
         
-        const activeMembers = [...state.members]
+        const activeMembers = getMemberDirectory()
             .filter(member => member.status !== "inactive")
             .sort((a, b) =>
                 getMemberDisplayName(a).localeCompare(getMemberDisplayName(b))
@@ -761,7 +762,7 @@ export function renderQSignupView() {
             member.fullName ||
             "Unnamed PAX";
         
-        const activeMembers = [...state.members]
+        const activeMembers = getMemberDirectory()
             .filter(member => member.status !== "inactive")
             .sort((a, b) =>
                 getMemberDisplayName(a).localeCompare(getMemberDisplayName(b))

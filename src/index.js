@@ -525,6 +525,7 @@ const RESTORABLE_VIEWS = new Set([
     "campaigns",
     "campaignCreate",
     "regionOnboarding",
+    "publicSiteSettings",
 ]);
 
 function restoreNavState(nav) {
@@ -639,6 +640,16 @@ const lazyRouteLoaders = {
             module =>
                 module.renderSiteManagementView
         ),
+
+    publicSiteSettings: () =>
+        import(
+            /* webpackChunkName: "route-public-site-settings" */
+            "./views/publicSiteSettingsView.js"
+        ).then(
+            module =>
+                module.renderPublicSiteSettingsView
+        ),
+
     regionOnboarding: () =>
         import(
             /* webpackChunkName: "route-region-onboarding" */
@@ -660,6 +671,7 @@ function getLazyRouteLabel(viewName) {
         weeklyQCalendar: "Weekly Q Calendar",
         leadership: "Leadership",
         siteManagement: "Site Management",
+        publicSiteSettings: "Public Site",
         campaigns: "Campaigns",
         campaignDetail: "Campaign",
         campaignCreate: "Start Campaign",
@@ -922,8 +934,14 @@ function renderApp() {
         renderAdminFlagsView();
     } else if (state.currentView === "adminSettings") {
         renderAdminSettingsView();
+    } else if (state.currentView === "publicSiteSettings") {
+        renderLazyRoute(
+            "publicSiteSettings",
+            currentRenderSequence
+        );
     } else if (
-        state.currentView === "rosterManagement") {
+        state.currentView === "rosterManagement"
+    ) {
         renderLazyRoute(
             "rosterManagement",
             currentRenderSequence
