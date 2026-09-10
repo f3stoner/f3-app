@@ -2768,6 +2768,23 @@ export async function checkRegionAccess(userId, regionId) {
     return data;
 }
 
+export async function canUseRegionRuntime(regionId) {
+    if (!regionId) {
+        return false;
+    }
+
+    const { data, error } = await supabase.rpc(
+        "can_use_region_runtime",
+        {
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) throw error;
+
+    return data === true;
+}
+
 export async function loadAccessibleRegions(userId) {
     const { data, error } = await supabase
         .from("region_access")
@@ -2776,11 +2793,14 @@ export async function loadAccessibleRegions(userId) {
             regions (
                 id,
                 name,
+                environment,
+                lifecycle_status,
+                include_in_reporting,
                 workout_field_labels,
                 fng_naming_post_number
             )
         `)
-        .eq("user_id", userId); 
+        .eq("user_id", userId);
 
     if (error) throw error;
 
@@ -3174,10 +3194,11 @@ function mapRegionFromDb(row) {
     return {
         id: row.id,
         name: row.name,
-        environment: row.environment || "production",
+        environment: row.environment ?? null,
+        lifecycleStatus: row.lifecycle_status ?? "unknown",
         workoutFieldLabels: row.workout_field_labels || null,
         fngNamingPostNumber: row.fng_naming_post_number ?? 1,
-        includeInReporting: row.include_in_reporting ?? true,
+        includeInReporting: row.include_in_reporting === true,
     };
 }
 

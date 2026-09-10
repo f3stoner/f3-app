@@ -2055,6 +2055,17 @@ async function bootApp() {
              * block application boot.
              */
             await refreshParticipantRegionInvitations();
+
+            const activeAccessibleRegions =
+                state.accessibleRegions.filter(
+                    region =>
+                        region.lifecycleStatus === "active"
+                );
+
+            const activeAccessibleRegionIds =
+                activeAccessibleRegions.map(
+                    region => region.id
+                );
             
             const savedWorkspaceSnapshot =
                 loadOfflineBootSnapshot(
@@ -2063,14 +2074,30 @@ async function bootApp() {
 
             const savedActiveRegionId =
                 savedWorkspaceSnapshot?.activeRegionId;
-
-            const initialRegionId =
+            
+            let initialRegionId = null;
+            
+            if (
                 savedActiveRegionId &&
-                state.accessibleRegionIds.includes(
+                activeAccessibleRegionIds.includes(
                     savedActiveRegionId
                 )
-                    ? savedActiveRegionId
-                    : profile.region_id;
+            ) {
+                initialRegionId =
+                    savedActiveRegionId;
+            } else if (
+                profile.region_id &&
+                activeAccessibleRegionIds.includes(
+                    profile.region_id
+                )
+            ) {
+                initialRegionId =
+                    profile.region_id;
+            } else {
+                initialRegionId =
+                    activeAccessibleRegions[0]?.id ||
+                    null;
+            }
             
             phaseStartedAt = performance.now();
 
@@ -2085,6 +2112,20 @@ async function bootApp() {
                     );
                 }
             };
+
+            if (!initialRegionId) {
+                state.pendingRegionId = null;
+                state.currentView = "regionGate";
+            
+                renderApp();
+            
+                console.log(
+                    `bootApp: ${(performance.now() - bootStartedAt).toFixed(1)} ms`
+                );
+            
+                hideBootSplash();
+                return;
+            }
 
             const workspaceResult =
                 await timeRegionalPhase(

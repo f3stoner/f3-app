@@ -95,16 +95,33 @@ export async function loadWorkspace(
     let phaseStartedAt =
         performance.now();
 
-    const access =
+        const access =
         await checkRegionAccess(
             state.currentUserId,
             targetRegionId
         );
-
+    
     if (!isCurrentWorkspaceRequest()) {
         return "stale";
     }
-
+    
+    const targetRegion =
+        state.accessibleRegions.find(
+            region =>
+                region.id === targetRegionId
+        ) || null;
+    
+    const lifecycleStatus =
+        targetRegion?.lifecycleStatus ||
+        "unknown";
+    
+    const workspaceAllowed =
+        Boolean(access) &&
+        (
+            lifecycleStatus === "active" ||
+            lifecycleStatus === "onboarding"
+        );
+    
     if (bootPhases) {
         bootPhases.checkRegionAccessMs =
             Math.round(
@@ -112,12 +129,15 @@ export async function loadWorkspace(
                     phaseStartedAt
             );
     }
-
-    if (!access) {
+    
+    if (!workspaceAllowed) {
         /*
-         * Do not mutate committed workspace identity or
-         * committed regional data here. The requested
-         * target remains in pendingRegionId for Region Gate.
+         * Active regions are normal runtime workspaces.
+         *
+         * Onboarding regions may be previewed by users who
+         * already hold an explicit region_access grant.
+         *
+         * Suspended and unknown lifecycle states fail closed.
          */
         return "access-denied";
     }

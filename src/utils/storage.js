@@ -3,7 +3,7 @@ const NAV_STATE_KEY = "theQNavState";
 const NAV_RESTORE_TTL_MS = 15 * 60 * 1000;
 const EXECUTION_RESTORE_TTL_MS = 4 * 60 * 60 * 1000;
 const OFFLINE_BOOT_KEY = "theQOfflineBoot";
-const OFFLINE_BOOT_VERSION = 3;
+const OFFLINE_BOOT_VERSION = 4;
 
 const OFFLINE_DB_NAME = "theQOfflineData";
 const OFFLINE_DB_VERSION = 1;
@@ -141,6 +141,16 @@ export async function saveOfflineBootSnapshot({
         );
     }
 
+    const activeRegion = Array.isArray(accessibleRegions)
+        ? accessibleRegions.find(region => region?.id === activeRegionId)
+        : null;
+
+    if (activeRegion?.lifecycleStatus !== "active") {
+        throw new Error(
+            "Offline boot snapshot requires an active lifecycle region."
+        );
+    }
+
     const revision =
         createOfflineSnapshotRevision();
 
@@ -199,6 +209,8 @@ export async function saveOfflineBootSnapshot({
                 : [],
             
         activeRegionId,
+
+        activeRegionLifecycleStatus: activeRegion.lifecycleStatus,
         
         profileAoPermissions:
             Array.isArray(profileAoPermissions)
@@ -243,41 +255,31 @@ export function loadOfflineBootSnapshot(userId) {
             !snapshot.revision ||
             !snapshot.profile?.id ||
             !snapshot.profile?.regionId ||
-            !snapshot.activeRegionId
+            !snapshot.activeRegionId ||
+            snapshot.activeRegionLifecycleStatus !== "active"
         ) {
             return null;
         }
         
-        const accessibleRegionIds =
-            Array.isArray(snapshot.accessibleRegions)
-                ? snapshot.accessibleRegions
-                    .map(region => region?.id)
-                    .filter(Boolean)
-                : [];
+        const activeAccessibleRegion = Array.isArray(snapshot.accessibleRegions)
+            ? snapshot.accessibleRegions.find(region => region?.id === snapshot.activeRegionId)
+            : null;
         
-        if (
-            accessibleRegionIds.length > 0 &&
-            !accessibleRegionIds.includes(
-                snapshot.activeRegionId
-            )
-        ) {
-            console.warn(
-                "Offline boot snapshot has inconsistent workspace metadata."
+        if (activeAccessibleRegion?.lifecycleStatus !== "active") {
+            console.warn("Offline boot snapshot has invalid lifecycle metadata.");
+            return null;
+        }
+
+            return snapshot;
+        } catch (error) {
+            console.error(
+                "Failed to load offline boot snapshot:",
+                error
             );
-        
+
             return null;
         }
-
-        return snapshot;
-    } catch (error) {
-        console.error(
-            "Failed to load offline boot snapshot:",
-            error
-        );
-
-        return null;
     }
-}
 
 function openOfflineDatabase() {
     return new Promise((resolve, reject) => {
