@@ -126,9 +126,7 @@ export function renderRegionGateView() {
                 }
 
                 const accessibleRegions =
-                    await loadAccessibleRegions(
-                        state.currentUserId
-                    );
+                    await loadAccessibleRegions();
 
                 if (
                     state.currentView !==

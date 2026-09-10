@@ -5,6 +5,7 @@ import {
     loadActivityTypes,
     createCampaign,
     createCustomCampaign,
+    createDailyCheckinCampaign,
 } from "../services/cloudData.js";
 import { canManageCampaigns } from "../utils/permissions.js";
 import { createGlobalNav } from "../components/globalNav.js";
@@ -920,6 +921,180 @@ function createCustomQuantityChallengeForm(
     return form;
 }
 
+function createDailyCheckinChallengeForm(onBack) {
+    let visibility = "public";
+
+    const form = document.createElement("form");
+    form.className = "campaign-create-form";
+
+    const summary = document.createElement("div");
+    summary.className = "campaign-create-template-summary";
+
+    const eyebrow = document.createElement("div");
+    eyebrow.className = "campaign-template-eyebrow";
+    eyebrow.textContent = "Custom Challenge";
+
+    const title = document.createElement("h2");
+    title.textContent = "Daily Check-In";
+
+    const copy = document.createElement("p");
+    copy.textContent =
+        "Answer one Yes/No question each day throughout the challenge.";
+
+    summary.append(eyebrow, title, copy);
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.required = true;
+    nameInput.maxLength = 100;
+    nameInput.placeholder = "100 Days No Sugar";
+
+    const promptInput = document.createElement("input");
+    promptInput.type = "text";
+    promptInput.required = true;
+    promptInput.maxLength = 250;
+    promptInput.placeholder = "Did you avoid added sugar today?";
+
+    const startsInput = document.createElement("input");
+    startsInput.type = "date";
+    startsInput.required = true;
+    startsInput.value = getToday();
+
+    const endsInput = document.createElement("input");
+    endsInput.type = "date";
+    endsInput.required = true;
+    endsInput.value = addDays(startsInput.value, 99);
+
+    startsInput.addEventListener("change", () => {
+        if (!startsInput.value) return;
+
+        endsInput.value = addDays(startsInput.value, 99);
+    });
+
+    const descriptionInput = document.createElement("textarea");
+    descriptionInput.rows = 3;
+    descriptionInput.maxLength = 500;
+    descriptionInput.placeholder = "Optional challenge description";
+
+    const fields = document.createElement("div");
+    fields.className = "campaign-create-fields";
+
+    fields.append(
+        createVisibilitySelector({
+            value: visibility,
+            onChange: nextVisibility => {
+                visibility = nextVisibility;
+            },
+        }),
+        createField("Challenge Name", nameInput),
+        createField("Daily Question", promptInput),
+        createField("Starts", startsInput),
+        createField("Ends", endsInput),
+        createField("Description", descriptionInput)
+    );
+
+    const actions = document.createElement("div");
+    actions.className = "campaign-create-actions";
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "secondary-button";
+    backButton.textContent = "Back";
+    backButton.addEventListener("click", onBack);
+
+    const submitButton = document.createElement("button");
+    submitButton.type = "submit";
+    submitButton.className = "primary-button";
+    submitButton.textContent = "Create Challenge";
+
+    actions.append(backButton, submitButton);
+    form.append(summary, fields, actions);
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const regionId =
+            state.activeRegionId ||
+            state.currentRegionId;
+
+        const title = nameInput.value.trim();
+        const prompt = promptInput.value.trim();
+
+        if (!regionId) {
+            showToast("No active region selected.", "error");
+            return;
+        }
+
+        if (!title) {
+            showToast("Challenge name is required.", "error");
+            return;
+        }
+
+        if (!prompt) {
+            showToast("Daily question is required.", "error");
+            return;
+        }
+
+        if (!startsInput.value || !endsInput.value) {
+            showToast("Challenge dates are required.", "error");
+            return;
+        }
+
+        if (endsInput.value < startsInput.value) {
+            showToast(
+                "End date cannot be before start date.",
+                "error"
+            );
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Creating…";
+
+        try {
+            const campaign = await createDailyCheckinCampaign({
+                regionId,
+                title,
+                description: descriptionInput.value.trim(),
+                creatorMode: "pax",
+                visibility,
+                prompt,
+                yesLabel: "Yes",
+                noLabel: "No",
+                startsOn: startsInput.value,
+                endsOn: endsInput.value,
+            });
+
+            state.selectedCampaignId = campaign.id;
+
+            showToast(
+                visibility === "private"
+                    ? "Private challenge created."
+                    : "Challenge created.",
+                "success"
+            );
+
+            navigateTo("campaignDetail");
+        } catch (error) {
+            console.error(
+                "Failed to create daily check-in challenge:",
+                error
+            );
+
+            submitButton.disabled = false;
+            submitButton.textContent = "Create Challenge";
+
+            showToast(
+                error?.message ||
+                    "Failed to create challenge.",
+                "error"
+            );
+        }
+    });
+
+    return form;
+}
+
 export function renderCampaignCreateView() {
     const app =
         document.getElementById("app");
@@ -1022,6 +1197,71 @@ export function renderCampaignCreateView() {
 
         customList.className =
             "campaign-template-list";
+
+        customList.append(
+            createCustomChallengeButton({
+                title: "Daily Check-In",
+        
+                description:
+                    "Answer one Yes/No question each day throughout the challenge.",
+        
+                onSelect: () => {
+                    content.replaceChildren(
+                        createDailyCheckinChallengeForm(
+                            () =>
+                                showCreateOptions(
+                                    templates,
+                                    activityTypes
+                                )
+                        )
+                    );
+                },
+            }),
+        
+            createCustomChallengeButton({
+                title: "Daily Quantity",
+        
+                description:
+                    "Hit a target each day throughout the challenge.",
+        
+                onSelect: () => {
+                    content.replaceChildren(
+                        createCustomQuantityChallengeForm(
+                            "daily",
+                            activityTypes,
+        
+                            () =>
+                                showCreateOptions(
+                                    templates,
+                                    activityTypes
+                                )
+                        )
+                    );
+                },
+            }),
+        
+            createCustomChallengeButton({
+                title: "Cumulative Quantity",
+        
+                description:
+                    "Work toward one total over the full challenge.",
+        
+                onSelect: () => {
+                    content.replaceChildren(
+                        createCustomQuantityChallengeForm(
+                            "campaign",
+                            activityTypes,
+        
+                            () =>
+                                showCreateOptions(
+                                    templates,
+                                    activityTypes
+                                )
+                        )
+                    );
+                },
+            })
+        );
 
         customList.append(
             createCustomChallengeButton({

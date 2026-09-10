@@ -1640,9 +1640,7 @@ export async function acceptParticipantRegionInvitation(
      * the server grants access.
      */
     const accessibleRegions =
-        await loadAccessibleRegions(
-            state.currentUserId
-        );
+        await loadAccessibleRegions();
 
     state.accessibleRegions =
         accessibleRegions || [];
@@ -1702,9 +1700,7 @@ export async function reconcileAfterMemberMerge() {
     }
 
     const accessibleRegions =
-        await loadAccessibleRegions(
-            state.currentUserId
-        );
+        await loadAccessibleRegions();
 
     state.accessibleRegions =
         accessibleRegions || [];
@@ -1997,9 +1993,7 @@ async function bootApp() {
             ] = await Promise.all([
                 loadAllRegions(),
 
-                loadAccessibleRegions(
-                    state.currentUserId
-                ),
+                loadAccessibleRegions(),
 
                 state.currentUserMemberId
                     ? loadMemberById(

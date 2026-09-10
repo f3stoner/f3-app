@@ -11,6 +11,10 @@ import {
     loadCampaignStandings,
     setCampaignDailyQuantity,
     setCampaignQuantity,
+    loadCampaignCheckinProgress,
+    loadCampaignCheckinHistory,
+    loadCampaignCheckinStandings,
+    setCampaignDailyCheckin,
 } from "../services/cloudData.js";
 import { canManageCampaigns } from "../utils/permissions.js";
 import { showToast } from "../utils/toast.js";
@@ -69,6 +73,12 @@ function isManualDailyChallenge(campaign) {
         && campaign.cadence === "daily";
 }
 
+function isDailyCheckinChallenge(campaign) {
+    return campaign.metricKey === "daily_checkin"
+        && campaign.trackingMode === "manual"
+        && campaign.cadence === "daily";
+}
+
 function isManualCumulativeChallenge(campaign) {
     return campaign.metricKey === "manual_quantity"
         && campaign.trackingMode === "manual"
@@ -93,8 +103,9 @@ function supportsStandings(campaign) {
         && (
             campaign.metricKey === "member_posts"
             || campaign.metricKey === "manual_quantity"
+            || campaign.metricKey === "daily_checkin"
         );
-}
+    }
 
 function canManageCampaign(campaign) {
     if (canManageCampaigns()) {
@@ -176,6 +187,12 @@ function getCampaignMetricDescription(campaign) {
         "member_posts"
     ) {
         return "Each workout you attend in the region during the campaign counts as one post.";
+    }
+
+    if (
+        isDailyCheckinChallenge(campaign)
+    ) {
+        return "Answer the daily question with Yes or No. Yes counts as a successful day, No records an unsuccessful day, and a day with no response remains unanswered.";
     }
 
     if (
@@ -365,6 +382,7 @@ function createOverallProgressSection(
 
     label.textContent =
         isManualDailyChallenge(campaign)
+        || isDailyCheckinChallenge(campaign)
             ? "Challenge Progress"
             : isIndividualChallenge(campaign)
                 ? "Your Progress"
@@ -438,6 +456,12 @@ function createOverallProgressSection(
         "campaign-detail-progress-copy";
 
     if (
+        isDailyCheckinChallenge(campaign)
+        && progress.totalDays > 0
+    ) {
+        copy.textContent =
+            `${progress.yesDays} Yes · ${progress.noDays} No · ${progress.unansweredDays} unanswered`;
+    } else if (
         isManualDailyChallenge(campaign)
         && progress.totalDays > 0
     ) {
@@ -492,8 +516,9 @@ function createCampaignDetailTabContent({
         }
 
         if (
-            isManualDailyChallenge(
-                campaign
+            (
+                isManualDailyChallenge(campaign)
+                || isDailyCheckinChallenge(campaign)
             )
             && progress.isEnrolled
         ) {
@@ -519,12 +544,9 @@ function createCampaignDetailTabContent({
         }
 
         if (
-            !isManualDailyChallenge(
-                campaign
-            )
-            && !supportsRecentProgress(
-                campaign
-            )
+            !isManualDailyChallenge(campaign)
+            && !isDailyCheckinChallenge(campaign)
+            && !supportsRecentProgress(campaign)
         ) {
             const copy =
                 document.createElement("p");
@@ -689,9 +711,12 @@ function createCampaignAboutSection(
         "campaign-detail-copy";
 
     if (
-        isManualDailyChallenge(
-            campaign
-        )
+        isDailyCheckinChallenge(campaign)
+    ) {
+        goalCopy.textContent =
+            `Answer the daily check-in from ${formatCampaignDateRange(campaign)}. The challenge includes ${progress.totalDays} days.`;
+    } else if (
+        isManualDailyChallenge(campaign)
     ) {
         goalCopy.textContent =
             `Complete ${progress.todayTarget} ${progress.unit} each day from ${formatCampaignDateRange(campaign)}.`;
@@ -1248,11 +1273,16 @@ function createDailyChallengeCalendar(
 
     section.append(label);
 
+    const isCheckin =
+        isDailyCheckinChallenge(campaign);
+
     const historyByDate =
         new Map(
             history.map(item => [
                 item.date,
-                Number(item.quantity) || 0,
+                isCheckin
+                    ? item.completed
+                    : Number(item.quantity) || 0,
             ])
         );
 
@@ -1426,10 +1456,15 @@ function createDailyChallengeCalendar(
                     day
                 ).padStart(2, "0")}`;
 
+            const historyValue =
+                historyByDate.has(date)
+                    ? historyByDate.get(date)
+                    : null;
+            
             const quantity =
-                historyByDate.get(
-                    date
-                ) || 0;
+                isCheckin
+                    ? 0
+                    : Number(historyValue) || 0;
 
             const isFuture =
                 date > today;
@@ -1438,12 +1473,23 @@ function createDailyChallengeCalendar(
                 date === today;
 
             const isComplete =
-                progress.todayTarget > 0
-                && quantity >=
-                    progress.todayTarget;
-
+                isCheckin
+                    ? historyValue === true
+                    : progress.todayTarget > 0
+                        && quantity >= progress.todayTarget;
+            
+            const isNo =
+                isCheckin
+                && historyValue === false;
+            
+            const isUnanswered =
+                isCheckin
+                && !isFuture
+                && historyValue === null;
+            
             const isMissed =
-                !isFuture
+                !isCheckin
+                && !isFuture
                 && !isComplete;
 
             const cell =
@@ -1473,6 +1519,14 @@ function createDailyChallengeCalendar(
                 cell.classList.add(
                     "campaign-detail-calendar-day-complete"
                 );
+            } else if (isNo) {
+                cell.classList.add(
+                    "campaign-detail-calendar-day-missed"
+                );
+            } else if (isUnanswered) {
+                cell.classList.add(
+                    "campaign-detail-calendar-day-unanswered"
+                );
             } else if (isMissed) {
                 cell.classList.add(
                     "campaign-detail-calendar-day-missed"
@@ -1499,25 +1553,35 @@ function createDailyChallengeCalendar(
                 "campaign-detail-calendar-day-value";
 
             value.textContent =
-                quantity > 0
-                    ? quantity
-                    : "";
+                isCheckin
+                    ? historyValue === true
+                        ? "✓"
+                        : historyValue === false
+                            ? "×"
+                            : ""
+                    : quantity > 0
+                        ? quantity
+                        : "";
 
             cell.append(
                 dayNumber,
                 value
             );
 
-            if (quantity > 0) {
-                cell.addEventListener(
-                    "click",
-                    () => {
-                        showToast(
-                            `${quantity} ${progress.unit} on ${formatCampaignDate(date)}.`,
-                            "info"
-                        );
-                    }
-                );
+            if (isCheckin && historyValue !== null) {
+                cell.addEventListener("click", () => {
+                    showToast(
+                        `${historyValue ? progress.yesLabel : progress.noLabel} on ${formatCampaignDate(date)}.`,
+                        "info"
+                    );
+                });
+            } else if (!isCheckin && quantity > 0) {
+                cell.addEventListener("click", () => {
+                    showToast(
+                        `${quantity} ${progress.unit} on ${formatCampaignDate(date)}.`,
+                        "info"
+                    );
+                });
             }
 
             grid.append(
@@ -1576,6 +1640,128 @@ function createDailyProgressBar(
     track.append(fill);
 
     return track;
+}
+
+function createDailyCheckinSection(
+    campaign,
+    progress
+) {
+    if (
+        !isDailyCheckinChallenge(campaign)
+        || !progress.isEnrolled
+    ) {
+        return null;
+    }
+
+    const section = document.createElement("section");
+    section.className =
+        "campaign-detail-progress campaign-detail-today campaign-detail-checkin";
+
+    const label = document.createElement("div");
+    label.className = "campaign-detail-section-label";
+
+    if (progress.elapsedDays > 0) {
+        label.textContent =
+            `Day ${Math.min(progress.elapsedDays, progress.totalDays)} of ${progress.totalDays}`;
+    } else {
+        label.textContent = "Daily Check-In";
+    }
+
+    const prompt = document.createElement("h2");
+    prompt.className = "campaign-detail-checkin-prompt";
+    prompt.textContent =
+        progress.prompt || "Did you complete today's challenge?";
+
+    const actions = document.createElement("div");
+    actions.className = "campaign-detail-checkin-actions";
+
+    const yesButton = document.createElement("button");
+    yesButton.type = "button";
+    yesButton.className =
+        "campaign-detail-checkin-button campaign-detail-checkin-yes";
+    yesButton.textContent = progress.yesLabel || "Yes";
+
+    const noButton = document.createElement("button");
+    noButton.type = "button";
+    noButton.className =
+        "campaign-detail-checkin-button campaign-detail-checkin-no";
+    noButton.textContent = progress.noLabel || "No";
+
+    if (progress.todayResponse === true) {
+        yesButton.classList.add(
+            "campaign-detail-checkin-button-selected"
+        );
+    }
+
+    if (progress.todayResponse === false) {
+        noButton.classList.add(
+            "campaign-detail-checkin-button-selected"
+        );
+    }
+
+    async function saveResponse(completed, button) {
+        const originalText = button.textContent;
+
+        yesButton.disabled = true;
+        noButton.disabled = true;
+        button.textContent = "Saving…";
+
+        try {
+            await setCampaignDailyCheckin(
+                campaign.id,
+                completed
+            );
+
+            showToast(
+                completed
+                    ? "Yes recorded."
+                    : "No recorded.",
+                "success"
+            );
+
+            renderCampaignDetailView();
+        } catch (error) {
+            console.error(
+                "Failed to save daily check-in:",
+                error
+            );
+
+            yesButton.disabled = false;
+            noButton.disabled = false;
+            button.textContent = originalText;
+
+            showToast(
+                error?.message ||
+                    "Failed to save check-in.",
+                "error"
+            );
+        }
+    }
+
+    yesButton.addEventListener("click", () => {
+        saveResponse(true, yesButton);
+    });
+
+    noButton.addEventListener("click", () => {
+        saveResponse(false, noButton);
+    });
+
+    actions.append(yesButton, noButton);
+    section.append(label, prompt, actions);
+
+    if (progress.todayResponse !== null) {
+        const status = document.createElement("div");
+        status.className = "campaign-detail-progress-copy";
+
+        status.textContent =
+            progress.todayResponse
+                ? `✓ Answered ${progress.yesLabel || "Yes"} today`
+                : `Answered ${progress.noLabel || "No"} today`;
+
+        section.append(status);
+    }
+
+    return section;
 }
 
 function createDailyChallengeSection(
@@ -2197,9 +2383,13 @@ function createStandingsSection(
             "campaign-detail-standing-progress";
 
         if (
-            isManualDailyChallenge(
-                campaign
-            )
+            isDailyCheckinChallenge(campaign)
+            && item.totalDays > 0
+        ) {
+            progress.textContent =
+                `${item.completedDays} / ${item.totalDays} Yes`;
+        } else if (
+            isManualDailyChallenge(campaign)
             && item.totalDays > 0
         ) {
             progress.textContent =
@@ -2309,6 +2499,18 @@ function createDetailContent(
     fragment.append(
         hero
     );
+
+    const checkinSection =
+        createDailyCheckinSection(
+            campaign,
+            progress
+        );
+
+    if (checkinSection) {
+        fragment.append(
+            checkinSection
+        );
+    }
 
     const dailySection =
         createDailyChallengeSection(
@@ -2564,9 +2766,13 @@ export function renderCampaignDetailView() {
                 }
 
                 const progress =
-                    await loadCampaignProgress(
-                        campaignId
-                    );
+                    isDailyCheckinChallenge(campaign)
+                        ? await loadCampaignCheckinProgress(
+                            campaignId
+                        )
+                        : await loadCampaignProgress(
+                            campaignId
+                        );
 
                 const [
                     recentProgress,
@@ -2584,26 +2790,29 @@ export function renderCampaignDetailView() {
                                 []
                             ),
 
-                        isManualDailyChallenge(
-                            campaign
+                        (
+                            isManualDailyChallenge(campaign)
+                                || isDailyCheckinChallenge(campaign)
                         )
                         && progress.isEnrolled
-                            ? loadCampaignDailyHistory(
-                                campaignId
-                            )
-                            : Promise.resolve(
-                                []
-                            ),
+                            ? isDailyCheckinChallenge(campaign)
+                                ? loadCampaignCheckinHistory(
+                                    campaignId
+                                )
+                                : loadCampaignDailyHistory(
+                                    campaignId
+                                )
+                            : Promise.resolve([]),
 
-                        supportsStandings(
-                            campaign
-                        )
-                            ? loadCampaignStandings(
-                                campaignId
-                            )
-                            : Promise.resolve(
-                                []
-                            ),
+                        supportsStandings(campaign)
+                            ? isDailyCheckinChallenge(campaign)
+                                ? loadCampaignCheckinStandings(
+                                    campaignId
+                                )
+                                : loadCampaignStandings(
+                                    campaignId
+                                )
+                            : Promise.resolve([]),
                     ]);
 
                 content.replaceChildren(

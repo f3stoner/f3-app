@@ -2785,29 +2785,16 @@ export async function canUseRegionRuntime(regionId) {
     return data === true;
 }
 
-export async function loadAccessibleRegions(userId) {
-    const { data, error } = await supabase
-        .from("region_access")
-        .select(`
-            region_id,
-            regions (
-                id,
-                name,
-                environment,
-                lifecycle_status,
-                include_in_reporting,
-                workout_field_labels,
-                fng_naming_post_number
-            )
-        `)
-        .eq("user_id", userId);
+export async function loadAccessibleRegions() {
+    const { data, error } = await supabase.rpc(
+        "load_accessible_regions"
+    );
 
     if (error) throw error;
 
-    return (data || [])
-        .map(row => row.regions)
-        .filter(Boolean)
-        .map(mapRegionFromDb);
+    return (data || []).map(
+        mapRegionFromDb
+    );
 }
 
 export async function loadMyParticipantRegionInvitations() {
@@ -5504,6 +5491,14 @@ export async function loadOperationsOverview(
     };
 }
 
+export async function loadOperationsRegionScopes() {
+    const { data, error } = await supabase.rpc("load_operations_region_scopes");
+
+    if (error) throw error;
+
+    return data || [];
+}
+
 export async function loadMemberMerges() {
     const { data, error } = await supabase.rpc(
         "load_member_merges"
@@ -6277,6 +6272,236 @@ export async function loadCampaignStandings(campaignId) {
 
     if (error) {
         console.error("Failed to load campaign standings:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        rank: Number(row.rank_position) || 0,
+        memberId: row.member_id,
+        paxName: row.pax_name || "",
+        current: Number(row.current_value) || 0,
+        target: Number(row.target_value) || 0,
+        percent: Number(row.progress_percent) || 0,
+        completedDays: Number(row.completed_days) || 0,
+        totalDays: Number(row.total_days) || 0,
+        isCurrentMember: Boolean(row.is_current_member),
+    }));
+}
+
+export async function createDailyCheckinCampaign({
+    regionId,
+    title,
+    description = "",
+    creatorMode = "pax",
+    visibility = "public",
+    prompt,
+    yesLabel = "Yes",
+    noLabel = "No",
+    startsOn,
+    endsOn,
+}) {
+    if (!regionId) {
+        throw new Error("Region id is required to create a check-in challenge.");
+    }
+
+    if (visibility !== "public" && visibility !== "private") {
+        throw new Error("Invalid campaign visibility.");
+    }
+
+    const definition = {
+        regionId,
+        title,
+        description: description || null,
+        creatorMode,
+        visibility,
+        prompt,
+        yesLabel,
+        noLabel,
+        startsOn,
+        endsOn,
+    };
+
+    const { data, error } = await supabase.rpc(
+        "create_daily_checkin_campaign",
+        {
+            p_definition: definition,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Failed to create daily check-in challenge:",
+            {
+                definition,
+                error,
+            }
+        );
+
+        throw error;
+    }
+
+    if (!data?.campaign) {
+        throw new Error(
+            "Daily check-in campaign command returned no campaign."
+        );
+    }
+
+    return mapCampaignFromDb(data.campaign);
+}
+
+export async function setCampaignDailyCheckin(
+    campaignId,
+    completed,
+    contributionDate = null
+) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    if (typeof completed !== "boolean") {
+        throw new Error("Daily check-in response must be Yes or No.");
+    }
+
+    const params = {
+        p_campaign_id: campaignId,
+        p_completed: completed,
+    };
+
+    if (contributionDate) {
+        params.p_contribution_date = contributionDate;
+    }
+
+    const { data, error } = await supabase.rpc(
+        "set_campaign_daily_checkin",
+        params
+    );
+
+    if (error) {
+        console.error("Failed to save daily check-in:", {
+            campaignId,
+            completed,
+            contributionDate,
+            error,
+        });
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function loadCampaignCheckinProgress(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_checkin_progress",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error("Failed to load daily check-in progress:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    if (!data?.campaignId) {
+        throw new Error(
+            "Daily check-in progress returned no campaign."
+        );
+    }
+
+    return {
+        campaignId: data.campaignId,
+        metric: data.metric || "",
+        current: Number(data.current) || 0,
+        target: Number(data.target) || 0,
+        percent: Number(data.percent) || 0,
+        goalReached: Boolean(data.goalReached),
+        unit: data.unit || "days",
+        startsOn: data.startsOn || null,
+        endsOn: data.endsOn || null,
+        participantMode: data.participantMode || "individual",
+        enrollmentMode: data.enrollmentMode || "opt_in",
+        trackingMode: data.trackingMode || "manual",
+        cadence: data.cadence || "daily",
+        isEnrolled: Boolean(data.isEnrolled),
+        participantCount: Number(data.participantCount) || 0,
+        todayCurrent: Number(data.todayCurrent) || 0,
+        todayTarget: Number(data.todayTarget) || 1,
+        completedDays: Number(data.completedDays) || 0,
+        totalDays: Number(data.totalDays) || 0,
+        yesDays: Number(data.yesDays) || 0,
+        noDays: Number(data.noDays) || 0,
+        answeredDays: Number(data.answeredDays) || 0,
+        unansweredDays: Number(data.unansweredDays) || 0,
+        elapsedDays: Number(data.elapsedDays) || 0,
+        todayResponse:
+            typeof data.todayResponse === "boolean"
+                ? data.todayResponse
+                : null,
+        prompt: data.prompt || "",
+        yesLabel: data.yesLabel || "Yes",
+        noLabel: data.noLabel || "No",
+    };
+}
+
+export async function loadCampaignCheckinHistory(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_checkin_history",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error("Failed to load daily check-in history:", {
+            campaignId,
+            error,
+        });
+
+        throw error;
+    }
+
+    return (data || []).map(row => ({
+        date: row.contribution_date,
+        completed:
+            row.completed === true
+                ? true
+                : row.completed === false
+                    ? false
+                    : null,
+    }));
+}
+
+export async function loadCampaignCheckinStandings(campaignId) {
+    if (!campaignId) {
+        throw new Error("Campaign id is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+        "get_campaign_checkin_standings",
+        {
+            p_campaign_id: campaignId,
+        }
+    );
+
+    if (error) {
+        console.error("Failed to load daily check-in standings:", {
             campaignId,
             error,
         });

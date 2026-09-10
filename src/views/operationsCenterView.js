@@ -7,6 +7,7 @@ import { state } from "../modules/state.js";
 import {
     loadMemberMerges,
     loadOperationsOverview,
+    loadOperationsRegionScopes,
 } from "../services/cloudData.js";
 import {
     hasPermission,
@@ -16,6 +17,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 
 const ALL_REGIONS_SCOPE = "all";
+let operationsRegionScopes = [];
 
 function getSelectedOperationsScope() {
     return (
@@ -35,14 +37,10 @@ function getScopeLabel(scope) {
         return "All Regions";
     }
 
-    return (
-        state.availableRegions.find(
-            region => region.id === scope
-        )?.name || "Unknown Region"
-    );
+    return operationsRegionScopes.find(region => region.id === scope)?.name || "Unknown Region";
 }
 
-export function renderOperationsCenterView() {
+export async function renderOperationsCenterView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
@@ -59,6 +57,23 @@ export function renderOperationsCenterView() {
         );
         navigateTo("dashboard");
         return;
+    }
+
+    try {
+        operationsRegionScopes = await loadOperationsRegionScopes();
+    } catch (error) {
+        console.error("Failed to load Operations Center region scopes:", error);
+        operationsRegionScopes = [];
+        showToast("Failed to load Operations Center region scopes.", "error");
+    }
+
+    const selectedScope = getSelectedOperationsScope();
+
+    if (
+        selectedScope !== ALL_REGIONS_SCOPE &&
+        !operationsRegionScopes.some(region => region.id === selectedScope)
+    ) {
+        state.operationsOverviewScope = ALL_REGIONS_SCOPE;
     }
 
     const header = createAppHeader({
@@ -129,18 +144,10 @@ function createOperationsScopeSelector(content) {
     );
 
     const scopes = [
-        {
-            id: ALL_REGIONS_SCOPE,
-            name: "All",
-        },
-        ...(state.availableRegions || [])
-            .filter(
-                region =>
-                    region.environment === "production"
-            )
-            .map(region => ({
-                id: region.id,
-                name: region.name.replace(/^F3\s+/i, ""),
+        { id: ALL_REGIONS_SCOPE, name: "All" },
+        ...operationsRegionScopes.map(region => ({
+            id: region.id,
+            name: region.name.replace(/^F3\s+/i, ""),
         })),
     ];
 

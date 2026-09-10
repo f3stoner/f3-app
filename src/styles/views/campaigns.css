@@ -2072,6 +2072,129 @@
 }
 
 /* =========================================================
+   DAILY CHECK-IN
+   ========================================================= */
+
+.view-campaignDetail .campaign-detail-checkin {
+    border-color: rgba(143, 211, 255, 0.16);
+
+    background:
+        radial-gradient(
+            circle at 88% 24%,
+            rgba(143, 211, 255, 0.1),
+            transparent 42%
+        ),
+        linear-gradient(
+            115deg,
+            rgba(143, 211, 255, 0.055),
+            transparent 62%
+        ),
+        rgba(255, 255, 255, 0.018);
+}
+
+.view-campaignDetail .campaign-detail-checkin-prompt {
+    margin: 0;
+
+    color: var(--text);
+
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+}
+
+.view-campaignDetail .campaign-detail-checkin-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+
+    margin-top: 0.85rem;
+}
+
+.view-campaignDetail .campaign-detail-checkin-button {
+    min-height: 46px;
+
+    margin: 0;
+    padding: 0.6rem 0.75rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--radius-md);
+
+    background: rgba(255, 255, 255, 0.025);
+    color: rgba(225, 229, 234, 0.72);
+
+    box-shadow: none;
+
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.view-campaignDetail .campaign-detail-checkin-yes {
+    border-color: rgba(121, 230, 165, 0.2);
+}
+
+.view-campaignDetail .campaign-detail-checkin-yes:hover {
+    border-color: rgba(121, 230, 165, 0.36);
+    background: rgba(121, 230, 165, 0.08);
+    color: #79e6a5;
+
+    box-shadow: none;
+}
+
+.view-campaignDetail .campaign-detail-checkin-no {
+    border-color: rgba(255, 180, 90, 0.18);
+}
+
+.view-campaignDetail .campaign-detail-checkin-no:hover {
+    border-color: rgba(255, 180, 90, 0.32);
+    background: rgba(255, 180, 90, 0.07);
+    color: rgba(255, 190, 110, 0.9);
+
+    box-shadow: none;
+}
+
+.view-campaignDetail
+.campaign-detail-checkin-yes.campaign-detail-checkin-button-selected {
+    border-color: rgba(121, 230, 165, 0.48);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(121, 230, 165, 0.16),
+            rgba(121, 230, 165, 0.08)
+        );
+
+    color: #79e6a5;
+}
+
+.view-campaignDetail
+.campaign-detail-checkin-no.campaign-detail-checkin-button-selected {
+    border-color: rgba(255, 180, 90, 0.42);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 180, 90, 0.14),
+            rgba(255, 180, 90, 0.065)
+        );
+
+    color: rgba(255, 190, 110, 0.92);
+}
+
+.view-campaignDetail .campaign-detail-checkin-button:active {
+    transform: none;
+}
+
+.view-campaignDetail .campaign-detail-checkin-button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+/* =========================================================
 DAILY CHALLENGE COMPLETE
 ========================================================= */
 
@@ -2774,6 +2897,19 @@ DAILY CHALLENGE COMPLETE
 .campaign-detail-calendar-day-number {
     color:
         rgba(255, 190, 110, 0.72);
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-unanswered {
+    border-color: rgba(255, 255, 255, 0.09);
+
+    background: rgba(255, 255, 255, 0.012);
+}
+
+.view-campaignDetail
+.campaign-detail-calendar-day-unanswered
+.campaign-detail-calendar-day-number {
+    color: rgba(194, 202, 211, 0.5);
 }
 
 .view-campaignDetail
