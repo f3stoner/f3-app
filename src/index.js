@@ -1709,6 +1709,20 @@ export async function reconcileAfterMemberMerge() {
         state.accessibleRegions.map(
             region => region.id
         );
+
+        console.table(
+            state.accessibleRegions.map(region => ({
+                id: region.id,
+                name: region.name,
+                environment: region.environment,
+                lifecycleStatus: region.lifecycleStatus,
+            }))
+        );
+        
+        console.log(
+            "Profile home region:",
+            profile.region_id
+        );
     
     await refreshParticipantRegionInvitations();
     
@@ -2056,6 +2070,14 @@ async function bootApp() {
                         region.lifecycleStatus === "active" ||
                         region.lifecycleStatus === "onboarding"
                 );
+
+                console.table(
+                    usableAccessibleRegions.map(region => ({
+                        id: region.id,
+                        name: region.name,
+                        lifecycleStatus: region.lifecycleStatus,
+                    }))
+                );
             
             const usableAccessibleRegionIds =
                 usableAccessibleRegions.map(
@@ -2110,7 +2132,9 @@ async function bootApp() {
             };
 
             if (!initialRegionId) {
-                state.pendingRegionId = null;
+                state.pendingRegionId =
+                    profile.region_id || null;
+            
                 state.currentView = "regionGate";
             
                 renderApp();

@@ -175,3 +175,19 @@ export async function updateMyPassword(newPassword) {
     if (error) throw error;
     return data;
 }
+
+export async function provisionNewProfile({
+    displayName,
+    regionId,
+}) {
+    const { data, error } = await supabase.rpc(
+        "provision_new_profile",
+        {
+            p_display_name: displayName || null,
+            p_region_id: regionId,
+        }
+    );
+
+    if (error) throw error;
+    return data;
+}

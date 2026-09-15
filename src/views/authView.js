@@ -1,4 +1,9 @@
-import { createProfile, signInWithEmail, signUpWithEmail, requestPasswordReset } from "../services/auth.js";
+import {
+    createProfile,
+    signInWithEmail,
+    signUpWithEmail,
+    requestPasswordReset
+} from "../services/auth.js";
 import { bootApp } from "../index.js";
 import { showToast } from "../utils/toast.js";
 

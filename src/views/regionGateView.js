@@ -7,6 +7,7 @@ import {
 import {
     switchWorkspace,
 } from "../services/workspaceService.js";
+import { signOut } from "../services/auth.js";
 
 export function renderRegionGateView() {
     const app =
@@ -224,19 +225,49 @@ export function renderRegionGateView() {
 
     backButton.addEventListener(
         "click",
-        () => {
+        async () => {
             if (submissionInProgress) {
                 return;
             }
-
+    
+            const hasAccessibleRegion =
+                Array.isArray(state.accessibleRegionIds) &&
+                state.accessibleRegionIds.length > 0;
+    
             state.pendingRegionId = null;
-
-            state.currentView =
-                state.currentUserId
-                    ? "dashboard"
-                    : "auth";
-
-            renderApp();
+    
+            if (hasAccessibleRegion) {
+                state.currentView = "dashboard";
+                renderApp();
+                return;
+            }
+    
+            try {
+                submissionInProgress = true;
+    
+                button.disabled = true;
+                backButton.disabled = true;
+                input.disabled = true;
+    
+                await signOut();
+    
+                window.location.reload();
+            } catch (error) {
+                console.error(
+                    "Failed to leave region access flow:",
+                    error
+                );
+    
+                submissionInProgress = false;
+    
+                button.disabled = false;
+                backButton.disabled = false;
+                input.disabled = false;
+    
+                alert(
+                    "Unable to return to sign in. Please try again."
+                );
+            }
         }
     );
 
