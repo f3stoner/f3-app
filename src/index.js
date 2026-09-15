@@ -2050,14 +2050,15 @@ async function bootApp() {
              */
             await refreshParticipantRegionInvitations();
 
-            const activeAccessibleRegions =
+            const usableAccessibleRegions =
                 state.accessibleRegions.filter(
                     region =>
-                        region.lifecycleStatus === "active"
+                        region.lifecycleStatus === "active" ||
+                        region.lifecycleStatus === "onboarding"
                 );
-
-            const activeAccessibleRegionIds =
-                activeAccessibleRegions.map(
+            
+            const usableAccessibleRegionIds =
+                usableAccessibleRegions.map(
                     region => region.id
                 );
             
@@ -2069,11 +2070,12 @@ async function bootApp() {
             const savedActiveRegionId =
                 savedWorkspaceSnapshot?.activeRegionId;
             
-            let initialRegionId = null;
             
+            let initialRegionId = null;
+
             if (
                 savedActiveRegionId &&
-                activeAccessibleRegionIds.includes(
+                usableAccessibleRegionIds.includes(
                     savedActiveRegionId
                 )
             ) {
@@ -2081,7 +2083,7 @@ async function bootApp() {
                     savedActiveRegionId;
             } else if (
                 profile.region_id &&
-                activeAccessibleRegionIds.includes(
+                usableAccessibleRegionIds.includes(
                     profile.region_id
                 )
             ) {
@@ -2089,10 +2091,10 @@ async function bootApp() {
                     profile.region_id;
             } else {
                 initialRegionId =
-                    activeAccessibleRegions[0]?.id ||
+                    usableAccessibleRegions[0]?.id ||
                     null;
             }
-            
+
             phaseStartedAt = performance.now();
 
             const timeRegionalPhase = async (phaseName, operation) => {
