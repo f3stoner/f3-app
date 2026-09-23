@@ -2,6 +2,7 @@ import { state } from "../modules/state.js";
 import {
     loadRegionCampaigns,
     loadCampaignProgress,
+    loadCampaignCheckinProgress,
     joinCampaign,
     logMemberActivity,
 } from "../services/cloudData.js";
@@ -39,6 +40,20 @@ function renderCampaignTab() {
                     activeCampaignTab
             );
         });
+}
+
+function isDailyCheckinChallenge(campaign) {
+    return (
+        campaign.metricKey === "daily_checkin" &&
+        campaign.trackingMode === "manual" &&
+        campaign.cadence === "daily"
+    );
+}
+
+async function loadProgressForCampaign(campaign) {
+    return isDailyCheckinChallenge(campaign)
+        ? loadCampaignCheckinProgress(campaign.id)
+        : loadCampaignProgress(campaign.id);
 }
 
 function formatCampaignDate(date) {
@@ -1449,18 +1464,17 @@ async function loadCampaignContent(content) {
     });
 
     const activeProgress =
-        await Promise.all(
-            lifecycleGroups.active.map(
-                async campaign => ({
-                    campaign,
-
-                    progress:
-                        await loadCampaignProgress(
-                            campaign.id
-                        ),
-                })
-            )
-        );
+    await Promise.all(
+        lifecycleGroups.active.map(
+            async campaign => ({
+                campaign,
+                progress:
+                    await loadProgressForCampaign(
+                        campaign
+                    ),
+            })
+        )
+    );
 
     const groups = {
         private: [],
