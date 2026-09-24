@@ -3,6 +3,7 @@ import { navigateTo } from "../utils/navigation.js";
 import {
     loadCampaignTemplates,
     loadActivityTypes,
+    loadRegionLocalDate,
     createCampaign,
     createCustomCampaign,
     createDailyCheckinCampaign,
@@ -11,10 +12,6 @@ import { canManageCampaigns } from "../utils/permissions.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import { showToast } from "../utils/toast.js";
 import { createAppHeader } from "../components/appHeader.js";
-
-function getToday() {
-    return new Date().toISOString().slice(0, 10);
-}
 
 function addDays(dateString, days) {
     const date = new Date(`${dateString}T12:00:00`);
@@ -204,7 +201,11 @@ function createVisibilitySelector({
     return field;
 }
 
-function createCampaignForm(template, onBack) {
+function createCampaignForm(
+    template,
+    onBack,
+    today
+) {
     const form = document.createElement("form");
     form.className = "campaign-create-form";
 
@@ -244,7 +245,7 @@ function createCampaignForm(template, onBack) {
     const startsInput = document.createElement("input");
     startsInput.type = "date";
     startsInput.required = true;
-    startsInput.value = getToday();
+    startsInput.value = today;
 
     const endsInput = document.createElement("input");
     endsInput.type = "date";
@@ -476,6 +477,7 @@ function createCustomQuantityChallengeForm(
     cadence,
     activityTypes,
     onBack,
+    today,
     options = {}
 ) {
     const {
@@ -603,7 +605,7 @@ function createCustomQuantityChallengeForm(
 
     startsInput.type = "date";
     startsInput.required = true;
-    startsInput.value = getToday();
+    startsInput.value = today;
 
     const endsInput =
         document.createElement("input");
@@ -921,7 +923,10 @@ function createCustomQuantityChallengeForm(
     return form;
 }
 
-function createDailyCheckinChallengeForm(onBack) {
+function createDailyCheckinChallengeForm(
+    onBack,
+    today
+) {
     let visibility = "public";
 
     const form = document.createElement("form");
@@ -958,7 +963,7 @@ function createDailyCheckinChallengeForm(onBack) {
     const startsInput = document.createElement("input");
     startsInput.type = "date";
     startsInput.required = true;
-    startsInput.value = getToday();
+    startsInput.value = today;
 
     const endsInput = document.createElement("input");
     endsInput.type = "date";
@@ -1134,7 +1139,8 @@ export function renderCampaignCreateView() {
 
     function showCreateOptions(
         templates = [],
-        activityTypes = []
+        activityTypes = [],
+        today
     ) {
         content.replaceChildren();
 
@@ -1168,8 +1174,10 @@ export function renderCampaignCreateView() {
                                     () =>
                                         showCreateOptions(
                                             templates,
-                                            activityTypes
-                                        )
+                                            activityTypes,
+                                            today
+                                        ),
+                                    today
                                 )
                             );
                         }
@@ -1211,8 +1219,10 @@ export function renderCampaignCreateView() {
                             () =>
                                 showCreateOptions(
                                     templates,
-                                    activityTypes
-                                )
+                                    activityTypes,
+                                    today
+                                ),
+                            today
                         )
                     );
                 },
@@ -1229,12 +1239,13 @@ export function renderCampaignCreateView() {
                         createCustomQuantityChallengeForm(
                             "daily",
                             activityTypes,
-        
                             () =>
                                 showCreateOptions(
                                     templates,
-                                    activityTypes
-                                )
+                                    activityTypes,
+                                    today
+                                ),
+                            today
                         )
                     );
                 },
@@ -1251,58 +1262,13 @@ export function renderCampaignCreateView() {
                         createCustomQuantityChallengeForm(
                             "campaign",
                             activityTypes,
-        
                             () =>
                                 showCreateOptions(
                                     templates,
-                                    activityTypes
-                                )
-                        )
-                    );
-                },
-            })
-        );
-
-        customList.append(
-            createCustomChallengeButton({
-                title: "Daily Quantity",
-
-                description:
-                    "Hit a target each day throughout the challenge.",
-
-                onSelect: () => {
-                    content.replaceChildren(
-                        createCustomQuantityChallengeForm(
-                            "daily",
-                            activityTypes,
-
-                            () =>
-                                showCreateOptions(
-                                    templates,
-                                    activityTypes
-                                )
-                        )
-                    );
-                },
-            }),
-
-            createCustomChallengeButton({
-                title: "Cumulative Quantity",
-
-                description:
-                    "Work toward one total over the full challenge.",
-
-                onSelect: () => {
-                    content.replaceChildren(
-                        createCustomQuantityChallengeForm(
-                            "campaign",
-                            activityTypes,
-
-                            () =>
-                                showCreateOptions(
-                                    templates,
-                                    activityTypes
-                                )
+                                    activityTypes,
+                                    today
+                                ),
+                            today
                         )
                     );
                 },
@@ -1323,23 +1289,26 @@ export function renderCampaignCreateView() {
                             createCustomQuantityChallengeForm(
                                 "campaign",
                                 activityTypes,
-
+                            
                                 () =>
                                     showCreateOptions(
                                         templates,
-                                        activityTypes
+                                        activityTypes,
+                                        today
                                     ),
-
+                            
+                                today,
+                            
                                 {
                                     creatorMode:
                                         "region",
-
+                            
                                     participantMode:
                                         "collective",
-
+                            
                                     enrollmentMode:
                                         "automatic",
-
+                            
                                     visibility:
                                         "public",
                                 }
@@ -1368,18 +1337,36 @@ export function renderCampaignCreateView() {
             ? loadCampaignTemplates()
             : Promise.resolve([]);
 
-    Promise.all([
-        templatePromise,
-        loadActivityTypes(),
-    ])
+    const regionId =
+        state.activeRegionId ||
+        state.currentRegionId;
+    
+    const todayPromise =
+        regionId
+            ? loadRegionLocalDate(
+                regionId
+            )
+            : Promise.reject(
+                new Error(
+                    "No active region selected."
+                )
+            );
+
+        Promise.all([
+            templatePromise,
+            loadActivityTypes(),
+            todayPromise,
+        ])
         .then(
             ([
                 templates,
                 activityTypes,
+                today,
             ]) => {
                 showCreateOptions(
                     templates,
-                    activityTypes
+                    activityTypes,
+                    today
                 );
             }
         )

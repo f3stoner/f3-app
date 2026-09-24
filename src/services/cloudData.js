@@ -2797,6 +2797,33 @@ export async function loadAccessibleRegions() {
     );
 }
 
+export async function loadRegionLocalDate(regionId) {
+    if (!regionId) {
+        throw new Error(
+            "Region id is required to load the local date."
+        );
+    }
+
+    const { data, error } =
+        await supabase.rpc(
+            "region_local_date",
+            {
+                p_region_id: regionId,
+            }
+        );
+
+    if (error) {
+        console.error(
+            "Failed to load region local date:",
+            error
+        );
+
+        throw error;
+    }
+
+    return data;
+}
+
 export async function loadMyParticipantRegionInvitations() {
     const { data, error } = await supabase.rpc(
         "load_my_participant_region_invitations"

@@ -15,6 +15,7 @@ import {
     loadCampaignCheckinHistory,
     loadCampaignCheckinStandings,
     setCampaignDailyCheckin,
+    loadRegionLocalDate,
 } from "../services/cloudData.js";
 import { canManageCampaigns } from "../utils/permissions.js";
 import { showToast } from "../utils/toast.js";
@@ -23,6 +24,7 @@ import { createAppHeader } from "../components/appHeader.js";
 
 let activeCampaignDetailTab = "progress";
 let campaignDetailData = null;
+let selectedCheckinDate = null;
 
 function formatCampaignDate(date) {
     if (!date) return "";
@@ -133,11 +135,15 @@ function formatCampaignDateRange(campaign) {
     return `${start} – ${end}`;
 }
 
-function getCampaignStatus(campaign) {
-    const today =
-        new Date()
-            .toISOString()
-            .slice(0, 10);
+function getCampaignStatus(
+    campaign,
+    today
+) {
+    if (
+        campaign.status === "cancelled"
+    ) {
+        return "Cancelled";
+    }
 
     if (
         campaign.status === "completed"
@@ -151,12 +157,6 @@ function getCampaignStatus(campaign) {
         || campaign.startsOn > today
     ) {
         return "Upcoming";
-    }
-
-    if (
-        campaign.status === "cancelled"
-    ) {
-        return "Cancelled";
     }
 
     return "Active";
@@ -495,6 +495,7 @@ function createCampaignDetailTabContent({
     recentProgress,
     dailyHistory,
     standings,
+    today,
 }) {
     const content =
         document.createDocumentFragment();
@@ -526,7 +527,8 @@ function createCampaignDetailTabContent({
                 createDailyChallengeCalendar(
                     campaign,
                     progress,
-                    dailyHistory
+                    dailyHistory,
+                    today
                 )
             );
         }
@@ -1254,7 +1256,8 @@ function createParticipationStatus(
 function createDailyChallengeCalendar(
     campaign,
     progress,
-    history = []
+    history = [],
+    today
 ) {
     const section =
         document.createElement("section");
@@ -1285,11 +1288,6 @@ function createDailyChallengeCalendar(
                     : Number(item.quantity) || 0,
             ])
         );
-
-    const today =
-        new Date()
-            .toISOString()
-            .slice(0, 10);
 
     const startDate =
         new Date(
@@ -1484,7 +1482,7 @@ function createDailyChallengeCalendar(
             
             const isUnanswered =
                 isCheckin
-                && !isFuture
+                && date < today
                 && historyValue === null;
             
             const isMissed =
@@ -1512,6 +1510,18 @@ function createDailyChallengeCalendar(
             if (isToday) {
                 cell.classList.add(
                     "campaign-detail-calendar-day-today"
+                );
+            }
+
+            if (
+                isCheckin
+                && date === (
+                    selectedCheckinDate
+                    || today
+                )
+            ) {
+                cell.classList.add(
+                    "campaign-detail-calendar-day-selected"
                 );
             }
 
@@ -1568,20 +1578,32 @@ function createDailyChallengeCalendar(
                 value
             );
 
-            if (isCheckin && historyValue !== null) {
-                cell.addEventListener("click", () => {
-                    showToast(
-                        `${historyValue ? progress.yesLabel : progress.noLabel} on ${formatCampaignDate(date)}.`,
-                        "info"
-                    );
-                });
-            } else if (!isCheckin && quantity > 0) {
-                cell.addEventListener("click", () => {
-                    showToast(
-                        `${quantity} ${progress.unit} on ${formatCampaignDate(date)}.`,
-                        "info"
-                    );
-                });
+            if (
+                isCheckin
+                && !isFuture
+            ) {
+                cell.addEventListener(
+                    "click",
+                    () => {
+                        selectedCheckinDate =
+                            date;
+            
+                            rerenderCampaignDetailContent();
+                    }
+                );
+            } else if (
+                !isCheckin
+                && quantity > 0
+            ) {
+                cell.addEventListener(
+                    "click",
+                    () => {
+                        showToast(
+                            `${quantity} ${progress.unit} on ${formatCampaignDate(date)}.`,
+                            "info"
+                        );
+                    }
+                );
             }
 
             grid.append(
@@ -1644,7 +1666,9 @@ function createDailyProgressBar(
 
 function createDailyCheckinSection(
     campaign,
-    progress
+    progress,
+    history,
+    today
 ) {
     if (
         !isDailyCheckinChallenge(campaign)
@@ -1653,6 +1677,20 @@ function createDailyCheckinSection(
         return null;
     }
 
+    const selectedDate =
+        selectedCheckinDate || today;
+
+    const selectedHistory =
+        history.find(
+            item =>
+                item.date === selectedDate
+        );
+
+    const selectedResponse =
+        selectedDate === today
+            ? progress.todayResponse
+            : selectedHistory?.completed ?? null;
+
     const section = document.createElement("section");
     section.className =
         "campaign-detail-progress campaign-detail-today campaign-detail-checkin";
@@ -1660,12 +1698,12 @@ function createDailyCheckinSection(
     const label = document.createElement("div");
     label.className = "campaign-detail-section-label";
 
-    if (progress.elapsedDays > 0) {
-        label.textContent =
-            `Day ${Math.min(progress.elapsedDays, progress.totalDays)} of ${progress.totalDays}`;
-    } else {
-        label.textContent = "Daily Check-In";
-    }
+    label.textContent =
+        selectedDate === today
+            ? "Today"
+            : formatCampaignDate(
+                selectedDate
+            );
 
     const prompt = document.createElement("h2");
     prompt.className = "campaign-detail-checkin-prompt";
@@ -1687,13 +1725,13 @@ function createDailyCheckinSection(
         "campaign-detail-checkin-button campaign-detail-checkin-no";
     noButton.textContent = progress.noLabel || "No";
 
-    if (progress.todayResponse === true) {
+    if (selectedResponse === true) {
         yesButton.classList.add(
             "campaign-detail-checkin-button-selected"
         );
     }
 
-    if (progress.todayResponse === false) {
+    if (selectedResponse === false) {
         noButton.classList.add(
             "campaign-detail-checkin-button-selected"
         );
@@ -1709,7 +1747,8 @@ function createDailyCheckinSection(
         try {
             await setCampaignDailyCheckin(
                 campaign.id,
-                completed
+                completed,
+                selectedDate
             );
 
             showToast(
@@ -1749,15 +1788,18 @@ function createDailyCheckinSection(
     actions.append(yesButton, noButton);
     section.append(label, prompt, actions);
 
-    if (progress.todayResponse !== null) {
-        const status = document.createElement("div");
-        status.className = "campaign-detail-progress-copy";
-
+    if (selectedResponse !== null) {
+        const status =
+            document.createElement("div");
+    
+        status.className =
+            "campaign-detail-progress-copy";
+    
         status.textContent =
-            progress.todayResponse
-                ? `✓ Answered ${progress.yesLabel || "Yes"} today`
-                : `Answered ${progress.noLabel || "No"} today`;
-
+            selectedResponse
+                ? `✓ Answered ${progress.yesLabel || "Yes"}`
+                : `Answered ${progress.noLabel || "No"}`;
+    
         section.append(status);
     }
 
@@ -2418,12 +2460,39 @@ function createStandingsSection(
     return section;
 }
 
+function rerenderCampaignDetailContent() {
+    if (!campaignDetailData) {
+        return;
+    }
+
+    const content =
+        document.querySelector(
+            ".campaign-detail-content"
+        );
+
+    if (!content) {
+        return;
+    }
+
+    content.replaceChildren(
+        createDetailContent(
+            campaignDetailData.campaign,
+            campaignDetailData.progress,
+            campaignDetailData.recentProgress,
+            campaignDetailData.dailyHistory,
+            campaignDetailData.standings,
+            campaignDetailData.today
+        )
+    );
+}
+
 function createDetailContent(
     campaign,
     progress,
     recentProgress,
     dailyHistory,
-    standings
+    standings,
+    today
 ) {
     const fragment =
         document.createDocumentFragment();
@@ -2451,7 +2520,7 @@ function createDetailContent(
         "campaign-detail-eyebrow";
 
     eyebrow.textContent =
-        `${getCampaignStatus(campaign)} · ${getCampaignTypeLabel(campaign)}`;
+        `${getCampaignStatus(campaign, today)} · ${getCampaignTypeLabel(campaign)}`;
 
     const title =
         document.createElement("h1");
@@ -2503,7 +2572,9 @@ function createDetailContent(
     const checkinSection =
         createDailyCheckinSection(
             campaign,
-            progress
+            progress,
+            dailyHistory,
+            today
         );
 
     if (checkinSection) {
@@ -2653,6 +2724,7 @@ function createDetailContent(
         recentProgress,
         dailyHistory,
         standings,
+        today,
     };
 
     fragment.append(
@@ -2690,6 +2762,9 @@ export function renderCampaignDetailView() {
         "progress";
 
     campaignDetailData =
+        null;
+
+    selectedCheckinDate =
         null;
 
     app.replaceChildren();
@@ -2764,7 +2839,12 @@ export function renderCampaignDetailView() {
                         "Campaign not found."
                     );
                 }
-
+                
+                const today =
+                    await loadRegionLocalDate(
+                        campaign.regionId
+                    );
+                
                 const progress =
                     isDailyCheckinChallenge(campaign)
                         ? await loadCampaignCheckinProgress(
@@ -2821,7 +2901,8 @@ export function renderCampaignDetailView() {
                         progress,
                         recentProgress,
                         dailyHistory,
-                        standings
+                        standings,
+                        today
                     )
                 );
             }

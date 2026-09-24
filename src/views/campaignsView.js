@@ -3,6 +3,7 @@ import {
     loadRegionCampaigns,
     loadCampaignProgress,
     loadCampaignCheckinProgress,
+    loadRegionLocalDate,
     joinCampaign,
     logMemberActivity,
 } from "../services/cloudData.js";
@@ -1422,10 +1423,17 @@ async function loadCampaignContent(content) {
         return;
     }
 
-    const campaigns =
-        await loadRegionCampaigns(
+    const [
+        campaigns,
+        today,
+    ] = await Promise.all([
+        loadRegionCampaigns(
             regionId
-        );
+        ),
+        loadRegionLocalDate(
+            regionId
+        ),
+    ]);
 
     if (
         campaigns.length === 0
@@ -1442,11 +1450,6 @@ async function loadCampaignContent(content) {
 
         return;
     }
-
-    const today =
-        new Date()
-            .toISOString()
-            .slice(0, 10);
 
     const lifecycleGroups = {
         active: [],
