@@ -1,0 +1,1720 @@
+{
+  "schema_version": "west-houston-institutional-review-mapping-v1",
+  "worksheet_path": "audit/attendance/west-houston-institutional-review-worksheet.md",
+  "source_workbook": {
+    "filename": "2024 West Houston Consolidated.xlsx",
+    "sha256": "87b9d4d880dc82d01b5ce14e3956793b63f074d27b9c0149b09dc7f6738d684b",
+    "parser_version": "west-houston-workbook-v1"
+  },
+  "identity_collisions": [
+    {
+      "worksheet_id": "WH-ID-001",
+      "review_signature": "wh-collision-35263045d42cf1766bf0",
+      "source_identity_keys": [
+        "wh-member-7fbd38753220ff224c89",
+        "wh-member-dd91fcc8adf5dee35fef"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-002",
+      "review_signature": "wh-collision-fb6c34193d420c212940",
+      "source_identity_keys": [
+        "wh-member-4f7bc87f5ad864d355d6",
+        "wh-member-d264714542d37bbd6837"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-003",
+      "review_signature": "wh-collision-5aebef230bce9b6e8683",
+      "source_identity_keys": [
+        "wh-member-61272a351ac48016d4e1",
+        "wh-member-8d14adf36691dbf12b6b"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-004",
+      "review_signature": "wh-collision-55aed50d0b95e1e41d46",
+      "source_identity_keys": [
+        "wh-member-73984bf163fe2eb7d4e5",
+        "wh-member-b24df247bbf28243d25b"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-005",
+      "review_signature": "wh-collision-86f2d92d96a23463c32f",
+      "source_identity_keys": [
+        "wh-member-68b39c281635e3302e24",
+        "wh-member-9bcdc4e4687089b138e5"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-006",
+      "review_signature": "wh-collision-d6ad666d150445eaf2e2",
+      "source_identity_keys": [
+        "wh-member-950642bd3a11fd875d50",
+        "wh-member-c3ba424666c9d3b072a0"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-007",
+      "review_signature": "wh-collision-ac84e304f03739a80881",
+      "source_identity_keys": [
+        "wh-member-52bf1a2bef93197aa4f3",
+        "wh-member-e52368538296d22e27be"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-008",
+      "review_signature": "wh-collision-bdb429e24d4930783b84",
+      "source_identity_keys": [
+        "wh-member-03ceb7954a6050a5c455",
+        "wh-member-4509b1ab6283e3c651cc"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-009",
+      "review_signature": "wh-collision-c992888fcabfdd0a74da",
+      "source_identity_keys": [
+        "wh-member-30fe4aff70503a26e0b6",
+        "wh-member-c665fd21ebeb83c77f47"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-010",
+      "review_signature": "wh-collision-b773b8f3758c0ef2c96b",
+      "source_identity_keys": [
+        "wh-member-2f558c84d8136143034b",
+        "wh-member-7303f84a872003d374d2"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-011",
+      "review_signature": "wh-collision-21bb3068e928e826e7dd",
+      "source_identity_keys": [
+        "wh-member-a388c23379edeb5eda81",
+        "wh-member-d47722178f8b4bcd814b"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-012",
+      "review_signature": "wh-collision-754062bf6b8e0b6ca9ea",
+      "source_identity_keys": [
+        "wh-member-547ef7bac21276177f49",
+        "wh-member-5e812c5891c1d8baed6a",
+        "wh-member-6bc8374c3c42edf30797"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-013",
+      "review_signature": "wh-collision-d96bb294c0d8002027d8",
+      "source_identity_keys": [
+        "wh-member-6f322616326a0169411a",
+        "wh-member-95a9414dcdc03eb6f737"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-014",
+      "review_signature": "wh-collision-5a89337936866a6e8f3b",
+      "source_identity_keys": [
+        "wh-member-40b4a760ce27161cd700",
+        "wh-member-ec21039f6d80a543acd9"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-015",
+      "review_signature": "wh-collision-948a171b70fd7173debd",
+      "source_identity_keys": [
+        "wh-member-0d324476f202556ff001",
+        "wh-member-263c1101b9d1f01e2c3c"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-016",
+      "review_signature": "wh-collision-db82457b229a7e893f19",
+      "source_identity_keys": [
+        "wh-member-1875d3f37419b5f81fe8",
+        "wh-member-94a1b94f08e593ca762f"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-017",
+      "review_signature": "wh-collision-ac816c766111c5046b60",
+      "source_identity_keys": [
+        "wh-member-0bdc2f2981570bfa3e34",
+        "wh-member-31554efd2e238bc24e66"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-018",
+      "review_signature": "wh-collision-f26630f7a5b80cd15a85",
+      "source_identity_keys": [
+        "wh-member-93742f7c4ce409ee9e0e",
+        "wh-member-cfec556556bed47c6dae"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-019",
+      "review_signature": "wh-collision-3542d7e4254ba35d9691",
+      "source_identity_keys": [
+        "wh-member-1c913a058fa3653d77f7",
+        "wh-member-b1ebcb1ada2f8c752e7e"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-020",
+      "review_signature": "wh-collision-e10023b2097fa7453b01",
+      "source_identity_keys": [
+        "wh-member-5ca9ac60e39b44e70f7d",
+        "wh-member-83bfbfba41e6bca3eb6b"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-021",
+      "review_signature": "wh-collision-f389c75f09448fb75dfd",
+      "source_identity_keys": [
+        "wh-member-3bfe2fadc87e932dc103",
+        "wh-member-98d9de0737e489b5e6f7"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-022",
+      "review_signature": "wh-collision-9730eefbccad1ffdb0ec",
+      "source_identity_keys": [
+        "wh-member-478a62bd1eb304336018",
+        "wh-member-9d4b9de30075b1737b11"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-023",
+      "review_signature": "wh-collision-5cd8f417d39f6cf0abeb",
+      "source_identity_keys": [
+        "wh-member-1bf1645929058f571f4e",
+        "wh-member-3a2aa35ea48067cac6c0"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-024",
+      "review_signature": "wh-collision-3d8a464fc75f62678781",
+      "source_identity_keys": [
+        "wh-member-3f5d470084e08ec93e8b",
+        "wh-member-e444548ad31752048fb8"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-025",
+      "review_signature": "wh-collision-cf386ea60e94faa2d4db",
+      "source_identity_keys": [
+        "wh-member-66b13cd3990dcd304bd3",
+        "wh-member-e24592658065a3efa4bc"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-026",
+      "review_signature": "wh-collision-c2a1db30e80af2c37b3c",
+      "source_identity_keys": [
+        "wh-member-33b1a335c48266266a61",
+        "wh-member-c3dea0ebe25e6c8a5dab"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-027",
+      "review_signature": "wh-collision-349d453f1e9a807378ac",
+      "source_identity_keys": [
+        "wh-member-76abbc924580c2018873",
+        "wh-member-a33714af9f75711c3797"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-028",
+      "review_signature": "wh-collision-43c13fdab2ef8841966e",
+      "source_identity_keys": [
+        "wh-member-f6e2ef86dd8db98264de",
+        "wh-member-f838f4ea9147bb2a71b2"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-029",
+      "review_signature": "wh-collision-5a2050b86177b33cdf39",
+      "source_identity_keys": [
+        "wh-member-18fcb8936b7a5a424ec0",
+        "wh-member-47a6308dcca0efb84981"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-030",
+      "review_signature": "wh-collision-91dcd483d9d8297e9ddc",
+      "source_identity_keys": [
+        "wh-member-ac8f5441695b7e77ed98",
+        "wh-member-eb5b1b949b585751920f"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-031",
+      "review_signature": "wh-collision-86d1c5017afc1f60bcc6",
+      "source_identity_keys": [
+        "wh-member-4faf7a199ce9ee27e6cd",
+        "wh-member-67ad354380480c78dbce"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-032",
+      "review_signature": "wh-collision-083c714eadf649a0df04",
+      "source_identity_keys": [
+        "wh-member-1e288cd8ca4633395fe9",
+        "wh-member-b93e5e5015d15b508d29"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-033",
+      "review_signature": "wh-collision-fdd9ba0a8f255400747b",
+      "source_identity_keys": [
+        "wh-member-306997bccb1822f88b3e",
+        "wh-member-a3c1f46227066ca11869"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-034",
+      "review_signature": "wh-collision-48d371c9b3f416d21e90",
+      "source_identity_keys": [
+        "wh-member-b1cac893fa5bab5e0f25",
+        "wh-member-e645a5547a1c126130cf"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-035",
+      "review_signature": "wh-collision-065955c76deed5410f63",
+      "source_identity_keys": [
+        "wh-member-3e49686b36a6a3c67be6",
+        "wh-member-b30b33a980735b4ed091"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-036",
+      "review_signature": "wh-collision-83767210c1a5ed748336",
+      "source_identity_keys": [
+        "wh-member-0dacdb7d858e1dcf0fa3",
+        "wh-member-d365d87912a9c91c9997"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-037",
+      "review_signature": "wh-collision-ee6478adfa2932a83c30",
+      "source_identity_keys": [
+        "wh-member-52ee7eb3152c5df400cf",
+        "wh-member-f330e3281d2c2650da3f"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-038",
+      "review_signature": "wh-collision-776912f8125757f463c3",
+      "source_identity_keys": [
+        "wh-member-66d935aa9289cb190fbf",
+        "wh-member-8d9625e1af10b09b81e2"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-039",
+      "review_signature": "wh-collision-aaa188bd68da84391955",
+      "source_identity_keys": [
+        "wh-member-4ce66401e366a289e49f",
+        "wh-member-676db2a898cb8454acce"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-040",
+      "review_signature": "wh-collision-711d77e0d972dc7cac72",
+      "source_identity_keys": [
+        "wh-member-733d6d3ce9129a74eab6",
+        "wh-member-f6e168a83929c94bf73f"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-041",
+      "review_signature": "wh-collision-05821786cedd59aa2312",
+      "source_identity_keys": [
+        "wh-member-8ffa36b161d9e468957a",
+        "wh-member-95b356828ec3784a8299"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-042",
+      "review_signature": "wh-collision-854d3bffd663402e9d4f",
+      "source_identity_keys": [
+        "wh-member-217acd159c29a469065f",
+        "wh-member-684d3afa643a36c9b448"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-043",
+      "review_signature": "wh-collision-dc0935c07436a48f3fe5",
+      "source_identity_keys": [
+        "wh-member-35835a281a9e5231bc23",
+        "wh-member-d63eb2d9f480f4c5cefc"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-044",
+      "review_signature": "wh-collision-645a15b1fcf7e3256cd6",
+      "source_identity_keys": [
+        "wh-member-67a5eaa40c22453d9b22",
+        "wh-member-bf08b7e8a652c1a9a8b9"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-045",
+      "review_signature": "wh-collision-c610e515cc54f115e374",
+      "source_identity_keys": [
+        "wh-member-71f42c57be7ebb57909d",
+        "wh-member-ce8d68cde3e77a773f40"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-046",
+      "review_signature": "wh-collision-05c822c056db62eef218",
+      "source_identity_keys": [
+        "wh-member-8ed3403221b38f0e1768",
+        "wh-member-cf1a47107b2e9b54e380"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-047",
+      "review_signature": "wh-collision-85e47eaaac94dbe294c9",
+      "source_identity_keys": [
+        "wh-member-252937d415de046405d4",
+        "wh-member-9bcdbde7f805762ddf66"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-048",
+      "review_signature": "wh-collision-b958fab7fe768461c497",
+      "source_identity_keys": [
+        "wh-member-1810d9000f8b0caa01e6",
+        "wh-member-482fed8ddfc5ec377c6d",
+        "wh-member-cb16729cd059be83eaed"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-049",
+      "review_signature": "wh-collision-1a6d9bce6ffe5092345f",
+      "source_identity_keys": [
+        "wh-member-2c985b0a60c657d1c10e",
+        "wh-member-991a66f1d630ee98f288"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-050",
+      "review_signature": "wh-collision-44268482501d3153f109",
+      "source_identity_keys": [
+        "wh-member-7288d2fd159f513470f2",
+        "wh-member-fc071117ee4b96274e53"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-051",
+      "review_signature": "wh-collision-0ed9ac548d54a7c7051a",
+      "source_identity_keys": [
+        "wh-member-9548c4314619fb15000d",
+        "wh-member-e752f42f6708b4c7440f"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-052",
+      "review_signature": "wh-collision-8783db38a282781c1dd8",
+      "source_identity_keys": [
+        "wh-member-8bf363035864e10f7b61",
+        "wh-member-ee4cb1add9a6b5554f08"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-053",
+      "review_signature": "wh-collision-2119ef39b9921278eb7c",
+      "source_identity_keys": [
+        "wh-member-12fbc15c2f4097bf4125",
+        "wh-member-fb4d0af955399080b170"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-054",
+      "review_signature": "wh-collision-7e6294bf909fa12f1f27",
+      "source_identity_keys": [
+        "wh-member-711bf62eeda3d67b9a49",
+        "wh-member-78befe3a0a03f980e612",
+        "wh-member-e7c370f67eb67a3e2787"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-055",
+      "review_signature": "wh-collision-1bed3db2e19a169543ae",
+      "source_identity_keys": [
+        "wh-member-6d432fc384f16a211c9f",
+        "wh-member-a5e6d5730d97d1b53073"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-056",
+      "review_signature": "wh-collision-a17f514a8949d0c7f6e1",
+      "source_identity_keys": [
+        "wh-member-5b826120490927b27d72",
+        "wh-member-be9f969c7105fb2683f2"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-057",
+      "review_signature": "wh-collision-5d7887d5362abf3b3061",
+      "source_identity_keys": [
+        "wh-member-8d2e5ef9ed9d21d34d97",
+        "wh-member-f50a27d98d33f88fd9fe"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-058",
+      "review_signature": "wh-collision-8b50c3d662b1fcab9962",
+      "source_identity_keys": [
+        "wh-member-8f19d0082fb2ccef48ad",
+        "wh-member-fab729fffa4a8ff1e9ce"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-059",
+      "review_signature": "wh-collision-fa9b61e2e134b8999506",
+      "source_identity_keys": [
+        "wh-member-1672b786f69bb366e6c8",
+        "wh-member-dfc34d7a2db012b42808"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-060",
+      "review_signature": "wh-collision-e03cfd386b465473fbef",
+      "source_identity_keys": [
+        "wh-member-8ecdbf6b6b167c860395",
+        "wh-member-ac77daec7b98caf64395"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-061",
+      "review_signature": "wh-collision-0c196fda7243b25281e9",
+      "source_identity_keys": [
+        "wh-member-0ebfa4dd79e58054f247",
+        "wh-member-d57b737f265356848422"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-062",
+      "review_signature": "wh-collision-b59227444b43079b053c",
+      "source_identity_keys": [
+        "wh-member-94e05d60aa238b7092ec",
+        "wh-member-9eaa8c6964d0dd4662ac"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-063",
+      "review_signature": "wh-collision-6645afc01a7690ab7018",
+      "source_identity_keys": [
+        "wh-member-810f782c2b87e30d3686",
+        "wh-member-c60a50f030235fc97f5b"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-064",
+      "review_signature": "wh-collision-35ddb3e1ff72199d518d",
+      "source_identity_keys": [
+        "wh-member-7d94a78eaeb2a1120fa5",
+        "wh-member-9af96746ee0a61ee3b50"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-065",
+      "review_signature": "wh-collision-1e9169bc702b42b6948b",
+      "source_identity_keys": [
+        "wh-member-434119af786de34b2e11",
+        "wh-member-4b64ba2ba68c72bc5789"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-066",
+      "review_signature": "wh-collision-25f597c1187718eeed20",
+      "source_identity_keys": [
+        "wh-member-0d31a59fe323298cc0c0",
+        "wh-member-e12c0ec32f4800aa908f"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    },
+    {
+      "worksheet_id": "WH-ID-067",
+      "review_signature": "wh-collision-8d4aae46ef961ff65762",
+      "source_identity_keys": [
+        "wh-member-2254a1951a9ea4a37e34",
+        "wh-member-746284c64fb2e5e6883d"
+      ],
+      "answer_mapping": {
+        "YES": "MERGE",
+        "NO": "KEEP_SEPARATE",
+        "UNSURE": "UNRESOLVED"
+      }
+    }
+  ],
+  "fng_discrepancies": [
+    {
+      "worksheet_id": "WH-FNG-001",
+      "source_member_key": "wh-member-cccea108673faa0190da",
+      "review_signature": "wh-fng-4dccdcf91f6ac01a9e27",
+      "earliest_attendance": {
+        "date": "2022-07-23",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-1f46ab4141a8433ed089",
+            "provenance": {
+              "row": 1844,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2026-04-18",
+        "occurrences": [
+          {
+            "ao": "The Iron Gate",
+            "session_key": "wh-session-e100779376c4de480050",
+            "provenance": {
+              "row": 359,
+              "sheet": "The Iron Gate"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-002",
+      "source_member_key": "wh-member-c6d5bfdf9ba705ce6858",
+      "review_signature": "wh-fng-92e7bc75307e93606481",
+      "earliest_attendance": {
+        "date": "2025-11-10",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-ee7cdd5a11c1f99b7552",
+            "provenance": {
+              "row": 7149,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-12-18",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-12f3a00bed285a4c2bfa",
+            "provenance": {
+              "row": 9073,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-003",
+      "source_member_key": "wh-member-9dd2aca29bda30fcf0a6",
+      "review_signature": "wh-fng-4cbe98575c5666dd7df5",
+      "earliest_attendance": {
+        "date": "2024-10-01",
+        "occurrences": [
+          {
+            "ao": "The Corridor",
+            "session_key": "wh-session-9facc78529152cd2d36c",
+            "provenance": {
+              "row": 1763,
+              "sheet": "The Corridor"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2024-12-03",
+        "occurrences": [
+          {
+            "ao": "The Corridor",
+            "session_key": "wh-session-dff670162e69f3e09fdf",
+            "provenance": {
+              "row": 2025,
+              "sheet": "The Corridor"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-004",
+      "source_member_key": "wh-member-24c47fafbc33f51a072b",
+      "review_signature": "wh-fng-ca209eb1630953680faa",
+      "earliest_attendance": {
+        "date": "2024-09-07",
+        "occurrences": [
+          {
+            "ao": "The Corridor",
+            "session_key": "wh-session-58f42915739a9d908fcb",
+            "provenance": {
+              "row": 1663,
+              "sheet": "The Corridor"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2026-08-14",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-a59bff76064b23355d7e",
+            "provenance": {
+              "row": 8637,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-005",
+      "source_member_key": "wh-member-53a32cafb40a6f130f95",
+      "review_signature": "wh-fng-31f4879693f760161818",
+      "earliest_attendance": {
+        "date": "2024-10-05",
+        "occurrences": [
+          {
+            "ao": "The Corridor",
+            "session_key": "wh-session-297270eeb8300d186edd",
+            "provenance": {
+              "row": 1787,
+              "sheet": "The Corridor"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2026-01-20",
+        "occurrences": [
+          {
+            "ao": "The Oasis",
+            "session_key": "wh-session-e7ec97970bedb9d42d53",
+            "provenance": {
+              "row": 1427,
+              "sheet": "The Oasis"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-006",
+      "source_member_key": "wh-member-d0c78acccd6a64017687",
+      "review_signature": "wh-fng-5f04e33384bbcc699a41",
+      "earliest_attendance": {
+        "date": "2024-05-08",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-4ed85ef5494dbf9c013d",
+            "provenance": {
+              "row": 4148,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2024-08-19",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-e9a551afab341cbb11a3",
+            "provenance": {
+              "row": 4632,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-007",
+      "source_member_key": "wh-member-092f372a435bd7eee916",
+      "review_signature": "wh-fng-64fa6d940784f7ff091c",
+      "earliest_attendance": {
+        "date": "2021-11-20",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-edde07e5a5627cf91d2d",
+            "provenance": {
+              "row": 393,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2026-07-21",
+        "occurrences": [
+          {
+            "ao": "The Iron Gate",
+            "session_key": "wh-session-3405069950325a962c7b",
+            "provenance": {
+              "row": 704,
+              "sheet": "The Iron Gate"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-008",
+      "source_member_key": "wh-member-bd848b0b71096b24f61d",
+      "review_signature": "wh-fng-137bc145564cdc91972c",
+      "earliest_attendance": {
+        "date": "2022-08-31",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-e9dc9b9ae207935f7568",
+            "provenance": {
+              "row": 1222,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-02-04",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-4ffebf71bc4cd72ee773",
+            "provenance": {
+              "row": 7223,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-009",
+      "source_member_key": "wh-member-c30d35bb171f0adbce50",
+      "review_signature": "wh-fng-69e4c129e5290daeff39",
+      "earliest_attendance": {
+        "date": "2023-07-18",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-11a228ae3f77147ce97f",
+            "provenance": {
+              "row": 3752,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-03-25",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-612a56e476fb3d4bed88",
+            "provenance": {
+              "row": 7533,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-010",
+      "source_member_key": "wh-member-0dcc3e1fa118621dc3d2",
+      "review_signature": "wh-fng-ace0cc1245781e082590",
+      "earliest_attendance": {
+        "date": "2022-09-02",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-83e90d7295f267b01d06",
+            "provenance": {
+              "row": 1250,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-08-07",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-4fcc19f4e0dcd6df4dd5",
+            "provenance": {
+              "row": 8287,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-011",
+      "source_member_key": "wh-member-835f659d9fa19d62d3e2",
+      "review_signature": "wh-fng-82b936f2ff881b66b87e",
+      "earliest_attendance": {
+        "date": "2023-01-30",
+        "occurrences": [
+          {
+            "ao": "The Branch",
+            "session_key": "wh-session-3cc599e1c287f68b065b",
+            "provenance": {
+              "row": 284,
+              "sheet": "The Branch"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-12-18",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-12f3a00bed285a4c2bfa",
+            "provenance": {
+              "row": 9072,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-012",
+      "source_member_key": "wh-member-2a428b5d9a580f561136",
+      "review_signature": "wh-fng-eea4ff240c3df5a65116",
+      "earliest_attendance": {
+        "date": "2022-10-05",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-eb2b23398bb2e978ea5e",
+            "provenance": {
+              "row": 1489,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2023-09-25",
+        "occurrences": [
+          {
+            "ao": "The Branch",
+            "session_key": "wh-session-fc1c950b1ca462839dd3",
+            "provenance": {
+              "row": 931,
+              "sheet": "The Branch"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-013",
+      "source_member_key": "wh-member-641b0d9c2a656a928470",
+      "review_signature": "wh-fng-8789afc6d6eeee94bc4b",
+      "earliest_attendance": {
+        "date": "2023-02-07",
+        "occurrences": [
+          {
+            "ao": "The Tower",
+            "session_key": "wh-session-48159be816850f4cb4ff",
+            "provenance": {
+              "row": 509,
+              "sheet": "The Tower"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-05-20",
+        "occurrences": [
+          {
+            "ao": "The Corridor",
+            "session_key": "wh-session-dfc34500384eadd5e352",
+            "provenance": {
+              "row": 2651,
+              "sheet": "The Corridor"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-014",
+      "source_member_key": "wh-member-27bbfa4bbd4b856011d6",
+      "review_signature": "wh-fng-8cd873e143b211bce9c4",
+      "earliest_attendance": {
+        "date": "2024-08-19",
+        "occurrences": [
+          {
+            "ao": "The Branch",
+            "session_key": "wh-session-94e2f3fc1f72d50ba0d1",
+            "provenance": {
+              "row": 2417,
+              "sheet": "The Branch"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2026-05-30",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-413b71c9c568f439123f",
+            "provenance": {
+              "row": 10043,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-015",
+      "source_member_key": "wh-member-0f4bfe41ae4dfae374de",
+      "review_signature": "wh-fng-35f2bc292725e0d0d9dd",
+      "earliest_attendance": {
+        "date": "2021-09-11",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-5d2d97673b17851897a0",
+            "provenance": {
+              "row": 38,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2024-11-12",
+        "occurrences": [
+          {
+            "ao": "The Point",
+            "session_key": "wh-session-0fd97310fc77e05d22bd",
+            "provenance": {
+              "row": 6826,
+              "sheet": "The Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-016",
+      "source_member_key": "wh-member-df11c1ab934efabaf633",
+      "review_signature": "wh-fng-fad6fc61d9c01b04d92a",
+      "earliest_attendance": {
+        "date": "2025-04-30",
+        "occurrences": [
+          {
+            "ao": "Valhalla",
+            "session_key": "wh-session-bee5c0b360bcf73f00d3",
+            "provenance": {
+              "row": 112,
+              "sheet": "Valhalla"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-10-16",
+        "occurrences": [
+          {
+            "ao": "The Valley",
+            "session_key": "wh-session-1f68e05a58d4cd6e5f0e",
+            "provenance": {
+              "row": 1017,
+              "sheet": "The Valley"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-017",
+      "source_member_key": "wh-member-9b29d5b8ababfd7c2450",
+      "review_signature": "wh-fng-c09db191fbf2b1a2d3ee",
+      "earliest_attendance": {
+        "date": "2022-09-21",
+        "occurrences": [
+          {
+            "ao": "The HOP",
+            "session_key": "wh-session-62543b7f0af4a7cc568d",
+            "provenance": {
+              "row": 1399,
+              "sheet": "The HOP"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2025-11-08",
+        "occurrences": [
+          {
+            "ao": "The Corridor",
+            "session_key": "wh-session-475dbdbd165d9a924cf1",
+            "provenance": {
+              "row": 3303,
+              "sheet": "The Corridor"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "worksheet_id": "WH-FNG-018",
+      "source_member_key": "wh-member-44e5071599f9a28b181d",
+      "review_signature": "wh-fng-7802a1fc299b72202959",
+      "earliest_attendance": {
+        "date": "2025-10-23",
+        "occurrences": [
+          {
+            "ao": "The Tower",
+            "session_key": "wh-session-3e8416251d24de71a5fc",
+            "provenance": {
+              "row": 5541,
+              "sheet": "The Tower"
+            }
+          }
+        ]
+      },
+      "earliest_explicit_fng": {
+        "date": "2026-04-28",
+        "occurrences": [
+          {
+            "ao": "The Iron Gate",
+            "session_key": "wh-session-4a51acdec5538bec0040",
+            "provenance": {
+              "row": 388,
+              "sheet": "The Iron Gate"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "historical_workouts": [
+    {
+      "worksheet_id": "WH-WO-001",
+      "date": "2026-06-13",
+      "ao": "The Knot",
+      "source_session_keys": [
+        "wh-session-e1b5347ee597409af85a",
+        "wh-session-ef1598e086f7f6d98358"
+      ],
+      "source_rows": [
+        {
+          "row": 132,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 133,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 134,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 135,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 136,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 137,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 138,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 139,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 140,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 141,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 142,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 143,
+          "sheet": "The Knot"
+        }
+      ]
+    },
+    {
+      "worksheet_id": "WH-WO-002",
+      "date": "2026-06-25",
+      "ao": "The Knot",
+      "source_session_keys": [
+        "wh-session-da1ba6a63583538c8fc8",
+        "wh-session-bb0c049854b0495d76c3"
+      ],
+      "source_rows": [
+        {
+          "row": 200,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 193,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 194,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 195,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 196,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 197,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 198,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 199,
+          "sheet": "The Knot"
+        }
+      ]
+    },
+    {
+      "worksheet_id": "WH-WO-003",
+      "date": "2025-07-12",
+      "ao_as_recorded": "Convergence",
+      "source_sheet": "The Oasis",
+      "source_session_keys": [
+        "wh-session-28a1b3d4ec1d7d235c98"
+      ],
+      "source_rows": [
+        {
+          "row": 412,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 413,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 414,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 415,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 416,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 417,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 418,
+          "sheet": "The Oasis"
+        }
+      ]
+    }
+  ],
+  "other_questions": [
+    {
+      "worksheet_id": "WH-KNOW-001",
+      "topic": "DR location meaning and representation",
+      "attendance_record_count": 241,
+      "date_range": {
+        "first": "2022-02-11",
+        "last": "2023-10-04"
+      },
+      "source_sheets": {
+        "The HOP": 241
+      },
+      "source_session_keys": [
+        "wh-session-0042749a1d3d1dfb2680",
+        "wh-session-01bb970648f17b70b702",
+        "wh-session-049710dad519b2b3276a",
+        "wh-session-06effefc961b42c70961",
+        "wh-session-082c92fc8b6568265aa5",
+        "wh-session-0c887f986154b39e0796",
+        "wh-session-0d47324102b5c97e60b8",
+        "wh-session-10892485ce3e99426181",
+        "wh-session-10cc2d3bac383b1dc8f8",
+        "wh-session-115b1c3db80994dc8653",
+        "wh-session-12bad062ddba74b8dd5f",
+        "wh-session-14bdbdded029b41c38ce",
+        "wh-session-185315a3bd9419e6142d",
+        "wh-session-18a251ac26fb0a47fbc8",
+        "wh-session-19f222851fffd1f83d7a",
+        "wh-session-1aa319189f8bb4a7e6dd",
+        "wh-session-204a19f96f8546e53969",
+        "wh-session-2902a33c4a7edcdc9b88",
+        "wh-session-2a76cdbf7ae5b7f807be",
+        "wh-session-2dab440f12cc437b28c4",
+        "wh-session-2e426abbfc333d1569d1",
+        "wh-session-2f3024e88e955b9a0db6",
+        "wh-session-2f582fa72820d5b73034",
+        "wh-session-30fc9ce3e756e325c38f",
+        "wh-session-359642ee2eed76dd42b5",
+        "wh-session-38fbe10dec181213238d",
+        "wh-session-3ac580ece36840bd5b22",
+        "wh-session-3d3876dc6d767489f9ec",
+        "wh-session-405c135e3e8d0ce250a5",
+        "wh-session-416c4b411ef0354072b2",
+        "wh-session-42807b8cf4f2e347f266",
+        "wh-session-43b5b495a72fd1484f58",
+        "wh-session-49a9d91a18903fce0848",
+        "wh-session-4c69a1a5df8bf1c913a6",
+        "wh-session-510093993c4a630d3426",
+        "wh-session-550f7bc66c797f902799",
+        "wh-session-5554bf4decff72493199",
+        "wh-session-57a3f23f456ff4e58c01",
+        "wh-session-5ab089e3756902a6ca6c",
+        "wh-session-5c02bf82dd6204711597",
+        "wh-session-5d6f5b8da8d7ddab12e9",
+        "wh-session-5e98d3ac19c275812ca4",
+        "wh-session-5f2d7b0ff36f3927b00c",
+        "wh-session-615cee965b1f2ebab902",
+        "wh-session-6284c5a4d335af0f2c0b",
+        "wh-session-631e48a4c853ffc15a05",
+        "wh-session-6878da1af983495d99a6",
+        "wh-session-695847a95706d8dc8e9f",
+        "wh-session-6aec078fb3a7c5730866",
+        "wh-session-6c8e6418df5bcff3dbc9",
+        "wh-session-6d7b19c1b0d892125a56",
+        "wh-session-6fdf84b2f6a524f437ef",
+        "wh-session-72d5df6ddb294850888c",
+        "wh-session-73980c44788d4c269bde",
+        "wh-session-73f0944403c0ceb227f4",
+        "wh-session-74a2fb824ee54becd91b",
+        "wh-session-779dd3187fc6c15707c7",
+        "wh-session-7a4b9cbe82c37b9b5be1",
+        "wh-session-7ab761dd56b17cca06dd",
+        "wh-session-7e8215f0e902e28dc914",
+        "wh-session-7e82c564b32e148d8dd9",
+        "wh-session-827232c47dbc0d0421c9",
+        "wh-session-845dd0022707f5dd64d9",
+        "wh-session-8df34c35bc807fb31ae1",
+        "wh-session-8e0d358d5ac2bd10d931",
+        "wh-session-9467d7d110b9911c8e79",
+        "wh-session-9bdad7661afce8aa7162",
+        "wh-session-9ce2291dd2f34d655663",
+        "wh-session-9fc6809716f4d03d1ba1",
+        "wh-session-a16176aaa2cfd446a9db",
+        "wh-session-a171fff525472aa3fa26",
+        "wh-session-a48508ef269f454b017c",
+        "wh-session-ab8e2eafed6947e787ef",
+        "wh-session-ad0873199d50672aa5d2",
+        "wh-session-adc03cda7ddd28f4c29a",
+        "wh-session-b3b765fb2c1dadfd9a1b",
+        "wh-session-b3d95fc372dcf32b2fd8",
+        "wh-session-b587cc1649c29c4adb05",
+        "wh-session-b6d7ce74dda8a52592b1",
+        "wh-session-b7628d24690673b2ef45",
+        "wh-session-b7abc8f6d6e209e87b79",
+        "wh-session-b83ba5a5a2d05c7678af",
+        "wh-session-bb97a4b92477bb88c256",
+        "wh-session-bbac1db515870172150a",
+        "wh-session-bbf0bced65083bdd547e",
+        "wh-session-bc921291b3ed2379bcf9",
+        "wh-session-bce884f1bd4572e930e7",
+        "wh-session-bedc4af7b59364a7add6",
+        "wh-session-bef6dab95e5c5aa80c2a",
+        "wh-session-c11cfaefbf5c7dbf02e1",
+        "wh-session-c19623eef25c7c35e88a",
+        "wh-session-c3bd29c729137fd91a08",
+        "wh-session-c58fb10a1f781ac4f581",
+        "wh-session-c6982e87911965033512",
+        "wh-session-cc2e90c9bfbe9604126e",
+        "wh-session-cce1941bcd2984e3e34d",
+        "wh-session-cd42087f459d0f389257",
+        "wh-session-cef1900754242d18a1c4",
+        "wh-session-d0b0343c26d7fc8c0776",
+        "wh-session-d6db99722c0deb6b7715",
+        "wh-session-da2f6dc6d82174f9291d",
+        "wh-session-dd7e5ab543cf461edd24",
+        "wh-session-defd06b29a749b51792e",
+        "wh-session-e2ef38d68357e5db1b82",
+        "wh-session-e4188bcb37b87a429cb2",
+        "wh-session-e8a57c50db436c654dbc",
+        "wh-session-e98d55d98351ec44dfcf",
+        "wh-session-e9f969f034fac008d1c6",
+        "wh-session-ee54d357d3953f9e28a0",
+        "wh-session-efc26b07d78ebc98a0c9",
+        "wh-session-f3dc69474f64b3376978",
+        "wh-session-f50469fa9a336f8757da",
+        "wh-session-f5325163e04207418f86",
+        "wh-session-f6ea005a24c2da686b02",
+        "wh-session-f9efc95b0ca5121afa96",
+        "wh-session-faf327fb1ecba6f97961"
+      ]
+    }
+  ]
+}

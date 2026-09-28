@@ -1,0 +1,2113 @@
+{
+  "schema_version": "west-houston-identity-resolution-decisions-v1",
+  "purpose": "Human-authored identity decisions applied downstream without modifying the workbook, analyzer output, or collision-review artifacts.",
+  "source_contract": {
+    "collision_review_schema_version": "west-houston-identity-collision-review-v1",
+    "collision_review_path": "audit/attendance/west-houston-identity-collision-review.json",
+    "parser_version": "west-houston-workbook-v1",
+    "workbook_filename": "2024 West Houston Consolidated.xlsx",
+    "workbook_sha256": "87b9d4d880dc82d01b5ce14e3956793b63f074d27b9c0149b09dc7f6738d684b",
+    "required_match": "Match review_signature first, then require exact equality of the sorted source_identity_keys. Reject application if the workbook SHA-256 or parser version differs unless a human explicitly revalidates the decision set."
+  },
+  "allowed_resolutions": [
+    "MERGE",
+    "KEEP_SEPARATE",
+    "UNRESOLVED"
+  ],
+  "resolution_contract": {
+    "MERGE": {
+      "effect": "Map every source_identity_key in the group to one selected canonical source identity.",
+      "required_fields": [
+        "resolution",
+        "canonical_source_identity_key",
+        "approved_canonical_f3_display_name",
+        "reviewer",
+        "review_date"
+      ],
+      "validation": "canonical_source_identity_key must be one of source_identity_keys; approved_canonical_f3_display_name must be non-empty."
+    },
+    "KEEP_SEPARATE": {
+      "effect": "Preserve every source_identity_key independently with its existing proposed identity and display name.",
+      "required_fields": [
+        "resolution",
+        "reviewer",
+        "review_date"
+      ],
+      "validation": "canonical_source_identity_key and approved_canonical_f3_display_name must remain null."
+    },
+    "UNRESOLVED": {
+      "effect": "Preserve every source identity independently and retain the collision for future review; do not merge.",
+      "required_fields": [
+        "resolution",
+        "reviewer",
+        "review_date"
+      ],
+      "validation": "canonical_source_identity_key and approved_canonical_f3_display_name must remain null."
+    }
+  },
+  "date_format": "YYYY-MM-DD",
+  "decisions": [
+    {
+      "review_id": "WH-ID-001",
+      "review_signature": "wh-collision-35263045d42cf1766bf0",
+      "source_identity_keys": [
+        "wh-member-7fbd38753220ff224c89",
+        "wh-member-dd91fcc8adf5dee35fef"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-7fbd38753220ff224c89",
+          "proposed_f3_name": "A.1.",
+          "raw_name_variants": [
+            "A.1."
+          ]
+        },
+        {
+          "identity_key": "wh-member-dd91fcc8adf5dee35fef",
+          "proposed_f3_name": "A1",
+          "raw_name_variants": [
+            "A1"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-002",
+      "review_signature": "wh-collision-fb6c34193d420c212940",
+      "source_identity_keys": [
+        "wh-member-4f7bc87f5ad864d355d6",
+        "wh-member-d264714542d37bbd6837"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-4f7bc87f5ad864d355d6",
+          "proposed_f3_name": "BabyShark",
+          "raw_name_variants": [
+            "BabyShark",
+            "babyshark"
+          ]
+        },
+        {
+          "identity_key": "wh-member-d264714542d37bbd6837",
+          "proposed_f3_name": "Baby Shark",
+          "raw_name_variants": [
+            "Baby Shark",
+            "Baby shark",
+            "baby Shark"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-003",
+      "review_signature": "wh-collision-5aebef230bce9b6e8683",
+      "source_identity_keys": [
+        "wh-member-61272a351ac48016d4e1",
+        "wh-member-8d14adf36691dbf12b6b"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-61272a351ac48016d4e1",
+          "proposed_f3_name": "Bill Dance",
+          "raw_name_variants": [
+            "Bill Dance"
+          ]
+        },
+        {
+          "identity_key": "wh-member-8d14adf36691dbf12b6b",
+          "proposed_f3_name": "Billdance",
+          "raw_name_variants": [
+            "Billdance"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-004",
+      "review_signature": "wh-collision-55aed50d0b95e1e41d46",
+      "source_identity_keys": [
+        "wh-member-73984bf163fe2eb7d4e5",
+        "wh-member-b24df247bbf28243d25b"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-73984bf163fe2eb7d4e5",
+          "proposed_f3_name": "Bird Shot",
+          "raw_name_variants": [
+            "Bird Shot"
+          ]
+        },
+        {
+          "identity_key": "wh-member-b24df247bbf28243d25b",
+          "proposed_f3_name": "Birdshot",
+          "raw_name_variants": [
+            "Birdshot"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-005",
+      "review_signature": "wh-collision-86f2d92d96a23463c32f",
+      "source_identity_keys": [
+        "wh-member-68b39c281635e3302e24",
+        "wh-member-9bcdc4e4687089b138e5"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-68b39c281635e3302e24",
+          "proposed_f3_name": "BlueScreen",
+          "raw_name_variants": [
+            "BlueScreen",
+            "Bluescreen"
+          ]
+        },
+        {
+          "identity_key": "wh-member-9bcdc4e4687089b138e5",
+          "proposed_f3_name": "Blue Screen",
+          "raw_name_variants": [
+            "Blue Screen",
+            "Blue screen"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-006",
+      "review_signature": "wh-collision-d6ad666d150445eaf2e2",
+      "source_identity_keys": [
+        "wh-member-950642bd3a11fd875d50",
+        "wh-member-c3ba424666c9d3b072a0"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-950642bd3a11fd875d50",
+          "proposed_f3_name": "Bob Ross",
+          "raw_name_variants": [
+            "Bob Ross"
+          ]
+        },
+        {
+          "identity_key": "wh-member-c3ba424666c9d3b072a0",
+          "proposed_f3_name": "BobRoss",
+          "raw_name_variants": [
+            "BobRoss"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-007",
+      "review_signature": "wh-collision-ac84e304f03739a80881",
+      "source_identity_keys": [
+        "wh-member-52bf1a2bef93197aa4f3",
+        "wh-member-e52368538296d22e27be"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-52bf1a2bef93197aa4f3",
+          "proposed_f3_name": "Cap It",
+          "raw_name_variants": [
+            "Cap It"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e52368538296d22e27be",
+          "proposed_f3_name": "Capit",
+          "raw_name_variants": [
+            "Capit"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-008",
+      "review_signature": "wh-collision-bdb429e24d4930783b84",
+      "source_identity_keys": [
+        "wh-member-03ceb7954a6050a5c455",
+        "wh-member-4509b1ab6283e3c651cc"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-03ceb7954a6050a5c455",
+          "proposed_f3_name": "Cat 5",
+          "raw_name_variants": [
+            "Cat 5"
+          ]
+        },
+        {
+          "identity_key": "wh-member-4509b1ab6283e3c651cc",
+          "proposed_f3_name": "Cat5",
+          "raw_name_variants": [
+            "Cat5"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-009",
+      "review_signature": "wh-collision-c992888fcabfdd0a74da",
+      "source_identity_keys": [
+        "wh-member-30fe4aff70503a26e0b6",
+        "wh-member-c665fd21ebeb83c77f47"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-30fe4aff70503a26e0b6",
+          "proposed_f3_name": "Cheese Sticks",
+          "raw_name_variants": [
+            "Cheese Sticks"
+          ]
+        },
+        {
+          "identity_key": "wh-member-c665fd21ebeb83c77f47",
+          "proposed_f3_name": "Cheesesticks",
+          "raw_name_variants": [
+            "Cheesesticks"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-010",
+      "review_signature": "wh-collision-b773b8f3758c0ef2c96b",
+      "source_identity_keys": [
+        "wh-member-2f558c84d8136143034b",
+        "wh-member-7303f84a872003d374d2"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-2f558c84d8136143034b",
+          "proposed_f3_name": "Crackerjack",
+          "raw_name_variants": [
+            "Crackerjack"
+          ]
+        },
+        {
+          "identity_key": "wh-member-7303f84a872003d374d2",
+          "proposed_f3_name": "Cracker Jack",
+          "raw_name_variants": [
+            "Cracker Jack"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-011",
+      "review_signature": "wh-collision-21bb3068e928e826e7dd",
+      "source_identity_keys": [
+        "wh-member-a388c23379edeb5eda81",
+        "wh-member-d47722178f8b4bcd814b"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-a388c23379edeb5eda81",
+          "proposed_f3_name": "Crosscheck",
+          "raw_name_variants": [
+            "Crosscheck"
+          ]
+        },
+        {
+          "identity_key": "wh-member-d47722178f8b4bcd814b",
+          "proposed_f3_name": "Cross Check",
+          "raw_name_variants": [
+            "Cross Check",
+            "Cross check"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-012",
+      "review_signature": "wh-collision-754062bf6b8e0b6ca9ea",
+      "source_identity_keys": [
+        "wh-member-547ef7bac21276177f49",
+        "wh-member-5e812c5891c1d8baed6a",
+        "wh-member-6bc8374c3c42edf30797"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-547ef7bac21276177f49",
+          "proposed_f3_name": "Daniel San",
+          "raw_name_variants": [
+            "Daniel San"
+          ]
+        },
+        {
+          "identity_key": "wh-member-5e812c5891c1d8baed6a",
+          "proposed_f3_name": "Daniel-San",
+          "raw_name_variants": [
+            "Daniel-San"
+          ]
+        },
+        {
+          "identity_key": "wh-member-6bc8374c3c42edf30797",
+          "proposed_f3_name": "Danielsan",
+          "raw_name_variants": [
+            "Danielsan"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-013",
+      "review_signature": "wh-collision-d96bb294c0d8002027d8",
+      "source_identity_keys": [
+        "wh-member-6f322616326a0169411a",
+        "wh-member-95a9414dcdc03eb6f737"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-6f322616326a0169411a",
+          "proposed_f3_name": "Deepdish",
+          "raw_name_variants": [
+            "Deepdish",
+            "deepdish"
+          ]
+        },
+        {
+          "identity_key": "wh-member-95a9414dcdc03eb6f737",
+          "proposed_f3_name": "Deep Dish",
+          "raw_name_variants": [
+            "Deep Dish",
+            "Deep dish",
+            "deep dish"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-014",
+      "review_signature": "wh-collision-5a89337936866a6e8f3b",
+      "source_identity_keys": [
+        "wh-member-40b4a760ce27161cd700",
+        "wh-member-ec21039f6d80a543acd9"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-40b4a760ce27161cd700",
+          "proposed_f3_name": "Desperado",
+          "raw_name_variants": [
+            "Desperado"
+          ]
+        },
+        {
+          "identity_key": "wh-member-ec21039f6d80a543acd9",
+          "proposed_f3_name": "@Desperado",
+          "raw_name_variants": [
+            "@Desperado"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-015",
+      "review_signature": "wh-collision-948a171b70fd7173debd",
+      "source_identity_keys": [
+        "wh-member-0d324476f202556ff001",
+        "wh-member-263c1101b9d1f01e2c3c"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-0d324476f202556ff001",
+          "proposed_f3_name": "DoubleDouble",
+          "raw_name_variants": [
+            "DoubleDouble"
+          ]
+        },
+        {
+          "identity_key": "wh-member-263c1101b9d1f01e2c3c",
+          "proposed_f3_name": "Double Double",
+          "raw_name_variants": [
+            "Double Double"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-016",
+      "review_signature": "wh-collision-db82457b229a7e893f19",
+      "source_identity_keys": [
+        "wh-member-1875d3f37419b5f81fe8",
+        "wh-member-94a1b94f08e593ca762f"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-1875d3f37419b5f81fe8",
+          "proposed_f3_name": "Down hole",
+          "raw_name_variants": [
+            "Down hole"
+          ]
+        },
+        {
+          "identity_key": "wh-member-94a1b94f08e593ca762f",
+          "proposed_f3_name": "Downhole",
+          "raw_name_variants": [
+            "Downhole"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-017",
+      "review_signature": "wh-collision-ac816c766111c5046b60",
+      "source_identity_keys": [
+        "wh-member-0bdc2f2981570bfa3e34",
+        "wh-member-31554efd2e238bc24e66"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-0bdc2f2981570bfa3e34",
+          "proposed_f3_name": "Drill Bit",
+          "raw_name_variants": [
+            "Drill Bit"
+          ]
+        },
+        {
+          "identity_key": "wh-member-31554efd2e238bc24e66",
+          "proposed_f3_name": "Drillbit",
+          "raw_name_variants": [
+            "Drillbit"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-018",
+      "review_signature": "wh-collision-f26630f7a5b80cd15a85",
+      "source_identity_keys": [
+        "wh-member-93742f7c4ce409ee9e0e",
+        "wh-member-cfec556556bed47c6dae"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-93742f7c4ce409ee9e0e",
+          "proposed_f3_name": "Farm Boy",
+          "raw_name_variants": [
+            "Farm Boy"
+          ]
+        },
+        {
+          "identity_key": "wh-member-cfec556556bed47c6dae",
+          "proposed_f3_name": "Farmboy",
+          "raw_name_variants": [
+            "Farmboy"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-019",
+      "review_signature": "wh-collision-3542d7e4254ba35d9691",
+      "source_identity_keys": [
+        "wh-member-1c913a058fa3653d77f7",
+        "wh-member-b1ebcb1ada2f8c752e7e"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-1c913a058fa3653d77f7",
+          "proposed_f3_name": "FixIt",
+          "raw_name_variants": [
+            "FixIt",
+            "fixit"
+          ]
+        },
+        {
+          "identity_key": "wh-member-b1ebcb1ada2f8c752e7e",
+          "proposed_f3_name": "Fix It",
+          "raw_name_variants": [
+            "Fix It"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-020",
+      "review_signature": "wh-collision-e10023b2097fa7453b01",
+      "source_identity_keys": [
+        "wh-member-5ca9ac60e39b44e70f7d",
+        "wh-member-83bfbfba41e6bca3eb6b"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-5ca9ac60e39b44e70f7d",
+          "proposed_f3_name": "Free Fall",
+          "raw_name_variants": [
+            "Free Fall"
+          ]
+        },
+        {
+          "identity_key": "wh-member-83bfbfba41e6bca3eb6b",
+          "proposed_f3_name": "Freefall",
+          "raw_name_variants": [
+            "Freefall"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-021",
+      "review_signature": "wh-collision-f389c75f09448fb75dfd",
+      "source_identity_keys": [
+        "wh-member-3bfe2fadc87e932dc103",
+        "wh-member-98d9de0737e489b5e6f7"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-3bfe2fadc87e932dc103",
+          "proposed_f3_name": "Game Boy",
+          "raw_name_variants": [
+            "Game Boy",
+            "Game boy"
+          ]
+        },
+        {
+          "identity_key": "wh-member-98d9de0737e489b5e6f7",
+          "proposed_f3_name": "Gameboy",
+          "raw_name_variants": [
+            "Gameboy"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-022",
+      "review_signature": "wh-collision-9730eefbccad1ffdb0ec",
+      "source_identity_keys": [
+        "wh-member-478a62bd1eb304336018",
+        "wh-member-9d4b9de30075b1737b11"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-478a62bd1eb304336018",
+          "proposed_f3_name": "Gator Light",
+          "raw_name_variants": [
+            "Gator Light"
+          ]
+        },
+        {
+          "identity_key": "wh-member-9d4b9de30075b1737b11",
+          "proposed_f3_name": "GatorLight",
+          "raw_name_variants": [
+            "GatorLight"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-023",
+      "review_signature": "wh-collision-5cd8f417d39f6cf0abeb",
+      "source_identity_keys": [
+        "wh-member-1bf1645929058f571f4e",
+        "wh-member-3a2aa35ea48067cac6c0"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-1bf1645929058f571f4e",
+          "proposed_f3_name": "Go Kart",
+          "raw_name_variants": [
+            "Go Kart"
+          ]
+        },
+        {
+          "identity_key": "wh-member-3a2aa35ea48067cac6c0",
+          "proposed_f3_name": "Gokart",
+          "raw_name_variants": [
+            "Gokart"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-024",
+      "review_signature": "wh-collision-3d8a464fc75f62678781",
+      "source_identity_keys": [
+        "wh-member-3f5d470084e08ec93e8b",
+        "wh-member-e444548ad31752048fb8"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-3f5d470084e08ec93e8b",
+          "proposed_f3_name": "GoodLife",
+          "raw_name_variants": [
+            "GoodLife"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e444548ad31752048fb8",
+          "proposed_f3_name": "Good Life",
+          "raw_name_variants": [
+            "Good Life"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-025",
+      "review_signature": "wh-collision-cf386ea60e94faa2d4db",
+      "source_identity_keys": [
+        "wh-member-66b13cd3990dcd304bd3",
+        "wh-member-e24592658065a3efa4bc"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-66b13cd3990dcd304bd3",
+          "proposed_f3_name": "Goose Hunter",
+          "raw_name_variants": [
+            "Goose Hunter"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e24592658065a3efa4bc",
+          "proposed_f3_name": "Goosehunter",
+          "raw_name_variants": [
+            "Goosehunter"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-026",
+      "review_signature": "wh-collision-c2a1db30e80af2c37b3c",
+      "source_identity_keys": [
+        "wh-member-33b1a335c48266266a61",
+        "wh-member-c3dea0ebe25e6c8a5dab"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-33b1a335c48266266a61",
+          "proposed_f3_name": "Hallpass",
+          "raw_name_variants": [
+            "Hallpass"
+          ]
+        },
+        {
+          "identity_key": "wh-member-c3dea0ebe25e6c8a5dab",
+          "proposed_f3_name": "Hall Pass",
+          "raw_name_variants": [
+            "Hall Pass"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-027",
+      "review_signature": "wh-collision-349d453f1e9a807378ac",
+      "source_identity_keys": [
+        "wh-member-76abbc924580c2018873",
+        "wh-member-a33714af9f75711c3797"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-76abbc924580c2018873",
+          "proposed_f3_name": "hammer time",
+          "raw_name_variants": [
+            "hammer time"
+          ]
+        },
+        {
+          "identity_key": "wh-member-a33714af9f75711c3797",
+          "proposed_f3_name": "Hammertime",
+          "raw_name_variants": [
+            "Hammertime",
+            "hammertime"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-028",
+      "review_signature": "wh-collision-43c13fdab2ef8841966e",
+      "source_identity_keys": [
+        "wh-member-f6e2ef86dd8db98264de",
+        "wh-member-f838f4ea9147bb2a71b2"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-f6e2ef86dd8db98264de",
+          "proposed_f3_name": "High-Rise",
+          "raw_name_variants": [
+            "High-Rise"
+          ]
+        },
+        {
+          "identity_key": "wh-member-f838f4ea9147bb2a71b2",
+          "proposed_f3_name": "High Rise",
+          "raw_name_variants": [
+            "High Rise"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-029",
+      "review_signature": "wh-collision-5a2050b86177b33cdf39",
+      "source_identity_keys": [
+        "wh-member-18fcb8936b7a5a424ec0",
+        "wh-member-47a6308dcca0efb84981"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-18fcb8936b7a5a424ec0",
+          "proposed_f3_name": "Home slice",
+          "raw_name_variants": [
+            "Home Slice",
+            "Home slice"
+          ]
+        },
+        {
+          "identity_key": "wh-member-47a6308dcca0efb84981",
+          "proposed_f3_name": "Homeslice",
+          "raw_name_variants": [
+            "Homeslice"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-030",
+      "review_signature": "wh-collision-91dcd483d9d8297e9ddc",
+      "source_identity_keys": [
+        "wh-member-ac8f5441695b7e77ed98",
+        "wh-member-eb5b1b949b585751920f"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-ac8f5441695b7e77ed98",
+          "proposed_f3_name": "Honey Do",
+          "raw_name_variants": [
+            "Honey Do"
+          ]
+        },
+        {
+          "identity_key": "wh-member-eb5b1b949b585751920f",
+          "proposed_f3_name": "HoneyDo",
+          "raw_name_variants": [
+            "HoneyDo"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-031",
+      "review_signature": "wh-collision-86d1c5017afc1f60bcc6",
+      "source_identity_keys": [
+        "wh-member-4faf7a199ce9ee27e6cd",
+        "wh-member-67ad354380480c78dbce"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-4faf7a199ce9ee27e6cd",
+          "proposed_f3_name": "Lay Up",
+          "raw_name_variants": [
+            "Lay Up",
+            "Lay up"
+          ]
+        },
+        {
+          "identity_key": "wh-member-67ad354380480c78dbce",
+          "proposed_f3_name": "LayUp",
+          "raw_name_variants": [
+            "LayUp",
+            "Layup"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-032",
+      "review_signature": "wh-collision-083c714eadf649a0df04",
+      "source_identity_keys": [
+        "wh-member-1e288cd8ca4633395fe9",
+        "wh-member-b93e5e5015d15b508d29"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-1e288cd8ca4633395fe9",
+          "proposed_f3_name": "Leatherman",
+          "raw_name_variants": [
+            "Leatherman"
+          ]
+        },
+        {
+          "identity_key": "wh-member-b93e5e5015d15b508d29",
+          "proposed_f3_name": "Leather Man",
+          "raw_name_variants": [
+            "Leather Man"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-033",
+      "review_signature": "wh-collision-fdd9ba0a8f255400747b",
+      "source_identity_keys": [
+        "wh-member-306997bccb1822f88b3e",
+        "wh-member-a3c1f46227066ca11869"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-306997bccb1822f88b3e",
+          "proposed_f3_name": "Levi's",
+          "raw_name_variants": [
+            "Levi's"
+          ]
+        },
+        {
+          "identity_key": "wh-member-a3c1f46227066ca11869",
+          "proposed_f3_name": "Levis",
+          "raw_name_variants": [
+            "Levis"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-034",
+      "review_signature": "wh-collision-48d371c9b3f416d21e90",
+      "source_identity_keys": [
+        "wh-member-b1cac893fa5bab5e0f25",
+        "wh-member-e645a5547a1c126130cf"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-b1cac893fa5bab5e0f25",
+          "proposed_f3_name": "Lightingrod",
+          "raw_name_variants": [
+            "Lightingrod"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e645a5547a1c126130cf",
+          "proposed_f3_name": "lighting rod",
+          "raw_name_variants": [
+            "lighting rod"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-035",
+      "review_signature": "wh-collision-065955c76deed5410f63",
+      "source_identity_keys": [
+        "wh-member-3e49686b36a6a3c67be6",
+        "wh-member-b30b33a980735b4ed091"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-3e49686b36a6a3c67be6",
+          "proposed_f3_name": "Lightningrod",
+          "raw_name_variants": [
+            "Lightningrod",
+            "lightningrod"
+          ]
+        },
+        {
+          "identity_key": "wh-member-b30b33a980735b4ed091",
+          "proposed_f3_name": "Lightning Rod",
+          "raw_name_variants": [
+            "Lightning Rod",
+            "Lightning rod",
+            "lightning rod"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-036",
+      "review_signature": "wh-collision-83767210c1a5ed748336",
+      "source_identity_keys": [
+        "wh-member-0dacdb7d858e1dcf0fa3",
+        "wh-member-d365d87912a9c91c9997"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-0dacdb7d858e1dcf0fa3",
+          "proposed_f3_name": "Lionheart",
+          "raw_name_variants": [
+            "Lionheart",
+            "lionheart"
+          ]
+        },
+        {
+          "identity_key": "wh-member-d365d87912a9c91c9997",
+          "proposed_f3_name": "Lion Heart",
+          "raw_name_variants": [
+            "Lion Heart"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-037",
+      "review_signature": "wh-collision-ee6478adfa2932a83c30",
+      "source_identity_keys": [
+        "wh-member-52ee7eb3152c5df400cf",
+        "wh-member-f330e3281d2c2650da3f"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-52ee7eb3152c5df400cf",
+          "proposed_f3_name": "LOSTandFIND",
+          "raw_name_variants": [
+            "LOSTandFIND"
+          ]
+        },
+        {
+          "identity_key": "wh-member-f330e3281d2c2650da3f",
+          "proposed_f3_name": "Lost and Find",
+          "raw_name_variants": [
+            "Lost and Find"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-038",
+      "review_signature": "wh-collision-776912f8125757f463c3",
+      "source_identity_keys": [
+        "wh-member-66d935aa9289cb190fbf",
+        "wh-member-8d9625e1af10b09b81e2"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-66d935aa9289cb190fbf",
+          "proposed_f3_name": "Mall Cop",
+          "raw_name_variants": [
+            "Mall Cop"
+          ]
+        },
+        {
+          "identity_key": "wh-member-8d9625e1af10b09b81e2",
+          "proposed_f3_name": "Mallcop",
+          "raw_name_variants": [
+            "Mallcop"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-039",
+      "review_signature": "wh-collision-aaa188bd68da84391955",
+      "source_identity_keys": [
+        "wh-member-4ce66401e366a289e49f",
+        "wh-member-676db2a898cb8454acce"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-4ce66401e366a289e49f",
+          "proposed_f3_name": "Manmaker",
+          "raw_name_variants": [
+            "ManMaker",
+            "Manmaker"
+          ]
+        },
+        {
+          "identity_key": "wh-member-676db2a898cb8454acce",
+          "proposed_f3_name": "Man Maker",
+          "raw_name_variants": [
+            "Man Maker"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-040",
+      "review_signature": "wh-collision-711d77e0d972dc7cac72",
+      "source_identity_keys": [
+        "wh-member-733d6d3ce9129a74eab6",
+        "wh-member-f6e168a83929c94bf73f"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-733d6d3ce9129a74eab6",
+          "proposed_f3_name": "MealPrep",
+          "raw_name_variants": [
+            "MealPrep",
+            "mealprep"
+          ]
+        },
+        {
+          "identity_key": "wh-member-f6e168a83929c94bf73f",
+          "proposed_f3_name": "Meal Prep",
+          "raw_name_variants": [
+            "Meal Prep",
+            "Meal prep"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-041",
+      "review_signature": "wh-collision-05821786cedd59aa2312",
+      "source_identity_keys": [
+        "wh-member-8ffa36b161d9e468957a",
+        "wh-member-95b356828ec3784a8299"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-8ffa36b161d9e468957a",
+          "proposed_f3_name": "Mini-Van",
+          "raw_name_variants": [
+            "Mini-Van",
+            "Mini-van"
+          ]
+        },
+        {
+          "identity_key": "wh-member-95b356828ec3784a8299",
+          "proposed_f3_name": "Minivan",
+          "raw_name_variants": [
+            "Minivan"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-042",
+      "review_signature": "wh-collision-854d3bffd663402e9d4f",
+      "source_identity_keys": [
+        "wh-member-217acd159c29a469065f",
+        "wh-member-684d3afa643a36c9b448"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-217acd159c29a469065f",
+          "proposed_f3_name": "MotorCity",
+          "raw_name_variants": [
+            "MotorCity"
+          ]
+        },
+        {
+          "identity_key": "wh-member-684d3afa643a36c9b448",
+          "proposed_f3_name": "Motor City",
+          "raw_name_variants": [
+            "Motor City"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-043",
+      "review_signature": "wh-collision-dc0935c07436a48f3fe5",
+      "source_identity_keys": [
+        "wh-member-35835a281a9e5231bc23",
+        "wh-member-d63eb2d9f480f4c5cefc"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-35835a281a9e5231bc23",
+          "proposed_f3_name": "Mr Clean",
+          "raw_name_variants": [
+            "Mr Clean"
+          ]
+        },
+        {
+          "identity_key": "wh-member-d63eb2d9f480f4c5cefc",
+          "proposed_f3_name": "Mr. Clean",
+          "raw_name_variants": [
+            "Mr. Clean"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-044",
+      "review_signature": "wh-collision-645a15b1fcf7e3256cd6",
+      "source_identity_keys": [
+        "wh-member-67a5eaa40c22453d9b22",
+        "wh-member-bf08b7e8a652c1a9a8b9"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-67a5eaa40c22453d9b22",
+          "proposed_f3_name": "MySpace",
+          "raw_name_variants": [
+            "MySpace"
+          ]
+        },
+        {
+          "identity_key": "wh-member-bf08b7e8a652c1a9a8b9",
+          "proposed_f3_name": "My Space",
+          "raw_name_variants": [
+            "My Space"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-045",
+      "review_signature": "wh-collision-c610e515cc54f115e374",
+      "source_identity_keys": [
+        "wh-member-71f42c57be7ebb57909d",
+        "wh-member-ce8d68cde3e77a773f40"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-71f42c57be7ebb57909d",
+          "proposed_f3_name": "NachoLibre",
+          "raw_name_variants": [
+            "NachoLibre"
+          ]
+        },
+        {
+          "identity_key": "wh-member-ce8d68cde3e77a773f40",
+          "proposed_f3_name": "Nacho Libre",
+          "raw_name_variants": [
+            "Nacho Libre"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-046",
+      "review_signature": "wh-collision-05c822c056db62eef218",
+      "source_identity_keys": [
+        "wh-member-8ed3403221b38f0e1768",
+        "wh-member-cf1a47107b2e9b54e380"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-8ed3403221b38f0e1768",
+          "proposed_f3_name": "Night Life",
+          "raw_name_variants": [
+            "Night Life"
+          ]
+        },
+        {
+          "identity_key": "wh-member-cf1a47107b2e9b54e380",
+          "proposed_f3_name": "Nightlife",
+          "raw_name_variants": [
+            "Nightlife"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-047",
+      "review_signature": "wh-collision-85e47eaaac94dbe294c9",
+      "source_identity_keys": [
+        "wh-member-252937d415de046405d4",
+        "wh-member-9bcdbde7f805762ddf66"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-252937d415de046405d4",
+          "proposed_f3_name": "NosePlug",
+          "raw_name_variants": [
+            "NosePlug",
+            "Noseplug"
+          ]
+        },
+        {
+          "identity_key": "wh-member-9bcdbde7f805762ddf66",
+          "proposed_f3_name": "Nose Plug",
+          "raw_name_variants": [
+            "Nose Plug"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-048",
+      "review_signature": "wh-collision-b958fab7fe768461c497",
+      "source_identity_keys": [
+        "wh-member-1810d9000f8b0caa01e6",
+        "wh-member-482fed8ddfc5ec377c6d",
+        "wh-member-cb16729cd059be83eaed"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-1810d9000f8b0caa01e6",
+          "proposed_f3_name": "Pac-Man",
+          "raw_name_variants": [
+            "Pac-Man"
+          ]
+        },
+        {
+          "identity_key": "wh-member-482fed8ddfc5ec377c6d",
+          "proposed_f3_name": "Pac Man",
+          "raw_name_variants": [
+            "Pac Man"
+          ]
+        },
+        {
+          "identity_key": "wh-member-cb16729cd059be83eaed",
+          "proposed_f3_name": "Pacman",
+          "raw_name_variants": [
+            "Pacman",
+            "pacman"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-049",
+      "review_signature": "wh-collision-1a6d9bce6ffe5092345f",
+      "source_identity_keys": [
+        "wh-member-2c985b0a60c657d1c10e",
+        "wh-member-991a66f1d630ee98f288"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-2c985b0a60c657d1c10e",
+          "proposed_f3_name": "Paper Boy",
+          "raw_name_variants": [
+            "Paper Boy"
+          ]
+        },
+        {
+          "identity_key": "wh-member-991a66f1d630ee98f288",
+          "proposed_f3_name": "Paperboy",
+          "raw_name_variants": [
+            "PaperBoy",
+            "Paperboy"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-050",
+      "review_signature": "wh-collision-44268482501d3153f109",
+      "source_identity_keys": [
+        "wh-member-7288d2fd159f513470f2",
+        "wh-member-fc071117ee4b96274e53"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-7288d2fd159f513470f2",
+          "proposed_f3_name": "Pianoman",
+          "raw_name_variants": [
+            "Pianoman"
+          ]
+        },
+        {
+          "identity_key": "wh-member-fc071117ee4b96274e53",
+          "proposed_f3_name": "Piano Man",
+          "raw_name_variants": [
+            "Piano Man"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-051",
+      "review_signature": "wh-collision-0ed9ac548d54a7c7051a",
+      "source_identity_keys": [
+        "wh-member-9548c4314619fb15000d",
+        "wh-member-e752f42f6708b4c7440f"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-9548c4314619fb15000d",
+          "proposed_f3_name": "Pit Bull",
+          "raw_name_variants": [
+            "Pit Bull"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e752f42f6708b4c7440f",
+          "proposed_f3_name": "Pitbull",
+          "raw_name_variants": [
+            "Pitbull"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-052",
+      "review_signature": "wh-collision-8783db38a282781c1dd8",
+      "source_identity_keys": [
+        "wh-member-8bf363035864e10f7b61",
+        "wh-member-ee4cb1add9a6b5554f08"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-8bf363035864e10f7b61",
+          "proposed_f3_name": "Pop Up",
+          "raw_name_variants": [
+            "Pop Up"
+          ]
+        },
+        {
+          "identity_key": "wh-member-ee4cb1add9a6b5554f08",
+          "proposed_f3_name": "Pop-up",
+          "raw_name_variants": [
+            "Pop-up"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-053",
+      "review_signature": "wh-collision-2119ef39b9921278eb7c",
+      "source_identity_keys": [
+        "wh-member-12fbc15c2f4097bf4125",
+        "wh-member-fb4d0af955399080b170"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-12fbc15c2f4097bf4125",
+          "proposed_f3_name": "Precheck",
+          "raw_name_variants": [
+            "Precheck"
+          ]
+        },
+        {
+          "identity_key": "wh-member-fb4d0af955399080b170",
+          "proposed_f3_name": "Pre-check",
+          "raw_name_variants": [
+            "Pre-check"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-054",
+      "review_signature": "wh-collision-7e6294bf909fa12f1f27",
+      "source_identity_keys": [
+        "wh-member-711bf62eeda3d67b9a49",
+        "wh-member-78befe3a0a03f980e612",
+        "wh-member-e7c370f67eb67a3e2787"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-711bf62eeda3d67b9a49",
+          "proposed_f3_name": "Putt-Putt",
+          "raw_name_variants": [
+            "Putt-Putt"
+          ]
+        },
+        {
+          "identity_key": "wh-member-78befe3a0a03f980e612",
+          "proposed_f3_name": "putt Putt",
+          "raw_name_variants": [
+            "putt Putt"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e7c370f67eb67a3e2787",
+          "proposed_f3_name": "PuttPutt",
+          "raw_name_variants": [
+            "PuttPutt"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-055",
+      "review_signature": "wh-collision-1bed3db2e19a169543ae",
+      "source_identity_keys": [
+        "wh-member-6d432fc384f16a211c9f",
+        "wh-member-a5e6d5730d97d1b53073"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-6d432fc384f16a211c9f",
+          "proposed_f3_name": "Ratrod",
+          "raw_name_variants": [
+            "Ratrod"
+          ]
+        },
+        {
+          "identity_key": "wh-member-a5e6d5730d97d1b53073",
+          "proposed_f3_name": "Rat Rod",
+          "raw_name_variants": [
+            "Rat Rod"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-056",
+      "review_signature": "wh-collision-a17f514a8949d0c7f6e1",
+      "source_identity_keys": [
+        "wh-member-5b826120490927b27d72",
+        "wh-member-be9f969c7105fb2683f2"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-5b826120490927b27d72",
+          "proposed_f3_name": "Redeye",
+          "raw_name_variants": [
+            "Redeye"
+          ]
+        },
+        {
+          "identity_key": "wh-member-be9f969c7105fb2683f2",
+          "proposed_f3_name": "Red Eye",
+          "raw_name_variants": [
+            "Red Eye"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-057",
+      "review_signature": "wh-collision-5d7887d5362abf3b3061",
+      "source_identity_keys": [
+        "wh-member-8d2e5ef9ed9d21d34d97",
+        "wh-member-f50a27d98d33f88fd9fe"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-8d2e5ef9ed9d21d34d97",
+          "proposed_f3_name": "Sharkbait",
+          "raw_name_variants": [
+            "Sharkbait"
+          ]
+        },
+        {
+          "identity_key": "wh-member-f50a27d98d33f88fd9fe",
+          "proposed_f3_name": "Shark Bait",
+          "raw_name_variants": [
+            "Shark Bait"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-058",
+      "review_signature": "wh-collision-8b50c3d662b1fcab9962",
+      "source_identity_keys": [
+        "wh-member-8f19d0082fb2ccef48ad",
+        "wh-member-fab729fffa4a8ff1e9ce"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-8f19d0082fb2ccef48ad",
+          "proposed_f3_name": "Show Boy",
+          "raw_name_variants": [
+            "Show Boy"
+          ]
+        },
+        {
+          "identity_key": "wh-member-fab729fffa4a8ff1e9ce",
+          "proposed_f3_name": "Showboy",
+          "raw_name_variants": [
+            "Showboy"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-059",
+      "review_signature": "wh-collision-fa9b61e2e134b8999506",
+      "source_identity_keys": [
+        "wh-member-1672b786f69bb366e6c8",
+        "wh-member-dfc34d7a2db012b42808"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-1672b786f69bb366e6c8",
+          "proposed_f3_name": "Sightline",
+          "raw_name_variants": [
+            "Sightline"
+          ]
+        },
+        {
+          "identity_key": "wh-member-dfc34d7a2db012b42808",
+          "proposed_f3_name": "Sight Line",
+          "raw_name_variants": [
+            "Sight Line"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-060",
+      "review_signature": "wh-collision-e03cfd386b465473fbef",
+      "source_identity_keys": [
+        "wh-member-8ecdbf6b6b167c860395",
+        "wh-member-ac77daec7b98caf64395"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-8ecdbf6b6b167c860395",
+          "proposed_f3_name": "Slapshot",
+          "raw_name_variants": [
+            "Slapshot"
+          ]
+        },
+        {
+          "identity_key": "wh-member-ac77daec7b98caf64395",
+          "proposed_f3_name": "Slap shot",
+          "raw_name_variants": [
+            "Slap Shot",
+            "Slap shot"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-061",
+      "review_signature": "wh-collision-0c196fda7243b25281e9",
+      "source_identity_keys": [
+        "wh-member-0ebfa4dd79e58054f247",
+        "wh-member-d57b737f265356848422"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-0ebfa4dd79e58054f247",
+          "proposed_f3_name": "Snowcap",
+          "raw_name_variants": [
+            "Snowcap"
+          ]
+        },
+        {
+          "identity_key": "wh-member-d57b737f265356848422",
+          "proposed_f3_name": "Snow Cap",
+          "raw_name_variants": [
+            "Snow Cap"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-062",
+      "review_signature": "wh-collision-b59227444b43079b053c",
+      "source_identity_keys": [
+        "wh-member-94e05d60aa238b7092ec",
+        "wh-member-9eaa8c6964d0dd4662ac"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-94e05d60aa238b7092ec",
+          "proposed_f3_name": "Sparkplug",
+          "raw_name_variants": [
+            "Sparkplug"
+          ]
+        },
+        {
+          "identity_key": "wh-member-9eaa8c6964d0dd4662ac",
+          "proposed_f3_name": "Spark Plug",
+          "raw_name_variants": [
+            "Spark Plug"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-063",
+      "review_signature": "wh-collision-6645afc01a7690ab7018",
+      "source_identity_keys": [
+        "wh-member-810f782c2b87e30d3686",
+        "wh-member-c60a50f030235fc97f5b"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-810f782c2b87e30d3686",
+          "proposed_f3_name": "Spinal Tap",
+          "raw_name_variants": [
+            "Spinal Tap"
+          ]
+        },
+        {
+          "identity_key": "wh-member-c60a50f030235fc97f5b",
+          "proposed_f3_name": "Spinaltap",
+          "raw_name_variants": [
+            "Spinaltap"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-064",
+      "review_signature": "wh-collision-35ddb3e1ff72199d518d",
+      "source_identity_keys": [
+        "wh-member-7d94a78eaeb2a1120fa5",
+        "wh-member-9af96746ee0a61ee3b50"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-7d94a78eaeb2a1120fa5",
+          "proposed_f3_name": "Stirfry",
+          "raw_name_variants": [
+            "Stirfry"
+          ]
+        },
+        {
+          "identity_key": "wh-member-9af96746ee0a61ee3b50",
+          "proposed_f3_name": "Stir Fry",
+          "raw_name_variants": [
+            "Stir Fry"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-065",
+      "review_signature": "wh-collision-1e9169bc702b42b6948b",
+      "source_identity_keys": [
+        "wh-member-434119af786de34b2e11",
+        "wh-member-4b64ba2ba68c72bc5789"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-434119af786de34b2e11",
+          "proposed_f3_name": "Super Trooper",
+          "raw_name_variants": [
+            "Super Trooper"
+          ]
+        },
+        {
+          "identity_key": "wh-member-4b64ba2ba68c72bc5789",
+          "proposed_f3_name": "SuperTrooper",
+          "raw_name_variants": [
+            "SuperTrooper"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-066",
+      "review_signature": "wh-collision-25f597c1187718eeed20",
+      "source_identity_keys": [
+        "wh-member-0d31a59fe323298cc0c0",
+        "wh-member-e12c0ec32f4800aa908f"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-0d31a59fe323298cc0c0",
+          "proposed_f3_name": "Tummy Ache",
+          "raw_name_variants": [
+            "Tummy Ache"
+          ]
+        },
+        {
+          "identity_key": "wh-member-e12c0ec32f4800aa908f",
+          "proposed_f3_name": "TummyAche",
+          "raw_name_variants": [
+            "TummyAche",
+            "Tummyache"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    },
+    {
+      "review_id": "WH-ID-067",
+      "review_signature": "wh-collision-8d4aae46ef961ff65762",
+      "source_identity_keys": [
+        "wh-member-2254a1951a9ea4a37e34",
+        "wh-member-746284c64fb2e5e6883d"
+      ],
+      "source_identity_snapshot": [
+        {
+          "identity_key": "wh-member-2254a1951a9ea4a37e34",
+          "proposed_f3_name": "White Water",
+          "raw_name_variants": [
+            "White Water"
+          ]
+        },
+        {
+          "identity_key": "wh-member-746284c64fb2e5e6883d",
+          "proposed_f3_name": "Whitewater",
+          "raw_name_variants": [
+            "Whitewater"
+          ]
+        }
+      ],
+      "resolution": null,
+      "canonical_source_identity_key": null,
+      "approved_canonical_f3_display_name": null,
+      "reviewer": null,
+      "review_date": null,
+      "notes": null
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "appliedAt": "2026-09-28T14:38:59.182Z",
+  "internalAdmin": {
+    "id": "a2072e94-56ee-447c-aeb3-e820e1fc4c4d",
+    "email": "f3stoner@gmail.com"
+  },
+  "manifestSummary": {
+    "historicalSessions": 36,
+    "sourcePostFlags": 239,
+    "sourceQSourceFlags": 45,
+    "rawSourceAttendanceFlags": 284,
+    "runtimeAttendanceRelationships": 265,
+    "uniquePax": 68,
+    "uniqueQs": 20,
+    "qAssignmentFlags": 36,
+    "fngRecords": 4,
+    "sites": 12,
+    "aos": 18,
+    "recurringSchedules": 18,
+    "prospectiveSlots": 36
+  },
+  "rawQAssignmentFlags": 37,
+  "validation": {
+    "region": {
+      "id": "45a32e90-3f95-5261-bb49-5719f6f77cca",
+      "name": "F3 SacTown Demo",
+      "environment": "test",
+      "lifecycleStatus": "active",
+      "includeInReporting": false,
+      "timezone": "America/Los_Angeles"
+    },
+    "counts": {
+      "members": 68,
+      "sites": 12,
+      "aos": 18,
+      "recurringSchedules": 18,
+      "sessions": 36,
+      "runtimeAttendanceRelationships": 265,
+      "runtimeQRelationships": 36,
+      "fngs": 4,
+      "prospectiveSlots": 36,
+      "assignedProspectiveSlots": 0,
+      "campaigns": 0
+    },
+    "historicalDates": [
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-05",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-12"
+    ],
+    "prospectiveDates": [
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-03",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-10"
+    ]
+  },
+  "productionIsolation": {
+    "unchanged": true,
+    "before": {
+      "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a": {
+        "name": "F3 Old 300",
+        "members": 148,
+        "sessions": 321,
+        "aos": 2,
+        "sites": 2,
+        "q_slots": 486,
+        "ao_recurring_schedules": 7,
+        "region_participants": 158,
+        "member_stats": 148,
+        "campaigns": 0,
+        "region_feed_events": 132
+      },
+      "7298b632-4d9a-542f-b65d-d416e5c1e631": {
+        "name": "F3 West Houston",
+        "members": 219,
+        "sessions": 316,
+        "aos": 10,
+        "sites": 10,
+        "q_slots": 133,
+        "ao_recurring_schedules": 0,
+        "region_participants": 219,
+        "member_stats": 219,
+        "campaigns": 0,
+        "region_feed_events": 85
+      },
+      "96c9eef9-3b6e-4365-86cd-51dbeccf231a": {
+        "name": "F3 Aggieland",
+        "members": 1322,
+        "sessions": 4350,
+        "aos": 21,
+        "sites": 23,
+        "q_slots": 2041,
+        "ao_recurring_schedules": 31,
+        "region_participants": 1324,
+        "member_stats": 1317,
+        "campaigns": 3,
+        "region_feed_events": 530
+      },
+      "c05cd413-7171-4017-aacb-61db1e8ca200": {
+        "name": "F3 North Katy",
+        "members": 110,
+        "sessions": 8,
+        "aos": 10,
+        "sites": 0,
+        "q_slots": 70,
+        "ao_recurring_schedules": 0,
+        "region_participants": 110,
+        "member_stats": 0,
+        "campaigns": 0,
+        "region_feed_events": 14
+      }
+    },
+    "after": {
+      "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a": {
+        "name": "F3 Old 300",
+        "members": 148,
+        "sessions": 321,
+        "aos": 2,
+        "sites": 2,
+        "q_slots": 486,
+        "ao_recurring_schedules": 7,
+        "region_participants": 158,
+        "member_stats": 148,
+        "campaigns": 0,
+        "region_feed_events": 132
+      },
+      "7298b632-4d9a-542f-b65d-d416e5c1e631": {
+        "name": "F3 West Houston",
+        "members": 219,
+        "sessions": 316,
+        "aos": 10,
+        "sites": 10,
+        "q_slots": 133,
+        "ao_recurring_schedules": 0,
+        "region_participants": 219,
+        "member_stats": 219,
+        "campaigns": 0,
+        "region_feed_events": 85
+      },
+      "96c9eef9-3b6e-4365-86cd-51dbeccf231a": {
+        "name": "F3 Aggieland",
+        "members": 1322,
+        "sessions": 4350,
+        "aos": 21,
+        "sites": 23,
+        "q_slots": 2041,
+        "ao_recurring_schedules": 31,
+        "region_participants": 1324,
+        "member_stats": 1317,
+        "campaigns": 3,
+        "region_feed_events": 530
+      },
+      "c05cd413-7171-4017-aacb-61db1e8ca200": {
+        "name": "F3 North Katy",
+        "members": 110,
+        "sessions": 8,
+        "aos": 10,
+        "sites": 0,
+        "q_slots": 70,
+        "ao_recurring_schedules": 0,
+        "region_participants": 110,
+        "member_stats": 0,
+        "campaigns": 0,
+        "region_feed_events": 14
+      }
+    }
+  },
+  "resetCommand": "node scripts/importSacTownDemo.js --reset --confirm-region-id 45a32e90-3f95-5261-bb49-5719f6f77cca"
+}

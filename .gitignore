@@ -5,3 +5,6 @@ audit/**/*.csv
 
 public/*.csv
 dist/*.csv
+
+__pycache__/
+*.pyc
