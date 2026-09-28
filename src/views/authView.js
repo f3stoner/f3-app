@@ -44,6 +44,7 @@ export function renderAuthView() {
         { label: "Old 300", value: "0925d0c8-2c87-4d9c-882a-86efa0ce1c5a" },
         { label: "North Katy", value: "c05cd413-7171-4017-aacb-61db1e8ca200" },
         { label: "West Houston", value: "7298b632-4d9a-542f-b65d-d416e5c1e631" },
+        { label: "SacTown", value: "45a32e90-3f95-5261-bb49-5719f6f77cca" },
     ];
 
     const placeholderOption = document.createElement("option");
