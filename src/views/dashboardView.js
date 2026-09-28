@@ -5,7 +5,13 @@ import {
     renderApp,
     saveCurrentOfflineBootSnapshot,
 } from "../index.js";
-import { formatShortDate, formatDate, getTodayDate, formatMonthDayYear } from "../utils/date.js";
+import {
+    formatShortDate,
+    formatDate,
+    getTodayDate,
+    formatMonthDayYear,
+    isPastWorkoutGracePeriod,
+} from "../utils/date.js";
 import { createGlobalNav } from "../components/globalNav.js";
 import {
     loadMemberDashboardStats,
@@ -1198,16 +1204,9 @@ export function renderDashboard() {
         
         if (!displayTime) return false;
         
-        const [hourString, minuteString] = displayTime.split(":");
-        const hour = Number(hourString);
-        const minute = Number(minuteString || 0);
-    
-        if (Number.isNaN(hour) || Number.isNaN(minute)) return false;
-    
-        const workoutStart = new Date();
-        workoutStart.setHours(hour, minute, 0, 0);
-    
-        return new Date() > workoutStart;
+        return isPastWorkoutGracePeriod(
+            displayTime
+        );
     }
 
     function getNextQTargetDateTime(slot, ao) {

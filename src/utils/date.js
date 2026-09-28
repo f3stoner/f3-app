@@ -31,6 +31,30 @@ export function getTodayDate() {
     return `${year}-${month}-${day}`;
 }
 
+export function isPastWorkoutGracePeriod(
+    displayTime,
+    now = new Date()
+) {
+    const [hourString, minuteString] =
+        String(displayTime || "").split(":");
+
+    const hour = Number(hourString);
+    const minute = Number(minuteString || 0);
+
+    if (
+        !displayTime ||
+        Number.isNaN(hour) ||
+        Number.isNaN(minute)
+    ) {
+        return false;
+    }
+
+    const cutoff = new Date(now);
+    cutoff.setHours(hour + 4, minute, 0, 0);
+
+    return now >= cutoff;
+}
+
 export function formatDateForInput(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
