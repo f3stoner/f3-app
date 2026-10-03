@@ -1,0 +1,407 @@
+{
+  "canonicalMetrics": {
+    "canonicalAttendance": {
+      "delta": 511,
+      "new": 43132,
+      "old": 42621
+    },
+    "canonicalFngEvidence": {
+      "delta": 2,
+      "new": 494,
+      "old": 492
+    },
+    "canonicalMembers": {
+      "delta": 9,
+      "new": 1194,
+      "old": 1185
+    },
+    "canonicalPrimarySessions": {
+      "delta": 47,
+      "new": 3742,
+      "old": 3695
+    },
+    "canonicalQAssignments": {
+      "delta": 48,
+      "new": 3636,
+      "old": 3588
+    },
+    "excludedDdAttendance": {
+      "delta": 9,
+      "new": 1951,
+      "old": 1942
+    },
+    "excludedDdFngEvidence": {
+      "delta": 0,
+      "new": 0,
+      "old": 0
+    },
+    "excludedDdQAssignments": {
+      "delta": 0,
+      "new": 0,
+      "old": 0
+    },
+    "excludedDdSessions": {
+      "delta": 3,
+      "new": 874,
+      "old": 871
+    },
+    "excludedDrAttendance": {
+      "delta": 0,
+      "new": 241,
+      "old": 241
+    },
+    "excludedDrFngEvidence": {
+      "delta": 0,
+      "new": 0,
+      "old": 0
+    },
+    "excludedDrQAssignments": {
+      "delta": 0,
+      "new": 1,
+      "old": 1
+    },
+    "excludedDrSessions": {
+      "delta": 0,
+      "new": 116,
+      "old": 116
+    }
+  },
+  "cutoff": {
+    "new": "2026-09-29",
+    "old": "2026-09-22"
+  },
+  "invariants": {
+    "allFngsAreAttendees": true,
+    "canonicalContradictions": 0,
+    "ddExcludedFromCanonical": true,
+    "dogeMatchCandidates": 1,
+    "drExcludedFromCanonical": true
+  },
+  "manifestMappingAdjustments": [
+    {
+      "approvedCanonicalF3Name": "Birdshot",
+      "missingOldSourceIdentityKey": "wh-member-73984bf163fe2eb7d4e5",
+      "proof": {
+        "freshProvenanceContainsOldRows": true,
+        "freshRawVariants": [
+          {
+            "occurrences": 1,
+            "value": "BirdShot"
+          },
+          {
+            "occurrences": 302,
+            "value": "Birdshot"
+          }
+        ],
+        "oldProvenance": [
+          "The Iron Gate!891"
+        ],
+        "oldRawVariants": [
+          {
+            "occurrences": 1,
+            "value": "Bird Shot"
+          }
+        ]
+      },
+      "reviewId": "WH-ID-004",
+      "status": "clean_source_correction",
+      "survivingSourceIdentityKey": "wh-member-b24df247bbf28243d25b"
+    }
+  ],
+  "metadata": {
+    "newWorkbookFilename": "2024 West Houston Consolidated (1).xlsx",
+    "newWorkbookSha256": "2e8c68bcd96c84dccdadabb761e778d60de092fd7a374719d5768372e23ee533",
+    "oldWorkbookFilename": "2024 West Houston Consolidated.xlsx",
+    "oldWorkbookSha256": "87b9d4d880dc82d01b5ce14e3956793b63f074d27b9c0149b09dc7f6738d684b",
+    "parserVersion": "west-houston-workbook-v1",
+    "schemaVersion": "west-houston-workbook-refresh-delta-v1",
+    "status": "candidate_refresh_pending_new_human_fng_review"
+  },
+  "newCollisionGroups": [],
+  "newFngFirstPostDiscrepancies": [
+    {
+      "earliestAttendance": "2025-06-12",
+      "earliestAttendanceEvidence": [
+        {
+          "ao": "The Corridor",
+          "date": "2025-06-12",
+          "provenance": {
+            "row": 2723,
+            "sheet": "The Corridor"
+          },
+          "sessionKey": "wh-session-c735c0762bfbb1a64a3f"
+        }
+      ],
+      "earliestExplicitFng": "2026-08-25",
+      "existingHumanReviewIds": [
+        "WH-ID-034",
+        "WH-ID-035",
+        "WH-XID-001"
+      ],
+      "explicitFngEvidence": [
+        {
+          "ao": "The Oasis",
+          "date": "2026-08-25",
+          "provenance": {
+            "row": 2539,
+            "sheet": "The Oasis"
+          },
+          "sessionKey": "wh-session-dfba3ad2b9332c5b7b47"
+        }
+      ],
+      "memberKey": "wh-member-3e49686b36a6a3c67be6",
+      "proposedF3Name": "Lightningrod",
+      "proposedReviewId": "WH-FNG-019"
+    }
+  ],
+  "newRawPaxNames": [
+    "BirdShot",
+    "Conspiracy",
+    "Dr. Phil",
+    "Drifter",
+    "Fn D Paddle",
+    "Forcefield",
+    "Gas Leak",
+    "Grey's Anatomy",
+    "Podcast",
+    "Yellow Card"
+  ],
+  "newSourceIdentities": [
+    {
+      "firstKnownAttendanceDate": "2026-09-12",
+      "lastKnownAttendanceDate": "2026-09-26",
+      "memberKey": "wh-member-1ff36527318cef3ab1fc",
+      "proposedF3Name": "Podcast",
+      "rawNameVariants": [
+        {
+          "occurrences": 2,
+          "value": "Podcast"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2025-09-27",
+      "lastKnownAttendanceDate": "2026-09-26",
+      "memberKey": "wh-member-5714bcf02face4dd093c",
+      "proposedF3Name": "Fn D Paddle",
+      "rawNameVariants": [
+        {
+          "occurrences": 44,
+          "value": "Fn D Paddle"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-24",
+      "lastKnownAttendanceDate": "2026-09-24",
+      "memberKey": "wh-member-58dc7a8c14ee6b098415",
+      "proposedF3Name": "Conspiracy",
+      "rawNameVariants": [
+        {
+          "occurrences": 2,
+          "value": "Conspiracy"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-26",
+      "lastKnownAttendanceDate": "2026-09-26",
+      "memberKey": "wh-member-a2f216a755d2600e63cc",
+      "proposedF3Name": "Drifter",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Drifter"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-05",
+      "lastKnownAttendanceDate": "2026-09-05",
+      "memberKey": "wh-member-b6d2bf4f4697290582bc",
+      "proposedF3Name": "Yellow Card",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Yellow Card"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-15",
+      "lastKnownAttendanceDate": "2026-09-15",
+      "memberKey": "wh-member-be5ebdd08080d749a734",
+      "proposedF3Name": "Gas Leak",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Gas Leak"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-16",
+      "lastKnownAttendanceDate": "2026-09-16",
+      "memberKey": "wh-member-de1ba37223f6773e88b9",
+      "proposedF3Name": "Forcefield",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Forcefield"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-29",
+      "lastKnownAttendanceDate": "2026-09-29",
+      "memberKey": "wh-member-f445e1143d23cd04b056",
+      "proposedF3Name": "Grey's Anatomy",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Grey's Anatomy"
+        }
+      ]
+    },
+    {
+      "firstKnownAttendanceDate": "2026-09-26",
+      "lastKnownAttendanceDate": "2026-09-26",
+      "memberKey": "wh-member-f7ca662b126be5707233",
+      "proposedF3Name": "Dr. Phil",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Dr. Phil"
+        }
+      ]
+    }
+  ],
+  "newSourceSessionsByStream": {
+    "bd": 47,
+    "dd": 3
+  },
+  "preservedExistingFngDecisions": 18,
+  "removedCollisionGroups": [
+    {
+      "looseKey": "birdshot",
+      "members": [
+        {
+          "memberKey": "wh-member-73984bf163fe2eb7d4e5",
+          "proposedF3Name": "Bird Shot"
+        },
+        {
+          "memberKey": "wh-member-b24df247bbf28243d25b",
+          "proposedF3Name": "Birdshot"
+        }
+      ],
+      "reason": "punctuation_or_spacing_insensitive_names_collide"
+    }
+  ],
+  "removedRawPaxNames": [
+    "Bird Shot"
+  ],
+  "retiredSourceIdentities": [
+    {
+      "memberKey": "wh-member-73984bf163fe2eb7d4e5",
+      "proposedF3Name": "Bird Shot",
+      "rawNameVariants": [
+        {
+          "occurrences": 1,
+          "value": "Bird Shot"
+        }
+      ]
+    }
+  ],
+  "sourceMetrics": {
+    "explicitFngEvents": {
+      "delta": 2,
+      "new": 494,
+      "old": 492
+    },
+    "explicitQAssignments": {
+      "delta": 48,
+      "new": 3637,
+      "old": 3589
+    },
+    "fngEarliestAttendanceDiscrepancies": {
+      "delta": 1,
+      "new": 19,
+      "old": 18
+    },
+    "legitimateSourceAttendanceRows": {
+      "delta": 512,
+      "new": 43554,
+      "old": 43042
+    },
+    "nonemptyRowsExamined": {
+      "delta": 261,
+      "new": 48598,
+      "old": 48337
+    },
+    "normalizedAttendanceRecords": {
+      "delta": 520,
+      "new": 45324,
+      "old": 44804
+    },
+    "physicalRowsExamined": {
+      "delta": 0,
+      "new": 56359,
+      "old": 56359
+    },
+    "possibleIdentityCollisions": {
+      "delta": -1,
+      "new": 66,
+      "old": 67
+    },
+    "proposedMembers": {
+      "delta": 8,
+      "new": 1261,
+      "old": 1253
+    },
+    "proposedSessions": {
+      "delta": 50,
+      "new": 4734,
+      "old": 4684
+    }
+  },
+  "specialWorkoutResolutions": [
+    {
+      "attendanceCount": 12,
+      "canonicalAo": "The Knot",
+      "date": "2026-06-13",
+      "eventName": null,
+      "reviewId": "WH-WO-001",
+      "sourceSessionKeys": [
+        "wh-session-e1b5347ee597409af85a",
+        "wh-session-ef1598e086f7f6d98358"
+      ],
+      "status": "still_valid",
+      "workoutType": "Bootcamp"
+    },
+    {
+      "attendanceCount": 8,
+      "canonicalAo": "The Knot",
+      "date": "2026-06-25",
+      "eventName": null,
+      "reviewId": "WH-WO-002",
+      "sourceSessionKeys": [
+        "wh-session-bb0c049854b0495d76c3",
+        "wh-session-da1ba6a63583538c8fc8"
+      ],
+      "status": "still_valid",
+      "workoutType": "Bootcamp"
+    },
+    {
+      "attendanceCount": 7,
+      "canonicalAo": "The Corridor",
+      "date": "2025-07-12",
+      "eventName": "The Corridor 4-year anniversary",
+      "reviewId": "WH-WO-003",
+      "sourceSessionKeys": [
+        "wh-session-28a1b3d4ec1d7d235c98"
+      ],
+      "status": "still_valid",
+      "workoutType": "Bootcamp"
+    }
+  ]
+}

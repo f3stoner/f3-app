@@ -2,8 +2,8 @@
 
 ## Source selection
 
-- Workbook: `2024 West Houston Consolidated.xlsx`
-- SHA-256: `87b9d4d880dc82d01b5ce14e3956793b63f074d27b9c0149b09dc7f6738d684b`
+- Workbook: `2024 West Houston Consolidated (1).xlsx`
+- SHA-256: `2e8c68bcd96c84dccdadabb761e778d60de092fd7a374719d5768372e23ee533`
 - Parser version: `west-houston-workbook-v1`
 - Canonical source sheets: The Branch, The Point, The HOP, The Corridor, The Valley, The Tower, Valhalla, The Oasis, The Iron Gate, The Knot
 - Excluded derived sheets: Combined, FNG, Posting Table
@@ -15,39 +15,39 @@
 | Metric | Value |
 | --- | --- |
 | physicalRowsExamined | 56359 |
-| nonemptyRowsExamined | 48337 |
-| legitimateSourceAttendanceRows | 43042 |
-| normalizedAttendanceRecords | 44804 |
-| proposedMembers | 1253 |
-| mechanicalVariantGroups | 106 |
-| possibleIdentityCollisions | 67 |
-| proposedSessions | 4684 |
-| explicitQAssignments | 3589 |
-| sessionsWithZeroQs | 1148 |
-| sessionsWithOneQ | 3511 |
-| sessionsWithMultipleQs | 25 |
-| explicitFngEvents | 492 |
-| membersWithExplicitFirstPost | 473 |
-| fngEarliestAttendanceDiscrepancies | 18 |
-| duplicateAttendanceRemoved | 73 |
-| ambiguousSessionGroupings | 695 |
-| rejectedRows | 5295 |
+| nonemptyRowsExamined | 48598 |
+| legitimateSourceAttendanceRows | 43554 |
+| normalizedAttendanceRecords | 45324 |
+| proposedMembers | 1261 |
+| mechanicalVariantGroups | 107 |
+| possibleIdentityCollisions | 66 |
+| proposedSessions | 4734 |
+| explicitQAssignments | 3637 |
+| sessionsWithZeroQs | 1154 |
+| sessionsWithOneQ | 3554 |
+| sessionsWithMultipleQs | 26 |
+| explicitFngEvents | 494 |
+| membersWithExplicitFirstPost | 475 |
+| fngEarliestAttendanceDiscrepancies | 19 |
+| duplicateAttendanceRemoved | 74 |
+| ambiguousSessionGroupings | 698 |
+| rejectedRows | 5044 |
 | sourceContradictions | 0 |
 
 ## Source sheets
 
 | Sheet | Physical rows | Nonempty rows | Accepted source rows | Date column | Name column |
 | --- | --- | --- | --- | --- | --- |
-| The Branch | 5605 | 5507 | 5224 | 7 | 8 |
-| The Point | 11160 | 10346 | 10346 | 7 | 8 |
+| The Branch | 5605 | 5509 | 5249 | 7 | 8 |
+| The Point | 11160 | 10551 | 10551 | 7 | 8 |
 | The HOP | 9088 | 8761 | 8713 | 7 | 8 |
-| The Corridor | 7782 | 4617 | 4614 | 7 | 8 |
+| The Corridor | 7782 | 4655 | 4652 | 7 | 8 |
 | The Valley | 2989 | 1975 | 1975 | 7 | 8 |
 | The Tower | 7728 | 7199 | 7111 | 7 | 8 |
-| Valhalla | 3004 | 929 | 918 | 8 | 7 |
-| The Oasis | 4010 | 4010 | 2523 | 7 | 8 |
-| The Iron Gate | 1999 | 1999 | 1098 | 7 | 8 |
-| The Knot | 2994 | 2994 | 520 | 7 | 8 |
+| Valhalla | 3004 | 945 | 934 | 8 | 7 |
+| The Oasis | 4010 | 4010 | 2683 | 7 | 8 |
+| The Iron Gate | 1999 | 1999 | 1137 | 7 | 8 |
+| The Knot | 2994 | 2994 | 549 | 7 | 8 |
 
 Valhalla is the column-order exception: its header and cached rows place Name in G and Date in H; the other AO sheets place Date in G and Name in H.
 
@@ -56,18 +56,19 @@ Valhalla is the column-order exception: its header and cached rows place Name in
 | Raw location | Proposed AO | Accepted records |
 | --- | --- | --- |
 | Convergence | Convergence | 7 |
-| Corridor | The Corridor | 4613 |
+| Corridor | The Corridor | 4642 |
 | DR | DR | 241 |
-| The Branch | The Branch | 5224 |
+| Iron Gate | Iron Gate | 9 |
+| The Branch | The Branch | 5249 |
 | The Corridor | The Corridor | 1 |
 | The HOP | The HOP | 8472 |
-| The Iron Gate | The Iron Gate | 1098 |
-| The Knot | The Knot | 520 |
-| The Oasis | The Oasis | 2516 |
-| The Point | The Point | 10346 |
+| The Iron Gate | The Iron Gate | 1137 |
+| The Knot | The Knot | 549 |
+| The Oasis | The Oasis | 2676 |
+| The Point | The Point | 10551 |
 | The Tower | The Tower | 7111 |
 | The Valley | The Valley | 1975 |
-| Valhalla | Valhalla | 918 |
+| Valhalla | Valhalla | 934 |
 
 ## Sessions by year and AO
 
@@ -114,22 +115,23 @@ Valhalla is the column-order exception: its header and cached rows place Name in
 | 2025 | The Valley | dd | 3 |
 | 2025 | Valhalla | bd | 51 |
 | 2025 | Valhalla | dd | 13 |
-| 2026 | The Branch | bd | 110 |
+| 2026 | Iron Gate | bd | 1 |
+| 2026 | The Branch | bd | 114 |
 | 2026 | The Branch | dd | 13 |
-| 2026 | The Corridor | bd | 102 |
-| 2026 | The Corridor | dd | 119 |
+| 2026 | The Corridor | bd | 105 |
+| 2026 | The Corridor | dd | 121 |
 | 2026 | The HOP | bd | 103 |
 | 2026 | The HOP | dd | 101 |
-| 2026 | The Iron Gate | bd | 108 |
-| 2026 | The Iron Gate | dd | 64 |
-| 2026 | The Knot | bd | 57 |
-| 2026 | The Oasis | bd | 96 |
-| 2026 | The Point | bd | 94 |
+| 2026 | The Iron Gate | bd | 111 |
+| 2026 | The Iron Gate | dd | 65 |
+| 2026 | The Knot | bd | 60 |
+| 2026 | The Oasis | bd | 111 |
+| 2026 | The Point | bd | 111 |
 | 2026 | The Tower | bd | 102 |
 | 2026 | The Tower | dd | 46 |
 | 2026 | The Valley | bd | 71 |
 | 2026 | The Valley | dd | 3 |
-| 2026 | Valhalla | bd | 36 |
+| 2026 | Valhalla | bd | 37 |
 | 2026 | Valhalla | dd | 7 |
 
 ## Attendance by year and AO
@@ -177,22 +179,23 @@ Valhalla is the column-order exception: its header and cached rows place Name in
 | 2025 | The Valley | dd | 7 |
 | 2025 | Valhalla | bd | 540 |
 | 2025 | Valhalla | dd | 18 |
-| 2026 | The Branch | bd | 966 |
+| 2026 | Iron Gate | bd | 9 |
+| 2026 | The Branch | bd | 991 |
 | 2026 | The Branch | dd | 32 |
-| 2026 | The Corridor | bd | 1052 |
-| 2026 | The Corridor | dd | 315 |
+| 2026 | The Corridor | bd | 1081 |
+| 2026 | The Corridor | dd | 322 |
 | 2026 | The HOP | bd | 1336 |
 | 2026 | The HOP | dd | 288 |
-| 2026 | The Iron Gate | bd | 1093 |
-| 2026 | The Iron Gate | dd | 132 |
-| 2026 | The Knot | bd | 519 |
-| 2026 | The Oasis | bd | 1178 |
-| 2026 | The Point | bd | 1212 |
+| 2026 | The Iron Gate | bd | 1132 |
+| 2026 | The Iron Gate | dd | 134 |
+| 2026 | The Knot | bd | 548 |
+| 2026 | The Oasis | bd | 1338 |
+| 2026 | The Point | bd | 1417 |
 | 2026 | The Tower | bd | 1227 |
 | 2026 | The Tower | dd | 82 |
 | 2026 | The Valley | bd | 721 |
 | 2026 | The Valley | dd | 7 |
-| 2026 | Valhalla | bd | 370 |
+| 2026 | Valhalla | bd | 385 |
 | 2026 | Valhalla | dd | 12 |
 
 ## Review findings
@@ -204,23 +207,23 @@ Valhalla is the column-order exception: its header and cached rows place Name in
 | a1 | [{"memberKey": "wh-member-7fbd38753220ff224c89", "proposedF3Name": "A.1."}, {"memberKey": "wh-member-dd91fcc8adf5dee35fef", "proposedF3Name": "A1"}] | punctuation_or_spacing_insensitive_names_collide |
 | babyshark | [{"memberKey": "wh-member-d264714542d37bbd6837", "proposedF3Name": "Baby Shark"}, {"memberKey": "wh-member-4f7bc87f5ad864d355d6", "proposedF3Name": "BabyShark"}] | punctuation_or_spacing_insensitive_names_collide |
 | billdance | [{"memberKey": "wh-member-61272a351ac48016d4e1", "proposedF3Name": "Bill Dance"}, {"memberKey": "wh-member-8d14adf36691dbf12b6b", "proposedF3Name": "Billdance"}] | punctuation_or_spacing_insensitive_names_collide |
-| birdshot | [{"memberKey": "wh-member-73984bf163fe2eb7d4e5", "proposedF3Name": "Bird Shot"}, {"memberKey": "wh-member-b24df247bbf28243d25b", "proposedF3Name": "Birdshot"}] | punctuation_or_spacing_insensitive_names_collide |
 | bluescreen | [{"memberKey": "wh-member-9bcdc4e4687089b138e5", "proposedF3Name": "Blue Screen"}, {"memberKey": "wh-member-68b39c281635e3302e24", "proposedF3Name": "BlueScreen"}] | punctuation_or_spacing_insensitive_names_collide |
 | bobross | [{"memberKey": "wh-member-950642bd3a11fd875d50", "proposedF3Name": "Bob Ross"}, {"memberKey": "wh-member-c3ba424666c9d3b072a0", "proposedF3Name": "BobRoss"}] | punctuation_or_spacing_insensitive_names_collide |
 | capit | [{"memberKey": "wh-member-52bf1a2bef93197aa4f3", "proposedF3Name": "Cap It"}, {"memberKey": "wh-member-e52368538296d22e27be", "proposedF3Name": "Capit"}] | punctuation_or_spacing_insensitive_names_collide |
 | cat5 | [{"memberKey": "wh-member-03ceb7954a6050a5c455", "proposedF3Name": "Cat 5"}, {"memberKey": "wh-member-4509b1ab6283e3c651cc", "proposedF3Name": "Cat5"}] | punctuation_or_spacing_insensitive_names_collide |
+| cheesesticks | [{"memberKey": "wh-member-30fe4aff70503a26e0b6", "proposedF3Name": "Cheese Sticks"}, {"memberKey": "wh-member-c665fd21ebeb83c77f47", "proposedF3Name": "Cheesesticks"}] | punctuation_or_spacing_insensitive_names_collide |
 
 ### Mechanical name-variant collapses
 
 | Proposed name | Variants |
 | --- | --- |
 | 3K | [{"occurrences": 17, "value": "3K"}, {"occurrences": 1, "value": "3k"}] |
-| Aardappel | [{"occurrences": 4, "value": "AArdappel"}, {"occurrences": 193, "value": "Aardappel"}] |
-| Animal | [{"occurrences": 5, "value": "Animal"}, {"occurrences": 1, "value": "animal"}] |
-| Atlas | [{"occurrences": 6, "value": "ATLAS"}, {"occurrences": 49, "value": "Atlas"}] |
-| Baby Shark | [{"occurrences": 653, "value": "Baby Shark"}, {"occurrences": 4, "value": "Baby shark"}, {"occurrences": 2, "value": "baby Shark"}] |
+| Aardappel | [{"occurrences": 4, "value": "AArdappel"}, {"occurrences": 203, "value": "Aardappel"}] |
+| Animal | [{"occurrences": 6, "value": "Animal"}, {"occurrences": 1, "value": "animal"}] |
+| Atlas | [{"occurrences": 6, "value": "ATLAS"}, {"occurrences": 51, "value": "Atlas"}] |
+| Baby Shark | [{"occurrences": 657, "value": "Baby Shark"}, {"occurrences": 4, "value": "Baby shark"}, {"occurrences": 2, "value": "baby Shark"}] |
 | BabyShark | [{"occurrences": 1, "value": "BabyShark"}, {"occurrences": 1, "value": "babyshark"}] |
-| Bandsaw | [{"occurrences": 34, "value": "BandSaw"}, {"occurrences": 273, "value": "Bandsaw"}, {"occurrences": 1, "value": "bandsaw"}] |
+| Bandsaw | [{"occurrences": 34, "value": "BandSaw"}, {"occurrences": 284, "value": "Bandsaw"}, {"occurrences": 1, "value": "bandsaw"}] |
 | Beto | [{"occurrences": 239, "value": "Beto"}, {"occurrences": 3, "value": "bEtO"}] |
 
 ### FNG date discrepancies
@@ -255,6 +258,7 @@ Valhalla is the column-order exception: its header and cached rows place Name in
 | --- | --- | --- |
 | Convergence | Convergence | 7 |
 | DR | DR | 241 |
+| Iron Gate | Iron Gate | 9 |
 
 ### Special-event comments
 

@@ -61,3 +61,8 @@ export async function generateQSlotsForCurrentRegion(daysAhead = Q_SLOT_GENERATI
         slots: newSlots,
     };
 }
+
+if (typeof window !== "undefined") {
+    window.generateQSlotsForCurrentRegion =
+        generateQSlotsForCurrentRegion;
+}

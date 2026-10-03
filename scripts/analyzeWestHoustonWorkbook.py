@@ -528,6 +528,456 @@ def analyze(workbook_path: Path) -> dict[str, Any]:
     return output
 
 
+class UnionFind:
+    def __init__(self, keys: list[str]) -> None:
+        self.parent = {key: key for key in keys}
+
+    def find(self, key: str) -> str:
+        parent = self.parent[key]
+        if parent != key:
+            self.parent[key] = self.find(parent)
+        return self.parent[key]
+
+    def union(self, keys: list[str]) -> None:
+        roots = sorted({self.find(key) for key in keys})
+        if not roots:
+            return
+        root = roots[0]
+        for other in roots[1:]:
+            self.parent[other] = root
+
+
+def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
+    """Apply explicit human decisions without changing the normalized source layer."""
+    source = manifest["source"]
+    metadata = normalized["metadata"]
+    if source["attendanceWorkbookSha256"] != metadata["workbookSha256"]:
+        raise ValueError("Human-resolution manifest does not match the attendance workbook SHA-256")
+    if source["parserVersion"] != metadata["parserVersion"]:
+        raise ValueError("Human-resolution manifest does not match the parser version")
+
+    member_by_key = {item["memberKey"]: item for item in normalized["members"]}
+    all_member_keys = sorted(member_by_key)
+    union_find = UnionFind(all_member_keys)
+    review_ids_by_member: dict[str, set[str]] = defaultdict(set)
+    approved_names_by_member: dict[str, set[str]] = defaultdict(set)
+    resolution_by_review_id: dict[str, str] = {}
+
+    for decision in manifest["identityDecisions"]:
+        keys = sorted(decision["sourceIdentityKeys"])
+        if any(key not in member_by_key for key in keys):
+            raise ValueError(f"Unknown source identity in {decision['reviewId']}")
+        resolution_by_review_id[decision["reviewId"]] = decision["resolution"]
+        for key in keys:
+            review_ids_by_member[key].add(decision["reviewId"])
+        if decision["resolution"] == "MERGE":
+            union_find.union(keys)
+            approved_name = text(decision.get("approvedCanonicalF3Name"))
+            if not approved_name:
+                raise ValueError(f"Missing approved canonical name for {decision['reviewId']}")
+            for key in keys:
+                approved_names_by_member[key].add(approved_name)
+        elif decision["resolution"] not in {"KEEP_SEPARATE", "UNRESOLVED"}:
+            raise ValueError(f"Unsupported resolution in {decision['reviewId']}")
+
+    for decision in manifest.get("crossGroupIdentityDecisions", []):
+        keys = sorted(decision["sourceIdentityKeys"])
+        if decision["resolution"] != "MERGE":
+            raise ValueError(f"Unsupported cross-group resolution in {decision['decisionId']}")
+        union_find.union(keys)
+        approved_name = text(decision.get("approvedCanonicalF3Name"))
+        for key in keys:
+            review_ids_by_member[key].add(decision["decisionId"])
+            approved_names_by_member[key].add(approved_name)
+
+    clusters: dict[str, list[str]] = defaultdict(list)
+    for key in all_member_keys:
+        clusters[union_find.find(key)].append(key)
+
+    fng_decision_by_source_member = {
+        item["sourceMemberKey"]: item for item in manifest["fngDiscrepancyDecisions"]
+    }
+    source_to_canonical_member: dict[str, str] = {}
+    canonical_members: list[dict[str, Any]] = []
+    for source_keys in sorted((sorted(keys) for keys in clusters.values()), key=lambda keys: keys):
+        canonical_key = stable_key("canonical-member", *source_keys)
+        for key in source_keys:
+            source_to_canonical_member[key] = canonical_key
+        source_members = [member_by_key[key] for key in source_keys]
+        approved_names = sorted({name for key in source_keys for name in approved_names_by_member[key]}, key=lambda value: (value.casefold(), value))
+        if len({name.casefold() for name in approved_names}) > 1:
+            raise ValueError(f"Conflicting approved canonical names for {source_keys}: {approved_names}")
+        canonical_name = approved_names[0] if approved_names else sorted(
+            (member["proposedF3Name"] for member in source_members),
+            key=lambda value: (value.casefold(), value),
+        )[0]
+        variants: Counter[str] = Counter()
+        for member in source_members:
+            for variant in member["rawNameVariants"]:
+                variants[variant["value"]] += variant["occurrences"]
+        earliest_attendance = min(member["firstKnownAttendanceDate"] for member in source_members)
+        latest_attendance = max(member["lastKnownAttendanceDate"] for member in source_members)
+        explicit_fng_dates = sorted({value for member in source_members for value in member["explicitFngDates"]})
+        fng_reviews = [fng_decision_by_source_member[key] for key in source_keys if key in fng_decision_by_source_member]
+        first_post_source = "earliest_verified_attendance"
+        if any(item["decision"] == "Unsure" for item in fng_reviews):
+            first_post_source = "earliest_verified_attendance_with_unresolved_later_fng"
+        review_ids = sorted({value for key in source_keys for value in review_ids_by_member[key]})
+        canonical_members.append({
+            "canonicalMemberKey": canonical_key,
+            "canonicalF3Name": canonical_name,
+            "sourceMemberKeys": source_keys,
+            "rawNameVariants": [
+                {"value": value, "occurrences": variants[value]}
+                for value in sorted(variants, key=lambda item: (item.casefold(), item))
+            ],
+            "firstKnownAttendanceDate": earliest_attendance,
+            "lastKnownAttendanceDate": latest_attendance,
+            "canonicalFirstPostDate": earliest_attendance,
+            "firstPostSource": first_post_source,
+            "explicitFngDates": explicit_fng_dates,
+            "humanReviewIds": review_ids,
+            "provenance": sorted({value for member in source_members for value in member["provenance"]}),
+            "matchExistingHint": (
+                {"strategy": "match_existing", "normalizedF3Name": "doge"}
+                if canonical_name.casefold() == "doge"
+                else None
+            ),
+        })
+
+    workout_by_source_session: dict[str, dict[str, Any]] = {}
+    for decision in manifest["workoutDecisions"]:
+        for session_key in decision["sourceSessionKeys"]:
+            if session_key in workout_by_source_session:
+                raise ValueError(f"Source session appears in multiple workout decisions: {session_key}")
+            workout_by_source_session[session_key] = decision
+
+    source_session_by_key = {item["sessionKey"]: item for item in normalized["sessions"]}
+    canonical_session_groups: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
+    excluded_source_sessions: list[dict[str, Any]] = []
+    for session in normalized["sessions"]:
+        if session["stream"] == "dd":
+            excluded_source_sessions.append({
+                "sessionKey": session["sessionKey"],
+                "reason": "DD_EXCLUDED_BY_POLICY",
+                "provenance": session["provenance"],
+            })
+            continue
+        if session["proposedAo"] == "DR":
+            excluded_source_sessions.append({
+                "sessionKey": session["sessionKey"],
+                "reason": "DR_UNRESOLVED_PENDING_AOQ",
+                "provenance": session["provenance"],
+            })
+            continue
+        decision = workout_by_source_session.get(session["sessionKey"])
+        if decision and decision["canonicalRepresentation"]["action"] == "merge_source_sessions":
+            group_key = ("human-workout", decision["reviewId"])
+        else:
+            group_key = ("source-session", session["sessionKey"])
+        canonical_session_groups[group_key].append(session)
+
+    source_to_canonical_session: dict[str, str] = {}
+    canonical_sessions: list[dict[str, Any]] = []
+    for group_key, source_sessions in sorted(canonical_session_groups.items()):
+        source_sessions = sorted(source_sessions, key=lambda item: item["sessionKey"])
+        decisions = {
+            workout_by_source_session[item["sessionKey"]]["reviewId"]: workout_by_source_session[item["sessionKey"]]
+            for item in source_sessions
+            if item["sessionKey"] in workout_by_source_session
+        }
+        decision = next(iter(decisions.values())) if decisions else None
+        if decision:
+            representation = decision["canonicalRepresentation"]
+            canonical_ao = representation["canonicalAo"]
+            workout_type = representation["canonicalWorkoutType"]
+            event_name = representation.get("canonicalEventName")
+        else:
+            canonical_ao = source_sessions[0]["proposedAo"]
+            workout_type = source_sessions[0]["bdType"]
+            event_name = None
+        session_dates = {item["date"] for item in source_sessions}
+        if len(session_dates) != 1:
+            raise ValueError(f"Cannot combine source sessions from different dates: {group_key}")
+        session_date = next(iter(session_dates))
+        canonical_session_key = stable_key(
+            "canonical-session",
+            session_date,
+            canonical_ao.casefold(),
+            workout_type.casefold(),
+            (event_name or "").casefold(),
+        )
+        for source_session in source_sessions:
+            source_to_canonical_session[source_session["sessionKey"]] = canonical_session_key
+        canonical_sessions.append({
+            "canonicalSessionKey": canonical_session_key,
+            "date": session_date,
+            "canonicalAo": canonical_ao,
+            "workoutType": workout_type,
+            "eventName": event_name,
+            "sourceSessionKeys": [item["sessionKey"] for item in source_sessions],
+            "sourceLocations": sorted({value for item in source_sessions for value in item["sourceLocations"]}),
+            "sourceSheets": sorted({value for item in source_sessions for value in item["sourceSheets"]}),
+            "sourceComments": sorted({value for item in source_sessions for value in item["bdComments"]}),
+            "humanReviewIds": sorted(decisions),
+            "provenance": sorted(
+                (value for item in source_sessions for value in item["provenance"]),
+                key=lambda value: (value["sheet"], value["row"]),
+            ),
+        })
+
+    def consolidate_records(
+        records: list[dict[str, Any]],
+        include_evidence: bool = False,
+    ) -> list[dict[str, Any]]:
+        grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+        for record in records:
+            if record["sessionKey"] not in source_to_canonical_session:
+                continue
+            key = (
+                source_to_canonical_session[record["sessionKey"]],
+                source_to_canonical_member[record["memberKey"]],
+            )
+            grouped[key].append(record)
+        consolidated = []
+        for (canonical_session_key, canonical_member_key), group in sorted(grouped.items()):
+            source_member_keys = sorted({item["memberKey"] for item in group})
+            item = {
+                "canonicalSessionKey": canonical_session_key,
+                "canonicalMemberKey": canonical_member_key,
+                "sourceSessionKeys": sorted({value["sessionKey"] for value in group}),
+                "sourceMemberKeys": source_member_keys,
+                "humanReviewIds": sorted({
+                    review_id
+                    for source_member_key in source_member_keys
+                    for review_id in review_ids_by_member[source_member_key]
+                }),
+                "provenance": sorted(
+                    (value["provenance"] for value in group),
+                    key=lambda value: (value["sheet"], value["row"]),
+                ),
+            }
+            if include_evidence:
+                item["evidence"] = sorted({value.get("evidence") for value in group if value.get("evidence")})
+            consolidated.append(item)
+        return consolidated
+
+    canonical_attendance = consolidate_records(normalized["attendance"])
+    canonical_q_assignments = consolidate_records(normalized["qAssignments"], include_evidence=True)
+    canonical_fng_evidence = consolidate_records(normalized["fngEvidence"])
+
+    attendance_by_session = Counter(item["canonicalSessionKey"] for item in canonical_attendance)
+    q_by_session = Counter(item["canonicalSessionKey"] for item in canonical_q_assignments)
+    fng_by_session = Counter(item["canonicalSessionKey"] for item in canonical_fng_evidence)
+    for session in canonical_sessions:
+        key = session["canonicalSessionKey"]
+        session["attendanceCount"] = attendance_by_session[key]
+        session["qCount"] = q_by_session[key]
+        session["fngCount"] = fng_by_session[key]
+
+    q_pairs = {(item["canonicalSessionKey"], item["canonicalMemberKey"]) for item in canonical_q_assignments}
+    fng_pairs = {(item["canonicalSessionKey"], item["canonicalMemberKey"]) for item in canonical_fng_evidence}
+    canonical_contradictions = [
+        {"canonicalSessionKey": session_key, "canonicalMemberKey": member_key, "type": "Q_AND_FNG_SAME_SESSION"}
+        for session_key, member_key in sorted(q_pairs & fng_pairs)
+    ]
+
+    canonical_member_by_key = {item["canonicalMemberKey"]: item for item in canonical_members}
+    fng_discrepancy_representations = []
+    for decision in manifest["fngDiscrepancyDecisions"]:
+        canonical_member_key = source_to_canonical_member[decision["sourceMemberKey"]]
+        canonical_member = canonical_member_by_key[canonical_member_key]
+        fng_discrepancy_representations.append({
+            "reviewId": decision["reviewId"],
+            "decision": decision["decision"],
+            "canonicalMemberKey": canonical_member_key,
+            "canonicalF3Name": canonical_member["canonicalF3Name"],
+            "earliestRecordedAttendance": decision["earliestAttendance"],
+            "laterExplicitFng": decision["explicitFng"],
+            "canonicalFirstPostDate": canonical_member["canonicalFirstPostDate"],
+            "representation": "Earlier verified attendance remains canonical first-post history; later explicit FNG evidence is retained without overwriting it.",
+        })
+
+    unresolved_identity_decisions = [
+        item for item in manifest["identityDecisions"] if item["resolution"] == "UNRESOLVED"
+    ]
+    doge_members = [item for item in canonical_members if item["matchExistingHint"]]
+    if len(doge_members) != 1:
+        raise ValueError(f"Expected exactly one canonical DOGE member, found {len(doge_members)}")
+
+    session_keys = [item["canonicalSessionKey"] for item in canonical_sessions]
+    member_keys = [item["canonicalMemberKey"] for item in canonical_members]
+    if len(session_keys) != len(set(session_keys)):
+        raise ValueError("Duplicate canonical session keys")
+    if len(member_keys) != len(set(member_keys)):
+        raise ValueError("Duplicate canonical member keys")
+
+    eligible_source_session_keys = {
+        item["sessionKey"]
+        for item in normalized["sessions"]
+        if item["stream"] == "bd" and item["proposedAo"] != "DR"
+    }
+    excluded_dd_session_keys = {
+        item["sessionKey"] for item in excluded_source_sessions if item["reason"] == "DD_EXCLUDED_BY_POLICY"
+    }
+    excluded_dr_session_keys = {
+        item["sessionKey"] for item in excluded_source_sessions if item["reason"] == "DR_UNRESOLVED_PENDING_AOQ"
+    }
+
+    def count_records_for_sessions(records: list[dict[str, Any]], session_keys: set[str]) -> int:
+        return sum(1 for item in records if item["sessionKey"] in session_keys)
+
+    before_canonical_scope = {
+        "members": len(normalized["members"]),
+        "primarySessionsExcludingDr": len(eligible_source_session_keys),
+        "primaryAttendanceExcludingDr": count_records_for_sessions(normalized["attendance"], eligible_source_session_keys),
+        "primaryQAssignmentsExcludingDr": count_records_for_sessions(normalized["qAssignments"], eligible_source_session_keys),
+        "primaryFngEvidenceExcludingDr": count_records_for_sessions(normalized["fngEvidence"], eligible_source_session_keys),
+    }
+
+    return {
+        "metadata": {
+            "schemaVersion": "west-houston-post-human-canonical-v1",
+            "parserVersion": metadata["parserVersion"],
+            "attendanceWorkbookFilename": metadata["workbookFilename"],
+            "attendanceWorkbookSha256": metadata["workbookSha256"],
+            "humanReviewWorkbookFilename": source["humanReviewWorkbookFilename"],
+            "humanReviewWorkbookSha256": source["humanReviewWorkbookSha256"],
+            "humanResolutionManifestSchemaVersion": manifest["schemaVersion"],
+            "canonicalSessionPolicy": "Primary BD only; DD excluded; DR excluded pending AOQ; explicit workout decisions applied.",
+        },
+        "beforeHumanReview": normalized["summary"],
+        "beforeCanonicalScope": before_canonical_scope,
+        "summary": {
+            "canonicalMembers": len(canonical_members),
+            "approvedMergeGroups": sum(1 for item in manifest["identityDecisions"] if item["resolution"] == "MERGE"),
+            "approvedKeepSeparateGroups": sum(1 for item in manifest["identityDecisions"] if item["resolution"] == "KEEP_SEPARATE"),
+            "unresolvedIdentityGroups": len(unresolved_identity_decisions),
+            "canonicalPrimarySessions": len(canonical_sessions),
+            "canonicalAttendance": len(canonical_attendance),
+            "canonicalQAssignments": len(canonical_q_assignments),
+            "canonicalFngEvidence": len(canonical_fng_evidence),
+            "unresolvedFngDiscrepancies": sum(1 for item in manifest["fngDiscrepancyDecisions"] if item["decision"] == "Unsure"),
+            "canonicalContradictions": len(canonical_contradictions),
+            "excludedDdSessions": sum(1 for item in excluded_source_sessions if item["reason"] == "DD_EXCLUDED_BY_POLICY"),
+            "excludedDrSessions": sum(1 for item in excluded_source_sessions if item["reason"] == "DR_UNRESOLVED_PENDING_AOQ"),
+            "excludedDdAttendance": count_records_for_sessions(normalized["attendance"], excluded_dd_session_keys),
+            "excludedDrAttendance": count_records_for_sessions(normalized["attendance"], excluded_dr_session_keys),
+            "excludedDdQAssignments": count_records_for_sessions(normalized["qAssignments"], excluded_dd_session_keys),
+            "excludedDrQAssignments": count_records_for_sessions(normalized["qAssignments"], excluded_dr_session_keys),
+            "excludedDdFngEvidence": count_records_for_sessions(normalized["fngEvidence"], excluded_dd_session_keys),
+            "excludedDrFngEvidence": count_records_for_sessions(normalized["fngEvidence"], excluded_dr_session_keys),
+        },
+        "appliedHumanReview": {
+            "reviewer": source["reviewer"],
+            "identityDecisions": manifest["identityDecisions"],
+            "crossGroupIdentityDecisions": manifest.get("crossGroupIdentityDecisions", []),
+            "fngDiscrepancyDecisions": manifest["fngDiscrepancyDecisions"],
+            "workoutDecisions": manifest["workoutDecisions"],
+            "streamPolicies": manifest["streamPolicies"],
+        },
+        "canonicalMembers": canonical_members,
+        "canonicalSessions": canonical_sessions,
+        "canonicalAttendance": canonical_attendance,
+        "canonicalQAssignments": canonical_q_assignments,
+        "canonicalFngEvidence": canonical_fng_evidence,
+        "fngDiscrepancyRepresentations": fng_discrepancy_representations,
+        "excludedSourceSessions": excluded_source_sessions,
+        "remainingUnresolvedIdentityGroups": unresolved_identity_decisions,
+        "canonicalContradictions": canonical_contradictions,
+        "existingMemberMatchCandidates": doge_members,
+        "normalizedSource": normalized,
+    }
+
+
+def post_human_markdown_report(result: dict[str, Any]) -> str:
+    summary = result["summary"]
+    before = result["beforeHumanReview"]
+    before_scope = result["beforeCanonicalScope"]
+    identity_decisions = result["appliedHumanReview"]["identityDecisions"]
+    unresolved_identity = result["remainingUnresolvedIdentityGroups"]
+    unresolved_fng = result["fngDiscrepancyRepresentations"]
+    lines = [
+        "# West Houston post-human-review canonical dry run",
+        "",
+        "## Result",
+        "",
+        "DOGE's explicit decisions were applied to the normalized workbook evidence. No import or database write was performed.",
+        "",
+        "## Before and after",
+        "",
+        "| Measure | Before human review | Post-review canonical | Change |",
+        "| --- | ---: | ---: | ---: |",
+        f"| Members | {before['proposedMembers']} | {summary['canonicalMembers']} | {summary['canonicalMembers'] - before['proposedMembers']} |",
+        f"| Identity collisions requiring a decision | {before['possibleIdentityCollisions']} | {summary['unresolvedIdentityGroups']} | {summary['unresolvedIdentityGroups'] - before['possibleIdentityCollisions']} |",
+        f"| Primary sessions eligible before human decisions | {before_scope['primarySessionsExcludingDr']} | {summary['canonicalPrimarySessions']} | {summary['canonicalPrimarySessions'] - before_scope['primarySessionsExcludingDr']} |",
+        f"| Primary attendance eligible before human decisions | {before_scope['primaryAttendanceExcludingDr']} | {summary['canonicalAttendance']} | {summary['canonicalAttendance'] - before_scope['primaryAttendanceExcludingDr']} |",
+        f"| Primary Q/VQ assignments eligible before human decisions | {before_scope['primaryQAssignmentsExcludingDr']} | {summary['canonicalQAssignments']} | {summary['canonicalQAssignments'] - before_scope['primaryQAssignmentsExcludingDr']} |",
+        f"| Primary explicit FNG evidence eligible before human decisions | {before_scope['primaryFngEvidenceExcludingDr']} | {summary['canonicalFngEvidence']} | {summary['canonicalFngEvidence'] - before_scope['primaryFngEvidenceExcludingDr']} |",
+        f"| Unresolved attendance-before-FNG cases | {before['fngEarliestAttendanceDiscrepancies']} | {summary['unresolvedFngDiscrepancies']} | 0 |",
+        "",
+        f"The complete normalized source layer still contains {before['proposedSessions']} BD/DD sessions and {before['normalizedAttendanceRecords']} attendance records. The comparable before column above excludes DD and unresolved DR before measuring the effects of human decisions.",
+        "",
+        "## Identity reconciliation",
+        "",
+        f"- MERGE: {sum(1 for item in identity_decisions if item['resolution'] == 'MERGE')} review groups.",
+        f"- KEEP_SEPARATE: {sum(1 for item in identity_decisions if item['resolution'] == 'KEEP_SEPARATE')} review groups.",
+        f"- UNRESOLVED: {sum(1 for item in identity_decisions if item['resolution'] == 'UNRESOLVED')} review group.",
+        "- WH-ID-034 and WH-ID-035 were joined by the explicit cross-group note `Same as above` and their shared approved name `lightningrod`.",
+        f"- Canonical member count: {summary['canonicalMembers']}.",
+        "- DOGE remains a distinct canonical member with a `match_existing` hint for eventual adapter matching.",
+        "",
+        "## Workout reconciliation",
+        "",
+        "- The Knot on 2026-06-13 is one Bootcamp including Java.",
+        "- The Knot on 2026-06-25 is one Bootcamp including Gladiator.",
+        "- The 2025-07-12 rows whose source location is `Convergence` are represented as `The Corridor 4-year anniversary` at The Corridor. The original location and workbook rows remain in provenance.",
+        "- No permanent Convergence AO is created.",
+        "",
+        "## FNG handling",
+        "",
+        f"All {len(unresolved_fng)} decisions remain `Unsure`. For every case, the earlier verified attendance date remains canonical first-post history. The later explicit FNG record remains separate evidence with its original AO and workbook-row provenance.",
+        "",
+        "| Review ID | F3 name | Earliest attendance | Later explicit FNG | Canonical first post |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for item in unresolved_fng:
+        earliest = item["earliestRecordedAttendance"]
+        later = item["laterExplicitFng"]
+        lines.append(
+            f"| {item['reviewId']} | {item['canonicalF3Name']} | {earliest['date']} at {earliest['ao']} | {later['date']} at {later['ao']} | {item['canonicalFirstPostDate']} |"
+        )
+    lines += [
+        "",
+        "## DD and DR exclusion checks",
+        "",
+        f"- Excluded DD source sessions: {summary['excludedDdSessions']}.",
+        f"- Excluded DR source sessions: {summary['excludedDrSessions']}.",
+        f"- Excluded DD attendance records: {summary['excludedDdAttendance']}; excluded DR attendance records: {summary['excludedDrAttendance']}.",
+        f"- Excluded DD/DR Q assignments: {summary['excludedDdQAssignments'] + summary['excludedDrQAssignments']}; excluded DD/DR FNG records: {summary['excludedDdFngEvidence'] + summary['excludedDrFngEvidence']}.",
+        "- Canonical sessions, attendance, Q assignments, FNG totals, and aggregate-ready records contain neither DD nor DR.",
+        "- DD and DR source sessions remain listed with row provenance in `excludedSourceSessions`.",
+        "",
+        "## Validation",
+        "",
+        f"- Unique canonical member keys: {summary['canonicalMembers']}.",
+        f"- Unique canonical session keys: {summary['canonicalPrimarySessions']}.",
+        f"- Canonical Q/FNG contradictions: {summary['canonicalContradictions']}.",
+        "- Every canonical attendance, Q, and FNG record retains source session keys, source member keys, workbook rows, and applicable human review IDs.",
+        "",
+        "## Preserved unresolved decisions (not import blockers)",
+        "",
+    ]
+    for item in unresolved_identity:
+        lines.append(
+            f"- {item['reviewId']} ({' / '.join(item['candidateNames'])}): DOGE selected UNRESOLVED. Preserve the identities independently; no merge is approved."
+        )
+    lines.append(f"- WH-FNG-001 through WH-FNG-{len(unresolved_fng):03d}: DOGE selected Unsure. Earlier verified attendance remains first-post history and later explicit FNG evidence remains preserved; no further inference is approved.")
+    lines.append("- WH-KNOW-001 (DR): AOQ confirmation is pending. DR remains outside this approved canonical import and does not block it.")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def markdown_report(result: dict[str, Any]) -> str:
     metadata = result["metadata"]
     summary = result["summary"]
@@ -668,13 +1118,21 @@ def main() -> None:
     parser.add_argument("workbook", type=Path)
     parser.add_argument("--json-output", type=Path, required=True)
     parser.add_argument("--report-output", type=Path, required=True)
+    parser.add_argument("--human-resolution-manifest", type=Path)
     args = parser.parse_args()
 
-    result = analyze(args.workbook.resolve())
+    normalized = analyze(args.workbook.resolve())
+    if args.human_resolution_manifest:
+        manifest = json.loads(args.human_resolution_manifest.read_text(encoding="utf-8"))
+        result = apply_human_resolutions(normalized, manifest)
+        report = post_human_markdown_report(result)
+    else:
+        result = normalized
+        report = markdown_report(result)
     args.json_output.parent.mkdir(parents=True, exist_ok=True)
     args.report_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
-    args.report_output.write_text(markdown_report(result), encoding="utf-8")
+    args.report_output.write_text(report, encoding="utf-8")
     print(json.dumps(result["summary"], indent=2, sort_keys=True))
 
 
