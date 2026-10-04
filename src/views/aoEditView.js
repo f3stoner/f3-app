@@ -754,8 +754,24 @@ export function renderAoEditView() {
             } else {
                 const savedAo = await insertAo(activeRegionId, draftAo);
                 state.aos.push(savedAo);
-
-                await generateQSlotsForCurrentRegion();
+            
+                try {
+                    await generateQSlotsForCurrentRegion();
+                } catch (slotError) {
+                    console.error(
+                        "AO created, but future Q-slot generation failed:",
+                        slotError
+                    );
+            
+                    showToast(
+                        "AO created, but future Q slots could not be generated.",
+                        "error"
+                    );
+            
+                    state.editingAoId = null;
+                    navigateTo("aoManagement");
+                    return;
+                }
             }
             
            
