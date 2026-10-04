@@ -14,6 +14,7 @@ import { logSaveFailure, logActionFailure } from "../services/appEvents.js";
 import { getSiteWeather } from "../services/weather.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
+import { getQSlotDisplayTime } from "../utils/qSlotMatching.js";
 import {
     getAffectedMemberIdsFromSession,
     loadMemberDashboardStats,
@@ -2688,6 +2689,41 @@ function normalizeSessionForSave(session) {
         state.aos.find(a => a.id === session.aoId)
         || state.aos.find(a => a.name === session.aoName);
 
+        const qSlot = session.sourceQSlotId
+        ? state.qSlots.find(slot =>
+            (slot.id || slot.slotId) === session.sourceQSlotId
+        )
+        : null;
+    
+    const resolvedStartTime = qSlot
+        ? getQSlotDisplayTime(qSlot, ao, {
+            date: session.date,
+            startTime: session.startTime,
+        })
+        : session.startTime ||
+            (() => {
+                if (!ao || !session.date) {
+                    return ao?.time || null;
+                }
+    
+                const [year, month, day] =
+                    session.date.split("-").map(Number);
+    
+                const dayKey = String(
+                    new Date(
+                        year,
+                        month - 1,
+                        day
+                    ).getDay()
+                );
+    
+                return (
+                    ao.timeSchedule?.[dayKey] ||
+                    ao.time ||
+                    null
+                );
+            })();
+
     return {
         ...session,
         date: session.date || getTodayDate(),
@@ -2702,10 +2738,7 @@ function normalizeSessionForSave(session) {
         fngs: session.fngs || [],
         visitors: session.visitors || [],
         notes: session.notes || "",
-        startTime:
-            session.startTime ||
-            ao?.time ||
-            null,
+        startTime: resolvedStartTime,
     };
 }
 

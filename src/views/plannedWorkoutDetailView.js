@@ -29,6 +29,7 @@ import {
     getWorkoutOfflineStatus,
     isWorkoutFallbackLoading,
 } from "../services/workoutExecutionCacheService.js";
+import { getQSlotDisplayTime } from "../utils/qSlotMatching.js";
 
 let activeTimerIntervalId = null;
 let timerAudio = null;
@@ -1866,8 +1867,28 @@ export function renderPlannedWorkoutDetail() {
             state.executionContext?.executionDate ||
             getTodayDate();
 
-        const matchingQSlot = findMatchingQSlotForWorkout(workout);
-
+            const matchingQSlot =
+            findMatchingQSlotForWorkout(workout);
+        
+        const ao =
+            state.aos.find(
+                candidate =>
+                    candidate.id ===
+                    (
+                        workout.aoId ||
+                        matchingQSlot?.aoId
+                    )
+            ) || null;
+        
+        const resolvedStartTime =
+            matchingQSlot
+                ? getQSlotDisplayTime(
+                    matchingQSlot,
+                    ao,
+                    workout
+                ) || null
+                : workout.startTime || null;
+        
         const session = createSession(sessionDate, {
             aoId: workout.aoId || null,
             aoName: workout.aoName || "",
@@ -1875,11 +1896,7 @@ export function renderPlannedWorkoutDetail() {
                 workout.siteId ||
                 matchingQSlot?.siteId ||
                 null,
-            startTime:
-                workout.startTime ||
-                matchingQSlot?.overrideTime ||
-                matchingQSlot?.startTime ||
-                null,
+            startTime: resolvedStartTime,
         });
 
         const currentMemberId = state.currentUserMemberId || null;
@@ -2096,19 +2113,39 @@ export function renderPlannedWorkoutDetail() {
         state.selectedPreblastQSlotId = matchingQSlot?.id || null;
         state.selectedPreblastWorkoutId = workout.id;
 
+        const ao =
+            state.aos.find(
+                candidate =>
+                    candidate.id ===
+                    (
+                        workout.aoId ||
+                        matchingQSlot?.aoId
+                    )
+            ) || null;
+        
+        const resolvedStartTime =
+            matchingQSlot
+                ? getQSlotDisplayTime(
+                    matchingQSlot,
+                    ao,
+                    workout
+                ) || null
+                : workout.startTime || null;
+        
         const effectiveWorkout = {
             ...workout,
+            startTime: resolvedStartTime,
             announcementText: effectiveAnnouncements.text,
             thirdFText: effectiveThirdF.text,
         };
-
+        
         state.draftPreblastText =
             matchingQSlot?.preblastText ||
             generatePreblast(
                 effectiveWorkout,
                 state.aos,
                 state.sites
-            )
+            );
 
         state.hasAddedPreblastForecast = false;
         navigateTo("preblast");

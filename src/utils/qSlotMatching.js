@@ -62,10 +62,10 @@ export function findSharedWorkoutForQSlot(slot, workouts, aos) {
 
 export function getQSlotDisplayTime(
     slot,
-    ao,
+    ao = null,
     workout = null
 ) {
-    if (!slot || !ao) return "";
+    if (!slot) return "";
 
     const [year, month, day] =
         slot.date
@@ -80,12 +80,13 @@ export function getQSlotDisplayTime(
         ).getDay()
     );
 
-    return (
+    const resolvedTime =
         workout?.startTime ||
         slot.overrideTime ||
         slot.startTime ||
-        ao.timeSchedule?.[dayKey] ||
-        ao.time ||
-        ""
-    );
+        ao?.timeSchedule?.[dayKey] ||
+        ao?.time ||
+        "";
+
+    return resolvedTime;
 }

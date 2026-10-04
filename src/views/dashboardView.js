@@ -2778,10 +2778,11 @@ const debugWeatherCacheKey =
                         nextQSite?.id ||
                         null,
                     startTime:
-                        matchingWorkout?.startTime ||
-                        nextQSlot.overrideTime ||
-                        nextQSlot.startTime ||
-                        null,
+                        getQSlotDisplayTime(
+                            nextQSlot,
+                            ao,
+                            matchingWorkout
+                        ) || null,
                     aoName: ao?.name || "",
                     qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
                     attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
@@ -2897,23 +2898,33 @@ const debugWeatherCacheKey =
             preblastButton.addEventListener("click", (event) => {
                 event.stopPropagation();
 
-                const fallbackWorkout = {
+            const resolvedStartTime =
+                getQSlotDisplayTime(
+                    nextQSlot,
+                    ao,
+                    matchingWorkout
+                ) || null;
+            
+            const preblastWorkout = {
+                ...(matchingWorkout || {
                     date: nextQSlot.date,
                     aoId: ao?.id || nextQSlot.aoId || null,
                     aoName: ao?.name || "",
                     siteId: nextQSite?.id || null,
-                    startTime:
-                        nextQSlot.overrideTime ||
-                        nextQSlot.startTime ||
-                        null,
-                };
+                }),
+                startTime: resolvedStartTime,
+            };
+            
+            state.selectedPreblastQSlotId = nextQSlot.id;
+            state.selectedPreblastWorkoutId = matchingWorkout?.id || null;
 
-                state.selectedPreblastQSlotId = nextQSlot.id;
-                state.selectedPreblastWorkoutId = matchingWorkout?.id || null;
-
-                state.draftPreblastText =
-                    nextQSlot.preblastText ||
-                    generatePreblast(matchingWorkout || fallbackWorkout, state.aos, state.sites);
+            state.draftPreblastText =
+                nextQSlot.preblastText ||
+                generatePreblast(
+                    preblastWorkout,
+                    state.aos,
+                    state.sites
+                );
 
                 state.hasAddedPreblastForecast = false;
                 navigateTo("preblast");
@@ -2968,10 +2979,11 @@ const debugWeatherCacheKey =
                             nextQSite?.id ||
                             null,
                         startTime:
-                            matchingWorkout?.startTime ||
-                            nextQSlot.overrideTime ||
-                            nextQSlot.startTime ||
-                            null,
+                            getQSlotDisplayTime(
+                                nextQSlot,
+                                ao,
+                                matchingWorkout
+                            ) || null,
                         aoName: ao?.name || "",
                         qIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],
                         attendeeIds: state.currentUserMemberId ? [state.currentUserMemberId] : [],

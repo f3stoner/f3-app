@@ -1,4 +1,5 @@
 import { normalizeThangSections } from "../utils/thangs.js";
+import { getQSlotDisplayTime } from "../utils/qSlotMatching.js";
 
 export const WORKOUT_EXECUTION_SNAPSHOT_SCHEMA_VERSION = 1;
 
@@ -151,6 +152,10 @@ export function buildWorkoutExecutionSnapshot({
         );
     }
 
+    const resolvedStartTime = qSlot
+        ? getQSlotDisplayTime(qSlot, ao, workout)
+        : workout.startTime || null;
+
     const normalizedSections =
         normalizeThangSections(workout).map(
             (section, index) => ({
@@ -207,11 +212,7 @@ export function buildWorkoutExecutionSnapshot({
                 workout.date ||
                 qSlot?.date ||
                 null,
-            startTime:
-                workout.startTime ||
-                qSlot?.overrideTime ||
-                qSlot?.startTime ||
-                null,
+            startTime: resolvedStartTime,
             durationMinutes:
                 workout.durationMinutes ??
                 qSlot?.durationMinutes ??
