@@ -7,7 +7,6 @@ import {
 import { createAppHeader } from "../components/appHeader.js";
 import {
     canManageCurrentRoster,
-    isSuperAdmin,
 } from "../utils/permissions.js";
 import { navigateTo } from "../utils/navigation.js";
 import {
@@ -120,7 +119,7 @@ function getRpcErrorMessage(
 }
 
 function openEditMemberModal(member) {
-    if (!isSuperAdmin()) {
+    if (!canManageCurrentRoster()) {
         return;
     }
 
@@ -649,7 +648,7 @@ function createMemberCard(
     const isSaving =
         savingMemberIds.has(member.id);
 
-    if (isSuperAdmin()) {
+    if (canManageCurrentRoster()) {
         const editButton =
             document.createElement("button");
 
