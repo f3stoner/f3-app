@@ -261,11 +261,6 @@ export function createMainMenu() {
                     permission: PERMISSIONS.MANAGE_AOS,
                 },
                 {
-                    label: "Import Runs",
-                    view: "importRuns",
-                    permission: PERMISSIONS.VIEW_IMPORTS,
-                },
-                {
                     label: "Region Onboarding",
                     view: "regionOnboarding",
                     isVisible: () => state.currentUserRole === "superadmin",

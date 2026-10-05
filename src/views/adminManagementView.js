@@ -22,6 +22,7 @@ const AO_LEADERSHIP_POSITIONS = [
 ];
 
 const REGION_LEADERSHIP_POSITIONS = [
+    { value: "regional_admin", label: "Regional Admin" },
     { value: "nantan", label: "Nantan" },
     { value: "weasel_shaker", label: "Weasel Shaker" },
     { value: "first_f", label: "1FQ" },

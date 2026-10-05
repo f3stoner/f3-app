@@ -20,8 +20,6 @@ export const PERMISSIONS = {
     EDIT_AO_SESSIONS: "edit_ao_sessions",
 
     VIEW_TELEMETRY: "view_telemetry",
-    VIEW_IMPORTS: "view_imports",
-    RUN_IMPORTS: "run_imports",
 
     VIEW_Q_READINESS: "view_q_readiness",
 
@@ -60,8 +58,6 @@ export const ROLE_PERMISSIONS = {
         PERMISSIONS.VIEW_AO_INSIGHTS,
         PERMISSIONS.VIEW_REGION_INSIGHTS,
         PERMISSIONS.VIEW_TELEMETRY,
-        //PERMISSIONS.VIEW_IMPORTS,
-        //PERMISSIONS.RUN_IMPORTS,
         PERMISSIONS.ACCESS_ADMIN_SETTINGS,
         PERMISSIONS.MANAGE_MEMBERS,
         PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
@@ -71,6 +67,28 @@ export const ROLE_PERMISSIONS = {
 
     superadmin: Object.values(PERMISSIONS),
 };
+
+const REGIONAL_ADMIN_PERMISSIONS = [
+    PERMISSIONS.VIEW_AO_INSIGHTS,
+    PERMISSIONS.VIEW_REGION_INSIGHTS,
+    PERMISSIONS.VIEW_SESSION_AUDIT,
+    PERMISSIONS.VIEW_PAX_OVERVIEW,
+
+    PERMISSIONS.MANAGE_AOS,
+    PERMISSIONS.MANAGE_SITES,
+    PERMISSIONS.MANAGE_Q_SLOTS,
+    PERMISSIONS.MANAGE_MEMBERS,
+    PERMISSIONS.MANAGE_WORKOUTS,
+    PERMISSIONS.MANAGE_SESSIONS,
+    PERMISSIONS.MANAGE_ANNOUNCEMENTS,
+    PERMISSIONS.MANAGE_Q_SOURCE,
+    PERMISSIONS.MANAGE_LIBRARY_WORKBENCH,
+    PERMISSIONS.MANAGE_ROLES,
+
+    PERMISSIONS.VIEW_Q_READINESS,
+
+    PERMISSIONS.ACCESS_ADMIN_SETTINGS,
+];
 
 const AO_LEADERSHIP_POSITIONS = ["aoq", "ao_coq", "ao_data_q"];
 const AO_INSIGHTS_POSITIONS = ["aoq", "ao_coq", "first_f", "second_f", "third_f", "ao_data_q"];
@@ -92,12 +110,24 @@ const REGION_CAMPAIGN_MANAGEMENT_POSITIONS = [
     "third_f",
 ];
 
+function normalizeRegionPositionRow(row) {
+    return {
+        profileId: row.profileId || row.profile_id,
+        regionId: row.regionId || row.region_id,
+        position: row.position || row.regionPosition || row.region_position,
+    };
+}
+
 export function hasPermission(permission) {
     const role = state.currentUserRole || "pax";
-
     const permissions = ROLE_PERMISSIONS[role] || [];
 
-    return permissions.includes(permission);
+    if (permissions.includes(permission)) {
+        return true;
+    }
+
+    return isRegionalAdmin()
+        && REGIONAL_ADMIN_PERMISSIONS.includes(permission);
 }
 
 export function isSuperAdmin() {
@@ -113,7 +143,24 @@ export function isRegionalSLT() {
 }
 
 export function isRegionalAdmin() {
-    return isSuperAdmin() || isDataQ() || isRegionalSLT();
+    if (isSuperAdmin()) {
+        return true;
+    }
+
+    const profileId = getCurrentProfileId();
+    const regionId = state.currentRegionId;
+
+    if (!profileId || !regionId) {
+        return false;
+    }
+
+    return (state.profileRegionPositions || [])
+        .map(normalizeRegionPositionRow)
+        .some(row =>
+            row.profileId === profileId &&
+            row.regionId === regionId &&
+            row.position === "regional_admin"
+        );
 }
 
 function normalizeAoPermissionRow(row) {
@@ -242,7 +289,7 @@ export function canEditAnySessions() {
 }
 
 export function canUseFloatingLogButton() {
-    return isSuperAdmin()
+    return isRegionalAdmin()
         || isDataQ()
         || getManagedAoIds(["aoq", "ao_coq", "ao_data_q"]).length > 0;
 }
@@ -280,7 +327,7 @@ export function shouldShowAuditLogFab() {
 }
 
 export function canManageCurrentRoster() {
-    if (isSuperAdmin()) {
+    if (isSuperAdmin() || isRegionalAdmin()) {
         return true;
     }
 
@@ -300,16 +347,8 @@ export function canManageCurrentRoster() {
     );
 }
 
-function normalizeRegionPositionRow(row) {
-    return {
-        profileId: row.profileId || row.profile_id,
-        regionId: row.regionId || row.region_id,
-        position: row.position || row.regionPosition || row.region_position,
-    };
-}
-
 export function canManageCampaigns() {
-    if (isSuperAdmin() || isRegionalSLT()) {
+    if (isRegionalAdmin() || isRegionalSLT()) {
         return true;
     }
 

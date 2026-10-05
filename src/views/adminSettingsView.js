@@ -130,11 +130,6 @@ export async function renderAdminSettingsView() {
                 "Find inactive or outdated roster records.",
                 "stalePax"
             ),
-            createAdminCard(
-                "Import Runs",
-                "Review nightly Aggieland dry-run results.",
-                "importRuns"
-            )
         );
     
     if (

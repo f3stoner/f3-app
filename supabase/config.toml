@@ -22,7 +22,7 @@ entrypoint = "./functions/get-ao-weather/index.ts"
 # static_files = [ "./functions/get-ao-weather/*.html" ]
 
 [functions.nightly-aggieland-import]
-enabled = true
+enabled = false
 verify_jwt = true
 import_map = "./functions/nightly-aggieland-import/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.

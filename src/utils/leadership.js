@@ -9,6 +9,7 @@ const LEADERSHIP_LABELS = {
     ao_data_q: "AO Data Q",
 
     nantan: "Nantan",
+    regional_admin: "Regional Admin",
     weasel_shaker: "Weasel Shaker",
     rucking_q: "Rucking Q",
     csaup_q: "CSAUP Q",

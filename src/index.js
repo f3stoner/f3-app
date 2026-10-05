@@ -515,7 +515,6 @@ const RESTORABLE_VIEWS = new Set([
     "session",
     "adminSettings",
     "regionInsights",
-    "importRuns",
     "announcementManagement",
     "settings",
     "operationsCenter",
@@ -548,11 +547,6 @@ let lastRenderedView = null;
 let routeRenderSequence = 0;
 
 const lazyRouteLoaders = {
-    importRuns: () =>
-        import(
-            /* webpackChunkName: "route-import-runs" */
-            "./views/importRunsView.js"
-        ).then(module => module.renderImportRunsView),
 
     thangReview: () =>
         import(
@@ -661,7 +655,6 @@ const lazyRoutePromises = new Map();
 
 function getLazyRouteLabel(viewName) {
     const labels = {
-        importRuns: "Import Runs",
         thangReview: "Thang Review",
         adminManagement: "Admin Management",
         operationsCenter: "Operations Center",
@@ -957,11 +950,6 @@ function renderApp() {
         renderRegionInsightsView();
     } else if (state.currentView === "aoInsights") {
         renderAoInsightsView();
-    } else if (state.currentView === "importRuns") {
-        renderLazyRoute(
-            "importRuns",
-            currentRenderSequence
-        );
     } else if (state.currentView === "regionOnboarding") {
         renderLazyRoute(
             "regionOnboarding",
