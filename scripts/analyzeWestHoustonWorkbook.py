@@ -67,6 +67,186 @@ def stable_key(prefix: str, *parts: str) -> str:
     return f"wh-{prefix}-{digest}"
 
 
+def source_session_key(
+    session_date: str,
+    proposed_ao: str,
+    stream: str,
+    workout_type: str,
+) -> str:
+    return stable_key(
+        "session",
+        session_date,
+        proposed_ao.casefold(),
+        stream,
+        workout_type.casefold(),
+    )
+
+
+def source_identity_splits_digest(decisions: list[dict[str, Any]]) -> str:
+    material = json.dumps(decisions, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+
+def split_source_member_key(decision: dict[str, Any]) -> str:
+    occurrences = decision.get("occurrences")
+    if not isinstance(occurrences, list) or not occurrences:
+        raise ValueError("Source split must contain occurrences")
+    if any(not isinstance(occurrence, dict) for occurrence in occurrences):
+        raise ValueError("Source split contains a malformed occurrence")
+    anchors = [occurrence for occurrence in occurrences if occurrence.get("anchor") is True]
+    if len(anchors) != 1:
+        raise ValueError("Source split must contain exactly one anchor")
+    anchor_sheet = text(anchors[0].get("sourceSheet"))
+    anchor_session_key = text(anchors[0].get("sourceSessionKey"))
+    base_member_key = text(decision.get("baseSourceIdentityKey"))
+    if not base_member_key or not anchor_sheet or not anchor_session_key:
+        raise ValueError("Source split has invalid deterministic identity material")
+    return stable_key(
+        "member",
+        "split-v1",
+        base_member_key,
+        anchor_sheet.casefold(),
+        anchor_session_key,
+    )
+
+
+def apply_source_identity_splits(
+    input_records: list[dict[str, Any]],
+    decisions: list[dict[str, Any]] | None,
+) -> list[dict[str, Any]]:
+    """Assign a deterministic source-member key to each normalized record."""
+    split_decisions = decisions or []
+    if not isinstance(split_decisions, list):
+        raise ValueError("sourceIdentitySplits must be an array")
+
+    records = [
+        {
+            **record,
+            "memberKey": stable_key("member", record["nameKey"]),
+        }
+        for record in input_records
+    ]
+    if not split_decisions:
+        return records
+
+    seen_review_ids: set[str] = set()
+    seen_selectors: set[tuple[str, str, str]] = set()
+    seen_split_member_keys: set[str] = set()
+    selected_record_indexes: set[int] = set()
+
+    for decision in split_decisions:
+        if not isinstance(decision, dict):
+            raise ValueError("Every sourceIdentitySplits entry must be an object")
+
+        review_id = text(decision.get("reviewId"))
+        if not review_id or review_id in seen_review_ids:
+            raise ValueError(f"Missing or duplicate source split reviewId: {review_id or '<blank>'}")
+        seen_review_ids.add(review_id)
+
+        if decision.get("resolution") != "SPLIT_OCCURRENCES":
+            raise ValueError(f"Unsupported source split resolution in {review_id}")
+
+        base_member_key = text(decision.get("baseSourceIdentityKey"))
+        approved_name = text(decision.get("approvedCanonicalF3Name"))
+        occurrences = decision.get("occurrences")
+        if not base_member_key or not approved_name:
+            raise ValueError(f"Missing source split identity metadata in {review_id}")
+        if not isinstance(occurrences, list) or not occurrences:
+            raise ValueError(f"Source split {review_id} must contain occurrences")
+
+        try:
+            split_member_key = split_source_member_key(decision)
+        except ValueError as error:
+            raise ValueError(f"Source split {review_id}: {error}") from error
+        if split_member_key in seen_split_member_keys:
+            raise ValueError(f"Duplicate deterministic source split identity in {review_id}: {split_member_key}")
+        seen_split_member_keys.add(split_member_key)
+        expected_split_key = text(decision.get("expectedSourceIdentityKey"))
+        if expected_split_key and expected_split_key != split_member_key:
+            raise ValueError(
+                f"Source split {review_id} key mismatch: expected {expected_split_key}, got {split_member_key}"
+            )
+
+        matched_indexes: list[int] = []
+        for occurrence in occurrences:
+            if not isinstance(occurrence, dict):
+                raise ValueError(f"Source split {review_id} contains a malformed occurrence")
+            source_sheet = text(occurrence.get("sourceSheet"))
+            session_key = text(occurrence.get("sourceSessionKey"))
+            expected = occurrence.get("expected")
+            if not source_sheet or not session_key or not isinstance(expected, dict):
+                raise ValueError(f"Source split {review_id} contains a malformed selector")
+
+            required_expected = {
+                "date",
+                "proposedAo",
+                "stream",
+                "workoutType",
+                "normalizedPaxName",
+            }
+            if set(expected) != required_expected:
+                raise ValueError(
+                    f"Source split {review_id} selector must contain exactly {sorted(required_expected)}"
+                )
+
+            normalized_pax_name = mechanical_name_key(expected["normalizedPaxName"])
+            if not normalized_pax_name:
+                raise ValueError(f"Source split {review_id} contains a blank normalized PAX name")
+            selector_key = (source_sheet, session_key, normalized_pax_name)
+            if selector_key in seen_selectors:
+                raise ValueError(f"Duplicate or conflicting source split selector in {review_id}: {selector_key}")
+            seen_selectors.add(selector_key)
+
+            expected_session_key = source_session_key(
+                text(expected["date"]),
+                text(expected["proposedAo"]),
+                text(expected["stream"]),
+                text(expected["workoutType"]),
+            )
+            if expected_session_key != session_key:
+                raise ValueError(
+                    f"Source split {review_id} selector session key does not match its semantic evidence"
+                )
+
+            candidates = [
+                index
+                for index, record in enumerate(records)
+                if record["sourceSheet"] == source_sheet
+                and source_session_key(
+                    record["date"],
+                    record["proposedAo"],
+                    record["stream"],
+                    record["workoutType"],
+                ) == session_key
+                and record["date"] == text(expected["date"])
+                and record["proposedAo"] == text(expected["proposedAo"])
+                and record["stream"] == text(expected["stream"])
+                and record["workoutType"] == text(expected["workoutType"])
+                and record["nameKey"] == normalized_pax_name
+            ]
+            if len(candidates) != 1:
+                raise ValueError(
+                    f"Source split {review_id} selector matched {len(candidates)} records; expected exactly one"
+                )
+            record_index = candidates[0]
+            if record_index in selected_record_indexes:
+                raise ValueError(f"Source split {review_id} conflicts with another split selector")
+            if records[record_index]["memberKey"] != base_member_key:
+                raise ValueError(f"Source split {review_id} base identity does not match the selected occurrence")
+            selected_record_indexes.add(record_index)
+            matched_indexes.append(record_index)
+
+        for record_index in matched_indexes:
+            records[record_index] = {
+                **records[record_index],
+                "memberKey": split_member_key,
+                "sourceIdentitySplitReviewId": review_id,
+                "approvedCanonicalF3Name": approved_name,
+            }
+
+    return records
+
+
 def iso_date(value: Any) -> str | None:
     if isinstance(value, datetime):
         return value.date().isoformat()
@@ -117,7 +297,10 @@ def representative(items: list[dict[str, Any]], limit: int = 8) -> list[dict[str
     return items[:limit]
 
 
-def analyze(workbook_path: Path) -> dict[str, Any]:
+def analyze(
+    workbook_path: Path,
+    source_identity_splits: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     workbook_bytes = workbook_path.read_bytes()
     workbook_hash = hashlib.sha256(workbook_bytes).hexdigest()
     workbook = openpyxl.load_workbook(workbook_path, data_only=True, read_only=False)
@@ -245,28 +428,39 @@ def analyze(workbook_path: Path) -> dict[str, Any]:
             "nameColumn": name_index + 1,
         })
 
-    variants_by_name: dict[str, Counter[str]] = defaultdict(Counter)
+    input_records = apply_source_identity_splits(input_records, source_identity_splits)
+
+    variants_by_member: dict[str, Counter[str]] = defaultdict(Counter)
     member_dates: dict[str, list[str]] = defaultdict(list)
     member_provenance: dict[str, list[dict[str, Any]]] = defaultdict(list)
     explicit_fng_dates: dict[str, list[str]] = defaultdict(list)
+    approved_names_by_member: dict[str, set[str]] = defaultdict(set)
+    split_review_ids_by_member: dict[str, set[str]] = defaultdict(set)
     for record in input_records:
-        key = record["nameKey"]
-        variants_by_name[key][record["rawName"]] += 1
+        key = record["memberKey"]
+        variants_by_member[key][record["rawName"]] += 1
         member_dates[key].append(record["date"])
         member_provenance[key].append({"sheet": record["sourceSheet"], "row": record["sourceRow"]})
         if record["isFng"]:
             explicit_fng_dates[key].append(record["date"])
+        if record.get("approvedCanonicalF3Name"):
+            approved_names_by_member[key].add(record["approvedCanonicalF3Name"])
+        if record.get("sourceIdentitySplitReviewId"):
+            split_review_ids_by_member[key].add(record["sourceIdentitySplitReviewId"])
 
     members: list[dict[str, Any]] = []
-    member_key_by_name: dict[str, str] = {}
     variant_collapses: list[dict[str, Any]] = []
-    for name_key in sorted(variants_by_name):
-        variants = variants_by_name[name_key]
-        canonical_name = sorted(variants, key=lambda item: (-variants[item], item.casefold(), item))[0]
-        dates = sorted(member_dates[name_key])
-        fng_dates = sorted(set(explicit_fng_dates[name_key]))
-        member_key = stable_key("member", name_key)
-        member_key_by_name[name_key] = member_key
+    for member_key in sorted(variants_by_member):
+        variants = variants_by_member[member_key]
+        approved_names = approved_names_by_member[member_key]
+        if len(approved_names) > 1:
+            raise ValueError(f"Conflicting approved names for split source identity {member_key}")
+        canonical_name = next(iter(approved_names)) if approved_names else sorted(
+            variants,
+            key=lambda item: (-variants[item], item.casefold(), item),
+        )[0]
+        dates = sorted(member_dates[member_key])
+        fng_dates = sorted(set(explicit_fng_dates[member_key]))
         member = {
             "memberKey": member_key,
             "proposedF3Name": canonical_name,
@@ -280,9 +474,11 @@ def analyze(workbook_path: Path) -> dict[str, Any]:
             "proposedFirstPostDate": fng_dates[0] if fng_dates else None,
             "firstPostSource": "explicit_fng" if fng_dates else None,
             "provenance": sorted(
-                {f"{item['sheet']}!{item['row']}" for item in member_provenance[name_key]}
+                {f"{item['sheet']}!{item['row']}" for item in member_provenance[member_key]}
             ),
         }
+        if split_review_ids_by_member[member_key]:
+            member["sourceIdentitySplitReviewIds"] = sorted(split_review_ids_by_member[member_key])
         members.append(member)
         if len(variants) > 1:
             variant_collapses.append({
@@ -327,14 +523,14 @@ def analyze(workbook_path: Path) -> dict[str, Any]:
     for group_key in sorted(session_groups):
         session_date, proposed_ao, stream, workout_type = group_key
         records = sorted(session_groups[group_key], key=lambda item: (item["sourceSheet"], item["sourceRow"]))
-        session_key = stable_key("session", session_date, proposed_ao.casefold(), stream, workout_type.casefold())
+        session_key = source_session_key(session_date, proposed_ao, stream, workout_type)
         raw_locations = sorted({record["rawLocation"] for record in records})
         comments = sorted({record["bdComment"] for record in records if record["bdComment"]})
         seen_members: dict[str, dict[str, Any]] = {}
         q_members: set[str] = set()
         fng_members: set[str] = set()
         for record in records:
-            member_key = member_key_by_name[record["nameKey"]]
+            member_key = record["memberKey"]
             if member_key in seen_members:
                 duplicate_attendance.append({
                     "sessionKey": session_key,
@@ -365,7 +561,7 @@ def analyze(workbook_path: Path) -> dict[str, Any]:
                 "provenance": [
                     {"sheet": record["sourceSheet"], "row": record["sourceRow"]}
                     for record in records
-                    if member_key_by_name[record["nameKey"]] == member_key
+                    if record["memberKey"] == member_key
                     and (record["isQ"] or record["isFng"])
                 ],
             })
@@ -468,6 +664,11 @@ def analyze(workbook_path: Path) -> dict[str, Any]:
             "sourceSheets": source_sheets,
             "excludedDerivedSheets": sorted(DERIVED_SHEETS),
             "sessionIdentityRule": "date + proposed AO + stream (BD/DD) + normalized workout type",
+            **(
+                {"sourceIdentitySplitsSha256": source_identity_splits_digest(source_identity_splits)}
+                if source_identity_splits
+                else {}
+            ),
         },
         "summary": {
             "physicalRowsExamined": raw_rows_examined,
@@ -549,6 +750,12 @@ class UnionFind:
 
 def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
     """Apply explicit human decisions without changing the normalized source layer."""
+    schema_version = manifest.get("schemaVersion")
+    if schema_version not in {
+        "west-houston-human-resolution-v1",
+        "west-houston-human-resolution-v2",
+    }:
+        raise ValueError(f"Unsupported human-resolution manifest schema: {schema_version}")
     source = manifest["source"]
     metadata = normalized["metadata"]
     if source["attendanceWorkbookSha256"] != metadata["workbookSha256"]:
@@ -556,14 +763,60 @@ def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]
     if source["parserVersion"] != metadata["parserVersion"]:
         raise ValueError("Human-resolution manifest does not match the parser version")
 
+    source_splits = manifest.get("sourceIdentitySplits", [])
+    normalized_split_digest = metadata.get("sourceIdentitySplitsSha256")
+    if bool(source_splits) != bool(normalized_split_digest):
+        raise ValueError("Normalized source and human manifest disagree about source identity splits")
+    if source_splits and source_identity_splits_digest(source_splits) != normalized_split_digest:
+        raise ValueError("Normalized source identity splits do not match the human manifest")
+
     member_by_key = {item["memberKey"]: item for item in normalized["members"]}
     all_member_keys = sorted(member_by_key)
     union_find = UnionFind(all_member_keys)
     review_ids_by_member: dict[str, set[str]] = defaultdict(set)
     approved_names_by_member: dict[str, set[str]] = defaultdict(set)
+    approved_home_aos_by_member: dict[str, set[str]] = defaultdict(set)
     resolution_by_review_id: dict[str, str] = {}
 
+    for decision in source_splits:
+        review_id = text(decision.get("reviewId"))
+        split_member_key = split_source_member_key(decision)
+        member = member_by_key.get(split_member_key)
+        if member is None or member.get("sourceIdentitySplitReviewIds") != [review_id]:
+            raise ValueError(f"Source split {review_id} is not represented exactly once in normalized members")
+        expected_key = text(decision.get("expectedSourceIdentityKey"))
+        if expected_key and expected_key != split_member_key:
+            raise ValueError(f"Source split {review_id} expected key does not match")
+        approved_name = text(decision.get("approvedCanonicalF3Name"))
+        if not approved_name:
+            raise ValueError(f"Source split {review_id} is missing its approved canonical name")
+        review_ids_by_member[split_member_key].add(review_id)
+        approved_names_by_member[split_member_key].add(approved_name)
+
+    for decision in manifest.get("memberMetadataDecisions", []):
+        review_id = text(decision.get("reviewId"))
+        if not review_id or review_id in resolution_by_review_id:
+            raise ValueError(f"Missing or duplicate member metadata reviewId: {review_id or '<blank>'}")
+        if decision.get("resolution") != "SET_CANONICAL_METADATA":
+            raise ValueError(f"Unsupported member metadata resolution in {review_id}")
+        keys = decision.get("sourceIdentityKeys")
+        if not isinstance(keys, list) or not keys or len(keys) != len(set(keys)):
+            raise ValueError(f"Invalid source identities in member metadata decision {review_id}")
+        if any(key not in member_by_key for key in keys):
+            raise ValueError(f"Unknown source identity in member metadata decision {review_id}")
+        approved_name = text(decision.get("approvedPaxName"))
+        approved_home_ao = text(decision.get("approvedHomeAo"))
+        if not approved_name or not approved_home_ao:
+            raise ValueError(f"Missing approved member metadata in {review_id}")
+        resolution_by_review_id[review_id] = decision["resolution"]
+        for key in keys:
+            review_ids_by_member[key].add(review_id)
+            approved_names_by_member[key].add(approved_name)
+            approved_home_aos_by_member[key].add(approved_home_ao)
+
     for decision in manifest["identityDecisions"]:
+        if decision["reviewId"] in resolution_by_review_id:
+            raise ValueError(f"Duplicate human review ID: {decision['reviewId']}")
         keys = sorted(decision["sourceIdentityKeys"])
         if any(key not in member_by_key for key in keys):
             raise ValueError(f"Unknown source identity in {decision['reviewId']}")
@@ -605,8 +858,11 @@ def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]
             source_to_canonical_member[key] = canonical_key
         source_members = [member_by_key[key] for key in source_keys]
         approved_names = sorted({name for key in source_keys for name in approved_names_by_member[key]}, key=lambda value: (value.casefold(), value))
-        if len({name.casefold() for name in approved_names}) > 1:
+        if len(approved_names) > 1:
             raise ValueError(f"Conflicting approved canonical names for {source_keys}: {approved_names}")
+        approved_home_aos = sorted({value for key in source_keys for value in approved_home_aos_by_member[key]})
+        if len(approved_home_aos) > 1:
+            raise ValueError(f"Conflicting approved home AOs for {source_keys}: {approved_home_aos}")
         canonical_name = approved_names[0] if approved_names else sorted(
             (member["proposedF3Name"] for member in source_members),
             key=lambda value: (value.casefold(), value),
@@ -623,7 +879,7 @@ def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]
         if any(item["decision"] == "Unsure" for item in fng_reviews):
             first_post_source = "earliest_verified_attendance_with_unresolved_later_fng"
         review_ids = sorted({value for key in source_keys for value in review_ids_by_member[key]})
-        canonical_members.append({
+        canonical_member = {
             "canonicalMemberKey": canonical_key,
             "canonicalF3Name": canonical_name,
             "sourceMemberKeys": source_keys,
@@ -643,7 +899,10 @@ def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]
                 if canonical_name.casefold() == "doge"
                 else None
             ),
-        })
+        }
+        if approved_home_aos:
+            canonical_member["canonicalHomeAo"] = approved_home_aos[0]
+        canonical_members.append(canonical_member)
 
     workout_by_source_session: dict[str, dict[str, Any]] = {}
     for decision in manifest["workoutDecisions"]:
@@ -845,6 +1104,11 @@ def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]
             "humanReviewWorkbookSha256": source["humanReviewWorkbookSha256"],
             "humanResolutionManifestSchemaVersion": manifest["schemaVersion"],
             "canonicalSessionPolicy": "Primary BD only; DD excluded; DR excluded pending AOQ; explicit workout decisions applied.",
+            **(
+                {"sourceIdentitySplitsSha256": normalized_split_digest}
+                if normalized_split_digest
+                else {}
+            ),
         },
         "beforeHumanReview": normalized["summary"],
         "beforeCanonicalScope": before_canonical_scope,
@@ -875,6 +1139,12 @@ def apply_human_resolutions(normalized: dict[str, Any], manifest: dict[str, Any]
             "fngDiscrepancyDecisions": manifest["fngDiscrepancyDecisions"],
             "workoutDecisions": manifest["workoutDecisions"],
             "streamPolicies": manifest["streamPolicies"],
+            **({"sourceIdentitySplits": source_splits} if source_splits else {}),
+            **(
+                {"memberMetadataDecisions": manifest["memberMetadataDecisions"]}
+                if manifest.get("memberMetadataDecisions")
+                else {}
+            ),
         },
         "canonicalMembers": canonical_members,
         "canonicalSessions": canonical_sessions,
@@ -895,6 +1165,8 @@ def post_human_markdown_report(result: dict[str, Any]) -> str:
     before = result["beforeHumanReview"]
     before_scope = result["beforeCanonicalScope"]
     identity_decisions = result["appliedHumanReview"]["identityDecisions"]
+    source_splits = result["appliedHumanReview"].get("sourceIdentitySplits", [])
+    member_metadata = result["appliedHumanReview"].get("memberMetadataDecisions", [])
     unresolved_identity = result["remainingUnresolvedIdentityGroups"]
     unresolved_fng = result["fngDiscrepancyRepresentations"]
     lines = [
@@ -923,6 +1195,16 @@ def post_human_markdown_report(result: dict[str, Any]) -> str:
         f"- MERGE: {sum(1 for item in identity_decisions if item['resolution'] == 'MERGE')} review groups.",
         f"- KEEP_SEPARATE: {sum(1 for item in identity_decisions if item['resolution'] == 'KEEP_SEPARATE')} review groups.",
         f"- UNRESOLVED: {sum(1 for item in identity_decisions if item['resolution'] == 'UNRESOLVED')} review group.",
+        f"- Occurrence-level source identity splits: {len(source_splits)} reviewed decision(s).",
+        *[
+            f"- {item['reviewId']}: `{item['expectedSourceIdentityKey']}` preserves the approved name `{item['approvedCanonicalF3Name']}` across {len(item['occurrences'])} explicitly selected occurrence(s)."
+            for item in source_splits
+        ],
+        f"- Reviewed member metadata decisions: {len(member_metadata)}.",
+        *[
+            f"- {item['reviewId']}: `{item['approvedPaxName']}` has approved home AO `{item['approvedHomeAo']}`; home AO is not identity material."
+            for item in member_metadata
+        ],
         "- WH-ID-034 and WH-ID-035 were joined by the explicit cross-group note `Same as above` and their shared approved name `lightningrod`.",
         f"- Canonical member count: {summary['canonicalMembers']}.",
         "- DOGE remains a distinct canonical member with a `match_existing` hint for eventual adapter matching.",
@@ -1121,12 +1403,13 @@ def main() -> None:
     parser.add_argument("--human-resolution-manifest", type=Path)
     args = parser.parse_args()
 
-    normalized = analyze(args.workbook.resolve())
     if args.human_resolution_manifest:
         manifest = json.loads(args.human_resolution_manifest.read_text(encoding="utf-8"))
+        normalized = analyze(args.workbook.resolve(), manifest.get("sourceIdentitySplits"))
         result = apply_human_resolutions(normalized, manifest)
         report = post_human_markdown_report(result)
     else:
+        normalized = analyze(args.workbook.resolve())
         result = normalized
         report = markdown_report(result)
     args.json_output.parent.mkdir(parents=True, exist_ok=True)

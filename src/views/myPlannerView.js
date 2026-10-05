@@ -4,7 +4,10 @@ import { createGlobalNav } from "../components/globalNav.js";
 import { navigateTo } from "../utils/navigation.js";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { findWorkoutForQSlot } from "../utils/qSlotMatching.js";
+import {
+    findWorkoutForQSlot,
+    getQSlotDisplayTime,
+} from "../utils/qSlotMatching.js";
 import { savePlannerDraft, createNewPlannerDraft, createExistingPlannerDraft } from "../services/plannerDraftRepository.js";
 
 function createBlankWorkout({
@@ -292,7 +295,35 @@ export function renderMyPlanner() {
             slot.qUserId === state.currentUserMemberId &&
             slot.date >= today
         )
-        .sort((a, b) => a.date.localeCompare(b.date));
+        .sort((a, b) => {
+            const dateCompare = a.date.localeCompare(b.date);
+        
+            if (dateCompare !== 0) {
+                return dateCompare;
+            }
+        
+            const aoA = (state.aos || []).find(ao => ao.id === a.aoId);
+            const aoB = (state.aos || []).find(ao => ao.id === b.aoId);
+        
+            const workoutA = findWorkoutForQSlot(
+                a,
+                state.plannedWorkouts || [],
+                state.currentUserId,
+                state.aos || []
+            );
+        
+            const workoutB = findWorkoutForQSlot(
+                b,
+                state.plannedWorkouts || [],
+                state.currentUserId,
+                state.aos || []
+            );
+        
+            const timeA = getQSlotDisplayTime(a, aoA, workoutA) || "23:59";
+            const timeB = getQSlotDisplayTime(b, aoB, workoutB) || "23:59";
+        
+            return timeA.localeCompare(timeB);
+        });
 
     const upcomingQKeys = new Set(
         myUpcomingQSlots.map(slot => `${slot.date}__${slot.aoId || ""}`)

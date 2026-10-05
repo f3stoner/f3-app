@@ -1368,32 +1368,46 @@ export function renderDashboard() {
 
     function getMyUpcomingQSlots() {
         const today = getTodayDate();
-
+    
         return state.qSlots
             .filter(slot => {
                 if (slot.workflowStatus === "logged_elsewhere") {
                     return false;
                 }
-
+    
                 if (slot.qUserId !== state.currentUserMemberId) {
                     return false;
                 }
-
+    
                 if (slot.date < today) {
                     return false;
                 }
-
+    
                 const loggedSession = findLoggedSessionForSlot(slot);
-
+    
                 if (loggedSession) {
                     return false;
                 }
-
+    
                 return true;
             })
-            .sort((a, b) => a.date.localeCompare(b.date));
+            .sort((a, b) => {
+                const dateCompare = a.date.localeCompare(b.date);
+    
+                if (dateCompare !== 0) {
+                    return dateCompare;
+                }
+    
+                const aoA = state.aos.find(ao => ao.id === a.aoId);
+                const aoB = state.aos.find(ao => ao.id === b.aoId);
+    
+                const timeA = getSlotDisplayTime(a, aoA) || "23:59";
+                const timeB = getSlotDisplayTime(b, aoB) || "23:59";
+    
+                return timeA.localeCompare(timeB);
+            });
     }
-
+    
     function getSlotDisplayTime(slot, ao) {
         const workout =
             findMatchingPlannedWorkoutForSlot(

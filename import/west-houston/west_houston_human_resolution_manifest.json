@@ -1880,17 +1880,84 @@
         "wh-member-2254a1951a9ea4a37e34",
         "wh-member-746284c64fb2e5e6883d"
       ]
+    },
+    {
+      "candidateNames": [
+        "Zillow",
+        "Zillow"
+      ],
+      "notes": "Final human decision: the historical Zillow and the reviewed 2026-10-02 The HOP FNG are different people despite sharing the exact same PAX name.",
+      "resolution": "KEEP_SEPARATE",
+      "reviewId": "WH-ID-068",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-e230e873817939eef660",
+        "wh-member-ef12a3c2b13b3832c61d"
+      ]
     }
   ],
-  "schemaVersion": "west-houston-human-resolution-v1",
+  "memberMetadataDecisions": [
+    {
+      "approvedHomeAo": "The Branch",
+      "approvedPaxName": "Zillow",
+      "notes": "Preserve the historical Zillow identity and reviewed home AO without deriving metadata from attendance.",
+      "resolution": "SET_CANONICAL_METADATA",
+      "reviewId": "WH-META-001",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-e230e873817939eef660"
+      ]
+    },
+    {
+      "approvedHomeAo": "The HOP",
+      "approvedPaxName": "Zillow",
+      "notes": "Apply the approved home AO to the new split Zillow identity; home AO is metadata and is not identity material.",
+      "resolution": "SET_CANONICAL_METADATA",
+      "reviewId": "WH-META-002",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-ef12a3c2b13b3832c61d"
+      ]
+    }
+  ],
+  "schemaVersion": "west-houston-human-resolution-v2",
   "source": {
-    "attendanceWorkbookFilename": "2024 West Houston Consolidated (1).xlsx",
-    "attendanceWorkbookSha256": "2e8c68bcd96c84dccdadabb761e778d60de092fd7a374719d5768372e23ee533",
+    "attendanceWorkbookFilename": "2024 West Houston Consolidated (2).xlsx",
+    "attendanceWorkbookSha256": "05475751a89426367ad30eae4c6b259c3d834cddbd1fb55f92673aefa7fd4968",
     "humanReviewWorkbookFilename": "West_Houston_DOGE_Review (1).xlsx",
     "humanReviewWorkbookSha256": "ec5b363dcce361c9d34958d76fc09204cf398702a217278683ffba299b207af7",
     "parserVersion": "west-houston-workbook-v1",
     "reviewer": "DOGE"
   },
+  "sourceIdentitySplits": [
+    {
+      "approvedCanonicalF3Name": "Zillow",
+      "baseSourceIdentityKey": "wh-member-e230e873817939eef660",
+      "expectedSourceIdentityKey": "wh-member-ef12a3c2b13b3832c61d",
+      "notes": "Final human decision: this reviewed occurrence belongs to a different person from historical Zillow. The workbook row is retained only as audit evidence and is not identity material.",
+      "occurrences": [
+        {
+          "anchor": true,
+          "expected": {
+            "date": "2026-10-02",
+            "normalizedPaxName": "zillow",
+            "proposedAo": "The HOP",
+            "stream": "bd",
+            "workoutType": "30/30"
+          },
+          "reviewedProvenance": {
+            "row": 8895,
+            "sheet": "The HOP"
+          },
+          "sourceSessionKey": "wh-session-ccd46cdf9fb05b4ab277",
+          "sourceSheet": "The HOP"
+        }
+      ],
+      "resolution": "SPLIT_OCCURRENCES",
+      "reviewId": "WH-SPLIT-001",
+      "reviewer": "DOGE"
+    }
+  ],
   "streamPolicies": {
     "DD": {
       "rule": "Preserve in normalized source, staging, and provenance only; do not create canonical sessions, posts, attendance statistics, or surfaced product behavior.",

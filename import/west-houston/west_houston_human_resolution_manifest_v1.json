@@ -1,0 +1,2073 @@
+{
+  "crossGroupIdentityDecisions": [
+    {
+      "approvedCanonicalF3Name": "lightningrod",
+      "decisionId": "WH-XID-001",
+      "evidence": "WH-ID-035 uses the same approved canonical name as WH-ID-034 and the note explicitly says 'Same as above'.",
+      "resolution": "MERGE",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-3e49686b36a6a3c67be6",
+        "wh-member-b1cac893fa5bab5e0f25",
+        "wh-member-b30b33a980735b4ed091",
+        "wh-member-e645a5547a1c126130cf"
+      ],
+      "sourceReviewIds": [
+        "WH-ID-034",
+        "WH-ID-035"
+      ]
+    }
+  ],
+  "fngDiscrepancyDecisions": [
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Point",
+        "date": "2022-07-23",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 1844,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-1f46ab4141a8433ed089"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Iron Gate",
+        "date": "2026-04-18",
+        "provenance": [
+          {
+            "ao": "The Iron Gate",
+            "provenance": {
+              "row": 359,
+              "sheet": "The Iron Gate"
+            },
+            "session_key": "wh-session-e100779376c4de480050"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Anime",
+      "recordedVariants": [
+        "Anime"
+      ],
+      "reviewId": "WH-FNG-001",
+      "reviewSignature": "wh-fng-4dccdcf91f6ac01a9e27",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-cccea108673faa0190da"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The HOP",
+        "date": "2025-11-10",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 7149,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-ee7cdd5a11c1f99b7552"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2025-12-18",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 9073,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-12f3a00bed285a4c2bfa"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Bob the Builder",
+      "recordedVariants": [
+        "Bob The Builder",
+        "Bob the Builder"
+      ],
+      "reviewId": "WH-FNG-002",
+      "reviewSignature": "wh-fng-92e7bc75307e93606481",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-c6d5bfdf9ba705ce6858"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Corridor",
+        "date": "2024-10-01",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 1763,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-9facc78529152cd2d36c"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Corridor",
+        "date": "2024-12-03",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 2025,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-dff670162e69f3e09fdf"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Cappuccino",
+      "recordedVariants": [
+        "Cappuccino"
+      ],
+      "reviewId": "WH-FNG-003",
+      "reviewSignature": "wh-fng-4cbe98575c5666dd7df5",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-9dd2aca29bda30fcf0a6"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Corridor",
+        "date": "2024-09-07",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 1663,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-58f42915739a9d908fcb"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The HOP",
+        "date": "2026-08-14",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 8637,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-a59bff76064b23355d7e"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Chum",
+      "recordedVariants": [
+        "Chum"
+      ],
+      "reviewId": "WH-FNG-004",
+      "reviewSignature": "wh-fng-ca209eb1630953680faa",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-24c47fafbc33f51a072b"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Corridor",
+        "date": "2024-10-05",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 1787,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-297270eeb8300d186edd"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Oasis",
+        "date": "2026-01-20",
+        "provenance": [
+          {
+            "ao": "The Oasis",
+            "provenance": {
+              "row": 1427,
+              "sheet": "The Oasis"
+            },
+            "session_key": "wh-session-e7ec97970bedb9d42d53"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Fireball",
+      "recordedVariants": [
+        "Fireball"
+      ],
+      "reviewId": "WH-FNG-005",
+      "reviewSignature": "wh-fng-31f4879693f760161818",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-53a32cafb40a6f130f95"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The HOP",
+        "date": "2024-05-08",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 4148,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-4ed85ef5494dbf9c013d"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The HOP",
+        "date": "2024-08-19",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 4632,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-e9a551afab341cbb11a3"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Fosters",
+      "recordedVariants": [
+        "Fosters"
+      ],
+      "reviewId": "WH-FNG-006",
+      "reviewSignature": "wh-fng-5f04e33384bbcc699a41",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-d0c78acccd6a64017687"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Point",
+        "date": "2021-11-20",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 393,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-edde07e5a5627cf91d2d"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Iron Gate",
+        "date": "2026-07-21",
+        "provenance": [
+          {
+            "ao": "The Iron Gate",
+            "provenance": {
+              "row": 704,
+              "sheet": "The Iron Gate"
+            },
+            "session_key": "wh-session-3405069950325a962c7b"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Haggis",
+      "recordedVariants": [
+        "Haggis"
+      ],
+      "reviewId": "WH-FNG-007",
+      "reviewSignature": "wh-fng-64fa6d940784f7ff091c",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-092f372a435bd7eee916"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The HOP",
+        "date": "2022-08-31",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 1222,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-e9dc9b9ae207935f7568"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2025-02-04",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 7223,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-4ffebf71bc4cd72ee773"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Jasmine",
+      "recordedVariants": [
+        "Jasmine"
+      ],
+      "reviewId": "WH-FNG-008",
+      "reviewSignature": "wh-fng-137bc145564cdc91972c",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-bd848b0b71096b24f61d"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Point",
+        "date": "2023-07-18",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 3752,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-11a228ae3f77147ce97f"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2025-03-25",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 7533,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-612a56e476fb3d4bed88"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Lasso",
+      "recordedVariants": [
+        "Lasso"
+      ],
+      "reviewId": "WH-FNG-009",
+      "reviewSignature": "wh-fng-69e4c129e5290daeff39",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-c30d35bb171f0adbce50"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The HOP",
+        "date": "2022-09-02",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 1250,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-83e90d7295f267b01d06"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2025-08-07",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 8287,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-4fcc19f4e0dcd6df4dd5"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Moneyball",
+      "recordedVariants": [
+        "Moneyball"
+      ],
+      "reviewId": "WH-FNG-010",
+      "reviewSignature": "wh-fng-ace0cc1245781e082590",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-0dcc3e1fa118621dc3d2"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Branch",
+        "date": "2023-01-30",
+        "provenance": [
+          {
+            "ao": "The Branch",
+            "provenance": {
+              "row": 284,
+              "sheet": "The Branch"
+            },
+            "session_key": "wh-session-3cc599e1c287f68b065b"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2025-12-18",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 9072,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-12f3a00bed285a4c2bfa"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Parks and Rec",
+      "recordedVariants": [
+        "Parks and Rec"
+      ],
+      "reviewId": "WH-FNG-011",
+      "reviewSignature": "wh-fng-82b936f2ff881b66b87e",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-835f659d9fa19d62d3e2"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The HOP",
+        "date": "2022-10-05",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 1489,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-eb2b23398bb2e978ea5e"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Branch",
+        "date": "2023-09-25",
+        "provenance": [
+          {
+            "ao": "The Branch",
+            "provenance": {
+              "row": 931,
+              "sheet": "The Branch"
+            },
+            "session_key": "wh-session-fc1c950b1ca462839dd3"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Prince",
+      "recordedVariants": [
+        "Prince"
+      ],
+      "reviewId": "WH-FNG-012",
+      "reviewSignature": "wh-fng-eea4ff240c3df5a65116",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-2a428b5d9a580f561136"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Tower",
+        "date": "2023-02-07",
+        "provenance": [
+          {
+            "ao": "The Tower",
+            "provenance": {
+              "row": 509,
+              "sheet": "The Tower"
+            },
+            "session_key": "wh-session-48159be816850f4cb4ff"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Corridor",
+        "date": "2025-05-20",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 2651,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-dfc34500384eadd5e352"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Showcase",
+      "recordedVariants": [
+        "Showcase",
+        "showcase"
+      ],
+      "reviewId": "WH-FNG-013",
+      "reviewSignature": "wh-fng-8789afc6d6eeee94bc4b",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-641b0d9c2a656a928470"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Branch",
+        "date": "2024-08-19",
+        "provenance": [
+          {
+            "ao": "The Branch",
+            "provenance": {
+              "row": 2417,
+              "sheet": "The Branch"
+            },
+            "session_key": "wh-session-94e2f3fc1f72d50ba0d1"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2026-05-30",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 10043,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-413b71c9c568f439123f"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "SpaceX",
+      "recordedVariants": [
+        "SpaceX"
+      ],
+      "reviewId": "WH-FNG-014",
+      "reviewSignature": "wh-fng-8cd873e143b211bce9c4",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-27bbfa4bbd4b856011d6"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Point",
+        "date": "2021-09-11",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 38,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-5d2d97673b17851897a0"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Point",
+        "date": "2024-11-12",
+        "provenance": [
+          {
+            "ao": "The Point",
+            "provenance": {
+              "row": 6826,
+              "sheet": "The Point"
+            },
+            "session_key": "wh-session-0fd97310fc77e05d22bd"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "T-Bone",
+      "recordedVariants": [
+        "T-Bone",
+        "T-bone"
+      ],
+      "reviewId": "WH-FNG-015",
+      "reviewSignature": "wh-fng-35f2bc292725e0d0d9dd",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-0f4bfe41ae4dfae374de"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "Valhalla",
+        "date": "2025-04-30",
+        "provenance": [
+          {
+            "ao": "Valhalla",
+            "provenance": {
+              "row": 112,
+              "sheet": "Valhalla"
+            },
+            "session_key": "wh-session-bee5c0b360bcf73f00d3"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Valley",
+        "date": "2025-10-16",
+        "provenance": [
+          {
+            "ao": "The Valley",
+            "provenance": {
+              "row": 1017,
+              "sheet": "The Valley"
+            },
+            "session_key": "wh-session-1f68e05a58d4cd6e5f0e"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Torch",
+      "recordedVariants": [
+        "Torch"
+      ],
+      "reviewId": "WH-FNG-016",
+      "reviewSignature": "wh-fng-fad6fc61d9c01b04d92a",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-df11c1ab934efabaf633"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The HOP",
+        "date": "2022-09-21",
+        "provenance": [
+          {
+            "ao": "The HOP",
+            "provenance": {
+              "row": 1399,
+              "sheet": "The HOP"
+            },
+            "session_key": "wh-session-62543b7f0af4a7cc568d"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Corridor",
+        "date": "2025-11-08",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 3303,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-475dbdbd165d9a924cf1"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Tulip",
+      "recordedVariants": [
+        "Tulip"
+      ],
+      "reviewId": "WH-FNG-017",
+      "reviewSignature": "wh-fng-c09db191fbf2b1a2d3ee",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-9b29d5b8ababfd7c2450"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Tower",
+        "date": "2025-10-23",
+        "provenance": [
+          {
+            "ao": "The Tower",
+            "provenance": {
+              "row": 5541,
+              "sheet": "The Tower"
+            },
+            "session_key": "wh-session-3e8416251d24de71a5fc"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Iron Gate",
+        "date": "2026-04-28",
+        "provenance": [
+          {
+            "ao": "The Iron Gate",
+            "provenance": {
+              "row": 388,
+              "sheet": "The Iron Gate"
+            },
+            "session_key": "wh-session-4a51acdec5538bec0040"
+          }
+        ]
+      },
+      "notes": null,
+      "pax": "Wasabi",
+      "recordedVariants": [
+        "Wasabi"
+      ],
+      "reviewId": "WH-FNG-018",
+      "reviewSignature": "wh-fng-7802a1fc299b72202959",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-44e5071599f9a28b181d"
+    },
+    {
+      "canonicalFirstPostRule": "Preserve earliest verified attendance; retain later explicit FNG evidence separately.",
+      "decision": "Unsure",
+      "earliestAttendance": {
+        "ao": "The Corridor",
+        "date": "2025-06-12",
+        "provenance": [
+          {
+            "ao": "The Corridor",
+            "provenance": {
+              "row": 2723,
+              "sheet": "The Corridor"
+            },
+            "session_key": "wh-session-c735c0762bfbb1a64a3f"
+          }
+        ]
+      },
+      "explicitFng": {
+        "ao": "The Oasis",
+        "date": "2026-08-25",
+        "provenance": [
+          {
+            "ao": "The Oasis",
+            "provenance": {
+              "row": 2539,
+              "sheet": "The Oasis"
+            },
+            "session_key": "wh-session-dfba3ad2b9332c5b7b47"
+          }
+        ]
+      },
+      "notes": "Human review completed: preserve the earlier verified attendance as first-post history and retain the later explicit FNG evidence without further inference.",
+      "pax": "Lightningrod",
+      "recordedVariants": [
+        "Lightningrod",
+        "lightningrod"
+      ],
+      "reviewId": "WH-FNG-019",
+      "reviewSignature": "wh-fng-0e9c6cecb7955e9d5cb8",
+      "reviewer": "DOGE",
+      "sourceMemberKey": "wh-member-3e49686b36a6a3c67be6"
+    }
+  ],
+  "identityDecisions": [
+    {
+      "approvedCanonicalF3Name": "A.1.",
+      "candidateNames": [
+        "A.1.",
+        "A1"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-001",
+      "reviewSignature": "wh-collision-35263045d42cf1766bf0",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-7fbd38753220ff224c89",
+        "wh-member-dd91fcc8adf5dee35fef"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Baby Shark",
+      "candidateNames": [
+        "Baby Shark",
+        "BabyShark"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-002",
+      "reviewSignature": "wh-collision-fb6c34193d420c212940",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-4f7bc87f5ad864d355d6",
+        "wh-member-d264714542d37bbd6837"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Bill Dance",
+      "candidateNames": [
+        "Bill Dance",
+        "Billdance"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-003",
+      "reviewSignature": "wh-collision-5aebef230bce9b6e8683",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-61272a351ac48016d4e1",
+        "wh-member-8d14adf36691dbf12b6b"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Birdshot",
+      "candidateNames": [
+        "Bird Shot",
+        "Birdshot"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-004",
+      "reviewSignature": "wh-collision-55aed50d0b95e1e41d46",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-b24df247bbf28243d25b"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Blue Screen",
+      "candidateNames": [
+        "Blue Screen",
+        "BlueScreen"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-005",
+      "reviewSignature": "wh-collision-86f2d92d96a23463c32f",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-68b39c281635e3302e24",
+        "wh-member-9bcdc4e4687089b138e5"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Bob Ross",
+      "candidateNames": [
+        "Bob Ross",
+        "BobRoss"
+      ],
+      "notes": "Visitor",
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-006",
+      "reviewSignature": "wh-collision-d6ad666d150445eaf2e2",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-950642bd3a11fd875d50",
+        "wh-member-c3ba424666c9d3b072a0"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Cap It",
+      "candidateNames": [
+        "Cap It",
+        "Capit"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-007",
+      "reviewSignature": "wh-collision-ac84e304f03739a80881",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-52bf1a2bef93197aa4f3",
+        "wh-member-e52368538296d22e27be"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Cat 5",
+      "candidateNames": [
+        "Cat 5",
+        "Cat5"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-008",
+      "reviewSignature": "wh-collision-bdb429e24d4930783b84",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-03ceb7954a6050a5c455",
+        "wh-member-4509b1ab6283e3c651cc"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": null,
+      "candidateNames": [
+        "Cheese Sticks",
+        "Cheesesticks"
+      ],
+      "notes": "Unknown PAX",
+      "resolution": "UNRESOLVED",
+      "reviewId": "WH-ID-009",
+      "reviewSignature": "wh-collision-c992888fcabfdd0a74da",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-30fe4aff70503a26e0b6",
+        "wh-member-c665fd21ebeb83c77f47"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Crackerjack",
+      "candidateNames": [
+        "Cracker Jack",
+        "Crackerjack"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-010",
+      "reviewSignature": "wh-collision-b773b8f3758c0ef2c96b",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-2f558c84d8136143034b",
+        "wh-member-7303f84a872003d374d2"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Cross Check",
+      "candidateNames": [
+        "Cross Check",
+        "Crosscheck"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-011",
+      "reviewSignature": "wh-collision-21bb3068e928e826e7dd",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-a388c23379edeb5eda81",
+        "wh-member-d47722178f8b4bcd814b"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Daniel San",
+      "candidateNames": [
+        "Daniel San",
+        "Daniel-San",
+        "Danielsan"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-012",
+      "reviewSignature": "wh-collision-754062bf6b8e0b6ca9ea",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-547ef7bac21276177f49",
+        "wh-member-5e812c5891c1d8baed6a",
+        "wh-member-6bc8374c3c42edf30797"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Deepdish",
+      "candidateNames": [
+        "Deep Dish",
+        "Deepdish"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-013",
+      "reviewSignature": "wh-collision-d96bb294c0d8002027d8",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-6f322616326a0169411a",
+        "wh-member-95a9414dcdc03eb6f737"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Desperado",
+      "candidateNames": [
+        "@Desperado",
+        "Desperado"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-014",
+      "reviewSignature": "wh-collision-5a89337936866a6e8f3b",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-40b4a760ce27161cd700",
+        "wh-member-ec21039f6d80a543acd9"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Double Double",
+      "candidateNames": [
+        "Double Double",
+        "DoubleDouble"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-015",
+      "reviewSignature": "wh-collision-948a171b70fd7173debd",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-0d324476f202556ff001",
+        "wh-member-263c1101b9d1f01e2c3c"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Downhole",
+      "candidateNames": [
+        "Down hole",
+        "Downhole"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-016",
+      "reviewSignature": "wh-collision-db82457b229a7e893f19",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-1875d3f37419b5f81fe8",
+        "wh-member-94a1b94f08e593ca762f"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Drill Bit",
+      "candidateNames": [
+        "Drill Bit",
+        "Drillbit"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-017",
+      "reviewSignature": "wh-collision-ac816c766111c5046b60",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-0bdc2f2981570bfa3e34",
+        "wh-member-31554efd2e238bc24e66"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Farm Boy",
+      "candidateNames": [
+        "Farm Boy",
+        "Farmboy"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-018",
+      "reviewSignature": "wh-collision-f26630f7a5b80cd15a85",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-93742f7c4ce409ee9e0e",
+        "wh-member-cfec556556bed47c6dae"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Fix It",
+      "candidateNames": [
+        "Fix It",
+        "FixIt"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-019",
+      "reviewSignature": "wh-collision-3542d7e4254ba35d9691",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-1c913a058fa3653d77f7",
+        "wh-member-b1ebcb1ada2f8c752e7e"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "FreeFall",
+      "candidateNames": [
+        "Free Fall",
+        "Freefall"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-020",
+      "reviewSignature": "wh-collision-e10023b2097fa7453b01",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-5ca9ac60e39b44e70f7d",
+        "wh-member-83bfbfba41e6bca3eb6b"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Game Boy",
+      "candidateNames": [
+        "Game Boy",
+        "Gameboy"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-021",
+      "reviewSignature": "wh-collision-f389c75f09448fb75dfd",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-3bfe2fadc87e932dc103",
+        "wh-member-98d9de0737e489b5e6f7"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Gator Light",
+      "candidateNames": [
+        "Gator Light",
+        "GatorLight"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-022",
+      "reviewSignature": "wh-collision-9730eefbccad1ffdb0ec",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-478a62bd1eb304336018",
+        "wh-member-9d4b9de30075b1737b11"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Go Kart",
+      "candidateNames": [
+        "Go Kart",
+        "Gokart"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-023",
+      "reviewSignature": "wh-collision-5cd8f417d39f6cf0abeb",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-1bf1645929058f571f4e",
+        "wh-member-3a2aa35ea48067cac6c0"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Good Life",
+      "candidateNames": [
+        "Good Life",
+        "GoodLife"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-024",
+      "reviewSignature": "wh-collision-3d8a464fc75f62678781",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-3f5d470084e08ec93e8b",
+        "wh-member-e444548ad31752048fb8"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Goose Hunter",
+      "candidateNames": [
+        "Goose Hunter",
+        "Goosehunter"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-025",
+      "reviewSignature": "wh-collision-cf386ea60e94faa2d4db",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-66b13cd3990dcd304bd3",
+        "wh-member-e24592658065a3efa4bc"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Hall Pass",
+      "candidateNames": [
+        "Hall Pass",
+        "Hallpass"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-026",
+      "reviewSignature": "wh-collision-c2a1db30e80af2c37b3c",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-33b1a335c48266266a61",
+        "wh-member-c3dea0ebe25e6c8a5dab"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Hammertime",
+      "candidateNames": [
+        "hammer time",
+        "Hammertime"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-027",
+      "reviewSignature": "wh-collision-349d453f1e9a807378ac",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-76abbc924580c2018873",
+        "wh-member-a33714af9f75711c3797"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "High Rise",
+      "candidateNames": [
+        "High Rise",
+        "High-Rise"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-028",
+      "reviewSignature": "wh-collision-43c13fdab2ef8841966e",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-f6e2ef86dd8db98264de",
+        "wh-member-f838f4ea9147bb2a71b2"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Home slice",
+      "candidateNames": [
+        "Home slice",
+        "Homeslice"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-029",
+      "reviewSignature": "wh-collision-5a2050b86177b33cdf39",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-18fcb8936b7a5a424ec0",
+        "wh-member-47a6308dcca0efb84981"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "HoneyDo",
+      "candidateNames": [
+        "Honey Do",
+        "HoneyDo"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-030",
+      "reviewSignature": "wh-collision-91dcd483d9d8297e9ddc",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-ac8f5441695b7e77ed98",
+        "wh-member-eb5b1b949b585751920f"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "LayUp",
+      "candidateNames": [
+        "Lay Up",
+        "LayUp"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-031",
+      "reviewSignature": "wh-collision-86d1c5017afc1f60bcc6",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-4faf7a199ce9ee27e6cd",
+        "wh-member-67ad354380480c78dbce"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Leatherman",
+      "candidateNames": [
+        "Leather Man",
+        "Leatherman"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-032",
+      "reviewSignature": "wh-collision-083c714eadf649a0df04",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-1e288cd8ca4633395fe9",
+        "wh-member-b93e5e5015d15b508d29"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Levi’s",
+      "candidateNames": [
+        "Levi's",
+        "Levis"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-033",
+      "reviewSignature": "wh-collision-fdd9ba0a8f255400747b",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-306997bccb1822f88b3e",
+        "wh-member-a3c1f46227066ca11869"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "lightningrod",
+      "candidateNames": [
+        "lighting rod",
+        "Lightingrod"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-034",
+      "reviewSignature": "wh-collision-48d371c9b3f416d21e90",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-b1cac893fa5bab5e0f25",
+        "wh-member-e645a5547a1c126130cf"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "lightningrod",
+      "candidateNames": [
+        "Lightning Rod",
+        "Lightningrod"
+      ],
+      "notes": "Same as above",
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-035",
+      "reviewSignature": "wh-collision-065955c76deed5410f63",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-3e49686b36a6a3c67be6",
+        "wh-member-b30b33a980735b4ed091"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Lionheart",
+      "candidateNames": [
+        "Lion Heart",
+        "Lionheart"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-036",
+      "reviewSignature": "wh-collision-83767210c1a5ed748336",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-0dacdb7d858e1dcf0fa3",
+        "wh-member-d365d87912a9c91c9997"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "LOSTandFIND",
+      "candidateNames": [
+        "Lost and Find",
+        "LOSTandFIND"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-037",
+      "reviewSignature": "wh-collision-ee6478adfa2932a83c30",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-52ee7eb3152c5df400cf",
+        "wh-member-f330e3281d2c2650da3f"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Mall Cop",
+      "candidateNames": [
+        "Mall Cop",
+        "Mallcop"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-038",
+      "reviewSignature": "wh-collision-776912f8125757f463c3",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-66d935aa9289cb190fbf",
+        "wh-member-8d9625e1af10b09b81e2"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "ManMaker",
+      "candidateNames": [
+        "Man Maker",
+        "Manmaker"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-039",
+      "reviewSignature": "wh-collision-aaa188bd68da84391955",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-4ce66401e366a289e49f",
+        "wh-member-676db2a898cb8454acce"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "MealPrep",
+      "candidateNames": [
+        "Meal Prep",
+        "MealPrep"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-040",
+      "reviewSignature": "wh-collision-711d77e0d972dc7cac72",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-733d6d3ce9129a74eab6",
+        "wh-member-f6e168a83929c94bf73f"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": null,
+      "candidateNames": [
+        "Mini-Van",
+        "Minivan"
+      ],
+      "notes": null,
+      "resolution": "KEEP_SEPARATE",
+      "reviewId": "WH-ID-041",
+      "reviewSignature": "wh-collision-05821786cedd59aa2312",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-8ffa36b161d9e468957a",
+        "wh-member-95b356828ec3784a8299"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Motor City",
+      "candidateNames": [
+        "Motor City",
+        "MotorCity"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-042",
+      "reviewSignature": "wh-collision-854d3bffd663402e9d4f",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-217acd159c29a469065f",
+        "wh-member-684d3afa643a36c9b448"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Mr Clean",
+      "candidateNames": [
+        "Mr Clean",
+        "Mr. Clean"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-043",
+      "reviewSignature": "wh-collision-dc0935c07436a48f3fe5",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-35835a281a9e5231bc23",
+        "wh-member-d63eb2d9f480f4c5cefc"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "MySpace",
+      "candidateNames": [
+        "My Space",
+        "MySpace"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-044",
+      "reviewSignature": "wh-collision-645a15b1fcf7e3256cd6",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-67a5eaa40c22453d9b22",
+        "wh-member-bf08b7e8a652c1a9a8b9"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "NachoLibre",
+      "candidateNames": [
+        "Nacho Libre",
+        "NachoLibre"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-045",
+      "reviewSignature": "wh-collision-c610e515cc54f115e374",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-71f42c57be7ebb57909d",
+        "wh-member-ce8d68cde3e77a773f40"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Night Life",
+      "candidateNames": [
+        "Night Life",
+        "Nightlife"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-046",
+      "reviewSignature": "wh-collision-05c822c056db62eef218",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-8ed3403221b38f0e1768",
+        "wh-member-cf1a47107b2e9b54e380"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Nose Plug",
+      "candidateNames": [
+        "Nose Plug",
+        "NosePlug"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-047",
+      "reviewSignature": "wh-collision-85e47eaaac94dbe294c9",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-252937d415de046405d4",
+        "wh-member-9bcdbde7f805762ddf66"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Pacman",
+      "candidateNames": [
+        "Pac Man",
+        "Pac-Man",
+        "Pacman"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-048",
+      "reviewSignature": "wh-collision-b958fab7fe768461c497",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-1810d9000f8b0caa01e6",
+        "wh-member-482fed8ddfc5ec377c6d",
+        "wh-member-cb16729cd059be83eaed"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "PaperBoy",
+      "candidateNames": [
+        "Paper Boy",
+        "Paperboy"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-049",
+      "reviewSignature": "wh-collision-1a6d9bce6ffe5092345f",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-2c985b0a60c657d1c10e",
+        "wh-member-991a66f1d630ee98f288"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": null,
+      "candidateNames": [
+        "Piano Man",
+        "Pianoman"
+      ],
+      "notes": null,
+      "resolution": "KEEP_SEPARATE",
+      "reviewId": "WH-ID-050",
+      "reviewSignature": "wh-collision-44268482501d3153f109",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-7288d2fd159f513470f2",
+        "wh-member-fc071117ee4b96274e53"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Pit Bull",
+      "candidateNames": [
+        "Pit Bull",
+        "Pitbull"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-051",
+      "reviewSignature": "wh-collision-0ed9ac548d54a7c7051a",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-9548c4314619fb15000d",
+        "wh-member-e752f42f6708b4c7440f"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Pop-Up",
+      "candidateNames": [
+        "Pop Up",
+        "Pop-up"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-052",
+      "reviewSignature": "wh-collision-8783db38a282781c1dd8",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-8bf363035864e10f7b61",
+        "wh-member-ee4cb1add9a6b5554f08"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Pre-check",
+      "candidateNames": [
+        "Pre-check",
+        "Precheck"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-053",
+      "reviewSignature": "wh-collision-2119ef39b9921278eb7c",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-12fbc15c2f4097bf4125",
+        "wh-member-fb4d0af955399080b170"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "PuttPutt",
+      "candidateNames": [
+        "putt Putt",
+        "Putt-Putt",
+        "PuttPutt"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-054",
+      "reviewSignature": "wh-collision-7e6294bf909fa12f1f27",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-711bf62eeda3d67b9a49",
+        "wh-member-78befe3a0a03f980e612",
+        "wh-member-e7c370f67eb67a3e2787"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Rat Rod",
+      "candidateNames": [
+        "Rat Rod",
+        "Ratrod"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-055",
+      "reviewSignature": "wh-collision-1bed3db2e19a169543ae",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-6d432fc384f16a211c9f",
+        "wh-member-a5e6d5730d97d1b53073"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Red Eye",
+      "candidateNames": [
+        "Red Eye",
+        "Redeye"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-056",
+      "reviewSignature": "wh-collision-a17f514a8949d0c7f6e1",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-5b826120490927b27d72",
+        "wh-member-be9f969c7105fb2683f2"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Shark Bait",
+      "candidateNames": [
+        "Shark Bait",
+        "Sharkbait"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-057",
+      "reviewSignature": "wh-collision-5d7887d5362abf3b3061",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-8d2e5ef9ed9d21d34d97",
+        "wh-member-f50a27d98d33f88fd9fe"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Show Boy",
+      "candidateNames": [
+        "Show Boy",
+        "Showboy"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-058",
+      "reviewSignature": "wh-collision-8b50c3d662b1fcab9962",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-8f19d0082fb2ccef48ad",
+        "wh-member-fab729fffa4a8ff1e9ce"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Sight Line",
+      "candidateNames": [
+        "Sight Line",
+        "Sightline"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-059",
+      "reviewSignature": "wh-collision-fa9b61e2e134b8999506",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-1672b786f69bb366e6c8",
+        "wh-member-dfc34d7a2db012b42808"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Slap shot",
+      "candidateNames": [
+        "Slap shot",
+        "Slapshot"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-060",
+      "reviewSignature": "wh-collision-e03cfd386b465473fbef",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-8ecdbf6b6b167c860395",
+        "wh-member-ac77daec7b98caf64395"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Snow Cap",
+      "candidateNames": [
+        "Snow Cap",
+        "Snowcap"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-061",
+      "reviewSignature": "wh-collision-0c196fda7243b25281e9",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-0ebfa4dd79e58054f247",
+        "wh-member-d57b737f265356848422"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Spark Plug",
+      "candidateNames": [
+        "Spark Plug",
+        "Sparkplug"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-062",
+      "reviewSignature": "wh-collision-b59227444b43079b053c",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-94e05d60aa238b7092ec",
+        "wh-member-9eaa8c6964d0dd4662ac"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Spinal Tap",
+      "candidateNames": [
+        "Spinal Tap",
+        "Spinaltap"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-063",
+      "reviewSignature": "wh-collision-6645afc01a7690ab7018",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-810f782c2b87e30d3686",
+        "wh-member-c60a50f030235fc97f5b"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Stir Fry",
+      "candidateNames": [
+        "Stir Fry",
+        "Stirfry"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-064",
+      "reviewSignature": "wh-collision-35ddb3e1ff72199d518d",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-7d94a78eaeb2a1120fa5",
+        "wh-member-9af96746ee0a61ee3b50"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "SuperTrooper",
+      "candidateNames": [
+        "Super Trooper",
+        "SuperTrooper"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-065",
+      "reviewSignature": "wh-collision-1e9169bc702b42b6948b",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-434119af786de34b2e11",
+        "wh-member-4b64ba2ba68c72bc5789"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Tummy ache",
+      "candidateNames": [
+        "Tummy Ache",
+        "TummyAche"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-066",
+      "reviewSignature": "wh-collision-25f597c1187718eeed20",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-0d31a59fe323298cc0c0",
+        "wh-member-e12c0ec32f4800aa908f"
+      ]
+    },
+    {
+      "approvedCanonicalF3Name": "Whitewater",
+      "candidateNames": [
+        "White Water",
+        "Whitewater"
+      ],
+      "notes": null,
+      "resolution": "MERGE",
+      "reviewId": "WH-ID-067",
+      "reviewSignature": "wh-collision-8d4aae46ef961ff65762",
+      "reviewer": "DOGE",
+      "sourceIdentityKeys": [
+        "wh-member-2254a1951a9ea4a37e34",
+        "wh-member-746284c64fb2e5e6883d"
+      ]
+    }
+  ],
+  "schemaVersion": "west-houston-human-resolution-v1",
+  "source": {
+    "attendanceWorkbookFilename": "2024 West Houston Consolidated (1).xlsx",
+    "attendanceWorkbookSha256": "2e8c68bcd96c84dccdadabb761e778d60de092fd7a374719d5768372e23ee533",
+    "humanReviewWorkbookFilename": "West_Houston_DOGE_Review (1).xlsx",
+    "humanReviewWorkbookSha256": "ec5b363dcce361c9d34958d76fc09204cf398702a217278683ffba299b207af7",
+    "parserVersion": "west-houston-workbook-v1",
+    "reviewer": "DOGE"
+  },
+  "streamPolicies": {
+    "DD": {
+      "rule": "Preserve in normalized source, staging, and provenance only; do not create canonical sessions, posts, attendance statistics, or surfaced product behavior.",
+      "source": "existing_project_decision",
+      "status": "EXCLUDED_FROM_INITIAL_CANONICAL_IMPORT"
+    },
+    "DR": {
+      "humanAnswer": "Pending response from AOQ",
+      "notes": null,
+      "reviewId": "WH-KNOW-001",
+      "rule": "Preserve source records and provenance only; do not create canonical sessions, posts, attendance, or statistics until resolved.",
+      "status": "UNRESOLVED_PENDING_AOQ"
+    }
+  },
+  "workoutDecisions": [
+    {
+      "canonicalRepresentation": {
+        "action": "merge_source_sessions",
+        "canonicalAo": "The Knot",
+        "canonicalWorkoutType": "Bootcamp"
+      },
+      "decision": "One Bootcamp; include the separately listed person",
+      "notes": null,
+      "reviewId": "WH-WO-001",
+      "reviewer": "DOGE",
+      "sourceRows": [
+        {
+          "row": 132,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 133,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 134,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 135,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 136,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 137,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 138,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 139,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 140,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 141,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 142,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 143,
+          "sheet": "The Knot"
+        }
+      ],
+      "sourceSessionKeys": [
+        "wh-session-e1b5347ee597409af85a",
+        "wh-session-ef1598e086f7f6d98358"
+      ],
+      "workout": "The Knot — 2026-06-13"
+    },
+    {
+      "canonicalRepresentation": {
+        "action": "merge_source_sessions",
+        "canonicalAo": "The Knot",
+        "canonicalWorkoutType": "Bootcamp"
+      },
+      "decision": "One Bootcamp; include the separately listed person",
+      "notes": null,
+      "reviewId": "WH-WO-002",
+      "reviewer": "DOGE",
+      "sourceRows": [
+        {
+          "row": 200,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 193,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 194,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 195,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 196,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 197,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 198,
+          "sheet": "The Knot"
+        },
+        {
+          "row": 199,
+          "sheet": "The Knot"
+        }
+      ],
+      "sourceSessionKeys": [
+        "wh-session-da1ba6a63583538c8fc8",
+        "wh-session-bb0c049854b0495d76c3"
+      ],
+      "workout": "The Knot — 2026-06-25"
+    },
+    {
+      "canonicalRepresentation": {
+        "action": "reclassify_session",
+        "canonicalAo": "The Corridor",
+        "canonicalEventName": "The Corridor 4-year anniversary",
+        "canonicalWorkoutType": "Bootcamp",
+        "preserveRawLocation": "Convergence"
+      },
+      "decision": "Assign it to another AO or named event",
+      "notes": "The Corridor 4 year anniversary",
+      "reviewId": "WH-WO-003",
+      "reviewer": "DOGE",
+      "sourceRows": [
+        {
+          "row": 412,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 413,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 414,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 415,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 416,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 417,
+          "sheet": "The Oasis"
+        },
+        {
+          "row": 418,
+          "sheet": "The Oasis"
+        }
+      ],
+      "sourceSessionKeys": [
+        "wh-session-28a1b3d4ec1d7d235c98"
+      ],
+      "workout": "Convergence — 2025-07-12"
+    }
+  ]
+}

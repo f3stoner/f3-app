@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), "..");
 
 export const CANONICAL_PATH = path.join(ROOT, "import/west-houston/output/west_houston_post_human_canonical_dry_run.json");
-export const HUMAN_MANIFEST_PATH = path.join(ROOT, "import/west-houston/west_houston_human_resolution_manifest.json");
+export const HUMAN_MANIFEST_PATH = path.join(ROOT, "import/west-houston/west_houston_human_resolution_manifest_v1.json");
 export const DEMO_MANIFEST_PATH = path.join(ROOT, "import/west-houston/output/west_houston_demo_manifest.json");
 export const MIGRATION_PATH = path.join(ROOT, "supabase/migrations/20260930000000_support_west_houston_historical_import.sql");
 
