@@ -1,7 +1,7 @@
 import { state } from "../modules/state.js";
 import { renderApp } from "../index.js";
 import { createGlobalNav } from "../components/globalNav.js";
-import { insertAo, updateAoInCloud, deleteUpcomingQSlotsForAo, deleteQSlotsByIds } from "../services/cloudData.js";
+import { insertAo, updateAoInCloud, deleteUpcomingQSlotsForAo, syncAoRecurringSchedules, deleteQSlotsByIds } from "../services/cloudData.js";
 import { generateQSlotsForCurrentRegion } from "../services/qSlotGeneration.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { getTodayDate } from "../utils/date.js";
@@ -96,6 +96,7 @@ export function renderAoEditView() {
         daysOfWeek: [],
         time: "05:30",
         isActive: true,
+        isPublic: true,
         createdAt: new Date().toISOString(),
         timeSchedule: {},
     };
@@ -717,6 +718,9 @@ export function renderAoEditView() {
                 const oldDays = existingAo?.daysOfWeek || [];
 
                 const savedAo = await updateAoInCloud(activeRegionId, draftAo);
+
+                await syncAoRecurringSchedules(activeRegionId, savedAo);
+
                 const index = state.aos.findIndex(ao => ao.id === savedAo.id);
 
                 if (index !== -1) {
@@ -754,7 +758,9 @@ export function renderAoEditView() {
             } else {
                 const savedAo = await insertAo(activeRegionId, draftAo);
                 state.aos.push(savedAo);
-            
+
+                await syncAoRecurringSchedules(activeRegionId, savedAo);
+
                 try {
                     await generateQSlotsForCurrentRegion();
                 } catch (slotError) {

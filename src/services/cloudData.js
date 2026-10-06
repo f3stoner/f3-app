@@ -1569,11 +1569,12 @@ function mapAoFromDb(row) {
         id: row.id,
         name: row.name,
         defaultSiteId: row.default_site_id || null,
-        locationName: row.location_name,
+        locationName: row.location_name || "",
         daysOfWeek: row.days_of_week || [],
         time: row.time,
         timeSchedule: row.time_schedule || {},
         isActive: row.is_active ?? true,
+        isPublic: row.is_public ?? false,
         createdAt: row.created_at,
         address: row.address || "",
         mapUrl: row.map_url || "",
@@ -2569,6 +2570,7 @@ export async function insertAo(regionId, ao) {
                 time: ao.time,
                 time_schedule: ao.timeSchedule || {},
                 is_active: ao.isActive ?? true,
+                is_public: ao.isPublic ?? true,
                 created_at: ao.createdAt,
                 address: ao.address || null,
                 map_url: ao.mapUrl || null,
@@ -2599,6 +2601,7 @@ export async function updateAoInCloud(regionId, ao) {
             time: ao.time,
             time_schedule: ao.timeSchedule || {},
             is_active: ao.isActive ?? true,
+            is_public: ao.isPublic ?? true,
             created_at: ao.createdAt,
             address: ao.address || null,
             map_url: ao.mapUrl || null,
@@ -2616,6 +2619,45 @@ export async function updateAoInCloud(regionId, ao) {
     if (error) throw error;
 
     return mapAoFromDb(data);
+}
+
+export async function syncAoRecurringSchedules(regionId, ao) {
+    if (!ao?.id) {
+        throw new Error("AO id is required to sync recurring schedules.");
+    }
+
+    const { error: deleteError } = await supabase
+        .from("ao_recurring_schedules")
+        .delete()
+        .eq("region_id", regionId)
+        .eq("ao_id", ao.id);
+
+    if (deleteError) throw deleteError;
+
+    if (
+        ao.isActive === false ||
+        !ao.defaultSiteId ||
+        !ao.daysOfWeek?.length
+    ) {
+        return;
+    }
+
+    const rows = ao.daysOfWeek.map(weekday => ({
+        region_id: regionId,
+        ao_id: ao.id,
+        site_id: ao.defaultSiteId,
+        weekday,
+        start_time:
+            ao.timeSchedule?.[String(weekday)] ||
+            ao.time ||
+            "05:30",
+    }));
+
+    const { error: insertError } = await supabase
+        .from("ao_recurring_schedules")
+        .insert(rows);
+
+    if (insertError) throw insertError;
 }
 
 export async function deleteAoFromCloud(regionId, aoId) {
