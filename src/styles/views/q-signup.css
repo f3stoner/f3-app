@@ -766,14 +766,34 @@ button:disabled {
 .view-qSignup .q-overview-range {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
 }
 
 .view-qSignup .q-overview-range button {
     min-width: 0;
+    min-height: 42px;
     margin: 0;
-    padding: 0.7rem 0.3rem;
+    padding: 0.5rem 0.2rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    box-shadow: none;
     font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.view-qSignup .q-overview-range button[aria-pressed="true"] {
+    background: var(--surface-raised);
+    color: var(--text);
+}
+
+.view-qSignup .q-overview-range button:hover {
+    box-shadow: none;
 }
 
 .view-qSignup .q-overview-summary {
@@ -903,4 +923,63 @@ button:disabled {
     max-width: 45%;
     text-align: right;
     overflow-wrap: anywhere;
+}
+
+.view-qSignup .q-signup-mode-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+.view-qSignup .q-signup-mode-button {
+    min-height: 42px;
+    margin: 0;
+    padding: 0.5rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    box-shadow: none;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.view-qSignup .q-signup-mode-button.active {
+    background: var(--surface-raised);
+    color: var(--text);
+}
+
+.view-qSignup .q-signup-mode-button:hover {
+    box-shadow: none;
+}
+
+/* Collapsible Q Signup admin actions */
+
+.view-qSignup .q-signup-admin-menu {
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+.view-qSignup .q-signup-admin-menu summary {
+    padding: 0.7rem 0.9rem;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.view-qSignup .q-signup-admin-menu[open] summary {
+    border-bottom: 1px solid var(--border);
+}
+
+.view-qSignup .q-signup-admin-menu .q-signup-admin-actions {
+    padding: 0.75rem;
+    margin: 0;
 }

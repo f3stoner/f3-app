@@ -224,7 +224,7 @@ export function renderQSignupView() {
     });
 
     const modeRow = document.createElement("div");
-    modeRow.classList.add("button-row");
+    modeRow.classList.add("q-signup-mode-switch");
 
     const signupModeButton = document.createElement("button");
     signupModeButton.textContent = "Signup";
@@ -253,6 +253,21 @@ export function renderQSignupView() {
     });
 
     modeRow.append(signupModeButton, overviewModeButton);
+
+    [signupModeButton, overviewModeButton].forEach(button => {
+        button.classList.remove("primary-button", "secondary-button");
+        button.classList.add("q-signup-mode-button");
+    });
+    
+    signupModeButton.classList.toggle(
+        "active",
+        state.qSignupMode !== "overview"
+    );
+    
+    overviewModeButton.classList.toggle(
+        "active",
+        state.qSignupMode === "overview"
+    );
 
     const openOnlyWrap = document.createElement("label");
     openOnlyWrap.classList.add("ao-status-toggle");
@@ -2474,12 +2489,20 @@ export function renderQSignupView() {
     controlsRow.classList.add("q-signup-controls-row");
     controlsRow.append(aoFilterSelect, openOnlyWrap);
 
+    const adminMenu = document.createElement("details");
+    adminMenu.classList.add("q-signup-admin-menu");
+
+    const adminMenuSummary = document.createElement("summary");
+    adminMenuSummary.textContent = "Manage";
+
+    adminMenu.append(adminMenuSummary, adminRow);
+
     app.append(
         header,
         intro,
         modeRow,
         ...(adminRow.children.length
-            ? [adminRow]
+            ? [adminMenu]
             : []),
         monthNavRow,
         controlsRow,
