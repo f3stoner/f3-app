@@ -87,6 +87,8 @@ export const state = {
     editingAoId: null,
     qSignupAoFilter: savedState?.qSignupAoFilter || "",
     qSignupOpenOnly: savedState?.qSignupOpenOnly ?? false,
+    qSignupMode: "signup",
+    qSignupOverviewWeeks: 4,
     draftPreblastText: "",
     selectedPreblastWorkoutId: null,
     claimingMemberId: null,

@@ -1,0 +1,43 @@
+sactownSourceIdentity,sactownProposedMemberId,externalMemberId,externalPaxName,externalRegionId,externalRegionName,signal,importEffect,reviewStatus
+Bam Bam,d27890d4-365e-5612-a8e0-27a5fa4953fd,f6e37b19-9d4e-50a6-9315-3ca7844af6fb,Bam Bam,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Blackout,2e359c94-9ddd-516b-b859-f92e050d9fe1,b9eacf30-279c-4ed0-967a-4992eca041ef,Blackout,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,cross-region name similarity,none,future_human_review
+Blue,57c13154-4259-5880-88dd-e2f67481068d,bd63edbc-4b3f-4a3a-b60a-c9bcbb89d458,Blue,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Boyardee,7a28fadb-2758-58ca-9e8e-0a18935557d9,38e20715-a9fc-5d5a-9424-3f38679903c0,Boyardee,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Cheese Steak,8ee47f6e-82f9-58fb-b42e-bfb7326553ca,eb2fb389-3ead-5fd9-9b16-e40c81805d6d,Cheesesteak,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Cinco,a81caeca-feb3-5812-b13e-95b012910b4c,ef9d03ca-54d6-5cf6-a862-02a2cce7f7bc,Cinco,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Cold Stone,86939303-74ed-5c39-9c5a-1b4e8c54e224,c6f41996-3d1f-5d09-8c75-f9336e654d20,Coldstone,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Duck Hunt,662bbe83-a835-5834-b208-80aed20271f9,a30b3a2b-d83f-4b33-9cda-67d0274c4d17,Duck Hunt,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Fancy,11633fcc-2a5f-50b4-915e-2dc6b4025bf8,09eb181c-ec17-5447-bf66-ad5011ddca6c,Fancy,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Flo,3e7b964c-7a6b-5b57-b961-186880416e7b,8431d099-8d5e-43ff-80a5-8e165268091f,Flo,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Flounder,cf46755a-cd35-525f-a583-831e2805342d,66cf0536-7731-519f-9e69-9ff79b36cf64,Flounder,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Frodo,452f2fa2-cd74-5d1a-bdec-08f7daac9953,e0470ef2-4fff-4ad2-8cb9-10af15c465a4,Frodo,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,multiple_external_exact_name_candidates,none,future_human_review
+Frodo,452f2fa2-cd74-5d1a-bdec-08f7daac9953,5d005aad-a548-522e-a407-717a0e643901,Frodo,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,multiple_external_exact_name_candidates,none,future_human_review
+Godfather,23a792c2-cf5a-5254-9bfe-e1f2ec29915c,53f015f9-fb56-5797-b136-63f862060aed,Godfather,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Hotpants,8a543e08-766f-575e-9d01-e011cf653c9a,5f07d41a-f61d-4194-88bb-c77469f7847a,Hot Pants,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Lasso,d9e57a20-4aa9-526d-950d-7c4fea085114,20e906fa-cd49-5e4b-800a-ae15337efb1c,Lasso,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Minnow,ac159b62-ae95-5729-9cbc-43fcc690c528,c4d71066-af2f-543d-a179-6ce120974ca1,Minnow,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Miyagi,ccb19aad-e92d-5332-9b6d-f7459a73b08c,3a3c8896-025d-57aa-8e9f-f9e044b3c57d,Miyagi,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Mr. Burns,e92bd682-db66-5170-802b-201bf41e6971,f76933f9-35de-4066-ae79-1ecc813afe40,Mr. Burns,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,cross-region name similarity,none,future_human_review
+Mule,4db76fd9-2dec-59dc-a386-c7d8a0812e4f,48a79157-f442-5e65-8ce4-2ac0bfc413fe,Mule,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Paperboy,e4c5f716-575b-5fbf-9f67-4e80c1f6a8dd,a7f86f67-8f9c-5e61-a712-a82d3b4e4374,PaperBoy,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Pinky,452b1026-1aba-5b08-b662-eb94ae3b6f2f,104d8b2a-700f-5745-ba07-ebc855fd2633,Pinky,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Postal,59a57a1c-db0d-5961-aefe-3d39ac1b420e,2d0bd7e2-5161-4c4d-8a07-29a6d91f5a4a,Postal,c05cd413-7171-4017-aacb-61db1e8ca200,F3 North Katy,external_exact_name_candidate,none,future_human_review
+Prius,e2f85d5a-d270-5a5b-824c-f9c74a0a398e,3b9c6445-4e64-5c0f-a59b-d5c2b81a892b,Prius,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Rapids,45702163-0112-55e6-a86e-14339e33d7df,db97c3f6-6e47-5474-a15d-7bf49662d85f,Rapids,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Red Ryder,9fcf1a0e-529a-5c6f-a635-1ca06d16dd32,acdb9bf3-8371-558f-8062-24874bc4c6bc,Red Ryder,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Road Rash,b1aff950-010f-5fec-9144-52f6190ee9fd,6043410d-264b-53ff-b61e-fa567968e951,Road Rash,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Rx,b6d5b502-2cf3-534f-a1d7-8deb2f3427f8,502a3d0e-82bf-5d5f-8480-4d1631284df1,Rx,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Sandtrap,97a025de-3b71-5835-9db9-ceb38bc9b587,c30ef2a1-b949-48a0-b090-07ecdb2b1d4c,Sand Trap,c05cd413-7171-4017-aacb-61db1e8ca200,F3 North Katy,cross-region name similarity,none,future_human_review
+Sandtrap,97a025de-3b71-5835-9db9-ceb38bc9b587,34e200d1-111d-41f0-9cda-a90ef048347f,Sand Trap,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,cross-region name similarity,none,future_human_review
+Sea Biscuit,b3266344-0c0d-5d63-bca7-b559e5193004,717635dd-8353-4cac-b2f8-0ebe24733a63,Seabiscuit,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,"external_exact_name_candidate, normalized_spelling_collision",none,future_human_review
+Seabiscuit,fa6733f6-564a-5421-b732-d59b54ce7ba3,717635dd-8353-4cac-b2f8-0ebe24733a63,Seabiscuit,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,"external_exact_name_candidate, normalized_spelling_collision",none,future_human_review
+Singlet,147600d6-d625-5691-90f5-2f4dfcdd315d,1ee8ffe2-5503-46cd-a761-17b36545cc09,Singlet,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,cross-region name similarity,none,future_human_review
+Singlet,147600d6-d625-5691-90f5-2f4dfcdd315d,50bd8e60-f2fa-53d5-91bb-02e847c884bb,Singlet,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review
+Snooki,c06fd720-9b23-58af-a7d2-e73ad659635d,9fff29fc-3de1-495d-be93-b214148ea489,Snooki,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,cross-region name similarity,none,future_human_review
+Splinter,db18a260-4685-52e8-b05e-0fa7eb1a2268,1ff26537-bfdc-4baa-9873-e69f4d236036,Splinter,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Sub Prime,3a400713-4a57-5fb7-848e-85f33cf5060a,75e7d1e3-1368-595e-9ddf-a8d9dbce68c0,Subprime,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,external_exact_name_candidate,none,future_human_review
+Sunshine,ee8ce5f1-d04a-5625-88f7-f17eeb891873,7f2acdf9-f0b0-4c23-8ac9-214656a65cc7,Sunshine,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,multiple_external_exact_name_candidates,none,future_human_review
+Sunshine,ee8ce5f1-d04a-5625-88f7-f17eeb891873,1b3dec56-74ff-5e63-b009-e0e979d6e346,sunshine,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,multiple_external_exact_name_candidates,none,future_human_review
+TeaTime,a672b503-3957-5f4a-b1eb-7581297da74f,2a58f21d-1618-4800-80ff-819a2f4d9367,TeaTime,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Tonka,7b6ae5ae-d72d-5203-bfa3-ff6d2de1725a,37b4e00e-4419-4dc3-9e97-ba40fc6ef194,Tonka,96c9eef9-3b6e-4365-86cd-51dbeccf231a,F3 Aggieland,external_exact_name_candidate,none,future_human_review
+Toto,acffbb98-4b85-595c-80e8-3dc239831246,7f79650c-3dd3-59e4-b013-31c05287ba2c,Toto,7298b632-4d9a-542f-b65d-d416e5c1e631,F3 West Houston,cross-region name similarity,none,future_human_review

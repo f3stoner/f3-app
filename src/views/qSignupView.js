@@ -223,6 +223,37 @@ export function renderQSignupView() {
         renderApp();
     });
 
+    const modeRow = document.createElement("div");
+    modeRow.classList.add("button-row");
+
+    const signupModeButton = document.createElement("button");
+    signupModeButton.textContent = "Signup";
+    signupModeButton.classList.add(
+        state.qSignupMode === "overview"
+            ? "secondary-button"
+            : "primary-button"
+    );
+
+    signupModeButton.addEventListener("click", () => {
+        state.qSignupMode = "signup";
+        renderApp();
+    });
+
+    const overviewModeButton = document.createElement("button");
+    overviewModeButton.textContent = "Overview";
+    overviewModeButton.classList.add(
+        state.qSignupMode === "overview"
+            ? "primary-button"
+            : "secondary-button"
+    );
+
+    overviewModeButton.addEventListener("click", () => {
+        state.qSignupMode = "overview";
+        renderApp();
+    });
+
+    modeRow.append(signupModeButton, overviewModeButton);
+
     const openOnlyWrap = document.createElement("label");
     openOnlyWrap.classList.add("ao-status-toggle");
 
@@ -1219,6 +1250,242 @@ export function renderQSignupView() {
         return header;
     }
 
+
+    // Read-only long-range Q planning overview.
+    if (state.qSignupMode === "overview") {
+        subtitle.textContent = "See upcoming Q coverage and open dates.";
+
+        const weeks = [4, 8, 12].includes(state.qSignupOverviewWeeks)
+            ? state.qSignupOverviewWeeks
+            : 4;
+
+        const endDate = addDaysToDateString(today, weeks * 7);
+
+        const overviewSlots = state.qSlots
+            .filter(slot =>
+                slot.date >= today &&
+                slot.date < endDate &&
+                (state.qSignupAoFilter === "all" ||
+                    slot.aoId === state.qSignupAoFilter)
+            )
+            .sort((a, b) => {
+                if (a.date !== b.date) {
+                    return a.date.localeCompare(b.date);
+                }
+
+                const getTime = slot => {
+                    const ao = state.aos.find(item => item.id === slot.aoId);
+                    const weekday = String(
+                        new Date(`${slot.date}T00:00:00`).getDay()
+                    );
+                    return slot.overrideTime ||
+                        slot.startTime ||
+                        ao?.timeSchedule?.[weekday] ||
+                        ao?.time ||
+                        "";
+                };
+
+                const timeOrder = getTime(a).localeCompare(getTime(b));
+                if (timeOrder) return timeOrder;
+
+                const aoA = state.aos.find(item => item.id === a.aoId);
+                const aoB = state.aos.find(item => item.id === b.aoId);
+                const aoOrder = (aoA?.name || "").localeCompare(aoB?.name || "");
+                if (aoOrder) return aoOrder;
+
+                const siteA = resolveSiteForQSlot(a, aoA)?.name || "";
+                const siteB = resolveSiteForQSlot(b, aoB)?.name || "";
+                return siteA.localeCompare(siteB);
+            });
+
+        const total = overviewSlots.length;
+        const filled = overviewSlots.filter(slot => Boolean(slot.qUserId)).length;
+        const open = total - filled;
+
+        const overview = document.createElement("section");
+        overview.classList.add("q-signup-overview");
+
+        const toolbar = document.createElement("div");
+        toolbar.classList.add("q-overview-toolbar");
+
+        const rangeRow = document.createElement("div");
+        rangeRow.classList.add("q-overview-range");
+
+        [4, 8, 12].forEach(value => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = `${value} Weeks`;
+            button.classList.add(
+                value === weeks ? "primary-button" : "secondary-button"
+            );
+            button.setAttribute("aria-pressed", String(value === weeks));
+
+            button.addEventListener("click", () => {
+                state.qSignupOverviewWeeks = value;
+                renderApp();
+            });
+
+            rangeRow.appendChild(button);
+        });
+
+        toolbar.append(aoFilterSelect, rangeRow);
+
+        const summary = document.createElement("div");
+        summary.classList.add("q-overview-summary");
+
+        [
+            ["Total", total],
+            ["Filled", filled],
+            ["Open", open],
+        ].forEach(([label, value]) => {
+            const item = document.createElement("div");
+            item.classList.add("q-overview-stat");
+
+            const number = document.createElement("strong");
+            number.textContent = String(value);
+
+            const caption = document.createElement("span");
+            caption.textContent = label;
+
+            item.append(number, caption);
+            summary.appendChild(item);
+        });
+
+        const weeksContainer = document.createElement("div");
+        weeksContainer.classList.add("q-overview-weeks");
+
+        // Calendar weeks start Monday, but the range starts today.
+        const startDay = new Date(`${today}T00:00:00`).getDay();
+        const firstMonday = addDaysToDateString(
+            today,
+            -((startDay + 6) % 7)
+        );
+
+        const weekGroups = new Map();
+
+        for (let date = firstMonday; date < endDate;
+            date = addDaysToDateString(date, 7)) {
+            weekGroups.set(date, []);
+        }
+
+        overviewSlots.forEach(slot => {
+            const day = new Date(`${slot.date}T00:00:00`).getDay();
+            const monday = addDaysToDateString(
+                slot.date,
+                -((day + 6) % 7)
+            );
+
+            weekGroups.get(monday)?.push(slot);
+        });
+
+        weekGroups.forEach((slots, monday) => {
+            const weekSection = document.createElement("section");
+            weekSection.classList.add("q-overview-week");
+
+            const heading = document.createElement("h3");
+            const sunday = addDaysToDateString(monday, 6);
+
+            const formatShortDate = date =>
+                new Date(`${date}T00:00:00`).toLocaleDateString(
+                    undefined,
+                    { month: "short", day: "numeric" }
+                );
+
+            heading.textContent =
+                `${formatShortDate(monday)} – ${formatShortDate(sunday)}`;
+
+            const entries = document.createElement("div");
+            entries.classList.add("q-overview-entries");
+
+            if (!slots.length) {
+                const empty = document.createElement("p");
+                empty.classList.add("q-overview-empty");
+                empty.textContent = "No scheduled workouts";
+                entries.appendChild(empty);
+            }
+
+            slots.forEach(slot => {
+                const ao = state.aos.find(item => item.id === slot.aoId);
+                const site = resolveSiteForQSlot(slot, ao);
+                const member = slot.qUserId
+                    ? getMemberById(slot.qUserId)
+                    : null;
+
+                const qName = !slot.qUserId
+                    ? "Open"
+                    : member?.paxName ||
+                        member?.realName ||
+                        member?.fullName ||
+                        "Filled";
+
+                const weekday = String(
+                    new Date(`${slot.date}T00:00:00`).getDay()
+                );
+
+                const rawTime = slot.overrideTime ||
+                    slot.startTime ||
+                    ao?.timeSchedule?.[weekday] ||
+                    ao?.time ||
+                    "";
+
+                const time = formatQSlotTime(rawTime);
+
+                const entry = document.createElement("div");
+                entry.classList.add(
+                    "q-overview-entry",
+                    slot.qUserId ? "is-filled" : "is-open"
+                );
+
+                const date = document.createElement("strong");
+                date.textContent = new Date(
+                    `${slot.date}T00:00:00`
+                ).toLocaleDateString(undefined, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                });
+
+                const details = document.createElement("span");
+                details.textContent = [
+                    state.qSignupAoFilter === "all" ? ao?.name : null,
+                    time,
+                    site?.name,
+                ].filter(Boolean).join(" · ");
+
+                const q = document.createElement("span");
+                q.classList.add("q-overview-q");
+                q.textContent = qName;
+
+                const info = document.createElement("div");
+                info.classList.add("q-overview-entry-info");
+                info.append(date, details);
+                
+                entry.append(info, q);
+                entries.appendChild(entry);
+            });
+
+            weekSection.append(heading, entries);
+            weeksContainer.appendChild(weekSection);
+        });
+
+        overview.append(toolbar, summary, weeksContainer);
+
+        app.append(
+            header,
+            intro,
+            modeRow,
+            overview,
+            createGlobalNav()
+        );
+
+        if (state.isMainMenuOpen) {
+            document.body.appendChild(createMainMenu());
+        }
+
+        return;
+    }
+
+
     if (!state.qSignupMonth) {
         state.qSignupMonth = getCurrentMonthKey();
     }
@@ -2210,6 +2477,7 @@ export function renderQSignupView() {
     app.append(
         header,
         intro,
+        modeRow,
         ...(adminRow.children.length
             ? [adminRow]
             : []),

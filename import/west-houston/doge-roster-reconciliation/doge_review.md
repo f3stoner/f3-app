@@ -1,0 +1,265 @@
+# Questions for DOGE
+
+- 1040-EZ — DOGE records show hospital name(s) Gonzalo Zaragoza. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- A.1. — DOGE records show hospital name(s) Michael Birdsong. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Ace — DOGE records show hospital name(s) Robert Ventura. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Aflack — one roster record lacks enough identity detail to link it safely to Kelly Ryan. Does it refer to the same PAX?
+- Aggregate — DOGE records show hospital name(s) Cameron Guinn. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Aints — DOGE records show hospital name(s) Aaron Ragusa. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- AirWolf — DOGE records show hospital name(s) Nate Taylor. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Alcatraz — DOGE records show hospital name(s) Kris Von Hohn. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Almaty — DOGE records show hospital name(s) Temirgali Makatov. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Alphabet — DOGE records show hospital name(s) Christian Andrzejewski. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Anime — roster records associate this F3 name with Aniello Di Crisci, Drew Scafide. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2022-07-23, 2026-04-18?
+- Arbitrage — DOGE records show hospital name(s) Desmond Early. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Ax — DOGE records show hospital name(s) Kevin Daniel. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Baby Shark — one roster record lacks enough identity detail to link it safely to Pastor Giraud. Does it refer to the same PAX? If so, which date is the original FNG date: 2019-08-19, 2021-06-14?
+- Bagpipes — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Beats — DOGE records show hospital name(s) Andrew Bose. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Beep Beep — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Beignet — one roster record lacks enough identity detail to link it safely to Jose "Emilio Herrera. Does it refer to the same PAX?
+- Beto — one roster record lacks enough identity detail to link it safely to Jeff Jeansonne. Does it refer to the same PAX?
+- Big Brother — DOGE records show hospital name(s) Jared Gaines. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Big Rig — DOGE records show hospital name(s) Cavazos. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Big Short — roster records associate this F3 name with Michael Kumpas, Tom Cooper. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2023-07-15, 2024-10-10?
+- Billboard — DOGE records show hospital name(s) David Doyle. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- BioHazard — one roster record lacks enough identity detail to link it safely to Alain Sayegh. Does it refer to the same PAX?
+- Bird Dog — DOGE records show hospital name(s) Justin Girard. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Birdshot — one roster record lacks enough identity detail to link it safely to Taylor Reed. Does it refer to the same PAX?
+- Blitz — DOGE records show hospital name(s) Rodney Kennedy. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- BlueScreen — one roster record lacks enough identity detail to link it safely to David Nguyen. Does it refer to the same PAX?
+- Bobby Boucher — DOGE records show hospital name(s) Chris Williams. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Bobsled — one roster record lacks enough identity detail to link it safely to Justin Rostant. Does it refer to the same PAX?
+- Bob the Builder — DOGE records show hospital name(s) Matt Vaughn. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Bologna — roster records associate this F3 name with Kyle McLawhon, Samual Slovacek. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2022-03-12, 2024-08-21?
+- BOP — one roster record lacks enough identity detail to link it safely to Trey Lynch. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-06-25, 2024-01-19, 2025-05-28?
+- Bourbon — DOGE records show hospital name(s) Trae Trahan. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Brick — DOGE records show hospital name(s) Elias Shipley. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Butterfly — roster records associate this F3 name with Jordan Giarratano, Nathan Allen. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2023-01-10, 2024-05-20?
+- Buzzword — DOGE records show hospital name(s) Robert Hill. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- CAD — DOGE records show hospital name(s) Matt Anderson. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Caddy — roster records associate this F3 name with Kevin Menchaca, Kevin Menchaka. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2021-07-03, 2024-05-20?
+- Calvin — DOGE records show hospital name(s) Tyler Lopez. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Cantilever — one roster record lacks enough identity detail to link it safely to Travis Hughes. Does it refer to the same PAX?
+- Cap It — DOGE records show hospital name(s) David Gordon. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Cardinal — one roster record lacks enough identity detail to link it safely to Andy Bishop. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-07-17, 2024-07-17, 2024-12-18?
+- Carpetbagger — DOGE records show hospital name(s) Ted Prouty. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Carpool — DOGE records show hospital name(s) Stephen Pesce. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Charpy — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Cheesesticks — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Chinos — one roster record lacks enough identity detail to link it safely to Juan Carlos Cantu. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-09-21, 2024-08-09, 2025-03-05, 2026-10-01?
+- Chip — one roster record lacks enough identity detail to link it safely to Parker Jones. Does it refer to the same PAX? If so, which date is the original FNG date: 2024-07-01, 2024-12-18?
+- CHipS — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Chomp — DOGE records show hospital name(s) Topher Smith. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Coonass — one roster record lacks enough identity detail to link it safely to Ray Gillory. Does it refer to the same PAX?
+- Cowgirls — DOGE records show hospital name(s) John Williford. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Crackerjack — DOGE records show hospital name(s) Chris Price. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Crack It — DOGE records show hospital name(s) Carter Gwynne. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Crash — DOGE records show hospital name(s) Mark Meacham. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Crosscheck — DOGE records show hospital name(s) Garrett Eaton. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Curds — DOGE records show hospital name(s) Ken Havlinek. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- cyclo — DOGE records show hospital name(s) Chris adkins. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Dapper Dan — DOGE records show hospital name(s) Wes Bergeron. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Deacon — DOGE records show hospital name(s) JP Knox. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Deepdish — roster records associate this F3 name with Rob Dobson, Robert Deep Dish. Are these different PAX, aliases, or incorrect records?
+- Demo Man — DOGE records show hospital name(s) Paul Miranda. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Depot — one roster record lacks enough identity detail to link it safely to Aaron Bolin. Does it refer to the same PAX?
+- Desperado — one roster record lacks enough identity detail to link it safely to Britt Henley. Does it refer to the same PAX?
+- Dinger — DOGE records show hospital name(s) Brett Sanamo. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Dirt Dauber — one roster record lacks enough identity detail to link it safely to Tyler Rack. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-06-08, 2025-05-14?
+- DOGE — one roster record lacks enough identity detail to link it safely to Kevin Gonzalez. Does it refer to the same PAX?
+- Double Double — DOGE records show hospital name(s) Matt Schneider. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Drill Bit — one roster record lacks enough identity detail to link it safely to Giovanni Palombizio. Does it refer to the same PAX?
+- Drive Thru — DOGE records show hospital name(s) Grady Smith. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Dr. Phill — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Duggar — one roster record lacks enough identity detail to link it safely to Michael du Vigneaud. Does it refer to the same PAX?
+- Egg Salad — roster records associate this F3 name with Jordan Stokes, Jordon Stokes. Are these different PAX, aliases, or incorrect records?
+- Endor — one roster record lacks enough identity detail to link it safely to Kevin Presley. Does it refer to the same PAX?
+- Eviction — one roster record lacks enough identity detail to link it safely to Mike Golebiowski. Does it refer to the same PAX?
+- Fabio — DOGE records show hospital name(s) Fabian Garavito. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Faceplant — DOGE records show hospital name(s) Adam Whilte, Adam White. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Fern — DOGE records show hospital name(s) Jeff Valenski (sp?). Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Filthy Animal — one roster record lacks enough identity detail to link it safely to Kevin Arman. Does it refer to the same PAX?
+- Fireball — one roster record lacks enough identity detail to link it safely to Shivam Kumar. Does it refer to the same PAX?
+- FixIt — one roster record lacks enough identity detail to link it safely to Ben Whitaker. Does it refer to the same PAX?
+- Flathead — DOGE records show hospital name(s) Philip Braswell. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Flintlock — one roster record lacks enough identity detail to link it safely to Nathan Thomas. Does it refer to the same PAX?
+- Flop — one roster record lacks enough identity detail to link it safely to Rich Guderyon. Does it refer to the same PAX?
+- Flounder — DOGE records show hospital name(s) Tyler Ray. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Fredo — DOGE records show hospital name(s) Jose Alvarenga. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Full Deck — DOGE records show hospital name(s) Donovan Campbell. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Gandalf — one roster record lacks enough identity detail to link it safely to Stephane Taxy. Does it refer to the same PAX?
+- Garmin — DOGE records show hospital name(s) John Legere. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Godfather — one roster record lacks enough identity detail to link it safely to Todd Rapp. Does it refer to the same PAX?
+- Godzilla — DOGE records show hospital name(s) Hiro Yoshimura. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Gogurt — one roster record lacks enough identity detail to link it safely to John Chan. Does it refer to the same PAX? If so, which date is the original FNG date: 2025-05-20, 2025-06-04, 2026-05-02?
+- Go Kart — one roster record lacks enough identity detail to link it safely to Ryland Hennessey. Does it refer to the same PAX?
+- Goldblum — one roster record lacks enough identity detail to link it safely to Chris Peavy. Does it refer to the same PAX?
+- Good Life — DOGE records show hospital name(s) Todd Richards. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Grave Digger — DOGE records show hospital name(s) Michael Bishop. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Green Deal — DOGE records show hospital name(s) Mark Technik. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Griddy — one roster record lacks enough identity detail to link it safely to Scott Young. Does it refer to the same PAX?
+- Guinea Pig — one roster record lacks enough identity detail to link it safely to Quincy Pennington. Does it refer to the same PAX?
+- Gusher — DOGE records show hospital name(s) Mahammad Alkassab. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Hall Pass — one roster record lacks enough identity detail to link it safely to David Mendlewski. Does it refer to the same PAX? If so, which date is the original FNG date: 2023-01-23, 2024-01-21?
+- Halo — DOGE records show hospital name(s) Joe Mohn. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Hang 10 — roster records associate this F3 name with Diego Contraras, Diego Contreras. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2021-07-17, 2024-07-17, 2024-09-08?
+- Hank Hill — one roster record lacks enough identity detail to link it safely to Alex Van Rooyen. Does it refer to the same PAX?
+- Happy Camper — one roster record lacks enough identity detail to link it safely to Aaron Stanley. Does it refer to the same PAX?
+- Hasbro — one roster record lacks enough identity detail to link it safely to Nathan Watts. Does it refer to the same PAX?
+- Hemingway — one roster record lacks enough identity detail to link it safely to Greg Blume. Does it refer to the same PAX?
+- Hi-C — one roster record lacks enough identity detail to link it safely to Juan Mario Posada. Does it refer to the same PAX?
+- Home Slice — DOGE records show hospital name(s) Justin Phan. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Hostage — one roster record lacks enough identity detail to link it safely to Peter Little. Does it refer to the same PAX?
+- Hot Wheels — one roster record lacks enough identity detail to link it safely to David Wilhelm. Does it refer to the same PAX?
+- Hydro — DOGE records show hospital name(s) Doug Hohertz. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- IBM — one roster record lacks enough identity detail to link it safely to Jack Monteilh. Does it refer to the same PAX?
+- Indy — DOGE records show hospital name(s) Jack Jones. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Insane — DOGE records show hospital name(s) Zayne Riggins. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Intern — DOGE records show hospital name(s) Sam Jones. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Irate — DOGE records show hospital name(s) David Costa. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- IVy — one roster record lacks enough identity detail to link it safely to Luis Lopez. Does it refer to the same PAX?
+- Jamba Juice — DOGE records show hospital name(s) Aubrey Larremore. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Jasmin — DOGE records show hospital name(s) Jared McGhee. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Java — one roster record lacks enough identity detail to link it safely to David Salako. Does it refer to the same PAX? If so, which date is the original FNG date: 2023-06-08, 2026-05-16?
+- Just Rocks — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Karbach — roster records associate this F3 name with Kevin Harbuck, Q1 Goals. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2021-06-14, 2024-12-18?
+- Katniss — DOGE records show hospital name(s) Mark Davis. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Kegerator — roster records associate this F3 name with Jeremy Hetmaniak, Jimmy Hetmaniak. Are these different PAX, aliases, or incorrect records?
+- Kevorkian — DOGE records show hospital name(s) Taylor Baumgartner. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Keyboard — one roster record lacks enough identity detail to link it safely to Dale Tran. Does it refer to the same PAX?
+- Keystone — DOGE records show hospital name(s) Dan Bradley. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Kilimanjaro — DOGE records show hospital name(s) Girmay Amdemariam. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Knockout — DOGE records show hospital name(s) Dave Flores. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- KOA — DOGE records show hospital name(s) Alan Powell, Allan Powell, Allen Powell. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Kung Pao — DOGE records show hospital name(s) Michael Jones. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Lager — one roster record lacks enough identity detail to link it safely to Paul Holub. Does it refer to the same PAX?
+- Lasso — roster records associate this F3 name with Joel Hearne, Kyu Yo. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2023-07-08, 2024-07-24?
+- LayUp — one roster record lacks enough identity detail to link it safely to Nick Nolan. Does it refer to the same PAX? If so, which date is the original FNG date: 2022-04-12, 2024-04-12?
+- Levi's — one roster record lacks enough identity detail to link it safely to Jed Laver. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-06-01, 2021-06-25?
+- Liberty — DOGE records show hospital name(s) Michael Gray McQueen. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Light Bright — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Lighting Rod — DOGE records show hospital name(s) Rod Davenport. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Lightning Rod — one roster record lacks enough identity detail to link it safely to Rod Davenport. Does it refer to the same PAX?
+- Lionheart — roster records associate this F3 name with Jimmy Tay Trinh, Jimmy Trinh. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2025-07-04, 2025-07-23, 2025-07-25?
+- LOL — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Low Ball — DOGE records show hospital name(s) Alex Massa. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Malibu — DOGE records show hospital name(s) Barron Sawyer. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- ManMaker — DOGE records show hospital name(s) Bob Stanbery, Bob Stanberry. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Mayday — roster records associate this F3 name with Luke Smith, Steve Goetsch. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2022-06-21, 2024-06-10?
+- Maytag — DOGE records show hospital name(s) Andrew Pham. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Mini-Van — DOGE records show hospital name(s) Brandon Cavazos. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Minnow — one roster record lacks enough identity detail to link it safely to Christian Tracy. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-05-04, 2021-07-03?
+- Motorboat — one roster record lacks enough identity detail to link it safely to Davis Mayfield. Does it refer to the same PAX?
+- Mr. Belvedere — one roster record lacks enough identity detail to link it safely to James Breaux. Does it refer to the same PAX?
+- Ms. Daisy — one roster record lacks enough identity detail to link it safely to Eric Gadin. Does it refer to the same PAX?
+- Mullet — DOGE records show hospital name(s) Nathan Boudreaux. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Musk — DOGE records show hospital name(s) Drew Irons. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Muskrat — one roster record lacks enough identity detail to link it safely to Eric Enger. Does it refer to the same PAX?
+- Neo — roster records associate this F3 name with David Anderson, Gabe G. Are these different PAX, aliases, or incorrect records?
+- Night Life — DOGE records show hospital name(s) Marcelino Moreno. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Night Light — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- NosePlug — one roster record lacks enough identity detail to link it safely to Jasmeet Basra. Does it refer to the same PAX?
+- Oracle — one roster record lacks enough identity detail to link it safely to Jason Skinner. Does it refer to the same PAX?
+- Overboard — roster records associate this F3 name with Brian Kelly, Gurcan Bayraktar. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2024-11-16, 2026-05-23?
+- Pacman — one roster record lacks enough identity detail to link it safely to Bryan Guzman. Does it refer to the same PAX?
+- Paperboy — one roster record lacks enough identity detail to link it safely to David Nelson. Does it refer to the same PAX?
+- Paperwork — DOGE records show hospital name(s) Jason McIntosh. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Parks and Rec — DOGE records show hospital name(s) Colton Sheet. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Pasty — one roster record lacks enough identity detail to link it safely to Cole Christy. Does it refer to the same PAX?
+- Pate' — DOGE records show hospital name(s) Cam Patterson. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Patron — one roster record lacks enough identity detail to link it safely to Roberto Gonzalez. Does it refer to the same PAX?
+- PBS — DOGE records show hospital name(s) Mark Engstrom. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Penguin — one roster record lacks enough identity detail to link it safely to Tim Bennett. Does it refer to the same PAX?
+- Pharaoh — DOGE records show hospital name(s) Mark. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Phoenix — DOGE records show hospital name(s) Michael Testut. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Pimento — one roster record lacks enough identity detail to link it safely to Jose Romero. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-07-17, 2024-07-17?
+- Pit Bull — roster records associate this F3 name with Andrew George, Blake Jenkins. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2022-08-16, 2024-08-28?
+- Pizza Pizza — DOGE records show hospital name(s) Cesar Sanchez. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Polo — one roster record lacks enough identity detail to link it safely to Patrick Kessler. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-07-17, 2021-07-22, 2024-07-17?
+- Ponch — one roster record lacks enough identity detail to link it safely to Job Estrada. Does it refer to the same PAX?
+- Prada — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Prince — DOGE records show hospital name(s) Josh Wilson. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Puddin — DOGE records show hospital name(s) Lawson Craddock. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Purple Rain — one roster record lacks enough identity detail to link it safely to Jose Recao. Does it refer to the same PAX?
+- Radar — one roster record lacks enough identity detail to link it safely to Charles Huang. Does it refer to the same PAX?
+- Radish — DOGE records show hospital name(s) Drew Limbacher. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Raki — DOGE records show hospital name(s) Erin Maxhari. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Rapids — DOGE records show hospital name(s) Cameron Johnson. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Ratchet — DOGE records show hospital name(s) Robin Walker. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Rat Rod — one roster record lacks enough identity detail to link it safely to Sammy Gonzalez. Does it refer to the same PAX?
+- Rebar — DOGE records show hospital name(s) Victor Acevedo. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Recount — one roster record lacks enough identity detail to link it safely to Dave Bray. Does it refer to the same PAX?
+- Red Ryder — one roster record lacks enough identity detail to link it safely to Josh Anderson. Does it refer to the same PAX?
+- Rehab — DOGE records show hospital name(s) Kevin Holister, Kevin Hollister. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Rickets — one roster record lacks enough identity detail to link it safely to Josh Castro. Does it refer to the same PAX? If so, which date is the original FNG date: 2025-05-06, 2026-05-05?
+- Rio Grande — DOGE records show hospital name(s) Bryan Farias. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Ripcord — DOGE records show hospital name(s) Colton Hughes. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Ron Jon — DOGE records show hospital name(s) Scott Selvig. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Rover — one roster record lacks enough identity detail to link it safely to Diego Fernandez. Does it refer to the same PAX? If so, which date is the original FNG date: 2025-03-14, 2025-04-16?
+- Rushmore — one roster record lacks enough identity detail to link it safely to Eric Hintz. Does it refer to the same PAX?
+- Rx — DOGE records show hospital name(s) Chris Rush. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Sampras — DOGE records show hospital name(s) Bobby Zabor. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Sandman — one roster record lacks enough identity detail to link it safely to Josh Blevins. Does it refer to the same PAX?
+- Sasquatch — DOGE records show hospital name(s) Terry Conrad. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Scalpel — one roster record lacks enough identity detail to link it safely to Sameer Murali. Does it refer to the same PAX? If so, which date is the original FNG date: 2023-05-27, 2023-08-20?
+- Scrappy — one roster record lacks enough identity detail to link it safely to Sukhbir Sond. Does it refer to the same PAX?
+- Scribe — DOGE records show hospital name(s) Gary Dobbs. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Shake Weight — DOGE records show hospital name(s) David Oliphant. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Shakiro — one roster record lacks enough identity detail to link it safely to Camilo Obando. Does it refer to the same PAX?
+- Shifuh — one roster record lacks enough identity detail to link it safely to Zhu Zhang. Does it refer to the same PAX?
+- Sight Line — one roster record lacks enough identity detail to link it safely to John Townsley. Does it refer to the same PAX?
+- Singlet — one roster record lacks enough identity detail to link it safely to Trey Blakely. Does it refer to the same PAX? If so, which date is the original FNG date: 2023-02-20, 2023-02-25?
+- Skeeter — one roster record lacks enough identity detail to link it safely to Josh Poole. Does it refer to the same PAX?
+- Slag — DOGE records show hospital name(s) Scot Hutchison. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Slap Shot — one roster record lacks enough identity detail to link it safely to Kirill Nagorskiy. Does it refer to the same PAX?
+- Slider — DOGE records show hospital name(s) Thomas Miles. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Sloppy Joe — one roster record lacks enough identity detail to link it safely to Bryan Johnson. Does it refer to the same PAX? If so, which date is the original FNG date: 2023-08-21, 2023-08-22, 2025-04-16?
+- Smokey — roster records associate this F3 name with Kamlesh Kumar, Kelby. Are these different PAX, aliases, or incorrect records?
+- Sox — roster records associate this F3 name with Adam Flaaten, Adam Flanten. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2022-08-01, 2022-08-18?
+- Space Jam — roster records associate this F3 name with Brad Hicks, Brad Nix. Are these different PAX, aliases, or incorrect records?
+- Spark Plug — roster records associate this F3 name with Edwin Fores, Stephen Koch. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2023-04-06, 2025-02-18?
+- Spice — DOGE records show hospital name(s) Ryan. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Spielberg — roster records associate this F3 name with Alejandro Guerrero, Chris Hartwell. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2024-08-24, 2025-07-15?
+- Spin Cycle — DOGE records show hospital name(s) David Alzate. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Spritz — DOGE records show hospital name(s) Kyle Lake. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Stairway — roster records associate this F3 name with Matt Dugan, Matthew Dugan. Are these different PAX, aliases, or incorrect records?
+- Steel Toe — DOGE records show hospital name(s) Zach Awny. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Stitches — Please confirm whether these roster records refer to one person and provide the hospital name or another non-sensitive identity detail.
+- Strawberry — one roster record lacks enough identity detail to link it safely to Craig Warren. Does it refer to the same PAX? If so, which date is the original FNG date: 2022-07-17, 2024-07-17?
+- Streaker — DOGE records show hospital name(s) Sean McBeth. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Sugar Cane — DOGE records show hospital name(s) Blaine Murphy. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- T-Bone — DOGE records show hospital name(s) Adam Carpenter. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- The Claw — DOGE records show hospital name(s) Brandon Trama. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- The Custodian — one roster record lacks enough identity detail to link it safely to Jonathan Corley. Does it refer to the same PAX?
+- The Dash — one roster record lacks enough identity detail to link it safely to Andy Buchmann. Does it refer to the same PAX?
+- The Prophet — roster records associate this F3 name with AJ Wagner, AJ Wagoner. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2026-03-14, 2026-05-26?
+- The Voice — one roster record lacks enough identity detail to link it safely to Kelton Washington. Does it refer to the same PAX?
+- Thinmint — one roster record lacks enough identity detail to link it safely to Luis Aguilar. Does it refer to the same PAX? If so, which date is the original FNG date: 2023-08-19, 2023-09-27, 2025-01-08?
+- Timber — one roster record lacks enough identity detail to link it safely to Aaron Wegenka. Does it refer to the same PAX?
+- Tornado — roster records associate this F3 name with Oz Arslan, Ozan (Oz) Arslan. Are these different PAX, aliases, or incorrect records?
+- Toro — DOGE records show hospital name(s) Oscar Quintero. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Treadmill — one roster record lacks enough identity detail to link it safely to Daniel Murphy. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-07-15, 2024-07-15?
+- Tremor — one roster record lacks enough identity detail to link it safely to Nathan Kuhle. Does it refer to the same PAX? If so, which date is the original FNG date: 2021-05-06, 2021-06-25?
+- Triple Threat — one roster record lacks enough identity detail to link it safely to Fred Sanchez. Does it refer to the same PAX?
+- Troll — DOGE records show hospital name(s) Keeson Jurick. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- TSA — DOGE records show hospital name(s) Chris Haine. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Tulip — one roster record lacks enough identity detail to link it safely to Alex van Dub. Does it refer to the same PAX?
+- Tumbleweed — DOGE records show hospital name(s) Jeff Hutchinson. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Tummy Ache — one roster record lacks enough identity detail to link it safely to Chuma Egwim. Does it refer to the same PAX?
+- Turbine — DOGE records show hospital name(s) Brett Levicky. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Turbo Tax — roster records associate this F3 name with Bret Oliver, Brett Oliver. Are these different PAX, aliases, or incorrect records?
+- Turnbuckle — DOGE records show hospital name(s) Brian Lamb. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Tyson — DOGE records show hospital name(s) Blake Johnson. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Vector — DOGE records show hospital name(s) William Hall. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- WalkOn — DOGE records show hospital name(s) Ryan Renfro. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Walter White — one roster record lacks enough identity detail to link it safely to Arthur Babcock. Does it refer to the same PAX?
+- Warthog — DOGE records show hospital name(s) Morad Fiki. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Wasabi — DOGE records show hospital name(s) Andres Giraldo. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Whitewater — DOGE records show hospital name(s) Kyle Brantley. Please confirm the correct person, F3 name, original FNG date, and Proud Papa where applicable.
+- Wolf — roster records associate this F3 name with Carlos Recao, Rex Carlos. Are these different PAX, aliases, or incorrect records? If so, which date is the original FNG date: 2024-08-23, 2026-06-23?
+- Wrigley — one roster record lacks enough identity detail to link it safely to Carl Steffensen. Does it refer to the same PAX? If so, which date is the original FNG date: 2022-05-24, 2024-05-24, 2026-06-02?
+- Yellow Card — one roster record lacks enough identity detail to link it safely to Franklin Cartagena. Does it refer to the same PAX?
+- Yes — roster records associate this F3 name with 10, 100, 15, 20, 25, 30, 40, 50, 600. Are these different PAX, aliases, or incorrect records?
+- Zillow — one roster record lacks enough identity detail to link it safely to Chris Grizzaffi. Does it refer to the same PAX?
+- Zuckerberg — one roster record lacks enough identity detail to link it safely to Jason Goodwin. Does it refer to the same PAX?

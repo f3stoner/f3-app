@@ -740,3 +740,167 @@ button:disabled {
     opacity: 0.4;
     cursor: default;
 }
+
+
+/* Long-range Q Overview */
+
+.view-qSignup .q-signup-overview {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.view-qSignup .q-overview-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.view-qSignup .q-overview-toolbar select {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.view-qSignup .q-overview-range {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.view-qSignup .q-overview-range button {
+    min-width: 0;
+    margin: 0;
+    padding: 0.7rem 0.3rem;
+    font-size: 0.85rem;
+}
+
+.view-qSignup .q-overview-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.view-qSignup .q-overview-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.85rem 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+.view-qSignup .q-overview-stat strong {
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.view-qSignup .q-overview-stat span {
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+.view-qSignup .q-overview-weeks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.view-qSignup .q-overview-week {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.view-qSignup .q-overview-week h3 {
+    margin: 0;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
+.view-qSignup .q-overview-entries {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.view-qSignup .q-overview-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+    padding: 0.7rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.view-qSignup .q-overview-entry:last-child {
+    border-bottom: 0;
+}
+
+.view-qSignup .q-overview-entry span {
+    overflow-wrap: anywhere;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.view-qSignup .q-overview-entry .q-overview-q {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.view-qSignup .q-overview-entry.is-open .q-overview-q {
+    color: #55c85a;
+}
+
+.view-qSignup .q-overview-empty {
+    padding: 0.85rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+@media (min-width: 800px) {
+    .view-qSignup .q-overview-toolbar {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .view-qSignup .q-overview-toolbar select {
+        flex: 1;
+    }
+
+    .view-qSignup .q-overview-range {
+        flex: 0 0 300px;
+    }
+
+    .view-qSignup .q-overview-entry {
+        border-right: 1px solid var(--border);
+    }
+}
+
+.view-qSignup .q-overview-entry {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.view-qSignup .q-overview-entry-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.view-qSignup .q-overview-entry .q-overview-q {
+    flex: 0 0 auto;
+    max-width: 45%;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
