@@ -19,6 +19,7 @@ import { createLibraryIdeasModal } from "../components/libraryIdeasModal.js";
 import { logLibraryUsageEvent, loadPlannerAnnouncements } from "../services/cloudData.js";
 import { loadThirdFDiscussions } from "../services/thirdFData.js";
 import { getEffectiveWorkoutThirdF } from "../utils/thirdFContent.js";
+import { filterDateAwareContent } from "../utils/dateAwareContent.js";
 import {
     getEffectiveWorkoutAnnouncementText,
 } from "../utils/announcements.js";
@@ -1299,6 +1300,51 @@ export function renderWorkoutPlanner() {
             extraContent:
                 resetThirdFButton,
         });
+
+
+    // Read-only reference material for the workout date.
+    const matchingThirdFItems = filterDateAwareContent(
+        state.plannerThirdFDiscussions || [],
+        draftWorkout.date || getTodayDate()
+    ).filter(item => item.published === true);
+
+    if (matchingThirdFItems.length > 0) {
+        const references = document.createElement("details");
+        references.classList.add("planner-third-f-references");
+
+        const heading = document.createElement("summary");
+        heading.textContent = `Discussion References (${matchingThirdFItems.length})`;
+        references.appendChild(heading);
+
+        matchingThirdFItems.forEach(item => {
+            const reference = document.createElement("div");
+            reference.classList.add("planner-third-f-reference");
+
+            const title = document.createElement("strong");
+            title.textContent = item.title || "Third F Discussion";
+            reference.appendChild(title);
+
+            if (item.discussion) {
+                const discussion = document.createElement("p");
+                discussion.classList.add("planner-third-f-reference-body");
+                discussion.textContent = item.discussion;
+                reference.appendChild(discussion);
+            }
+
+            if (item.link) {
+                const link = document.createElement("a");
+                link.textContent = "Open Source";
+                link.href = item.link;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                reference.appendChild(link);
+            }
+
+            references.appendChild(reference);
+        });
+
+        thirdFSection.appendChild(references);
+    }
 
     const shareLabel = document.createElement("div");
     shareLabel.textContent = "Visibility";

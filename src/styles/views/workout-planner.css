@@ -1166,3 +1166,30 @@ button:last-child {
         transition: none;
     }
 }
+
+.view-workoutPlanner .planner-third-f-references {
+    margin-top: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+}
+
+.view-workoutPlanner .planner-third-f-references summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.view-workoutPlanner .planner-third-f-reference {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.view-workoutPlanner .planner-third-f-reference:last-child {
+    border-bottom: 0;
+}
+
+.view-workoutPlanner .planner-third-f-reference-body {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
