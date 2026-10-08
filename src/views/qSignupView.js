@@ -1366,122 +1366,78 @@ export function renderQSignupView() {
             summary.appendChild(item);
         });
 
+
         const weeksContainer = document.createElement("div");
-        weeksContainer.classList.add("q-overview-weeks");
+        weeksContainer.classList.add("q-overview-list");
 
-        // Calendar weeks start Monday, but the range starts today.
-        const startDay = new Date(`${today}T00:00:00`).getDay();
-        const firstMonday = addDaysToDateString(
-            today,
-            -((startDay + 6) % 7)
-        );
-
-        const weekGroups = new Map();
-
-        for (let date = firstMonday; date < endDate;
-            date = addDaysToDateString(date, 7)) {
-            weekGroups.set(date, []);
-        }
+        let previousWeek = null;
 
         overviewSlots.forEach(slot => {
             const day = new Date(`${slot.date}T00:00:00`).getDay();
-            const monday = addDaysToDateString(
+        
+            const weekStart = addDaysToDateString(
                 slot.date,
                 -((day + 6) % 7)
             );
+        
+            const startsNewWeek =
+                previousWeek !== null && weekStart !== previousWeek;
+        
+            previousWeek = weekStart;
+        
+            const ao = state.aos.find(item => item.id === slot.aoId);
+            const member = slot.qUserId
+                ? getMemberById(slot.qUserId)
+                : null;
 
-            weekGroups.get(monday)?.push(slot);
-        });
+            const qName = !slot.qUserId
+                ? "Open"
+                : member?.paxName ||
+                    member?.realName ||
+                    member?.fullName ||
+                    "Filled";
 
-        weekGroups.forEach((slots, monday) => {
-            const weekSection = document.createElement("section");
-            weekSection.classList.add("q-overview-week");
+            const entry = document.createElement("div");
+            entry.classList.add(
+                "q-overview-compact-row",
+                slot.qUserId ? "is-filled" : "is-open"
+            );
 
-            const heading = document.createElement("h3");
-            const sunday = addDaysToDateString(monday, 6);
-
-            const formatShortDate = date =>
-                new Date(`${date}T00:00:00`).toLocaleDateString(
-                    undefined,
-                    { month: "short", day: "numeric" }
-                );
-
-            heading.textContent =
-                `${formatShortDate(monday)} – ${formatShortDate(sunday)}`;
-
-            const entries = document.createElement("div");
-            entries.classList.add("q-overview-entries");
-
-            if (!slots.length) {
-                const empty = document.createElement("p");
-                empty.classList.add("q-overview-empty");
-                empty.textContent = "No scheduled workouts";
-                entries.appendChild(empty);
+            if (startsNewWeek) {
+                entry.classList.add("starts-new-week");
             }
 
-            slots.forEach(slot => {
-                const ao = state.aos.find(item => item.id === slot.aoId);
-                const site = resolveSiteForQSlot(slot, ao);
-                const member = slot.qUserId
-                    ? getMemberById(slot.qUserId)
-                    : null;
+            const left = document.createElement("div");
+            left.classList.add("q-overview-compact-left");
 
-                const qName = !slot.qUserId
-                    ? "Open"
-                    : member?.paxName ||
-                        member?.realName ||
-                        member?.fullName ||
-                        "Filled";
-
-                const weekday = String(
-                    new Date(`${slot.date}T00:00:00`).getDay()
-                );
-
-                const rawTime = slot.overrideTime ||
-                    slot.startTime ||
-                    ao?.timeSchedule?.[weekday] ||
-                    ao?.time ||
-                    "";
-
-                const time = formatQSlotTime(rawTime);
-
-                const entry = document.createElement("div");
-                entry.classList.add(
-                    "q-overview-entry",
-                    slot.qUserId ? "is-filled" : "is-open"
-                );
-
-                const date = document.createElement("strong");
-                date.textContent = new Date(
-                    `${slot.date}T00:00:00`
-                ).toLocaleDateString(undefined, {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                });
-
-                const details = document.createElement("span");
-                details.textContent = [
-                    state.qSignupAoFilter === "all" ? ao?.name : null,
-                    time,
-                    site?.name,
-                ].filter(Boolean).join(" · ");
-
-                const q = document.createElement("span");
-                q.classList.add("q-overview-q");
-                q.textContent = qName;
-
-                const info = document.createElement("div");
-                info.classList.add("q-overview-entry-info");
-                info.append(date, details);
-                
-                entry.append(info, q);
-                entries.appendChild(entry);
+            const date = document.createElement("strong");
+            date.textContent = new Date(
+                `${slot.date}T00:00:00`
+            ).toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
             });
 
-            weekSection.append(heading, entries);
-            weeksContainer.appendChild(weekSection);
+            const location = document.createElement("span");
+            location.textContent = ao?.name || "Unknown AO";
+
+            const q = document.createElement("span");
+            q.classList.add("q-overview-compact-q");
+            q.textContent = qName;
+
+            left.append(date, location);
+            entry.append(left, q);
+            weeksContainer.appendChild(entry);
         });
+
+        if (!overviewSlots.length) {
+            const empty = document.createElement("p");
+            empty.classList.add("q-overview-empty");
+            empty.textContent = "No scheduled workouts in this range.";
+            weeksContainer.appendChild(empty);
+        }
+
 
         overview.append(toolbar, summary, weeksContainer);
 

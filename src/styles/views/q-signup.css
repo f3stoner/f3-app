@@ -983,3 +983,67 @@ button:disabled {
     padding: 0.75rem;
     margin: 0;
 }
+
+
+/* Compact Q planning list */
+
+.view-qSignup .q-overview-list {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.view-qSignup .q-overview-compact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 46px;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.view-qSignup .q-overview-compact-row:last-child {
+    border-bottom: 0;
+}
+
+.view-qSignup .q-overview-compact-left {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.view-qSignup .q-overview-compact-left strong {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.view-qSignup .q-overview-compact-left span {
+    font-size: 0.75rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.view-qSignup .q-overview-compact-q {
+    max-width: 45%;
+    flex: 0 0 auto;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.view-qSignup .q-overview-compact-row.is-open
+.q-overview-compact-q {
+    color: #55c85a;
+}
+
+/* Subtle calendar-week boundaries */
+
+.view-qSignup .q-overview-compact-row.starts-new-week {
+    border-top: 3px solid var(--border-strong);
+}
