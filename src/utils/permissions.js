@@ -126,8 +126,12 @@ export function hasPermission(permission) {
         return true;
     }
 
-    return isRegionalAdmin()
-        && REGIONAL_ADMIN_PERMISSIONS.includes(permission);
+    if (isRegionalAdmin() && REGIONAL_ADMIN_PERMISSIONS.includes(permission)) {
+        return true;
+    }
+
+    return isRegionalSLT()
+        && ROLE_PERMISSIONS.slt.includes(permission);
 }
 
 export function isSuperAdmin() {
@@ -139,7 +143,27 @@ export function isDataQ() {
 }
 
 export function isRegionalSLT() {
-    return state.currentUserRole === "slt";
+    if (state.currentUserRole === "slt") {
+        return Boolean(
+            state.currentRegionId &&
+            (state.homeRegionId || state.profileRegionId) === state.currentRegionId
+        );
+    }
+
+    const profileId = getCurrentProfileId();
+    const regionId = state.currentRegionId;
+
+    if (!profileId || !regionId) {
+        return false;
+    }
+
+    return (state.profileRegionPositions || [])
+        .map(normalizeRegionPositionRow)
+        .some(row =>
+            row.profileId === profileId &&
+            row.regionId === regionId &&
+            Boolean(row.position)
+        );
 }
 
 export function isRegionalAdmin() {
@@ -217,14 +241,34 @@ export function managesQSlot(slotOrAoId) {
         ? slotOrAoId?.aoId || slotOrAoId?.ao_id
         : slotOrAoId;
 
+    if (isRegionalSLT() && isAoInActiveWorkspace(aoId)) {
+        return true;
+    }
+
     return managesAo(aoId, AO_Q_SLOT_MANAGEMENT_POSITIONS);
 }
 
+function isAoInActiveWorkspace(aoId) {
+    return Boolean(
+        aoId &&
+        state.currentRegionId &&
+        (state.aos || []).some(ao => ao.id === aoId)
+    );
+}
+
 export function canViewAoInsights(aoId) {
+    if (isRegionalSLT() && isAoInActiveWorkspace(aoId)) {
+        return true;
+    }
+
     return managesAo(aoId, AO_INSIGHTS_POSITIONS);
 }
 
 export function canViewQReadiness(aoId) {
+    if (isRegionalSLT() && isAoInActiveWorkspace(aoId)) {
+        return true;
+    }
+
     return managesAo(aoId, AO_Q_READINESS_POSITIONS);
 }
 
@@ -315,6 +359,12 @@ export function canViewPaxOverview(memberId) {
         return true;
     }
 
+    const member = (state.members || []).find(member => member.id === memberId);
+
+    if (!member || member.regionId !== state.currentRegionId) {
+        return false;
+    }
+
     if (hasPermission(PERMISSIONS.VIEW_PAX_OVERVIEW)) {
         return true;
     }
@@ -331,7 +381,24 @@ export function canManageCurrentRoster() {
         return true;
     }
 
-    if (!isDataQ() && !isRegionalSLT()) {
+    const profileId = getCurrentProfileId();
+    const regionId = state.currentRegionId;
+
+    if (profileId && regionId) {
+        const hasRegionalPosition = (state.profileRegionPositions || [])
+            .map(normalizeRegionPositionRow)
+            .some(row =>
+                row.profileId === profileId &&
+                row.regionId === regionId &&
+                Boolean(row.position)
+            );
+
+        if (hasRegionalPosition) {
+            return true;
+        }
+    }
+
+    if (!isDataQ() && state.currentUserRole !== "slt") {
         return false;
     }
 
@@ -342,8 +409,8 @@ export function canManageCurrentRoster() {
 
     return Boolean(
         homeRegionId &&
-        state.currentRegionId &&
-        homeRegionId === state.currentRegionId
+        regionId &&
+        homeRegionId === regionId
     );
 }
 

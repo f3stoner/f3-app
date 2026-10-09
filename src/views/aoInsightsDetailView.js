@@ -5,6 +5,7 @@ import { navigateTo } from "../utils/navigation.js";
 import { loadAoInsightSessions } from "../services/cloudData.js";
 import { renderAttendanceDetail } from "../components/aoInsights/attendanceDetail.js";
 import { renderNewPaxPipelineDetail } from "../components/aoInsights/newPaxPipelineDetail.js";
+import { canViewAoInsights } from "../utils/permissions.js";
 
 const AO_INSIGHT_DETAIL_LOOKBACK_DAYS = 180;
 
@@ -24,7 +25,7 @@ export async function renderAoInsightDetailView() {
     app.textContent = "";
     app.appendChild(header);
 
-    if (!selected || !detailType) {
+    if (!selected || !detailType || !canViewAoInsights(selected.aoId)) {
         const empty = document.createElement("div");
         empty.classList.add("detail-value");
         empty.textContent = "No insight selected.";
