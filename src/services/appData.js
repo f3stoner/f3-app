@@ -1150,6 +1150,7 @@ export function replacePersistedData({
     qSlots,
     savedPlannerSections,
     workoutFieldLabels,
+    leaderboardsEnabled,
     announcements,
     qSources,
     memberStats,
@@ -1172,6 +1173,7 @@ export function replacePersistedData({
     state.adminFlagsLoadError = null;
     state.savedPlannerSections = savedPlannerSections || [];
     state.workoutFieldLabels = workoutFieldLabels || {};
+    state.leaderboardsEnabled = leaderboardsEnabled === true;
     state.announcements = announcements || [];
     state.qSources = qSources || [];
 

@@ -930,7 +930,8 @@ export async function loadRegionData(
                     id,
                     name,
                     workout_field_labels,
-                    fng_naming_post_number
+                    fng_naming_post_number,
+                    leaderboards_enabled
                 `)
                 .eq("id", regionId)
                 .single(),
@@ -1085,6 +1086,7 @@ export async function loadRegionData(
     return {
         regionName: regionResult.data.name,
         fngNamingPostNumber: regionResult.data.fng_naming_post_number ?? 1,
+        leaderboardsEnabled: regionResult.data.leaderboards_enabled === true,
         members: memberResult.map(row => {
             const member = mapMemberFromDb(row);
         
@@ -1149,6 +1151,26 @@ export async function updateRegionWorkoutFieldLabels(regionId, labels) {
     if (error) throw error;
 
     return mapRegionFromDb(data);
+}
+
+export async function setRegionLeaderboardsEnabled(regionId, enabled) {
+    const { data, error } = await supabase.rpc(
+        "set_region_leaderboards_enabled",
+        {
+            p_region_id: regionId,
+            p_enabled: enabled,
+        }
+    );
+
+    if (error) throw error;
+
+    const row = Array.isArray(data) ? data[0] : data;
+
+    if (!row) {
+        throw new Error("Leaderboard setting update returned no result.");
+    }
+
+    return row.leaderboards_enabled === true;
 }
 
 export async function loadRegionPublicSiteConfig(
@@ -6795,6 +6817,17 @@ export async function logMemberActivity(
     }
 
     return data;
+}
+
+export async function loadRegionPaxLeaderboard(regionId, metric = "posts", period = "month") {
+    const { data, error } = await supabase.rpc("get_region_pax_leaderboard", {
+        p_region_id: regionId,
+        p_metric: metric,
+        p_period: period,
+    });
+
+    if (error) throw error;
+    return data || [];
 }
 
 export async function loadRegionLeadershipDepth({

@@ -163,6 +163,11 @@ export function createMainMenu() {
                 { label: "Pulse", view: "regionFeed" },
                 { label: "Campaigns", view: "campaigns" },
                 {
+                    label: "Leaderboards",
+                    view: "leaderboards",
+                    isVisible: () => state.leaderboardsEnabled === true,
+                },
+                {
                     label: "Double Down Tracker",
                     externalUrl: DOUBLE_DOWN_TRACKER_URL,
                     isVisible: isAggielandRegion,

@@ -82,6 +82,7 @@ export const state = {
     dashboardInvitationDismissLoading: false,
 
     availableRegions: [],
+    leaderboardsEnabled: false,
 
     selectedAoId: null,
     editingAoId: null,

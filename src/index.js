@@ -590,6 +590,10 @@ const lazyRouteLoaders = {
                 module.renderRegionFeedView
         ),
 
+    leaderboards: () =>
+        import("./views/leaderboardView.js")
+            .then(module => module.renderLeaderboardView),
+    
     weeklyQCalendar: () =>
         import(
             /* webpackChunkName: "route-weekly-q-calendar" */
@@ -861,6 +865,8 @@ function renderApp() {
             "regionFeed",
             currentRenderSequence
         );
+    } else if (state.currentView === "leaderboards") {
+        renderLazyRoute("leaderboards", currentRenderSequence);
     } else if (state.currentView === "campaigns") {
         renderLazyRoute(
             "campaigns",
@@ -1147,6 +1153,9 @@ export async function saveCurrentOfflineBootSnapshot() {
 
             workoutFieldLabels:
                 state.workoutFieldLabels,
+
+            leaderboardsEnabled:
+                state.leaderboardsEnabled,
 
             announcements:
                 state.announcements,

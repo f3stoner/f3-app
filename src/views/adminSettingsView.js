@@ -7,11 +7,12 @@ import { showToast } from "../utils/toast.js";
 import {
     loadRegionPublicSiteConfig,
     updateRegionWorkoutFieldLabels,
+    setRegionLeaderboardsEnabled,
 } from "../services/cloudData.js";
 import { createElement } from "lucide";
 import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 import { createAppHeader } from "../components/appHeader.js";
-import { hasPermission, PERMISSIONS, isSuperAdmin, canManageCurrentRoster } from "../utils/permissions.js";
+import { hasPermission, PERMISSIONS, isSuperAdmin, isRegionalSLT, canManageCurrentRoster } from "../utils/permissions.js";
 
 export async function renderAdminSettingsView() {
     const app = document.getElementById("app");
@@ -209,6 +210,62 @@ export async function renderAdminSettingsView() {
         }
     });
 
+    const canManageLeaderboards =
+        isSuperAdmin() || isRegionalSLT();
+
+    const leaderboardControls = document.createElement("div");
+
+    if (canManageLeaderboards) {
+        const heading = document.createElement("h3");
+        heading.textContent = "PAX Leaderboards";
+
+        const description = document.createElement("p");
+        description.textContent =
+            "Allow PAX in this region to view regional posts and Q leaderboards.";
+
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = state.leaderboardsEnabled === true;
+
+        label.append(checkbox, " Enable PAX leaderboards");
+
+        const saveLeaderboardsButton = document.createElement("button");
+        saveLeaderboardsButton.textContent = "Save Leaderboard Setting";
+
+        saveLeaderboardsButton.addEventListener("click", async () => {
+            const regionId = state.currentRegionId;
+            const enabled = checkbox.checked;
+
+            saveLeaderboardsButton.disabled = true;
+
+            try {
+                const savedEnabled = await setRegionLeaderboardsEnabled(
+                    regionId,
+                    enabled
+                );
+
+                if (state.currentRegionId === regionId) {
+                    state.leaderboardsEnabled = savedEnabled;
+                }
+
+                showToast("Leaderboard setting saved.", "success");
+                renderApp();
+            } catch (error) {
+                console.error("Failed to save leaderboard setting:", error);
+                showToast("Failed to save leaderboard setting.", "error");
+                saveLeaderboardsButton.disabled = false;
+            }
+        });
+
+        leaderboardControls.append(
+            heading,
+            description,
+            label,
+            saveLeaderboardsButton
+        );
+    }
+
     const nav = createGlobalNav();
 
     app.append(
@@ -233,7 +290,9 @@ export async function renderAdminSettingsView() {
         notes.input,
     
         saveButton,
-    
+        
+        leaderboardControls,
+
         nav
     );
     
