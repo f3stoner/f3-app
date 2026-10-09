@@ -2782,6 +2782,23 @@ export async function loadClaimedMemberIds(regionId) {
     );
 }
 
+
+export async function loadRegionRosterClaimedMemberIds(regionId) {
+    const { data, error } = await supabase.rpc(
+        "load_region_roster_claimed_member_ids",
+        { p_region_id: regionId }
+    );
+
+    if (error) throw error;
+
+    return new Set(
+        (data || [])
+            .map(row => row.member_id)
+            .filter(Boolean)
+    );
+}
+
+
 export async function getRegionById(regionId) {
     const { data, error } = await supabase
         .from("regions")

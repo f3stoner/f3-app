@@ -7135,3 +7135,86 @@ button.leadership-action-card:disabled {
     max-height: 280px;
     object-fit: cover;
 }
+
+
+.roster-management-adoption-summary {
+    display: block;
+    padding: 16px;
+    margin: 16px 0;
+    border: 1px solid #383838;
+    border-radius: 12px;
+}
+
+.roster-adoption-heading {
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.roster-adoption-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    text-align: center;
+}
+
+.roster-adoption-metrics > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.roster-adoption-metrics strong {
+    font-size: 1.6rem;
+    line-height: 1.2;
+}
+
+.roster-adoption-metrics span,
+.roster-adoption-note {
+    font-size: 0.8rem;
+    color: #a3a3a3;
+}
+
+.roster-adoption-track {
+    height: 7px;
+    margin: 16px 0 12px;
+    background: #303030;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.roster-adoption-fill {
+    height: 100%;
+    background: #4b9c73;
+    border-radius: inherit;
+}
+
+.roster-claim-claimed {
+    color: #a3a3a3;
+    border-color: #555;
+}
+
+.roster-claim-unclaimed {
+    color: #e5b76a;
+    border-color: #946e38;
+}
+
+.roster-management-badge-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.roster-management-badge-row .member-status-badge {
+    width: fit-content;
+}
+
+.roster-claim-claimed,
+.roster-claim-unclaimed {
+    padding: 3px 10px;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}

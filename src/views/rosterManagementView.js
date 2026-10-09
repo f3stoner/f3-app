@@ -19,10 +19,62 @@ import {
     setMemberRosterStatus,
 } from "../services/appData.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
+import { loadRegionRosterClaimedMemberIds } from "../services/cloudData.js";
 
 let rosterManagementSearchTerm = "";
 let rosterManagementStatusFilter = "all";
 const savingMemberIds = new Set();
+
+
+let rosterManagementClaimFilter = "all";
+let rosterAdoptionRegionId = null;
+let rosterAdoptionClaimedIds = null;
+let rosterAdoptionPromise = null;
+let rosterAdoptionError = null;
+
+function ensureRosterAdoptionLoaded(regionId) {
+    if (rosterAdoptionRegionId !== regionId) {
+        rosterAdoptionRegionId = regionId;
+        rosterAdoptionClaimedIds = null;
+        rosterAdoptionPromise = null;
+        rosterAdoptionError = null;
+        rosterManagementClaimFilter = "all";
+    }
+
+    if (rosterAdoptionClaimedIds !== null || rosterAdoptionPromise || rosterAdoptionError) {
+        return rosterAdoptionPromise;
+    }
+
+    rosterAdoptionError = null;
+
+    const request = loadRegionRosterClaimedMemberIds(regionId);
+    rosterAdoptionPromise = request;
+
+    request.then(
+        claimedIds => {
+            if (rosterAdoptionRegionId !== regionId ||
+                rosterAdoptionPromise !== request) return;
+
+            rosterAdoptionClaimedIds = claimedIds;
+            rosterAdoptionPromise = null;
+            refreshRosterAdoptionView();
+        },
+        error => {
+            if (rosterAdoptionRegionId !== regionId ||
+                rosterAdoptionPromise !== request) return;
+
+            console.error("Roster adoption unavailable:", error);
+            rosterAdoptionError = error;
+            rosterAdoptionPromise = null;
+            refreshRosterAdoptionView();
+        }
+    );
+
+    return request;
+}
+
+let refreshRosterAdoptionView = () => {};
+
 
 function normalizeSearchValue(value) {
     return String(value || "")
@@ -45,6 +97,22 @@ function getVisibleMembers() {
                     rosterManagementStatusFilter
             ) {
                 return false;
+            }
+
+            if (rosterManagementClaimFilter !== "all") {
+                if (rosterAdoptionClaimedIds === null) {
+                    return false;
+                }
+            
+                const isClaimed =
+                    rosterAdoptionClaimedIds.has(member.id);
+            
+                if (
+                    (rosterManagementClaimFilter === "claimed" && !isClaimed) ||
+                    (rosterManagementClaimFilter === "unclaimed" && isClaimed)
+                ) {
+                    return false;
+                }
             }
 
             if (!searchTerm) {
@@ -632,11 +700,26 @@ function createMemberCard(
             ? "Active"
             : "Inactive";
 
-    content.append(
-        name,
-        details,
-        badge
-    );
+            content.append(name, details);
+
+            const badgeRow = document.createElement("div");
+            badgeRow.className = "roster-management-badge-row";
+            badgeRow.append(badge);
+            
+            if (rosterAdoptionClaimedIds !== null) {
+                const isClaimed = rosterAdoptionClaimedIds.has(member.id);
+                const claimBadge = document.createElement("div");
+            
+                claimBadge.classList.add(
+                    "member-status-badge",
+                    isClaimed ? "roster-claim-claimed" : "roster-claim-unclaimed"
+                );
+            
+                claimBadge.textContent = isClaimed ? "Claimed" : "Unclaimed";
+                badgeRow.append(claimBadge);
+            }
+            
+            content.append(badgeRow);
 
     const actions =
         document.createElement("div");
@@ -767,6 +850,16 @@ export function renderRosterManagementView() {
         return;
     }
 
+    const regionId = state.currentRegionId;
+
+    if (rosterAdoptionRegionId !== regionId) {
+        rosterAdoptionRegionId = regionId;
+        rosterAdoptionClaimedIds = null;
+        rosterAdoptionPromise = null;
+        rosterAdoptionError = null;
+        rosterManagementClaimFilter = "all";
+    }
+
     const header = createAppHeader({
         title: "",
         showBack: true,
@@ -824,6 +917,107 @@ export function renderRosterManagementView() {
         "roster-management-summary"
     );
 
+const adoptionSummary = document.createElement("div");
+adoptionSummary.classList.add(
+    "stats-line",
+    "roster-management-adoption-summary"
+);
+
+const claimFilterRow = document.createElement("div");
+claimFilterRow.classList.add(
+    "button-row",
+    "roster-management-filter-row"
+);
+
+function renderAdoption() {
+    adoptionSummary.textContent = "";
+    claimFilterRow.textContent = "";
+
+    if (rosterAdoptionClaimedIds === null) {
+        adoptionSummary.textContent = rosterAdoptionError
+            ? "Account adoption unavailable."
+            : "Loading account adoption…";
+        return;
+    }
+
+    const activeMembers = (state.members || [])
+        .filter(member => member.status === "active");
+
+    const claimedCount = activeMembers.filter(member =>
+        rosterAdoptionClaimedIds.has(member.id)
+    ).length;
+
+    const unclaimedCount =
+        activeMembers.length - claimedCount;
+
+    const percentage = activeMembers.length
+        ? Math.round(
+            claimedCount / activeMembers.length * 100
+        )
+        : 0;
+
+
+        const heading = document.createElement("div");
+        heading.className = "roster-adoption-heading";
+        heading.textContent = "Account Adoption";
+        
+        const metrics = document.createElement("div");
+        metrics.className = "roster-adoption-metrics";
+        
+        [
+            [claimedCount, "Claimed"],
+            [unclaimedCount, "Unclaimed"],
+            [`${percentage}%`, "Adoption"]
+        ].forEach(([value, label]) => {
+            const metric = document.createElement("div");
+            const number = document.createElement("strong");
+            const caption = document.createElement("span");
+        
+            number.textContent = value;
+            caption.textContent = label;
+            metric.append(number, caption);
+            metrics.append(metric);
+        });
+        
+        const track = document.createElement("div");
+        track.className = "roster-adoption-track";
+        
+        const fill = document.createElement("div");
+        fill.className = "roster-adoption-fill";
+        fill.style.width = `${percentage}%`;
+        track.append(fill);
+        
+        const note = document.createElement("div");
+        note.className = "roster-adoption-note";
+        note.textContent = `${activeMembers.length} roster members marked active. Adoption reflects roster status, not recent attendance.`;
+        
+        adoptionSummary.replaceChildren(heading, metrics, track, note);
+        
+
+    [
+        { value: "all", label: "All claims" },
+        { value: "claimed", label: "Claimed" },
+        { value: "unclaimed", label: "Unclaimed" },
+    ].forEach(filter => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = filter.label;
+
+        if (rosterManagementClaimFilter === filter.value) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => {
+            rosterManagementClaimFilter = filter.value;
+            renderAdoption();
+            renderList();
+        });
+
+        claimFilterRow.append(button);
+    });
+}
+
+
     function renderList() {
         list.textContent = "";
 
@@ -860,6 +1054,14 @@ export function renderRosterManagementView() {
             );
         });
     }
+
+    refreshRosterAdoptionView = () => {
+        if (state.currentRegionId !== regionId) return;
+        if (!app.contains(adoptionSummary)) return;
+    
+        renderAdoption();
+        renderList();
+    };
 
     [
         {
@@ -911,20 +1113,25 @@ export function renderRosterManagementView() {
         }
     );
 
+    renderAdoption();
     renderList();
 
     const nav = createGlobalNav();
 
-    app.append(
-        header,
-        title,
-        description,
-        searchInput,
-        filterRow,
-        summary,
-        list,
-        nav
-    );
+app.append(
+    header,
+    title,
+    description,
+    adoptionSummary,
+    searchInput,
+    filterRow,
+    claimFilterRow,
+    summary,
+    list,
+    nav
+);
+
+ensureRosterAdoptionLoaded(regionId);
 
     if (state.isMainMenuOpen) {
         document.body.appendChild(
