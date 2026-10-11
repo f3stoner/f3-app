@@ -1,0 +1,631 @@
+/* =========================================================
+   AO EDITOR
+   ========================================================= */
+
+   .view-aoEdit {
+    --ao-edit-accent: #8fd3ff;
+    --ao-edit-accent-bright: #c9eaff;
+
+    width: 100%;
+    min-width: 0;
+
+    padding-bottom:
+        calc(
+            7.5rem +
+            env(safe-area-inset-bottom)
+        );
+
+    overflow-x: clip;
+}
+
+
+/* =========================================================
+   SECTION SHELLS
+   ========================================================= */
+
+.view-aoEdit
+.ao-editor-section {
+    min-width: 0;
+
+    margin: 0 0 1.25rem;
+    padding: 1rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.02),
+            rgba(255, 255, 255, 0.008)
+        );
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.14);
+}
+
+.view-aoEdit
+.ao-editor-section-title {
+    margin: 0 0 0.4rem;
+
+    color: var(--text);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 1.2rem;
+    font-weight: 900;
+    line-height: 1;
+
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+}
+
+.view-aoEdit
+.ao-editor-section-description {
+    max-width: 34rem;
+
+    margin: 0 0 1.1rem;
+
+    color: var(--muted);
+
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+.view-aoEdit
+.ao-editor-section
+.detail-label {
+    margin: 0.9rem 0 0.4rem;
+
+    color:
+        rgba(245, 245, 242, 0.6);
+
+    font-size: 0.7rem;
+    font-weight: 900;
+
+    letter-spacing: 0.1em;
+}
+
+.view-aoEdit
+.ao-editor-section
+input:not([type="checkbox"]),
+.view-aoEdit
+.ao-editor-section
+select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+
+    margin-bottom: 0.8rem;
+    padding: 0.65rem 0.75rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.15);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text);
+
+    font-size: 0.88rem;
+    font-weight: 650;
+}
+
+.view-aoEdit
+.ao-editor-section
+input:focus-visible,
+.view-aoEdit
+.ao-editor-section
+select:focus-visible {
+    outline: none;
+
+    border-color:
+        rgba(143, 211, 255, 0.5);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(143, 211, 255, 0.1);
+}
+
+
+/* =========================================================
+   RECURRING WORKOUT DAYS
+   ========================================================= */
+
+.view-aoEdit
+.ao-days-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 0.55rem;
+
+    max-width: none;
+
+    margin: 0.35rem 0 1rem;
+}
+
+.view-aoEdit
+.ao-day-option {
+    min-height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 0.65rem;
+
+    padding: 0.65rem 0.75rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+
+    color: var(--text);
+
+    font-size: 0.85rem;
+    font-weight: 750;
+}
+
+.view-aoEdit
+.ao-day-option:has(input:checked) {
+    border-color:
+        rgba(143, 211, 255, 0.38);
+
+    background:
+        rgba(143, 211, 255, 0.08);
+
+    color:
+        var(--ao-edit-accent-bright);
+}
+
+.view-aoEdit
+.ao-day-option
+input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+
+    margin: 0;
+
+    accent-color:
+        var(--ao-edit-accent);
+}
+
+
+/* =========================================================
+   EMPHASIS SCHEDULER
+   ========================================================= */
+
+.view-aoEdit
+.emphasis-day-card {
+    min-width: 0;
+
+    margin: 0 0 0.8rem;
+    padding: 0.85rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.016);
+}
+
+.view-aoEdit
+.emphasis-values-wrap {
+    min-width: 0;
+}
+
+.view-aoEdit
+.emphasis-value-row {
+    display: flex;
+    align-items: center;
+
+    gap: 0.55rem;
+
+    margin-bottom: 0.45rem;
+}
+
+.view-aoEdit
+.emphasis-value-row
+select {
+    flex: 1;
+    min-width: 0;
+
+    margin-bottom: 0;
+}
+
+.view-aoEdit
+.emphasis-value-row
+.secondary-button {
+    flex: 0 0 auto;
+
+    min-height: 40px;
+
+    margin: 0;
+    padding: 0.45rem 0.65rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius:
+        var(--radius-sm);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--muted);
+
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    opacity: 1;
+}
+
+.view-aoEdit
+.emphasis-add-button {
+    min-height: 40px;
+
+    margin: 0.4rem 0 0.8rem;
+    padding: 0.55rem 0.8rem;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.25);
+
+    border-radius:
+        var(--radius-sm);
+
+    background:
+        rgba(143, 211, 255, 0.055);
+
+    color:
+        var(--ao-edit-accent-bright);
+
+    font-size: 0.75rem;
+    font-weight: 850;
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   ROTATION PREVIEW
+   ========================================================= */
+
+.view-aoEdit
+.ao-editor-section
+table {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0.5rem 0 0;
+
+    border-collapse: collapse;
+
+    font-size: 0.78rem;
+}
+
+.view-aoEdit
+.ao-editor-section
+th,
+.view-aoEdit
+.ao-editor-section
+td {
+    padding: 0.7rem 0.45rem;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    text-align: center;
+}
+
+.view-aoEdit
+.ao-editor-section
+th {
+    color: var(--muted);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.72rem;
+    font-weight: 900;
+
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.view-aoEdit
+.ao-editor-section
+td {
+    color: var(--text);
+
+    font-weight: 750;
+}
+
+.view-aoEdit
+.ao-editor-section
+th:first-child,
+.view-aoEdit
+.ao-editor-section
+td:first-child {
+    text-align: left;
+}
+
+
+/* =========================================================
+   STATUS AND SAVE
+   ========================================================= */
+
+.view-aoEdit
+.ao-status-row {
+    margin: 0;
+}
+
+.view-aoEdit
+.ao-status-toggle {
+    min-height: 44px;
+
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.view-aoEdit
+.ao-save-row {
+    margin: 1.25rem 0;
+}
+
+.view-aoEdit
+.ao-save-row
+button {
+    min-height: 48px;
+
+    margin: 0;
+
+    border:
+        1px solid
+        rgba(143, 211, 255, 0.38);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        rgba(143, 211, 255, 0.12);
+
+    color:
+        var(--ao-edit-accent-bright);
+
+    font-family:
+        var(--font-display);
+
+    font-size: 0.95rem;
+    font-weight: 900;
+
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+    .view-aoEdit
+    .ao-editor-section {
+        padding: 0.85rem;
+    }
+
+    .view-aoEdit
+    .ao-editor-section-title {
+        font-size: 1.1rem;
+    }
+
+    .view-aoEdit
+    .ao-days-grid {
+        gap: 0.4rem;
+    }
+
+    .view-aoEdit
+    .ao-day-option {
+        padding: 0.55rem;
+        font-size: 0.8rem;
+    }
+
+    .view-aoEdit
+    .ao-editor-section
+    th,
+    .view-aoEdit
+    .ao-editor-section
+    td {
+        padding: 0.6rem 0.3rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* =========================================================
+   COLLAPSIBLE AO SECTIONS
+   ========================================================= */
+
+   .view-aoEdit
+   .ao-editor-section {
+       padding: 0;
+       overflow: hidden;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-trigger {
+       width: 100%;
+       min-height: 76px;
+   
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 0.75rem;
+   
+       margin: 0;
+       padding: 1rem;
+   
+       border: 0;
+       border-radius: 0;
+   
+       background: transparent;
+       color: var(--text);
+   
+       box-shadow: none;
+       text-align: left;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-trigger:hover {
+       background:
+           rgba(143, 211, 255, 0.035);
+   
+       box-shadow: none;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-trigger:active {
+       transform: none;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-heading {
+       flex: 1;
+       min-width: 0;
+   
+       display: flex;
+       flex-direction: column;
+       gap: 0.35rem;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-title {
+       margin: 0;
+   
+       font-size: 1.1rem;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-summary {
+       color: var(--muted);
+   
+       font-size: 0.78rem;
+       font-weight: 650;
+       line-height: 1.35;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-chevron {
+       flex: 0 0 auto;
+   
+       color: var(--ao-edit-accent-bright);
+   
+       font-family: var(--font-body);
+       font-size: 1.5rem;
+       font-weight: 600;
+       line-height: 1;
+   
+       transition: transform 150ms ease;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section.expanded
+   .ao-editor-section-chevron {
+       transform: rotate(180deg);
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-content {
+       padding: 0 1rem 1rem;
+   
+       border-top:
+           1px solid
+           rgba(255, 255, 255, 0.075);
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-content[hidden] {
+       display: none;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section-content
+   > .detail-label:first-child {
+       margin-top: 1rem;
+   }
+   
+   .view-aoEdit
+   .ao-editor-section.expanded {
+       border-color:
+           rgba(143, 211, 255, 0.25);
+   }
+   
+   @media (max-width: 520px) {
+       .view-aoEdit
+       .ao-editor-section-trigger {
+           min-height: 70px;
+           padding: 0.85rem;
+       }
+   
+       .view-aoEdit
+       .ao-editor-section-content {
+           padding: 0 0.85rem 0.85rem;
+       }
+   
+       .view-aoEdit
+       .ao-editor-section-summary {
+           font-size: 0.74rem;
+       }
+   }
+
+   /* =========================================================
+   ROTATION PREVIEW
+   ========================================================= */
+
+.view-aoEdit .ao-rotation-preview {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.view-aoEdit .ao-rotation-preview table {
+    width: 100%;
+    min-width: max-content;
+}
+
+.view-aoEdit .ao-rotation-preview th,
+.view-aoEdit .ao-rotation-preview td {
+    min-width: 5rem;
+    white-space: nowrap;
+}

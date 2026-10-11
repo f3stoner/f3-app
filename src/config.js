@@ -81,6 +81,7 @@ export const WORKOUT_EMPHASIS = {
     lower: { label: "Lower", icon: "footprints" },
     cardio: { label: "Cardio", icon: "heartPulse" },
     ruck: { label: "Ruck", icon: "backpack" },
+    run: { label: "Run", icon: "footprints" },
     core: { label: "Core", icon: "badge" },
     "30/30": { label: "30/30", icon: "zap" },
     stairs: { label: "Stairs", icon: "trendingUp" },

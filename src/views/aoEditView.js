@@ -55,6 +55,8 @@ export function renderAoEditView() {
     const app = document.getElementById("app");
     app.textContent = "";
 
+    app.classList.add("view-aoEdit");
+
     cleanupMainMenu();
 
     if (!hasPermission(PERMISSIONS.MANAGE_AOS)) {
@@ -78,7 +80,7 @@ export function renderAoEditView() {
     ? { 
         ...existingAo, 
         daysOfWeek: [...(existingAo.daysOfWeek || [])],
-        emphasisSchedule: { ...(existingAo.emphasisSchedule || {}) },
+        emphasisSchedule: structuredClone(existingAo.emphasisSchedule || {}),
         timeSchedule: { ...(existingAo.timeSchedule || {}) },
      }
      : {
@@ -345,6 +347,189 @@ export function renderAoEditView() {
     }
     
     const emphasisRowsByDay = {};
+    const originalEmphasisSchedule = structuredClone(draftAo.emphasisSchedule);
+    const existingRotation = draftAo.emphasisSchedule["*"];
+    const hasWeekdayRules = Object.keys(draftAo.emphasisSchedule).some(key => key !== "*");
+    const hasLegacyRules = Boolean(existingRotation && (hasWeekdayRules || existingRotation.pattern !== "rotating-slots"));
+
+    let emphasisMode = hasLegacyRules ? "mixed" : existingRotation ? "rotating" : "weekday";
+
+    const emphasisModeLabel = document.createElement("div");
+    emphasisModeLabel.classList.add("detail-label");
+    emphasisModeLabel.textContent = "Scheduling Method";
+
+    const emphasisModeSelect = document.createElement("select");
+
+    [
+        { value: "weekday", label: "By Weekday" },
+        { value: "rotating", label: "Rotating Workouts" },
+        ...(hasLegacyRules ? [{ value: "mixed", label: "Preserve Existing Rules" }] : [])
+    ].forEach(option => {
+        const el = document.createElement("option");
+        el.value = option.value;
+        el.textContent = option.label;
+        emphasisModeSelect.appendChild(el);
+    });
+
+    emphasisModeSelect.value = emphasisMode;
+
+    const weekdayEmphasisWrap = document.createElement("div");
+    const rotatingEmphasisWrap = document.createElement("div");
+    rotatingEmphasisWrap.classList.add("emphasis-day-card");
+
+    const rotationDescription = document.createElement("p");
+    rotationDescription.textContent = "Emphases advance with each scheduled workout, regardless of weekday.";
+
+    const rotationValuesLabel = document.createElement("div");
+    rotationValuesLabel.classList.add("detail-label");
+    rotationValuesLabel.textContent = "Rotation Order";
+
+    const rotationValuesWrap = document.createElement("div");
+    rotationValuesWrap.classList.add("emphasis-values-wrap");
+
+    const rotationDateLabel = document.createElement("div");
+    rotationDateLabel.classList.add("detail-label");
+    rotationDateLabel.textContent = "Rotation Start Date";
+
+    const rotationDateInput = document.createElement("input");
+    rotationDateInput.type = "date";
+    rotationDateInput.value = existingRotation?.startsOnDate || "";
+
+    const rotationPreviewLabel = document.createElement("div");
+    rotationPreviewLabel.classList.add("detail-label");
+    rotationPreviewLabel.textContent = "Four-Week Preview";
+
+    const rotationPreviewDescription = document.createElement("p");
+    rotationPreviewDescription.classList.add("ao-editor-section-description");
+    rotationPreviewDescription.textContent = "Four calendar weeks beginning with the week containing your selected start date.";
+
+    const rotationPreview = document.createElement("div");
+    rotationPreview.classList.add("stats-line", "ao-rotation-preview");
+
+    function getRotationValues() {
+        return [...rotationValuesWrap.querySelectorAll("select")]
+            .map(select => select.value)
+            .filter(Boolean);
+    }
+
+    function renderRotationPreview() {
+        rotationPreview.replaceChildren();
+
+        const values = getRotationValues();
+        const days = [...draftAo.daysOfWeek].sort((a, b) => a - b);
+        const startDate = rotationDateInput.value;
+
+        if (!values.length || !days.length || !startDate) {
+            rotationPreview.textContent = "Select workout days, emphases, and a start date to preview the rotation.";
+            return;
+        }
+
+        const [year, month, day] = startDate.split("-").map(Number);
+        const start = new Date(year, month - 1, day);
+        const startDay = start.getDay();
+
+        const firstWeek = new Date(start);
+        firstWeek.setDate(start.getDate() - startDay);
+
+        const table = document.createElement("table");
+        const header = document.createElement("tr");
+
+        ["Week", ...days.map(value => DAY_OPTIONS.find(day => day.value === value)?.label || value)].forEach(label => {
+            const cell = document.createElement("th");
+            cell.textContent = label;
+            header.appendChild(cell);
+        });
+
+        table.appendChild(header);
+
+        let rotationIndex = 0;
+
+        for (let week = 0; week < 4; week++) {
+            const row = document.createElement("tr");
+            const weekCell = document.createElement("td");
+            weekCell.textContent = String(week + 1);
+            row.appendChild(weekCell);
+
+            days.forEach(weekday => {
+                const cell = document.createElement("td");
+                const date = new Date(firstWeek);
+                date.setDate(firstWeek.getDate() + week * 7 + weekday);
+
+                if (date < start) {
+                    cell.textContent = "—";
+                } else {
+                    cell.textContent = formatEmphasisValues([values[rotationIndex % values.length]]);
+                    rotationIndex++;
+                }
+
+                cell.title = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+                row.appendChild(cell);
+            });
+
+            table.appendChild(row);
+        }
+
+        rotationPreview.appendChild(table);
+    }
+
+    function addRotationValue(value = "") {
+        const row = document.createElement("div");
+        row.classList.add("emphasis-value-row");
+
+        const select = createEmphasisSelect(value);
+        select.addEventListener("change", renderRotationPreview);
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.textContent = "Remove";
+        removeButton.classList.add("secondary-button");
+
+        removeButton.addEventListener("click", () => {
+            row.remove();
+            renderRotationPreview();
+        });
+
+        row.append(select, removeButton);
+        rotationValuesWrap.appendChild(row);
+    }
+
+    (existingRotation?.values?.length ? existingRotation.values : [""]).forEach(addRotationValue);
+
+    const addRotationButton = document.createElement("button");
+    addRotationButton.type = "button";
+    addRotationButton.textContent = "Add Rotation";
+    addRotationButton.classList.add("secondary-button", "emphasis-add-button");
+
+    addRotationButton.addEventListener("click", () => {
+        addRotationValue();
+        rotationValuesWrap.appendChild(addRotationButton);
+        renderRotationPreview();
+    });
+
+    rotationDateInput.addEventListener("change", renderRotationPreview);
+    rotationValuesWrap.appendChild(addRotationButton);
+
+    rotatingEmphasisWrap.append(
+        rotationDescription,
+        rotationValuesLabel,
+        rotationValuesWrap,
+        rotationDateLabel,
+        rotationDateInput,
+        rotationPreviewLabel,
+        rotationPreviewDescription,
+        rotationPreview
+    );
+
+    function renderEmphasisMode() {
+        weekdayEmphasisWrap.hidden = emphasisMode !== "weekday";
+        rotatingEmphasisWrap.hidden = emphasisMode !== "rotating";
+    }
+
+    emphasisModeSelect.addEventListener("change", () => {
+        emphasisMode = emphasisModeSelect.value;
+        renderEmphasisMode();
+        renderRotationPreview();
+    });
     
     const emphasisLabel = document.createElement("div");
     emphasisLabel.classList.add("detail-label");
@@ -352,6 +537,16 @@ export function renderAoEditView() {
     
     const emphasisWrap = document.createElement("div");
     emphasisWrap.classList.add("section");
+
+    emphasisWrap.append(
+        emphasisModeLabel,
+        emphasisModeSelect,
+        rotatingEmphasisWrap,
+        weekdayEmphasisWrap
+    );
+
+    renderEmphasisMode();
+    renderRotationPreview();
     
     DAY_OPTIONS.forEach(day => {
         const dayKey = String(day.value);
@@ -379,6 +574,17 @@ export function renderAoEditView() {
         });
     
         patternSelect.value = rule.pattern || "fixed";
+
+        const unsupportedPattern = rule.pattern && !PATTERN_OPTIONS.some(option => option.value === rule.pattern);
+
+        if (unsupportedPattern) {
+            const option = document.createElement("option");
+            option.value = rule.pattern;
+            option.textContent = `Existing: ${rule.pattern}`;
+            patternSelect.appendChild(option);
+            patternSelect.value = rule.pattern;
+            patternSelect.disabled = true;
+        }
     
         const valuesLabel = document.createElement("div");
         valuesLabel.classList.add("detail-label");
@@ -514,9 +720,18 @@ export function renderAoEditView() {
             startsOnLabel,
             startsOnInput
         );
-    
-        emphasisWrap.appendChild(row);
-    });    /*const mapUrlLabel = document.createElement("div");
+
+        if (unsupportedPattern) {
+            const notice = document.createElement("p");
+            notice.classList.add("ao-editor-section-description");
+            notice.textContent = "This day uses an existing scheduling rule that cannot be edited here. Its configuration will be preserved.";
+            row.replaceChildren(dayLabel, notice);
+        }
+
+        weekdayEmphasisWrap.appendChild(row);
+    });    
+
+    /*const mapUrlLabel = document.createElement("div");
     mapUrlLabel.classList.add("detail-label");
     mapUrlLabel.textContent = "Map Link";
 
@@ -618,6 +833,8 @@ export function renderAoEditView() {
             }
         
             draftAo.daysOfWeek.sort((a, b) => a - b);
+
+            renderRotationPreview();
         
             const emphasisRow = emphasisRowsByDay[dayKey];
         
@@ -700,7 +917,27 @@ export function renderAoEditView() {
         draftAo.longitude = longitude;
         draftAo.weatherLocationLabel = (draftAo.weatherLocationLabel || "").trim();
         draftAo.weatherEnabled = Boolean(draftAo.weatherEnabled);
-        draftAo.emphasisSchedule = draftAo.emphasisSchedule || {};
+        if (emphasisMode === "rotating") {
+            const values = getRotationValues();
+
+            if (!draftAo.daysOfWeek.length || !values.length || !rotationDateInput.value) {
+                showToast("Select workout days, rotation emphases, and a start date.", "error");
+                return;
+            }
+
+            draftAo.emphasisSchedule = {
+                "*": {
+                    pattern: "rotating-slots",
+                    values,
+                    startsOnDate: rotationDateInput.value,
+                    daysOfWeek: [...draftAo.daysOfWeek]
+                }
+            };
+        } else if (emphasisMode === "mixed") {
+            draftAo.emphasisSchedule = structuredClone(originalEmphasisSchedule);
+        } else {
+            delete draftAo.emphasisSchedule["*"];
+        }
         draftAo.timeSchedule = draftAo.timeSchedule || {};
 
         Object.keys(draftAo.timeSchedule).forEach(dayKey => {
@@ -799,27 +1036,139 @@ export function renderAoEditView() {
 
     const nav = createGlobalNav();
 
-    app.append(
-        header,
-        title,
+    const aoSections = [];
+
+    function closeAoSections() {
+        aoSections.forEach(({ section, button, content }) => {
+            section.classList.remove("expanded");
+            button.setAttribute("aria-expanded", "false");
+            content.hidden = true;
+        });
+    }
+
+    function createAoSection(title, summary, ...elements) {
+        const section = document.createElement("section");
+        section.classList.add("ao-editor-section");
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.classList.add("ao-editor-section-trigger");
+        button.setAttribute("aria-expanded", "false");
+
+        const headingWrap = document.createElement("div");
+        headingWrap.classList.add("ao-editor-section-heading");
+
+        const heading = document.createElement("h2");
+        heading.classList.add("ao-editor-section-title");
+        heading.textContent = title;
+
+        const summaryText = document.createElement("div");
+        summaryText.classList.add("ao-editor-section-summary");
+
+        const chevron = document.createElement("span");
+        chevron.classList.add("ao-editor-section-chevron");
+        chevron.textContent = "⌄";
+        chevron.setAttribute("aria-hidden", "true");
+
+        headingWrap.append(heading, summaryText);
+        button.append(headingWrap, chevron);
+
+        const content = document.createElement("div");
+        content.classList.add("ao-editor-section-content");
+        content.hidden = true;
+        content.append(...elements);
+
+        button.addEventListener("click", () => {
+            const wasExpanded = button.getAttribute("aria-expanded") === "true";
+            closeAoSections();
+
+            if (!wasExpanded) {
+                section.classList.add("expanded");
+                button.setAttribute("aria-expanded", "true");
+                content.hidden = false;
+            }
+        });
+
+        section.append(button, content);
+        aoSections.push({ section, button, content, summaryText, summary });
+
+        return section;
+    }
+
+    const detailsSection = createAoSection(
+        "AO Details",
+        () => {
+            const site = (state.sites || []).find(site => site.id === draftAo.defaultSiteId);
+            return `${draftAo.name.trim() || "Unnamed AO"} · ${site?.name || draftAo.locationName || "No site"}`;
+        },
         nameLabel,
         nameInput,
         defaultSiteLabel,
         defaultSiteSelect,
         siteDetailsWrap,
-        legacyLocationWrap,
-        /*mapUrlLabel,
-        mapUrlInput,*/
+        legacyLocationWrap
+    );
+
+    const scheduleSection = createAoSection(
+        "Workout Schedule",
+        () => {
+            const days = draftAo.daysOfWeek.map(value => DAY_OPTIONS.find(day => day.value === value)?.label).filter(Boolean);
+            const overrides = Object.keys(draftAo.timeSchedule || {}).filter(day => draftAo.daysOfWeek.includes(Number(day))).length;
+            return `${days.join(" / ") || "No recurring days"} · ${draftAo.time || "No default time"}${overrides ? ` · ${overrides} time override${overrides === 1 ? "" : "s"}` : ""}`;
+        },
         timeLabel,
         timeInput,
         daysLabel,
         daysWrap,
         timeScheduleLabel,
-        timeScheduleWrap,
-        emphasisLabel,
-        emphasisWrap,
+        timeScheduleWrap
+    );
+
+    const emphasisSection = createAoSection(
+        "Workout Emphasis",
+        () => {
+            if (emphasisMode === "rotating") {
+                const values = getRotationValues();
+                return `Rotating Workouts · ${values.length} emphasis${values.length === 1 ? "" : "es"}`;
+            }
+
+            if (emphasisMode === "mixed") return "Preserve Existing Rules";
+
+            const count = draftAo.daysOfWeek.filter(day => draftAo.emphasisSchedule[String(day)]?.values?.length).length;
+            return `By Weekday · ${count} configured day${count === 1 ? "" : "s"}`;
+        },
+        emphasisWrap
+    );
+
+    const statusSection = createAoSection(
+        "AO Status",
+        () => draftAo.isActive ? "Active" : "Inactive",
         activeLabel,
-        statusRow,
+        statusRow
+    );
+
+    function updateAoSectionSummaries() {
+        aoSections.forEach(({ summaryText, summary }) => {
+            summaryText.textContent = summary();
+        });
+    }
+
+    app.addEventListener("input", updateAoSectionSummaries);
+    app.addEventListener("change", updateAoSectionSummaries);
+
+    emphasisWrap.addEventListener("click", () => {
+        queueMicrotask(updateAoSectionSummaries);
+    });
+
+    updateAoSectionSummaries();
+
+    app.append(
+        header,
+        title,
+        detailsSection,
+        scheduleSection,
+        emphasisSection,
+        statusSection,
         saveRow,
         nav
     );
