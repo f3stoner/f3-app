@@ -5633,6 +5633,31 @@ export async function loadOperationsRegionScopes() {
     return data || [];
 }
 
+export async function createMemberMergeDraft(canonicalMemberId, duplicateMemberId) {
+    if (!canonicalMemberId || !duplicateMemberId) {
+        throw new Error("Both member IDs are required.");
+    }
+
+    if (canonicalMemberId === duplicateMemberId) {
+        throw new Error("Cannot merge a member into themselves.");
+    }
+
+    const { data, error } = await supabase.rpc("create_member_merge_draft", {
+        p_canonical_member_id: canonicalMemberId,
+        p_duplicate_member_id: duplicateMemberId,
+    });
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function loadCompletedMergeDuplicateIds() {
+    const { data, error } = await supabase.rpc("list_completed_merge_duplicates");
+    if (error) throw error;
+    return new Set((data || []).map(row => row.member_id));
+}
+
 export async function loadMemberMerges() {
     const { data, error } = await supabase.rpc(
         "load_member_merges"

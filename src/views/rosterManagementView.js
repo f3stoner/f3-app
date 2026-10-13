@@ -19,7 +19,7 @@ import {
     setMemberRosterStatus,
 } from "../services/appData.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
-import { loadRegionRosterClaimedMemberIds } from "../services/cloudData.js";
+import { loadRegionRosterClaimedMemberIds, createMemberMergeDraft, loadMemberMerges, loadCompletedMergeDuplicateIds } from "../services/cloudData.js";
 
 let rosterManagementSearchTerm = "";
 let rosterManagementStatusFilter = "all";
@@ -31,6 +31,7 @@ let rosterAdoptionRegionId = null;
 let rosterAdoptionClaimedIds = null;
 let rosterAdoptionPromise = null;
 let rosterAdoptionError = null;
+let completedMergeDuplicateIds = new Set();
 
 function ensureRosterAdoptionLoaded(regionId) {
     if (rosterAdoptionRegionId !== regionId) {
@@ -634,6 +635,118 @@ function openEditMemberModal(member) {
     });
 }
 
+async function openMergeMemberModal(member) {
+    loadMemberMerges().then(merges => console.log("Merge history:", merges));
+    if (!canManageCurrentRoster()) return;
+
+    try {
+        completedMergeDuplicateIds = await loadCompletedMergeDuplicateIds();
+    } catch (error) {
+        console.error("Unable to load merge eligibility:", error);
+        showToast("Unable to verify merge eligibility.", "error");
+        return;
+    }
+    
+    if (completedMergeDuplicateIds.has(member.id)) {
+        showToast("This PAX has already been merged into another record.", "error");
+        return;
+    }
+
+    const candidates = (state.members || [])
+        .filter(candidate => candidate.id !== member.id && !completedMergeDuplicateIds.has(candidate.id))
+        .sort((a,b)=>getMemberDisplayName(a).localeCompare(getMemberDisplayName(b)));
+
+    const { modal, closeModal } = createModalShell();
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Merge PAX";
+
+    const explanation = document.createElement("p");
+    explanation.textContent = `${getMemberDisplayName(member)} will survive. Select the duplicate record to merge into this PAX. This creates a draft for review; it does not execute the merge.`;
+
+    const select = document.createElement("select");
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select duplicate PAX";
+    select.append(placeholder);
+
+    candidates.forEach(candidate => {
+        const option = document.createElement("option");
+        option.value = candidate.id;
+        option.textContent = getMemberDisplayName(candidate);
+        select.append(option);
+    });
+
+    const actions = document.createElement("div");
+    actions.classList.add("button-row");
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.classList.add("secondary-button");
+    cancelButton.textContent = "Cancel";
+    cancelButton.addEventListener("click", closeModal);
+
+    const createButton = document.createElement("button");
+    createButton.type = "button";
+    createButton.classList.add("primary-button");
+    createButton.textContent = "Create Merge Draft";
+    createButton.disabled = true;
+
+    select.addEventListener("change", () => {
+        createButton.disabled = !select.value;
+    });
+
+    createButton.addEventListener("click", async () => {
+        if (!select.value || createButton.disabled) return;
+
+        createButton.disabled = true;
+        createButton.textContent = "Creating…";
+
+        try {
+            const result = await createMemberMergeDraft(member.id, select.value);
+            const mergeId = typeof result === "string" ? result : result?.merge_id || result?.mergeId || result?.id;
+
+            if (!mergeId) throw new Error("Merge draft created, but no merge ID was returned.");
+
+            closeModal();
+            navigateTo("memberMergeDetail", { mergeId, returnView: "rosterManagement" });
+        } catch (error) {
+            if (error.code === "23505") {
+                try {
+                    const merges = await loadMemberMerges();
+                    const existing = merges.find(merge =>
+                        merge.duplicate_member_id === select.value &&
+                        ["draft", "validated", "ready", "running"].includes(merge.status)
+                    );
+        
+                    if (existing) {
+                        if (existing.canonical_member_id !== member.id) {
+                            throw new Error("This duplicate PAX already has an active merge with a different surviving PAX.");
+                        }
+        
+                        closeModal();
+                        navigateTo("memberMergeDetail", {
+                            mergeId: existing.merge_id,
+                            returnView: "rosterManagement"
+                        });
+                        return;
+                    }
+                } catch (lookupError) {
+                    error = lookupError;
+                }
+            }
+        
+            console.error("Failed to create merge draft:", error);
+            showToast(error.message || "Unable to create merge draft.", "error");
+            createButton.disabled = false;
+            createButton.textContent = "Create Merge Draft";
+        }
+    });
+
+    actions.append(cancelButton, createButton);
+    modal.append(heading, explanation, select, actions);
+}
+
 function createMemberCard(
     member,
     rerenderList
@@ -751,6 +864,14 @@ function createMemberCard(
         );
 
         actions.append(editButton);
+
+        const mergeButton = document.createElement("button");
+        mergeButton.type = "button";
+        mergeButton.classList.add("secondary-button");
+        mergeButton.textContent = "Merge";
+        mergeButton.disabled = isSaving;
+        mergeButton.addEventListener("click", () => openMergeMemberModal(member));
+        actions.append(mergeButton);
     }
 
     const toggleButton =

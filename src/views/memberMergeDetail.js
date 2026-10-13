@@ -12,15 +12,19 @@ import { state } from "../modules/state.js";
 export async function renderMemberMergeDetailView(
     params = {}
 ) {
+
+    const returnView = params.returnView === "rosterManagement" ? "rosterManagement" : "operationsCenter";
+
     const app =
         document.getElementById("app");
 
     app.textContent = "";
+    app.className = "view-member-merge-detail";
 
     const header = createAppHeader({
         title: "",
         showBack: true,
-        fallbackView: "operationsCenter",
+        fallbackView: returnView,
         showMenu: true,
     });
 
@@ -31,7 +35,7 @@ export async function renderMemberMergeDetailView(
             "Missing merge id.",
             "error"
         );
-        navigateTo("operationsCenter");
+        navigateTo(returnView);
         return;
     }
 
@@ -50,7 +54,7 @@ export async function renderMemberMergeDetailView(
             "error"
         );
 
-        navigateTo("operationsCenter");
+        navigateTo(returnView);
         return;
     }
 
@@ -60,61 +64,34 @@ export async function renderMemberMergeDetailView(
             "error"
         );
     
-        navigateTo("operationsCenter");
+        navigateTo(returnView);
         return;
     }
     
-    renderMerge(app, merge);
+    renderMerge(app, merge, returnView);
 }
 
-function renderMerge(
-    container,
-    data
-) {
-    const title =
-        document.createElement("h1");
+function renderMerge(container, data, returnView) {
+    const title = document.createElement("h1");
+    title.textContent = "Merge PAX";
 
-    title.textContent =
-        "Member Merge";
+    const subtitle = document.createElement("p");
+    subtitle.classList.add("view-subtitle");
+    subtitle.textContent = "Review the records and merge impact before completing this merge.";
 
-    const subtitle =
-        document.createElement("div");
+    container.append(title, subtitle);
+    container.appendChild(createMergeStatusSection(data.merge));
+    container.appendChild(createMemberCard("Keep This PAX", data.canonicalMember));
 
-    subtitle.classList.add("detail-label");
+    const direction = document.createElement("div");
+    direction.classList.add("member-merge-direction");
+    direction.textContent = "↑ Merges into ↑";
+    container.appendChild(direction);
 
-    subtitle.textContent =
-        `${data.duplicateMember.pax_name} → ${data.canonicalMember.pax_name}`;
-
-    container.append(
-        title,
-        subtitle
-    );
-
-    container.appendChild(
-        createMergeStatusSection(data.merge)
-    );
-
-    container.appendChild(
-        createMemberCard(
-            "Canonical Member",
-            data.canonicalMember
-        )
-    );
-
-    container.appendChild(
-        createMemberCard(
-            "Duplicate Member",
-            data.duplicateMember
-        )
-    );
-
-    container.appendChild(
-        createManifestSection(
-            data.merge.preview_payload
-        )
-    );
-
-    container.appendChild(createMergeActions(data));
+    container.appendChild(createMemberCard("Remove Duplicate", data.duplicateMember));
+    container.appendChild(createManifestSection(data.merge.preview_payload));
+    container.appendChild(createMergeActions(data, returnView));
+    container.appendChild(createTechnicalDetails(data));
 }
 
 function createMergeStatusSection(merge) {
@@ -171,85 +148,138 @@ function formatMergeStatus(status) {
         .replace(/\b\w/g, character => character.toUpperCase());
 }
 
-function createMemberCard(
-    titleText,
-    member
-) {
-    const section =
-        document.createElement("section");
+function createMemberCard(titleText, member) {
+    const section = document.createElement("section");
+    section.classList.add("operations-section", "member-merge-card");
 
-    section.classList.add(
-        "operations-section"
-    );
-
-    const title =
-        document.createElement("h2");
-
+    const title = document.createElement("h2");
     title.textContent = titleText;
 
-    const pre =
-        document.createElement("pre");
+    const name = document.createElement("div");
+    name.classList.add("member-name");
+    name.textContent = member.pax_name || "Unnamed PAX";
 
-    pre.textContent = JSON.stringify(
-        member,
-        null,
-        2
-    );
+    const realName = document.createElement("div");
+    realName.classList.add("stats-line");
+    realName.textContent = member.real_name || "No real name recorded";
 
-    section.append(
-        title,
-        pre
-    );
+    const homeAo = document.createElement("div");
+    homeAo.classList.add("stats-line");
+    homeAo.textContent = `Home AO: ${member.home_ao || "Not assigned"}`;
 
+    const status = document.createElement("div");
+    status.classList.add("stats-line");
+    status.textContent = `Status: ${formatMergeStatus(member.status)}`;
+
+    section.append(title, name, realName, homeAo, status);
     return section;
 }
 
 function createManifestSection(previewPayload) {
-    const details = document.createElement("details");
+    const section = document.createElement("section");
+    section.classList.add("operations-section", "member-merge-validation");
 
-    details.open = false;
+    const title = document.createElement("h2");
+    title.textContent = "Merge Impact & Validation";
+    section.appendChild(title);
+
+    if (!previewPayload?.plan) {
+        const message = document.createElement("p");
+        message.textContent = "Generate a preview to see the merge impact and validation results.";
+        section.appendChild(message);
+        return section;
+    }
+
+    const plan = previewPayload.plan;
+    const readiness = plan.readiness;
+
+    if (!readiness) {
+        const message = document.createElement("p");
+        message.textContent = "Validation results are unavailable. Review technical details before proceeding.";
+        section.appendChild(message);
+        return section;
+    }
+
+    const results = [
+        ["Required decisions", readiness.requiredDecisionCount],
+        ["Warnings", readiness.warningCount],
+        ["Blockers", readiness.blockerCount],
+        ["Duplicate Q assignments", plan.qSlots?.duplicateAssignedCount],
+    ];
+    
+    const grid = document.createElement("div");
+    grid.classList.add("member-merge-metrics");
+    
+    results.forEach(([label, value]) => {
+        const cell = document.createElement("div");
+        cell.classList.add("member-merge-metric");
+    
+        const number = document.createElement("strong");
+        number.textContent = String(value ?? "—");
+    
+        const caption = document.createElement("span");
+        caption.textContent = label;
+    
+        cell.append(number, caption);
+        grid.appendChild(cell);
+    });
+    
+    section.appendChild(grid);
+
+    const status = document.createElement("p");
+    status.textContent = readiness.analysisComplete !== true
+        ? "Validation is incomplete."
+        : readiness.readyForApproval === true
+            ? "Validation indicates this merge is ready for approval."
+            : "This merge requires additional review before approval.";
+
+    section.appendChild(status);
+    return section;
+}
+
+function createTechnicalDetails(data) {
+    const details = document.createElement("details");
+    details.classList.add("operations-section");
 
     const summary = document.createElement("summary");
-
-    summary.textContent = "Merge Preview";
+    summary.textContent = "Technical Details";
 
     const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify({
+        canonicalMember: data.canonicalMember,
+        duplicateMember: data.duplicateMember,
+        preview: data.merge.preview_payload,
+    }, null, 2);
 
-    pre.textContent = JSON.stringify(
-        previewPayload,
-        null,
-        2
-    );
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.overflowWrap = "anywhere";
 
-    details.append(
-        summary,
-        pre
-    );
-
+    details.append(summary, pre);
     return details;
 }
 
-function createMergeActions(data) {
+function createMergeActions(data, returnView) {
     const actions = document.createElement("div");
     actions.classList.add("button-row");
+    actions.classList.add("member-merge-actions");
 
     if (
         data.merge.status === "draft" ||
         data.merge.status === "validated"
     ) {
-        actions.appendChild(createPreviewButton(data));
+        actions.appendChild(createPreviewButton(data, returnView));
     }
 
     if (data.merge.status === "validated") {
-        actions.appendChild(createMarkReadyButton(data));
+        actions.appendChild(createMarkReadyButton(data, returnView));
     }
 
-    actions.appendChild(createExecuteButton(data));
+    actions.appendChild(createExecuteButton(data, returnView));
 
     return actions;
 }
 
-function createPreviewButton(data) {
+function createPreviewButton(data, returnView) {
     const button = document.createElement("button");
     button.type = "button";
     button.textContent =
@@ -271,6 +301,7 @@ function createPreviewButton(data) {
 
             renderMemberMergeDetailView({
                 mergeId: data.merge.id,
+                returnView,
             });
         } catch (error) {
             console.error(
@@ -295,7 +326,7 @@ function createPreviewButton(data) {
     return button;
 }
 
-function createMarkReadyButton(data) {
+function createMarkReadyButton(data, returnView) {
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = "Mark Ready";
@@ -341,6 +372,7 @@ function createMarkReadyButton(data) {
 
             renderMemberMergeDetailView({
                 mergeId: data.merge.id,
+                returnView,
             });
         } catch (error) {
             console.error(
@@ -362,7 +394,7 @@ function createMarkReadyButton(data) {
     return button;
 }
 
-function createExecuteButton(data) {
+function createExecuteButton(data, returnView) {
     const button = document.createElement("button");
     button.type = "button";
 
@@ -425,9 +457,7 @@ function createExecuteButton(data) {
 
             state.currentViewParams = null;
 
-            goBack(
-                "operationsCenter"
-            );
+            navigateTo(returnView);
         } catch (error) {
             console.error(
                 "Member merge or reconciliation failed:",

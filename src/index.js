@@ -1706,20 +1706,6 @@ export async function reconcileAfterMemberMerge() {
         state.accessibleRegions.map(
             region => region.id
         );
-
-        console.table(
-            state.accessibleRegions.map(region => ({
-                id: region.id,
-                name: region.name,
-                environment: region.environment,
-                lifecycleStatus: region.lifecycleStatus,
-            }))
-        );
-        
-        console.log(
-            "Profile home region:",
-            profile.region_id
-        );
     
     await refreshParticipantRegionInvitations();
     

@@ -1,0 +1,133 @@
+/* =========================================================
+   MEMBER MERGE DETAIL
+   ========================================================= */
+
+   #app.view-member-merge-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+}
+
+.view-member-merge-detail .operations-section {
+    margin: 0;
+}
+
+.view-member-merge-detail .operations-section h2 {
+    margin-top: 0;
+}
+
+.view-member-merge-detail .member-merge-card {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.view-member-merge-detail .member-merge-card .member-name {
+    margin: 0.65rem 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.view-member-merge-detail .member-merge-direction {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    opacity: 0.75;
+}
+
+.view-member-merge-detail .member-merge-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin: 0.85rem 0;
+}
+
+.view-member-merge-detail .member-merge-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.view-member-merge-detail .member-merge-metric strong {
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
+
+.view-member-merge-detail .member-merge-metric span {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    opacity: 0.75;
+}
+
+.view-member-merge-detail .member-merge-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.view-member-merge-detail .member-merge-actions button {
+    width: 100%;
+    min-height: 48px;
+    margin: 0;
+}
+
+.view-member-merge-detail details.operations-section summary {
+    cursor: pointer;
+}
+
+.view-member-merge-detail details.operations-section pre {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+    .view-member-merge-detail .member-merge-actions {
+        flex-direction: row;
+    }
+
+    .view-member-merge-detail .member-merge-actions button {
+        flex: 1;
+    }
+}
+
+/* Distinct record cards */
+
+#app.view-member-merge-detail .member-merge-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--border, #444);
+    border-radius: var(--radius-md);
+}
+
+#app.view-member-merge-detail .member-merge-card h2,
+#app.view-member-merge-detail .member-merge-card .member-name,
+#app.view-member-merge-detail .member-merge-card .stats-line {
+    margin: 0;
+}
+
+#app.view-member-merge-detail .member-merge-card h2 {
+    margin-bottom: 0.35rem;
+}
+
+#app.view-member-merge-detail .member-merge-direction {
+    margin: 0;
+    padding: 0.25rem 0;
+    text-align: center;
+}
+
+/* Validation section */
+
+#app.view-member-merge-detail .member-merge-validation {
+    padding: 1rem;
+    border: 1px solid var(--border, #444);
+    border-radius: var(--radius-md);
+}
