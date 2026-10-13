@@ -26,7 +26,8 @@ import {
     loadMembersByIds,
     rebuildMemberStatsForMembers,
     getAffectedMemberIdsFromSession,
-    updateMyMemberProfileInCloud
+    updateMyMemberProfileInCloud,
+    nameReturningFngInCloud,
 } from "./cloudData.js";
 import { prepareSessionSaveCommand, buildSessionSaveRpcCommand } from "../utils/sessionSaveCommand.js";
 import { submitSessionSaveCommand } from "./sessionSubmissionService.js";
@@ -1378,4 +1379,28 @@ function mergeMembersIntoState(members = []) {
 
         state.members[index] = savedMember;
     });
+}
+
+
+export async function nameReturningFng(sessionId, memberId, paxName) {
+    const savedMember = await nameReturningFngInCloud(sessionId, memberId, paxName);
+
+    const memberIndex = state.members.findIndex(member => member.id === savedMember.id);
+    if (memberIndex !== -1) {
+        state.members[memberIndex] = { ...state.members[memberIndex], ...savedMember };
+    }
+
+    state.participants = (state.participants || []).map(member =>
+        member.id === savedMember.id
+            ? { ...member, ...savedMember }
+            : member
+    );
+
+    if (memberId === state.currentUserMemberId) {
+        state.currentUserMember = { ...state.currentUserMember, ...savedMember };
+        state.currentUserDisplayName = savedMember.paxName || savedMember.realName || state.currentUserDisplayName;
+    }
+
+    persistAppData();
+    return savedMember;
 }

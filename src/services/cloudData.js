@@ -1906,6 +1906,32 @@ export async function renameMemberInCloud(
     return mapMemberFromDb(row);
 }
 
+
+export async function nameReturningFngInCloud(sessionId, memberId, paxName) {
+    if (!sessionId || !memberId) {
+        throw new Error("Session and member ids are required to name an FNG.");
+    }
+
+    const normalizedName = String(paxName || "").trim().replace(/\s+/g, " ");
+    if (!normalizedName) throw new Error("PAX name cannot be empty.");
+
+    const { data, error } = await supabase.rpc("name_returning_fng", {
+        p_session_id: sessionId,
+        p_member_id: memberId,
+        p_pax_name: normalizedName,
+    });
+
+    if (error) throw error;
+
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row || row.id !== memberId || row.pax_name !== normalizedName) {
+        throw new Error("FNG naming command did not confirm the saved name.");
+    }
+
+    return mapMemberFromDb(row);
+}
+
+
 export async function updateMemberInCloud(regionId, member) {
     const { data, error } = await supabase
         .from("members")

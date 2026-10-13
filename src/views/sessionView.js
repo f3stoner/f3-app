@@ -5,7 +5,7 @@ import { state } from "../modules/state.js";
 import { generateBackblast } from "../modules/backblast.js";
 import { createInvitedByField } from "../components/invitedByField.js";
 import { getMemberDisplayName } from "../utils/memberDisplay.js";
-import { addSession, updateSession, updateMember } from "../services/appData.js";
+import { addSession, updateSession, nameReturningFng } from "../services/appData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
 import { createDuplicateFngNameFlags } from "../modules/adminFlags.js";
@@ -1234,11 +1234,14 @@ function getPriorPostCount(memberId) {
     ).length;
 }
 
-async function maybePromptForFngName(member) {
+const pendingFngNames = new Map();
+
+
+function maybePromptForFngName(member) {
     if (!isUnnamedFng(member)) return;
 
     const priorPostCount = getPriorPostCount(member.id);
-    const projectedPostCount = priorPostCount + 1;
+    const projectedPostCount = priorPostCount + (isEditing && memberAttendedSession(originalSession, member.id) ? 0 : 1);
 
     if (projectedPostCount < getFngNamingPostNumber()) return;
 
@@ -1247,16 +1250,9 @@ async function maybePromptForFngName(member) {
 
     if (!paxName?.trim()) return;
 
-    const updatedMember = {
-        ...member,
-        paxName: paxName.trim(),
-    };
-
-    await updateMember(member.id, updatedMember);
-
-    cachedDisplayNameByMemberId = null;
-    cachedSelectableMembers = null;
+    pendingFngNames.set(member.id, paxName.trim().replace(/\s+/g, " "));
 }
+
 
 function createMemberCard(
     member,
@@ -3232,11 +3228,12 @@ saveButton.addEventListener("click", async () => {
                 saveOutcome.status === "queued"
             ) {
                 showToast(
-                    saveOutcome.path ===
-                        "transport_fallback_queue"
-                        ? "Connection was lost. Session saved on this device and will upload automatically."
-                        : "Session saved on this device. It will upload automatically when you're back online.",
-                    "success"
+                    pendingFngNames.size > 0
+                        ? "Session saved on this device and will upload automatically. The FNG name was not saved."
+                        : saveOutcome.path === "transport_fallback_queue"
+                            ? "Connection was lost. Session saved on this device and will upload automatically."
+                            : "Session saved on this device. It will upload automatically when you're back online.",
+                    pendingFngNames.size > 0 ? "info" : "success"
                 );
     
                 state.editingSessionId = null;
@@ -3253,6 +3250,22 @@ saveButton.addEventListener("click", async () => {
                 navigateTo("dashboard");
                 return;
             }
+
+            let fngNamingFailed = false;
+
+            for (const [memberId, paxName] of pendingFngNames) {
+                if (!savedSession.attendeeIds?.includes(memberId)) continue;
+
+                try {
+                    await nameReturningFng(savedSession.id, memberId, paxName);
+                    cachedDisplayNameByMemberId = null;
+                    cachedSelectableMembers = null;
+                } catch (error) {
+                    console.error("Session saved, but FNG naming failed:", error);
+                    fngNamingFailed = true;
+                }
+            }
+
     
             /*
              * Cache invalidation is helpful, but it is not
@@ -3327,7 +3340,9 @@ saveButton.addEventListener("click", async () => {
                 );
             }
     
-            if (hasPostSaveDegradation) {
+            if (fngNamingFailed) {
+                showToast("Session saved, but the FNG name could not be saved.", "error");
+            } else if (hasPostSaveDegradation) {
                 showToast(
                     "Session saved, but some local data may need to refresh.",
                     "info"
