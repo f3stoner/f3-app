@@ -6,6 +6,7 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 
 let metric = "posts";
 let period = "month";
+let selectedAoId = null;
 let requestSequence = 0;
 
 const CACHE_TTL = 5 * 60 * 1000;
@@ -26,28 +27,28 @@ function refreshLeaderboards(regionId) {
     }
 }
 
-function getLeaderboardKey(regionId, metric, period) {
-    return `${regionId}:${metric}:${period}`;
+function getLeaderboardKey(regionId, metric, period, aoId = null) {
+    return `${regionId}:${aoId || "all"}:${metric}:${period}`;
 }
 
-function getCachedLeaderboard(regionId, metric, period) {
-    const key = getLeaderboardKey(regionId, metric, period);
+function getCachedLeaderboard(regionId, metric, period, aoId = null) {
+    const key = getLeaderboardKey(regionId, metric, period, aoId);
     const cached = leaderboardCache.get(key);
 
     if (!cached || Date.now() - cached.loadedAt >= CACHE_TTL) return null;
     return cached.rows;
 }
 
-function fetchLeaderboard(regionId, metric, period) {
-    const key = getLeaderboardKey(regionId, metric, period);
-    const cached = getCachedLeaderboard(regionId, metric, period);
+function fetchLeaderboard(regionId, metric, period, aoId = null) {
+    const key = getLeaderboardKey(regionId, metric, period, aoId);
+    const cached = getCachedLeaderboard(regionId, metric, period, aoId);
 
     if (cached !== null) return Promise.resolve(cached);
     if (leaderboardRequests.has(key)) return leaderboardRequests.get(key);
 
     const generation = cacheGenerations.get(regionId) || 0;
 
-    const request = loadRegionPaxLeaderboard(regionId, metric, period)
+    const request = loadRegionPaxLeaderboard(regionId, metric, period, aoId)
         .then(rows => {
             if ((cacheGenerations.get(regionId) || 0) === generation) {
                 leaderboardCache.set(key, { rows, loadedAt: Date.now() });
@@ -96,8 +97,6 @@ export function renderLeaderboardView() {
             ? String(new Date().getFullYear())
             : "All Time";
 
-    subtitle.textContent = `${periodLabel} · Regional ${metric === "posts" ? "Posts" : "Qs"}`;
-
     const content = document.createElement("div");
     content.classList.add("section");
 
@@ -106,6 +105,16 @@ export function renderLeaderboardView() {
         app.append(header, title, content, createGlobalNav());
         return;
     }
+
+    const regionAos = (state.aos || [])
+        .filter(ao => ao.isActive !== false)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (selectedAoId && !regionAos.some(ao => ao.id === selectedAoId)) selectedAoId = null;
+
+    const selectedAo = regionAos.find(ao => ao.id === selectedAoId);
+
+    subtitle.textContent = `${periodLabel} · ${selectedAo?.name || "Regional"} ${metric === "posts" ? "Posts" : "Qs"}`;
 
     const filters = document.createElement("div");
     filters.classList.add("leaderboard-filters");
@@ -136,8 +145,30 @@ export function renderLeaderboardView() {
     addFilter(periodFilters, "Month", "month", period, value => period = value);
     addFilter(periodFilters, "Year", "year", period, value => period = value);
     addFilter(periodFilters, "All Time", "all", period, value => period = value);
+
+    const aoFilter = document.createElement("select");
+    aoFilter.classList.add("leaderboard-ao-filter");
+    aoFilter.setAttribute("aria-label", "Filter leaderboard by AO");
+
+    const allAosOption = document.createElement("option");
+    allAosOption.value = "";
+    allAosOption.textContent = "All AOs";
+    aoFilter.appendChild(allAosOption);
+
+    regionAos.forEach(ao => {
+        const option = document.createElement("option");
+        option.value = ao.id;
+        option.textContent = ao.name;
+        aoFilter.appendChild(option);
+    });
+
+    aoFilter.value = selectedAoId || "";
+    aoFilter.addEventListener("change", () => {
+        selectedAoId = aoFilter.value || null;
+        renderLeaderboardView();
+    });
     
-    filters.append(metricFilters, periodFilters);
+    filters.append(metricFilters, periodFilters, aoFilter);
 
     const tools = document.createElement("div");
     tools.classList.add("leaderboard-tools");
@@ -168,7 +199,7 @@ export function renderLeaderboardView() {
     const results = document.createElement("div");
     results.classList.add("leaderboard-results");
 
-    const cachedRows = getCachedLeaderboard(state.currentRegionId, metric, period);
+    const cachedRows = getCachedLeaderboard(state.currentRegionId, metric, period, selectedAoId);
     results.textContent = cachedRows === null ? "Loading leaderboard..." : "";
 
     content.append(filters, tools, results);
@@ -181,6 +212,7 @@ export function renderLeaderboardView() {
     const regionId = state.currentRegionId;
     const selectedMetric = metric;
     const selectedPeriod = period;
+    const selectedAoScope = selectedAoId;
     const requestId = ++requestSequence;
     let currentRows = [];
 
@@ -239,11 +271,11 @@ export function renderLeaderboardView() {
         if (forceRefresh) refreshLeaderboards(regionId);
 
         const loadId = ++requestSequence;
-        results.textContent = getCachedLeaderboard(regionId, selectedMetric, selectedPeriod) === null
+        results.textContent = getCachedLeaderboard(regionId, selectedMetric, selectedPeriod, selectedAoScope) === null
             ? "Loading leaderboard..."
             : "";
 
-        fetchLeaderboard(regionId, selectedMetric, selectedPeriod)
+        fetchLeaderboard(regionId, selectedMetric, selectedPeriod, selectedAoScope)
             .then(rows => {
                 if (loadId !== requestSequence ||
                     state.currentView !== "leaderboards" ||
@@ -291,7 +323,7 @@ export function renderLeaderboardView() {
         if (!currentRows.length) return;
 
         const regionName = state.regionName || "F3";
-        const heading = `${regionName} · ${selectedMetric === "posts" ? "Posts" : "Qs"}`;
+        const heading = `${regionName} · ${selectedAo?.name || "Regional"} · ${selectedMetric === "posts" ? "Posts" : "Qs"}`;
         const lines = currentRows.slice(0, 10).map(row =>
             `${row.rank}. ${row.pax_name} — ${row.total}`
         );
