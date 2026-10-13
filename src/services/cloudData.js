@@ -6870,12 +6870,14 @@ export async function logMemberActivity(
     return data;
 }
 
-export async function loadRegionPaxLeaderboard(regionId, metric = "posts", period = "month", aoId = null) {
+export async function loadRegionPaxLeaderboard(regionId, metric = "posts", period = "month", aoId = null, startDate = null, endDate = null) {
     const { data, error } = await supabase.rpc("get_region_pax_leaderboard", {
         p_region_id: regionId,
         p_metric: metric,
         p_period: period,
         p_ao_id: aoId,
+        p_start_date: startDate,
+        p_end_date: endDate,
     });
 
     if (error) throw error;

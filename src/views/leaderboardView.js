@@ -7,6 +7,22 @@ import { cleanupMainMenu, createMainMenu } from "../components/mainMenu.js";
 let metric = "posts";
 let period = "month";
 let selectedAoId = null;
+
+let selectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+let selectedYear = new Date().getFullYear();
+
+function getLeaderboardDates(period) {
+    if (period === "month") {
+        const [year, month] = selectedMonth.split("-").map(Number);
+        const start = `${year}-${String(month).padStart(2, "0")}-01`;
+        const end = `${year}-${String(month).padStart(2, "0")}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`;
+        return { start, end };
+    }
+
+    if (period === "year") return { start: `${selectedYear}-01-01`, end: `${selectedYear}-12-31` };
+    return { start: null, end: null };
+}
+
 let requestSequence = 0;
 
 const CACHE_TTL = 5 * 60 * 1000;
@@ -28,7 +44,8 @@ function refreshLeaderboards(regionId) {
 }
 
 function getLeaderboardKey(regionId, metric, period, aoId = null) {
-    return `${regionId}:${aoId || "all"}:${metric}:${period}`;
+    const { start, end } = getLeaderboardDates(period);
+    return `${regionId}:${aoId || "all"}:${metric}:${period}:${start || "all"}:${end || "all"}`;
 }
 
 function getCachedLeaderboard(regionId, metric, period, aoId = null) {
@@ -40,6 +57,7 @@ function getCachedLeaderboard(regionId, metric, period, aoId = null) {
 }
 
 function fetchLeaderboard(regionId, metric, period, aoId = null) {
+    const { start, end } = getLeaderboardDates(period);
     const key = getLeaderboardKey(regionId, metric, period, aoId);
     const cached = getCachedLeaderboard(regionId, metric, period, aoId);
 
@@ -47,8 +65,8 @@ function fetchLeaderboard(regionId, metric, period, aoId = null) {
     if (leaderboardRequests.has(key)) return leaderboardRequests.get(key);
 
     const generation = cacheGenerations.get(regionId) || 0;
-
-    const request = loadRegionPaxLeaderboard(regionId, metric, period, aoId)
+    
+    const request = loadRegionPaxLeaderboard(regionId, metric, period, aoId, start, end)
         .then(rows => {
             if ((cacheGenerations.get(regionId) || 0) === generation) {
                 leaderboardCache.set(key, { rows, loadedAt: Date.now() });
@@ -92,9 +110,9 @@ export function renderLeaderboardView() {
     subtitle.classList.add("leaderboard-subtitle");
 
     const periodLabel = period === "month"
-        ? new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })
+        ? new Date(`${selectedMonth}-01T12:00:00`).toLocaleDateString(undefined, { month: "long", year: "numeric" })
         : period === "year"
-            ? String(new Date().getFullYear())
+            ? String(selectedYear)
             : "All Time";
 
     const content = document.createElement("div");
@@ -167,8 +185,43 @@ export function renderLeaderboardView() {
         selectedAoId = aoFilter.value || null;
         renderLeaderboardView();
     });
+
+    const dateFilter = document.createElement("select");
+    dateFilter.classList.add("leaderboard-date-filter");
+    dateFilter.setAttribute("aria-label", period === "month" ? "Select month" : "Select year");
+
+    const now = new Date();
+
+    if (period === "month") {
+        for (let i = 0; i < 60; i++) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+            dateFilter.appendChild(option);
+        }
+
+        dateFilter.value = selectedMonth;
+    } else if (period === "year") {
+        for (let year = now.getFullYear(); year >= now.getFullYear() - 9; year--) {
+            const option = document.createElement("option");
+            option.value = String(year);
+            option.textContent = String(year);
+            dateFilter.appendChild(option);
+        }
+
+        dateFilter.value = String(selectedYear);
+    }
+
+    dateFilter.addEventListener("change", () => {
+        if (period === "month") selectedMonth = dateFilter.value;
+        if (period === "year") selectedYear = Number(dateFilter.value);
+        renderLeaderboardView();
+    });
     
     filters.append(metricFilters, periodFilters, aoFilter);
+    if (period !== "all") filters.appendChild(dateFilter);
 
     const tools = document.createElement("div");
     tools.classList.add("leaderboard-tools");
