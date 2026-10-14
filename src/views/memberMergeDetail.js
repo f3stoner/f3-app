@@ -4,6 +4,7 @@ import {
     previewMemberMerge,
     markMemberMergeReady,
     executeMemberMerge,
+    cancelMemberMerge,
 } from "../services/cloudData.js";
 import { goBack, navigateTo } from "../utils/navigation.js";
 import { showToast } from "../utils/toast.js";
@@ -226,6 +227,33 @@ function createManifestSection(previewPayload) {
     
     section.appendChild(grid);
 
+    const issues = [
+        ["Required Decisions", plan.requiredDecisions],
+        ["Warnings", plan.warnings],
+        ["Blockers", plan.blockers],
+    ];
+    
+    issues.forEach(([heading, items]) => {
+        if (!Array.isArray(items) || !items.length) return;
+    
+        const group = document.createElement("div");
+        group.classList.add("member-merge-review-group");
+    
+        const label = document.createElement("h3");
+        label.textContent = heading;
+        group.appendChild(label);
+    
+        items.forEach(item => {
+            const detail = document.createElement("pre");
+            detail.style.whiteSpace = "pre-wrap";
+            detail.style.overflowWrap = "anywhere";
+            detail.textContent = JSON.stringify(item, null, 2);
+            group.appendChild(detail);
+        });
+    
+        section.appendChild(group);
+    });
+
     const status = document.createElement("p");
     status.textContent = readiness.analysisComplete !== true
         ? "Validation is incomplete."
@@ -274,9 +302,41 @@ function createMergeActions(data, returnView) {
         actions.appendChild(createMarkReadyButton(data, returnView));
     }
 
+    if (["draft", "validated", "ready", "failed"].includes(data.merge.status)) {
+        actions.appendChild(createCancelButton(data, returnView));
+    }
+
     actions.appendChild(createExecuteButton(data, returnView));
 
     return actions;
+}
+
+function createCancelButton(data, returnView) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.classList.add("secondary-button");
+    button.textContent = "Cancel Merge";
+
+    button.addEventListener("click", async () => {
+        if (!window.confirm("Cancel this merge? No member records will be changed, and you can start a new merge afterward.")) return;
+
+        button.disabled = true;
+        button.textContent = "Cancelling…";
+
+        try {
+            await cancelMemberMerge(data.merge.id, "Cancelled by administrator");
+
+            showToast("Merge cancelled.", "success");
+            navigateTo(returnView);
+        } catch (error) {
+            console.error("Failed to cancel member merge:", error);
+            showToast(error?.message || "Unable to cancel merge.", "error");
+            button.disabled = false;
+            button.textContent = "Cancel Merge";
+        }
+    });
+
+    return button;
 }
 
 function createPreviewButton(data, returnView) {

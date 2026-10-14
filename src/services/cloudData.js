@@ -5689,6 +5689,18 @@ export async function loadMemberMerge(
     return data;
 }
 
+export async function cancelMemberMerge(mergeId, reason = null) {
+    if (!mergeId) throw new Error("Merge id is required.");
+
+    const { data, error } = await supabase.rpc("cancel_member_merge", {
+        p_merge_id: mergeId,
+        p_reason: reason,
+    });
+
+    if (error) throw error;
+    return data;
+}
+
 export async function previewMemberMerge(mergeId) {
     if (!mergeId) {
         throw new Error("Merge id is required.");

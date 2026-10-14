@@ -636,7 +636,6 @@ function openEditMemberModal(member) {
 }
 
 async function openMergeMemberModal(member) {
-    loadMemberMerges().then(merges => console.log("Merge history:", merges));
     if (!canManageCurrentRoster()) return;
 
     try {
@@ -703,6 +702,35 @@ async function openMergeMemberModal(member) {
         createButton.textContent = "Creating…";
 
         try {
+            const merges = await loadMemberMerges();
+            const existing = merges.find(merge =>
+                ["draft", "validated", "ready", "running", "failed"].includes(merge.status) &&
+                (
+                    (merge.canonical_member_id === member.id && merge.duplicate_member_id === select.value) ||
+                    (merge.canonical_member_id === select.value && merge.duplicate_member_id === member.id)
+                )
+            );
+        
+            if (existing) {
+                const canonical = (state.members || []).find(m => m.id === existing.canonical_member_id);
+                const duplicate = (state.members || []).find(m => m.id === existing.duplicate_member_id);
+                const survivorName = canonical ? getMemberDisplayName(canonical) : "the existing survivor";
+                const duplicateName = duplicate ? getMemberDisplayName(duplicate) : "the existing duplicate";
+        
+                if (!window.confirm(`An unfinished merge already exists:\n\nKeep: ${survivorName}\nMerge: ${duplicateName}\nStatus: ${existing.status}\n\nOpen this merge?`)) {
+                    createButton.disabled = false;
+                    createButton.textContent = "Create Merge Draft";
+                    return;
+                }
+        
+                closeModal();
+                navigateTo("memberMergeDetail", {
+                    mergeId: existing.merge_id,
+                    returnView: "rosterManagement"
+                });
+                return;
+            }
+        
             const result = await createMemberMergeDraft(member.id, select.value);
             const mergeId = typeof result === "string" ? result : result?.merge_id || result?.mergeId || result?.id;
 
@@ -711,19 +739,18 @@ async function openMergeMemberModal(member) {
             closeModal();
             navigateTo("memberMergeDetail", { mergeId, returnView: "rosterManagement" });
         } catch (error) {
-            if (error.code === "23505") {
+            if (["23505", "23514"].includes(error.code)) {
                 try {
                     const merges = await loadMemberMerges();
                     const existing = merges.find(merge =>
-                        merge.duplicate_member_id === select.value &&
-                        ["draft", "validated", "ready", "running"].includes(merge.status)
+                        ["draft", "validated", "ready", "running", "failed"].includes(merge.status) &&
+                        (
+                            (merge.canonical_member_id === member.id && merge.duplicate_member_id === select.value) ||
+                            (merge.canonical_member_id === select.value && merge.duplicate_member_id === member.id)
+                        )
                     );
         
                     if (existing) {
-                        if (existing.canonical_member_id !== member.id) {
-                            throw new Error("This duplicate PAX already has an active merge with a different surviving PAX.");
-                        }
-        
                         closeModal();
                         navigateTo("memberMergeDetail", {
                             mergeId: existing.merge_id,
@@ -732,7 +759,7 @@ async function openMergeMemberModal(member) {
                         return;
                     }
                 } catch (lookupError) {
-                    error = lookupError;
+                    console.error("Unable to look up existing merge:", lookupError);
                 }
             }
         
@@ -1237,22 +1264,88 @@ function renderAdoption() {
     renderAdoption();
     renderList();
 
+    const unfinishedMerges = document.createElement("section");
+    unfinishedMerges.classList.add("roster-management-merges");
+
+    const mergesHeading = document.createElement("h2");
+    mergesHeading.textContent = "Unfinished Merges";
+
+    const mergesList = document.createElement("div");
+    mergesList.classList.add("roster-management-list");
+    mergesList.textContent = "Loading unfinished merges…";
+
+    unfinishedMerges.append(mergesHeading, mergesList);
+
+    loadMemberMerges().then(merges => {
+        if (state.currentRegionId !== regionId || !app.contains(unfinishedMerges)) return;
+
+        mergesList.replaceChildren();
+
+        const unfinished = merges.filter(merge =>
+            ["draft", "validated", "ready", "failed", "running"].includes(merge.status)
+        );
+
+        if (!unfinished.length) {
+            unfinishedMerges.remove();
+            return;
+        }
+
+        unfinished.forEach(merge => {
+            const row = document.createElement("div");
+            row.classList.add("roster-management-merge-row");
+
+            const details = document.createElement("div");
+            const canonical = (state.members || []).find(member => member.id === merge.canonical_member_id);
+            const duplicate = (state.members || []).find(member => member.id === merge.duplicate_member_id);
+
+            const names = document.createElement("strong");
+            names.textContent = `${canonical ? getMemberDisplayName(canonical) : "Unknown survivor"} ← ${duplicate ? getMemberDisplayName(duplicate) : "Unknown duplicate"}`;
+
+            const status = document.createElement("div");
+            status.classList.add("detail-value");
+            status.textContent = `Status: ${merge.status}`;
+
+            details.append(names, status);
+            row.append(details);
+
+            if (merge.status !== "running") {
+                const resumeButton = document.createElement("button");
+                resumeButton.type = "button";
+                resumeButton.classList.add("secondary-button");
+                resumeButton.textContent = "Resume";
+                resumeButton.addEventListener("click", () => {
+                    navigateTo("memberMergeDetail", {
+                        mergeId: merge.merge_id,
+                        returnView: "rosterManagement"
+                    });
+                });
+                row.append(resumeButton);
+            }
+
+            mergesList.append(row);
+        });
+    }).catch(error => {
+        console.error("Unable to load unfinished merges:", error);
+        mergesList.textContent = "Unable to load unfinished merges.";
+    });
+
     const nav = createGlobalNav();
 
-app.append(
-    header,
-    title,
-    description,
-    adoptionSummary,
-    searchInput,
-    filterRow,
-    claimFilterRow,
-    summary,
-    list,
-    nav
-);
+    app.append(
+        header,
+        title,
+        description,
+        unfinishedMerges,
+        adoptionSummary,
+        searchInput,
+        filterRow,
+        claimFilterRow,
+        summary,
+        list,
+        nav
+    );
 
-ensureRosterAdoptionLoaded(regionId);
+    ensureRosterAdoptionLoaded(regionId);
 
     if (state.isMainMenuOpen) {
         document.body.appendChild(
