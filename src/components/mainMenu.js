@@ -19,6 +19,11 @@ import { createIcon } from "../utils/icons.js";
 
 const AGGIELAND_REGION_ID = "96c9eef9-3b6e-4365-86cd-51dbeccf231a";
 
+const WEST_HOUSTON_REGION_ID = "7298b632-4d9a-542f-b65d-d416e5c1e631";
+
+const WEST_HOUSTON_EMERGENCY_CONTACT_LOOKUP_URL =
+    "https://script.google.com/macros/s/AKfycbzc_x5ob8kiLZsYDSM5_e00bFWm6WG5L3N4c1i9bNIo3INncMnTp8XWEPYj6Ci4irYd/exec";
+
 const EMERGENCY_CONTACT_LOOKUP_URL =
     "https://script.google.com/macros/s/AKfycbw9jaovBZnmQoNTlhrhTwKsk0QBIOxBqvk8ju9hGKimbZlj9Kt0esfnWeAbqZwUjFI/exec";
 
@@ -29,11 +34,13 @@ const DOUBLE_DOWN_TRACKER_URL =
     "https://f3aggieland.com/dd/";
 
 function confirmEmergencyContactLookup() {
+    const regionName = isAggielandRegion() ? "Aggieland" : "West Houston";
+
     return window.confirm(
         [
             "Emergency Contact Lookup",
             "",
-            "You are opening Aggieland's Emergency Contact system.",
+            `You are opening ${regionName}'s Emergency Contact system.`,
             "",
             "Use this information only for legitimate emergency or safety-related situations.",
             "",
@@ -44,24 +51,32 @@ function confirmEmergencyContactLookup() {
     );
 }
 
-function isAggielandRegion() {
-    return state.currentRegionId === AGGIELAND_REGION_ID;
-}
-
-function canOpenAggielandEmergencyLookup() {
-    return isAggielandRegion()
+function canOpenEmergencyLookup() {
+    return (
+        (isAggielandRegion() || state.currentRegionId === WEST_HOUSTON_REGION_ID)
         && Boolean(state.currentUserDisplayName)
-        && Boolean(state.currentUserMemberId);
+        && Boolean(state.currentUserMemberId)
+    );
 }
 
 function getEmergencyContactLookupUrl() {
-    const url = new URL(EMERGENCY_CONTACT_LOOKUP_URL);
+    const lookupUrl = isAggielandRegion()
+        ? EMERGENCY_CONTACT_LOOKUP_URL
+        : WEST_HOUSTON_EMERGENCY_CONTACT_LOOKUP_URL;
+
+    const url = new URL(lookupUrl);
 
     url.searchParams.set("appUser", state.currentUserDisplayName);
     url.searchParams.set("appUserId", state.currentUserMemberId);
 
     return url.toString();
 }
+
+function isAggielandRegion() {
+    return state.currentRegionId === AGGIELAND_REGION_ID;
+}
+
+
 
 function getMonthStart(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
@@ -189,7 +204,7 @@ export function createMainMenu() {
                 {
                     label: "Emergency Contact Lookup",
                     getExternalUrl: getEmergencyContactLookupUrl,
-                    isVisible: canOpenAggielandEmergencyLookup,
+                    isVisible: canOpenEmergencyLookup,
                 },
                 { label: "Roster", view: "roster" },
             ],
